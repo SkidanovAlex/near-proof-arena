@@ -12,7 +12,11 @@ exact rationals in dkt_certs.json with the selected transfer theorem and charact
 The application checkers of the paper select the 'tight-2D-minus-3-v3' Taylor model; so do we.
 
 Usage:  python3 -I dkt_certs.py /path/to/rs-beyond-johnson [--check]
-  --check   re-evaluate every stored certificate (no search) and compare.
+  --check [file]  re-evaluate every stored certificate (no search) and compare; also checks
+            E/|F| <= 2^-275, list <= 2^44 and char p > char_gt.  file defaults to dkt_certs.json.
+  --table [prio]  O-2 table mode: certify the exact thresholds of AgreementTable::canonical for
+            the real shapes (prio 0: final, bound.py final, inner NV, base; 1: + b = 2 chain),
+            output dkt_certs_o2.json.
 The JSON is committed; bound_mca.py reads it and needs no third-party code.
 """
 import json
@@ -121,10 +125,125 @@ def search(args):
     return (n, k, A, ell), res, time.time() - t0
 
 
+
+# ----------------------------------------------------------------------------------------
+# O-2 table mode (--table): certify exactly the agreement thresholds that the recursion lane's
+# backend binds into the vk (stark-backend-unified.patch AgreementTable::canonical, lane
+# pq-recursion-sha384 @ cf2262a24), for the real shapes of dkt_cert_check.py, round codes and
+# fold sub-codes s = 0..k_i (n >> s, k >> s, ceil(A / 2^s)).  Output: dkt_certs_o2.json.
+# ----------------------------------------------------------------------------------------
+OUT_O2 = os.path.join(HERE, 'dkt_certs_o2.json')
+O2_MARGIN_MILLI, O2_M = 50, 64
+O2_SHAPES = {   # name: (log_h, b, k1, k, lf, priority)   -- dkt_cert_check.py SH, same names
+    'final (extrapolation optimum) b7 h20 k1=1 k4 lf7': (20, 7, 1, 4, 7, 0),
+    'final (bound.py) b8 h19 k1=1 k3 lf9': (19, 8, 1, 3, 9, 0),
+    'inner NV b6 h19 k1=1 k4 lf6': (19, 6, 1, 4, 6, 0),
+    'base app stress b6 h21 k1=1 k4 lf8': (21, 6, 1, 4, 8, 0),
+    'measured chain inner b2 h20 k1=1 k4 lf3': (20, 2, 1, 4, 3, 1),
+    'measured chain final b2 h21 k1=1 k3 lf8': (21, 2, 1, 3, 8, 1),
+}
+
+
+def o2_agree(n, k, margin_milli=O2_MARGIN_MILLI, m=O2_M):
+    """AgreementTable::canonical, operation for operation in IEEE f64 (Python float == Rust f64;
+    sqrt, +, *, / correctly rounded; dkt_a1 is the same bisection).  Returns the integer A."""
+    cap = 1.0 + 1.0 / (2.0 * max(m, 1))
+    rho = k / n
+    ratio = min(a1(rho) / math.sqrt(rho) + margin_milli / 1000.0, cap)
+    return math.ceil(ratio * math.sqrt((k - 1) / n) * n)
+
+
+def o2_rounds(log_h, b, k1, k, lf):
+    nr = 1 + math.ceil((log_h - k1 - lf) / k)
+    ks = [k1] + [k] * (nr - 1)
+    n, mv, out = C_ODD_O2 * 2 ** (log_h + b), log_h, []
+    for i, ki in enumerate(ks):
+        kd = 2 ** mv
+        A = o2_agree(n, kd)
+        subs = [(n >> s, kd >> s, -(-A // 2 ** s)) for s in range(ki + 1)]   # ceil(A/n * n_s), exact
+        out.append(dict(i=i, k=ki, n=n, kdim=kd, A=A, subs=subs))
+        mv -= ki
+    return out
+
+
+C_ODD_O2 = 15
+O2_CURVE_ELLS = (52, 140, 600)    # W - 1 for W = 53 (NV final b7 h20), 141 (bound.py NV), 601 (base app)
+
+
+def table_main(path, only_prio):
+    data = json.load(open(OUT_O2)) if os.path.exists(OUT_O2) else {}
+    certs = {k: v for k, v in data.items() if not k.startswith('_')}
+    failed = data.get('_no_certificate', {})
+    jobs = []
+    for nm, (lh, b, k1, k, lf, pr) in O2_SHAPES.items():
+        if pr > only_prio:
+            continue
+        for r in o2_rounds(lh, b, k1, k, lf):
+            for c in r['subs']:
+                key = f'{c[0]},{c[1]},{c[2]},1'
+                if key not in certs and key not in failed:
+                    jobs.append(c + (1,))
+        # 'first-curve' mu batching (bound_mca.py): powers curve of degree W-1 on the round-0 code
+        c0 = o2_rounds(lh, b, k1, k, lf)[0]['subs'][0]
+        for ell in O2_CURVE_ELLS:
+            if f'{c0[0]},{c0[1]},{c0[2]},{ell}' not in certs:
+                jobs.append(c0 + (ell,))
+    jobs = sorted(set(jobs), key=lambda j: j[1])        # small k first
+    # reuse supports already found for the same (n, k, A) in dkt_certs.json (plans or grid):
+    # re-evaluated here, so the stored record is complete and freshly checked
+    old = json.load(open(OUT)) if os.path.exists(OUT) else {}
+    prev = {k: v for k, v in old.items() if not k.startswith('_')}
+    prev.update(old.get('_grid', {}).get('certs', {}))
+    seeded = [j for j in jobs if prev.get(','.join(map(str, j)))]
+    if seeded:
+        _init(path)
+        for j in seeded:
+            p = prev[','.join(map(str, j))]
+            c = evaluate(*j[:3], p['m'], p['B_d'], p['B_jet'], j[3])
+            if c and math.log2(F(c['E'])) <= E_MAX and math.log2(F(c['list'])) <= L_MAX:
+                certs[','.join(map(str, j))] = c
+                jobs.remove(j)
+        print(f'{len(seeded)} supports reused from {os.path.basename(OUT)}', flush=True)
+    print(f'{len(jobs)} codes to certify', flush=True)
+
+    def save():
+        out = dict(certs)
+        out['_no_certificate'] = failed
+        out['_meta'] = dict(engine=f'rs-beyond-johnson@{DKT_COMMIT} scripts/tune_first_order_mca.py',
+                            taylor_model='tight-2D-minus-3-v3', support='derivative-weighted',
+                            E_max_log2_over_F=-275, list_max_log2=L_MAX,
+                            rule='A = ceil(min(a1(rho)/sqrt(rho) + margin_milli/1000, 1 + 1/(2m)) * sqrt((k-1)/n) * n) '
+                                 'in IEEE f64 (AgreementTable::canonical, lane/pq-recursion-sha384 @ cf2262a24); '
+                                 'fold sub-code s: (n >> s, k >> s, ceil(A / 2^s))',
+                            margin_milli=O2_MARGIN_MILLI, m=O2_M)
+        out['_shapes'] = {nm: [dict(round=r['i'], k_i=r['k'], n=r['n'], kdim=r['kdim'], A=r['A'],
+                                    covered=all(f'{c[0]},{c[1]},{c[2]},1' in certs for c in r['subs']),
+                                    **({'first_curve_ells': [e for e in O2_CURVE_ELLS
+                                        if f"{r['subs'][0][0]},{r['subs'][0][1]},{r['subs'][0][2]},{e}" in certs]} if r['i'] == 0 else {}))
+                               for r in o2_rounds(*v[:5])] for nm, v in O2_SHAPES.items()}
+        json.dump(out, open(OUT_O2, 'w'), indent=1, sort_keys=True)
+
+    with Pool(int(os.environ.get('JOBS', '8')), initializer=_init, initargs=(path,)) as pool:
+        for key, res, dt in pool.imap_unordered(search, jobs):
+            ks = ','.join(map(str, key))
+            if res is None:
+                failed[ks] = 'no certificate within the search box'
+                print(f'{ks}: no certificate within the search box [{dt:.0f}s]', flush=True)
+            else:
+                certs[ks] = res
+                print(f"{ks}: m={res['m']} B_d={res['B_d']} B_jet={res['B_jet']} E/|F|=2^{math.log2(F(res['E'])) - BM.LOG_F:.2f} "
+                      f"list=2^{math.log2(F(res['list'])):.2f} [{dt:.0f}s]", flush=True)
+            save()
+    save()
+
+
 def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
     path = sys.argv[1]
+    if len(sys.argv) > 2 and sys.argv[2] == '--table':
+        table_main(path, int(sys.argv[3]) if len(sys.argv) > 3 else 0)
+        return
     if len(sys.argv) > 2 and sys.argv[2] == '--grid':
         # size-model rule: a(rho) = (a1(rho)/sqrt(rho) + GRID_MARGIN) sqrt((k-1)/n), checked at n = 15*2^27
         # (the largest final-layer domain the models allow) for k = 2^j, and at the two first fold codes.
@@ -135,7 +254,10 @@ def main():
             ratio = a1(k / n) / math.sqrt(k / n) + GRID_MARGIN
             A = BM.dceil(Decimal(ratio) * (Decimal(k - 1) / n).sqrt() * n)
             for s in range(3):
-                jobs.append((n >> s, k >> s, BM.dceil(Decimal(A) / n * (n >> s)), 1))
+                # exact ceil(A / 2^s).  (The stored grid was made with dceil(Decimal(A) / n * n_s), which
+                # rounds A/n up in the last digit and gives A + 1 at s = 0 for some k; superseded by
+                # --table / dkt_certs_o2.json.)
+                jobs.append((n >> s, k >> s, -(-A // 2 ** s), 1))
         grid = {}
         with Pool(int(os.environ.get('JOBS', '8')), initializer=_init, initargs=(path,)) as pool:
             for key, res, dt in pool.imap_unordered(search, jobs):
@@ -147,14 +269,15 @@ def main():
         return
     if len(sys.argv) > 2 and sys.argv[2] == '--check':
         _init(path)
-        data = json.load(open(OUT))
+        data = json.load(open(sys.argv[3] if len(sys.argv) > 3 else OUT))
         bad = 0
         for key, c in data.items():
             if key.startswith('_'):
                 continue
             n, k, A, ell = map(int, key.split(','))
             d = evaluate(n, k, A, c['m'], c['B_d'], c['B_jet'], ell)
-            ok = d is not None and d['E'] == c['E'] and d['list'] == c['list']
+            ok = (d is not None and d['E'] == c['E'] and d['list'] == c['list'] and int(c['char_gt']) < BM.P
+                  and math.log2(F(c['E'])) <= E_MAX and math.log2(F(c['list'])) <= L_MAX)
             bad += not ok
             print(f"{key}: {'ok' if ok else 'MISMATCH'}  E/|F| = 2^{math.log2(F(c['E'])) - BM.LOG_F:.2f}  list 2^{math.log2(F(c['list'])):.2f}")
         sys.exit(1 if bad else 0)
