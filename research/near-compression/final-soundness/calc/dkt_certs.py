@@ -185,9 +185,12 @@ def table_main(path, only_prio):
                     jobs.append(c + (1,))
         # 'first-curve' mu batching (bound_mca.py): powers curve of degree W-1 on the round-0 code
         c0 = o2_rounds(lh, b, k1, k, lf)[0]['subs'][0]
+        # and at the Johnson agreement of ListDecoding(64), for a round 0 that falls back to O-1
+        cj = (c0[0], c0[1], BM.agreement('J', c0[0], c0[1], M=64))
         for ell in O2_CURVE_ELLS:
-            if f'{c0[0]},{c0[1]},{c0[2]},{ell}' not in certs:
-                jobs.append(c0 + (ell,))
+            for cc in (c0, cj):
+                if f'{cc[0]},{cc[1]},{cc[2]},{ell}' not in certs:
+                    jobs.append(cc + (ell,))
     jobs = sorted(set(jobs), key=lambda j: j[1])        # small k first
     # reuse supports already found for the same (n, k, A) in dkt_certs.json (plans or grid):
     # re-evaluated here, so the stored record is complete and freshly checked
@@ -219,7 +222,11 @@ def table_main(path, only_prio):
         out['_shapes'] = {nm: [dict(round=r['i'], k_i=r['k'], n=r['n'], kdim=r['kdim'], A=r['A'],
                                     covered=all(f'{c[0]},{c[1]},{c[2]},1' in certs for c in r['subs']),
                                     **({'first_curve_ells': [e for e in O2_CURVE_ELLS
-                                        if f"{r['subs'][0][0]},{r['subs'][0][1]},{r['subs'][0][2]},{e}" in certs]} if r['i'] == 0 else {}))
+                                        if f"{r['subs'][0][0]},{r['subs'][0][1]},{r['subs'][0][2]},{e}" in certs],
+                                        'A_johnson64': BM.agreement('J', r['n'], r['kdim'], M=64),
+                                        'johnson64_curve_ells': [e for e in O2_CURVE_ELLS
+                                        if f"{r['n']},{r['kdim']},{BM.agreement('J', r['n'], r['kdim'], M=64)},{e}" in certs]}
+                                       if r['i'] == 0 else {}))
                                for r in o2_rounds(*v[:5])] for nm, v in O2_SHAPES.items()}
         json.dump(out, open(OUT_O2, 'w'), indent=1, sort_keys=True)
 

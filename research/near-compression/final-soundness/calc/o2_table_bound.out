@@ -1,0 +1,24 @@
+== final (extrapolation optimum) b7 h20 k1=1 k4 lf7  (W = 53, commits = 1)
+  O-2      q = [41, 38, 29, 23] (sum 131)  r0 list 2^41.82  worst non-query 2^-271.66 [whir OOD r2 x1 (L4.4)]  PASS
+  r0=J64   q = [44, 38, 29, 23] (sum 134)  r0 list 2^11.43  worst non-query 2^-271.66 [whir OOD r2 x1 (L4.4)]  PASS
+  all J64  q = [44, 40, 30, 24] (sum 138)  r0 list 2^11.43  worst non-query 2^-291.12 [whir mu batching (DKT26 first-order curve, ell=W-1) (L4.2)]  PASS
+== final (bound.py) b8 h19 k1=1 k3 lf9  (W = 141, commits = 1)
+  O-2      q = [38, 35, 29, 25] (sum 127)  r0 list 2^41.97  worst non-query 2^-271.66 [whir OOD r2 x1 (L4.4)]  PASS
+  r0=J64   q = [40, 35, 29, 25] (sum 129)  r0 list 2^11.94  worst non-query 2^-271.66 [whir OOD r2 x1 (L4.4)]  PASS
+  all J64  q = [40, 37, 30, 25] (sum 132)  r0 list 2^11.94  worst non-query 2^-289.74 [whir mu batching (DKT26 first-order curve, ell=W-1) (L4.2)]  PASS
+== inner NV b6 h19 k1=1 k4 lf6  (W = 141, commits = 1)
+  O-2      q = [46, 41, 31, 25] (sum 143)  r0 list 2^39.56  worst non-query 2^-274.25 [whir OOD r1 x1 (L4.4)]  PASS
+  r0=J64   q = [48, 41, 31, 25] (sum 145)  r0 list 2^10.91  worst non-query 2^-274.25 [whir OOD r1 x1 (L4.4)]  PASS
+  all J64  q = [48, 44, 32, 25] (sum 149)  r0 list 2^10.91  worst non-query 2^-293.63 [whir mu batching (DKT26 first-order curve, ell=W-1) (L4.2)]  PASS
+== base app stress b6 h21 k1=1 k4 lf8  (W = 601, commits = 2)
+  O-2      q = [46, 41, 31, 25] (sum 143)  r0 list 2^41.56  worst non-query 2^-231.77 [logup alpha,beta (L3.1)]  FAIL (> 2^-270)
+  r0=J64   q = [48, 41, 31, 25] (sum 145)  r0 list 2^10.91  worst non-query 2^-271.27 [whir OOD r2 x1 (L4.4)]  PASS
+  all J64  q = [48, 44, 32, 25] (sum 149)  r0 list 2^10.91  worst non-query 2^-287.53 [whir mu batching (DKT26 first-order curve, ell=W-1) (L4.2)]  PASS
+== measured chain inner b2 h20 k1=1 k4 lf3  (W = 141, commits = 1)
+  O-2      q = [76, 65, 41, 31, 24] (sum 237)  r0 list 2^35.65  worst non-query 2^-281.61 [whir OOD r1 x1 (L4.4)]  PASS
+  r0=J64   q = [81, 65, 41, 31, 24] (sum 242)  r0 list 2^8.76  worst non-query 2^-281.61 [whir OOD r1 x1 (L4.4)]  PASS
+  all J64  q = [81, 69, 44, 32, 25] (sum 251)  r0 list 2^8.76  worst non-query 2^-298.69 [whir mu batching (DKT26 first-order curve, ell=W-1) (L4.2)]  PASS
+== measured chain final b2 h21 k1=1 k3 lf8  (W = 141, commits = 1)
+  O-2      q = [76, 65, 46, 35, 29] (sum 251)  r0 list 2^36.65  worst non-query 2^-278.61 [whir OOD r1 x1 (L4.4)]  PASS
+  r0=J64   q = [81, 65, 46, 35, 29] (sum 256)  r0 list 2^8.76  worst non-query 2^-278.61 [whir OOD r1 x1 (L4.4)]  PASS
+  all J64  q = [81, 69, 48, 37, 30] (sum 265)  r0 list 2^8.76  worst non-query 2^-296.69 [whir mu batching (DKT26 first-order curve, ell=W-1) (L4.2)]  PASS
