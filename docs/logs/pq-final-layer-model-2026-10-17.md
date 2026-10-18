@@ -603,3 +603,6 @@ model 308.5 → 298.9 KB.
   one certified O-2 round (~3 KB) would also close the gap.
 * v4 audit (lane/pq-nv-circuit-soundness d043aa16f §V): no bug; standalone sweep 0 undetected;
   NV-port sweep pending.
+* v4 NV-port audit done (lane/pq-nv-circuit-soundness @ 912187d21 §V): full sweep 4 fixtures ×
+  2 modes, Sha512Air4/TableAir4 0 undetected; 44/44 + 43/43 tests; port reproducible byte for
+  byte; ε_LogUp ≈ 2^-316.8. Next re-audit trigger: program-cut ops on the recursion lane.
