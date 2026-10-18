@@ -1,0 +1,75 @@
+== NV fixed point at the real settings (extrapolate_nv2, 268 / z = 32, 42 B) ==
+pen b=6 n_stack=17 queries [50, 46, 33, 26]; NV circuit 73,657,712 cells (2^26.13), NvAir 326,966 rows, SHA 294,980 rows, 6,860 compressions; final 323,877 B
+
+== zerocheck + LogUp-GKR work (Ext12-mul equivalents) ==
+CPU run s16 (NvAir 2^18, SHA 2^16): bottom-up 3.442e+09; measured 1,124 s x 36.9 M/s = 4.148e+10 (x12.0)
+NV fixed point (padded 2^19 / 2^19): bottom-up 1.865e+10
+
+== per-layer GPU work, adversarial chain, mid case (GPU-seconds on one H200) ==
+layer       cells  b log_h     W queries                   LDE TB    NTT    SHA  ZC+GKR  grind  GPU-s
+L1      4.191e+08  3    22   100 [185, 133, 63, 41, 31]     0.201   0.87   0.59   19.90   4.77  26.13
+L2      1.551e+08  6    19   296 [50, 46, 33, 26]           0.596   2.79   1.65    9.95   3.82  18.20
+final   7.722e+07  6    21    37 [50, 42, 31, 25]           0.298   2.45   1.87    4.97   3.82  13.11
+base    3.904e+10 GPU-s 73.9 (V3-PERF ML x1.3), proof shape b=2 log_h=25 W=1164 q=[304, 185, 73, 45, 33, 26]
+
+== end to end after execution ends (s): base phase B + L1 + L2 + final; [optimistic / mid / pessimistic] ==
+typical      N= 8: total 3.53 / 7.74 / 30.88   mid: base 0.72 L1 2.47 L2 2.65 final 1.90   final proof 325,775 B
+typical      N=16: total 1.89 / 4.56 / 20.70   mid: base 0.39 L1 1.46 L2 1.58 final 1.13   final proof 325,775 B
+typical      N=32: total 1.01 / 2.40 / 10.59   mid: base 0.23 L1 0.76 L2 0.82 final 0.59   final proof 325,775 B
+mainnet      N= 8: total 4.48 / 10.18 / 41.04   mid: base 1.89 L1 3.74 L2 2.65 final 1.90   final proof 325,775 B
+mainnet      N=16: total 2.40 / 6.03 / 27.60   mid: base 1.10 L1 2.23 L2 1.58 final 1.13   final proof 325,775 B
+mainnet      N=32: total 1.26 / 3.14 / 14.04   mid: base 0.58 L1 1.14 L2 0.82 final 0.59   final proof 325,775 B
+adversarial  N= 8: total 7.72 / 16.20 / 52.98   mid: base 7.84 L1 3.80 L2 2.65 final 1.90   final proof 325,775 B
+adversarial  N=16: total 4.16 / 9.69 / 35.75   mid: base 4.71 L1 2.27 L2 1.58 final 1.13   final proof 325,775 B
+adversarial  N=32: total 2.14 / 4.96 / 18.11   mid: base 2.38 L1 1.16 L2 0.82 final 0.59   final proof 325,775 B
+
+== lever: final-layer blowup b (final layer only; 268 / z = 32; N = 8 / 32; mid) ==
+b=3: 350,605 B  shape log_h=24 W=5 q=[74, 46, 33, 26]  LDE 0.040 TB  GPU-s 11.2  N=8 1.62 s  N=32 0.51 s
+b=4: 342,371 B  shape log_h=23 W=10 q=[64, 46, 33, 26]  LDE 0.081 TB  GPU-s 11.5  N=8 1.66 s  N=32 0.52 s
+b=5: 332,449 B  shape log_h=22 W=19 q=[56, 42, 31, 25]  LDE 0.153 TB  GPU-s 12.0  N=8 1.74 s  N=32 0.54 s
+b=6: 325,775 B  shape log_h=21 W=37 q=[50, 42, 31, 25]  LDE 0.298 TB  GPU-s 13.1  N=8 1.90 s  N=32 0.59 s
+b=7: 323,395 B  shape log_h=20 W=74 q=[46, 42, 31, 25]  LDE 0.596 TB  GPU-s 15.4  N=8 2.23 s  N=32 0.69 s
+b=8: 326,565 B  shape log_h=19 W=148 q=[42, 38, 31, 26]  LDE 1.192 TB  GPU-s 19.2  N=8 2.80 s  N=32 0.87 s
+b=9: 350,815 B  shape log_h=18 W=295 q=[38, 36, 28]  LDE 2.376 TB  GPU-s 24.9  N=8 3.65 s  N=32 1.13 s
+
+== lever: final-layer grinding z (b = 6; 268 - z query bits) ==
+z= 0: 355,053 B  q=[57, 47, 35, 28]  grind 0.00 GPU-s (mean; p99 x2.51)  final layer N=8 1.43 s  N=32 0.47 s
+z=16: 339,585 B  q=[54, 44, 33, 26]  grind 0.00 GPU-s (mean; p99 x2.51)  final layer N=8 1.43 s  N=32 0.47 s
+z=20: 338,111 B  q=[53, 44, 33, 26]  grind 0.00 GPU-s (mean; p99 x2.51)  final layer N=8 1.43 s  N=32 0.47 s
+z=24: 333,463 B  q=[52, 43, 32, 26]  grind 0.01 GPU-s (mean; p99 x2.51)  final layer N=8 1.43 s  N=32 0.48 s
+z=28: 328,815 B  q=[51, 42, 32, 25]  grind 0.24 GPU-s (mean; p99 x2.51)  final layer N=8 1.46 s  N=32 0.48 s
+z=32: 325,775 B  q=[50, 42, 31, 25]  grind 3.82 GPU-s (mean; p99 x2.51)  final layer N=8 1.90 s  N=32 0.59 s
+z=36: 322,601 B  q=[50, 41, 31, 24]  grind 61.08 GPU-s (mean; p99 x2.51)  final layer N=8 9.06 s  N=32 2.38 s
+
+== lever: inner-layer grinding z_inner (adversarial, N = 8 / 32, mid; final z = 32, b = 6) ==
+z_inner= 0: tail (L1+L2+final) N=8 9.87 s, N=32 3.10 s; final 330,015 B; L2 circuit 1.747e+08 cells
+z_inner=16: tail (L1+L2+final) N=8 7.36 s, N=32 2.33 s; final 328,319 B; L2 circuit 1.658e+08 cells
+z_inner=24: tail (L1+L2+final) N=8 7.31 s, N=32 2.32 s; final 326,623 B; L2 circuit 1.598e+08 cells
+z_inner=32: tail (L1+L2+final) N=8 8.35 s, N=32 2.58 s; final 325,775 B; L2 circuit 1.551e+08 cells
+
+== lever: recursion depth (adversarial, mid) ==
+deep: base->L1(b3)->L2(b6,x15)->final      N= 8: tail 8.35 s, final 325,775 B, final circuit 7.722e+07 cells
+deep: base->L1(b3)->L2(b6,x15)->final      N=32: tail 2.58 s, final 325,775 B, final circuit 7.722e+07 cells
+shallow: base->L1(b6,x15)->final           N= 8: tail 7.49 s, final 329,167 B, final circuit 8.516e+07 cells
+shallow: base->L1(b6,x15)->final           N=32: tail 2.30 s, final 329,167 B, final circuit 8.516e+07 cells
+
+== lever: final query target 258 bits (z = 32 -> 226) ==
+b=5: final 323,205 B; final layer N=8 1.74 s, N=32 0.54 s
+b=6: final 316,479 B; final layer N=8 1.90 s, N=32 0.59 s
+b=7: final 314,015 B; final layer N=8 2.23 s, N=32 0.69 s
+
+== GPUs needed (mid / optimistic), total after execution ==
+typical      <= 1 s: N = 96 (mid) / 24 (optimistic)   [z_inner = 24]
+typical      <= 2 s: N = 32 (mid) / 16 (optimistic)   [z_inner = 24]
+typical      <= 3 s: N = 24 (mid) / 8 (optimistic)   [z_inner = 24]
+mainnet      <= 1 s: N = 128 (mid) / 32 (optimistic)   [z_inner = 24]
+mainnet      <= 2 s: N = 48 (mid) / 16 (optimistic)   [z_inner = 24]
+mainnet      <= 3 s: N = 32 (mid) / 16 (optimistic)   [z_inner = 24]
+adversarial  <= 1 s: N = 192 (mid) / 64 (optimistic)   [z_inner = 24]
+adversarial  <= 2 s: N = 96 (mid) / 32 (optimistic)   [z_inner = 24]
+adversarial  <= 3 s: N = 64 (mid) / 24 (optimistic)   [z_inner = 24]
+
+== grinding tail (z = 32 everywhere, 4-6 query phases per layer) ==
+N= 8: 19 grinds on the critical path, mean 2.27 s, p99 3.65 s, p99.9 4.22 s
+N=16: 19 grinds on the critical path, mean 1.13 s, p99 1.82 s, p99.9 2.11 s
+N=32: 19 grinds on the critical path, mean 0.57 s, p99 0.91 s, p99.9 1.05 s
