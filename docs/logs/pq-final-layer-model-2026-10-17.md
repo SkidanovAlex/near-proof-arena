@@ -637,3 +637,7 @@ model 308.5 → 298.9 KB.
   interactions 2^24.87, L=24 → **O-2 287,037 B / O-1 297,999 B** (penultimate on Johnson).
 * Next: stream lane runs the real chain + streamed final on this head (measured number);
   auditor re-audits new ops (§W); DKT lane certifies penultimate b8/n18/k1=2.
+* Program-cut re-audit clean (lane/pq-nv-circuit-soundness @ 90d08fa4f §W): binding unchanged,
+  Horner-chain completeness argued + builder hardening `assert_horner_chains`, x15 index unique
+  (p−1 rejected, completeness loss ≤ #q/p); tests 49/49 + 46/46; sweep 5 fixtures × 2 modes clean
+  (new Horn2 fixture; harness `wit` allowlist gap fixed).
