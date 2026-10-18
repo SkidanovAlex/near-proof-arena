@@ -627,3 +627,13 @@ model 308.5 → 298.9 KB.
   Model validated within 0.2 % at the target shape. GKR temp tables now set the peak.
 * Next: re-run the ~3 h chain on the recursion lane's final circuit (v4 + program cut +
   cert-gated O-2) and prove the streamed final → the measured < 300 KB number.
+
+## 2026-10-18 — program cut done (lane/pq-recursion-sha384 @ 3c4324e8c)
+
+* Program rows (Fib probe) 125,782 → 79,840 (−36.5 %): Merkle level 10→5 rows, butterfly 7→5,
+  factorised eq, Horner final poly, Horn2 round-0 leaves, cheaper x15 index. NvAir 74 cols,
+  49 int, deg 9, 40 ops (table full). Tests: backend 230, fast NV 54 ×2 modes.
+* Model at fixed point: NvAir 255,702 rows (< 2^18, margin 2.4 %, relies on v4 DAG correction),
+  interactions 2^24.87, L=24 → **O-2 287,037 B / O-1 297,999 B** (penultimate on Johnson).
+* Next: stream lane runs the real chain + streamed final on this head (measured number);
+  auditor re-audits new ops (§W); DKT lane certifies penultimate b8/n18/k1=2.
