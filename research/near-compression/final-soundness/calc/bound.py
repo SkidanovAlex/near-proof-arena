@@ -13,7 +13,14 @@ Evaluates every term of PROOF.md:
   * cross-checks: CMS19 Thm 8.6 constants and CDHZ (ePrint 2025/2166) Thm 11.3 + 6.10.
 
 Asserts that the total is <= 2^-128 at t = 2^64 quantum queries, or prints the shortfall.
-Stdlib only.  Usage:  python3 -I bound.py   (writes nothing; prints the table)
+
+Default regime: **U-13** (user decision 2026-10-18; MCA-UPGRADE.md).  The proximity inputs of
+PROOF.md section 4 come from DKT26 (ePrint 2026/2056; Lean: github.com/quangvdao/ArkLib @ a5aa2677):
+final and inner NV layers at the first-order certified agreements of dkt_certs.json (O-2), base
+layer at the Johnson radius sqrt(rho)(1+1/128) (backend ListDecoding m = 64, O-1); mu batching by
+first-order powers-curve certificates.  The per-move errors are evaluated by bound_mca.layer.
+`--bcgm` reproduces the superseded BCGM Thm 9.2, m = 3 accounting (the functions below).
+Stdlib only.  Usage:  python3 -I bound.py [--bcgm]   (writes nothing; prints the table)
 """
 import math
 
@@ -164,6 +171,48 @@ def cdhz(log_eps, t_log, k_rounds=200):
     return lsum(2 + sr, 2 + extract, 3 + offline, 2 + online)
 
 
+U13_EXPECT_Q = {'final (layer d)': [38, 35, 29, 24], 'inner NV (layers 1..d-1)': [45, 41, 31, 24],
+                'base app (layer 0, stress)': [48, 44, 32, 25]}
+
+
+def main_u13():
+    import json
+    import os
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import bound_mca as BM
+    plans = json.load(open(BM.CERTS))['_plans']
+    pl = {'final (layer d)': (plans['final']['plan'], plans['final']['batching']),
+          'inner NV (layers 1..d-1)': (plans['inner NV']['plan'], plans['inner NV']['batching']),
+          'base app (layer 0, stress)': ([('J', 64)] * 4, 'first-curve')}
+    print(f"U-13: |F| = 2^{LOG_F:.2f};  t = 2^{T_LOG};  target {TARGET} = {TARGET - Z} query bits + z = {Z};"
+          f"  x{C_ODD} domains;  digests {NARROW} b;  FS state {WIDE} b\n")
+    worst_all = (-math.inf, '')
+    for name, s in SHAPES.items():
+        plan, bt = pl[name]
+        res = BM.layer(s, [tuple(x) for x in plan], bt)
+        assert res['q'] == U13_EXPECT_Q[name], (name, res['q'])
+        print(f"== {name}: log_h={s['log_h']} b={s['b']} k1={s['k1']} k={s['k']} lf={s['lf']} W={s['W']}  "
+              f"queries {res['q']}  OOD {res['u']}  batching {bt}")
+        for r in res['rounds']:
+            print(f"   round {r['i']}: {r['reg']}({r['par']}) rho=2^{math.log2(r['kdim'] / r['n']):.2f} n=2^{math.log2(r['n']):.2f} "
+                  f"A={r['A']} a=2^{r['log_a']:.3f} q={r['q']} -> {-r['q'] * r['log_a']:.2f} + z;  list <= 2^{r['log_list']:.2f}")
+        for nm, e in sorted(res['moves'], key=lambda x: -x[1])[:8]:
+            print(f"   {e:9.2f}  {nm}")
+        print(f"   worst move: {res['worst'][1]}  2^{res['worst'][0]:.2f}\n")
+        if res['worst'][0] > worst_all[0]:
+            worst_all = (res['worst'][0], f"{name}: {res['worst'][1]}")
+    eps = worst_all[0]
+    tot = fs_bound_k0(eps, T_LOG)
+    print(f"eps_rbr-KS (max over all moves of all layers) = 2^{eps:.2f}   [{worst_all[1]}]")
+    print(f"Theorem 6.4 / 7.4: total <= 2^{tot:.2f};  conservative union over 7 layers 2^{tot + LOG2(7):.2f}")
+    print(f"   cross-checks: CMS19 2^{cms19(eps, T_LOG):.2f};  CDHZ 2^{cdhz(eps, T_LOG):.2f}")
+    margin = GOAL - (tot + LOG2(7))
+    print(f"{'PASS' if margin >= 0 else 'FAIL'}: total <= 2^{GOAL} with {margin:.2f} bits margin (7-layer union), "
+          f"conditional on GAPS.md (A-IC(tau), NV-faithful, Base-faithful, T*, DKT26->WHIR step paper-level).")
+    assert margin >= 0
+
+
 def main():
     print(f"|F| = 2^{LOG_F:.2f};  t = 2^{T_LOG};  target {TARGET} = {TARGET - Z} query bits + z = {Z};"
           f"  m = {M_LIST};  x{C_ODD} domains;  digests {NARROW} b;  FS state {WIDE} b\n")
@@ -219,4 +268,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    if '--bcgm' in sys.argv:
+        main()
+    else:
+        main_u13()

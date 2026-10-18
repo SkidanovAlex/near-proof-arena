@@ -1,108 +1,51 @@
-|F| = 2^370.88;  t = 2^64;  target 268 = 236 query bits + z = 32;  m = 3;  x15 domains;  digests 336 b;  FS state 384 b
+U-13: |F| = 2^370.88;  t = 2^64;  target 268 = 236 query bits + z = 32;  x15 domains;  digests 336 b;  FS state 384 b
 
-== final (layer d): log_h=19 b=8 k1=1 k=3 lf=9 W=141  queries [42, 38, 31, 26]  (= backend schedule)
-   round 0: k=1 rho=2^-11.91 n=2^30.91 1-delta=2^-5.731 q=42 -> query bits 240.70 + z = 272.70;  list m/rho = 2^13.49
-   round 1: k=3 rho=2^-12.91 n=2^30.91 1-delta=2^-6.231 q=38 -> query bits 236.78 + z = 268.78;  list m/rho = 2^14.49
-   round 2: k=3 rho=2^-15.91 n=2^30.91 1-delta=2^-7.731 q=31 -> query bits 239.66 + z = 271.66;  list m/rho = 2^17.49
-   round 3: k=3 rho=2^-18.91 n=2^30.91 1-delta=2^-9.231 q=26 -> query bits 240.01 + z = 272.01;  list m/rho = 2^20.49
-     -268.78  whir query r1 incl. grinding z=32 (L4.5, L5.1)
-     -269.64  whir fold r3.1 (L4.3)
-     -271.66  whir query r2 incl. grinding z=32 (L4.5, L5.1)
-     -272.01  whir query r3 incl. grinding z=32 (L4.5, L5.1)
-     -272.70  whir query r0 incl. grinding z=32 (L4.5, L5.1)
-     -273.01  whir mu batching, MCA d=W-1 (L4.2)
-     -305.71  logup alpha,beta (L3.1)
-     -318.90  whir OOD r3 (L4.4)
-     -321.90  whir OOD r2 (L4.4)
-     -324.90  whir OOD r1 (L4.4)
-     -345.39  whir gamma r2 (L4.6)
-     -345.39  constraint batching lambda (L3.4)
-     -347.57  stacking lambda (L3.7)
-     -348.11  whir gamma r1 (L4.6)
-     -350.96  whir gamma r0 (L4.6)
-     -351.35  zerocheck univariate round r_0 (L3.5)
-     -352.93  zerocheck multilinear round (L3.5)
-     -353.93  claim batching mu (L3.4)
-     -354.58  gkr sumcheck round + xi coordinate (L3.2, L3.3)
-     -354.81  stacking univariate u_0 (L3.7)
-     -355.07  gkr lambda_j / mu_j (L3.2)
-     -356.39  stacking round u_j (L3.7)
-     -366.13  whir final gamma r3 (L4.6)
-   worst move: whir query r1 incl. grinding z=32 (L4.5, L5.1)  2^-268.78
+== final (layer d): log_h=19 b=8 k1=1 k=3 lf=9 W=141  queries [38, 35, 29, 24]  OOD [1, 1, 1, 1]  batching first-curve
+   round 0: F(0.835) rho=2^-11.91 n=2^30.91 A=27128239 a=2^-6.214 q=38 -> 236.12 + z;  list <= 2^40.04
+   round 1: F(0.818) rho=2^-12.91 n=2^30.91 A=18792001 a=2^-6.743 q=35 -> 236.01 + z;  list <= 2^40.99
+   round 2: F(0.879) rho=2^-15.91 n=2^30.91 A=7139336 a=2^-8.140 q=29 -> 236.05 + z;  list <= 2^38.55
+   round 3: F(0.768) rho=2^-18.91 n=2^30.91 A=2205154 a=2^-9.834 q=24 -> 236.03 + z;  list <= 2^43.37
+     -268.01  whir query r1 incl. grinding z=32 (L4.5, L5.1)
+     -268.03  whir query r3 incl. grinding z=32 (L4.5, L5.1)
+     -268.05  whir query r2 incl. grinding z=32 (L4.5, L5.1)
+     -268.12  whir query r0 incl. grinding z=32 (L4.5, L5.1)
+     -271.91  whir OOD r1 x1 (L4.4)
+     -273.14  whir OOD r3 x1 (L4.4)
+     -279.16  logup alpha,beta (L3.1)
+     -279.79  whir OOD r2 x1 (L4.4)
+   worst move: whir query r1 incl. grinding z=32 (L4.5, L5.1)  2^-268.01
 
-== inner NV (layers 1..d-1): log_h=19 b=6 k1=1 k=4 lf=6 W=141  queries [50, 46, 33, 26]  (= backend schedule)
-   round 0: k=1 rho=2^-9.91 n=2^28.91 1-delta=2^-4.731 q=50 -> query bits 236.55 + z = 268.55;  list m/rho = 2^11.49
-   round 1: k=4 rho=2^-10.91 n=2^28.91 1-delta=2^-5.231 q=46 -> query bits 240.63 + z = 272.63;  list m/rho = 2^12.49
-   round 2: k=4 rho=2^-14.91 n=2^28.91 1-delta=2^-7.231 q=33 -> query bits 238.62 + z = 270.62;  list m/rho = 2^16.49
-   round 3: k=4 rho=2^-18.91 n=2^28.91 1-delta=2^-9.231 q=26 -> query bits 240.01 + z = 272.01;  list m/rho = 2^20.49
-     -268.55  whir query r0 incl. grinding z=32 (L4.5, L5.1)
-     -270.62  whir query r2 incl. grinding z=32 (L4.5, L5.1)
-     -272.01  whir query r3 incl. grinding z=32 (L4.5, L5.1)
-     -272.63  whir query r1 incl. grinding z=32 (L4.5, L5.1)
-     -273.64  whir fold r3.1 (L4.3)
-     -280.01  whir mu batching, MCA d=W-1 (L4.2)
-     -307.71  logup alpha,beta (L3.1)
-     -320.90  whir OOD r3 (L4.4)
-     -324.90  whir OOD r2 (L4.4)
-     -328.90  whir OOD r1 (L4.4)
-     -345.30  whir gamma r2 (L4.6)
-     -347.39  constraint batching lambda (L3.4)
-     -348.84  whir gamma r1 (L4.6)
-     -349.57  stacking lambda (L3.7)
-     -352.72  whir gamma r0 (L4.6)
-     -353.35  zerocheck univariate round r_0 (L3.5)
-     -354.93  zerocheck multilinear round (L3.5)
-     -355.93  claim batching mu (L3.4)
-     -356.58  gkr sumcheck round + xi coordinate (L3.2, L3.3)
-     -356.81  stacking univariate u_0 (L3.7)
-     -357.07  gkr lambda_j / mu_j (L3.2)
-     -358.39  stacking round u_j (L3.7)
-     -366.13  whir final gamma r3 (L4.6)
-   worst move: whir query r0 incl. grinding z=32 (L4.5, L5.1)  2^-268.55
+== inner NV (layers 1..d-1): log_h=19 b=6 k1=1 k=4 lf=6 W=141  queries [45, 41, 31, 24]  OOD [1, 1, 1, 1]  batching first-curve
+   round 0: F(0.817) rho=2^-9.91 n=2^28.91 A=13271719 a=2^-5.245 q=45 -> 236.03 + z;  list <= 2^39.56
+   round 1: F(0.809) rho=2^-10.91 n=2^28.91 A=9292622 a=2^-5.759 q=41 -> 236.13 + z;  list <= 2^39.82
+   round 2: F(0.895) rho=2^-14.91 n=2^28.91 A=2570043 a=2^-7.614 q=31 -> 236.02 + z;  list <= 2^35.94
+   round 3: F(0.768) rho=2^-18.91 n=2^28.91 A=551087 a=2^-9.835 q=24 -> 236.04 + z;  list <= 2^41.37
+     -268.02  whir query r2 incl. grinding z=32 (L4.5, L5.1)
+     -268.03  whir query r0 incl. grinding z=32 (L4.5, L5.1)
+     -268.04  whir query r3 incl. grinding z=32 (L4.5, L5.1)
+     -268.13  whir query r1 incl. grinding z=32 (L4.5, L5.1)
+     -274.25  whir OOD r1 x1 (L4.4)
+     -279.15  whir OOD r3 x1 (L4.4)
+     -279.64  logup alpha,beta (L3.1)
+     -283.02  whir mu batching (DKT26 first-order curve, ell=W-1) (L4.2)
+   worst move: whir query r2 incl. grinding z=32 (L4.5, L5.1)  2^-268.02
 
-== base app (layer 0, stress): log_h=21 b=6 k1=1 k=4 lf=8 W=601  queries [50, 46, 33, 26]
-   round 0: k=1 rho=2^-9.91 n=2^30.91 1-delta=2^-4.731 q=50 -> query bits 236.55 + z = 268.55;  list m/rho = 2^11.49
-   round 1: k=4 rho=2^-10.91 n=2^30.91 1-delta=2^-5.231 q=46 -> query bits 240.63 + z = 272.63;  list m/rho = 2^12.49
-   round 2: k=4 rho=2^-14.91 n=2^30.91 1-delta=2^-7.231 q=33 -> query bits 238.62 + z = 270.62;  list m/rho = 2^16.49
-   round 3: k=4 rho=2^-18.91 n=2^30.91 1-delta=2^-9.231 q=26 -> query bits 240.01 + z = 272.01;  list m/rho = 2^20.49
-     -268.55  whir query r0 incl. grinding z=32 (L4.5, L5.1)
-     -269.64  whir fold r3.1 (L4.3)
-     -270.62  whir query r2 incl. grinding z=32 (L4.5, L5.1)
-     -272.01  whir query r3 incl. grinding z=32 (L4.5, L5.1)
-     -272.63  whir query r1 incl. grinding z=32 (L4.5, L5.1)
-     -273.91  whir mu batching, MCA d=W-1 (L4.2)
-     -291.90  logup alpha,beta (L3.1)
-     -318.90  whir OOD r3 (L4.4)
-     -322.90  whir OOD r2 (L4.4)
-     -326.90  whir OOD r1 (L4.4)
-     -333.90  constraint batching lambda (L3.4)
-     -334.90  stacking lambda (L3.7)
-     -340.32  claim batching mu (L3.4)
-     -341.85  zerocheck univariate round r_0 (L3.5)
-     -343.44  zerocheck multilinear round (L3.5)
-     -345.09  gkr sumcheck round + xi coordinate (L3.2, L3.3)
-     -345.30  whir gamma r2 (L4.6)
-     -345.31  stacking univariate u_0 (L3.7)
-     -345.58  gkr lambda_j / mu_j (L3.2)
-     -346.90  stacking round u_j (L3.7)
-     -348.84  whir gamma r1 (L4.6)
-     -352.72  whir gamma r0 (L4.6)
-     -366.13  whir final gamma r3 (L4.6)
-   worst move: whir query r0 incl. grinding z=32 (L4.5, L5.1)  2^-268.55
+== base app (layer 0, stress): log_h=21 b=6 k1=1 k=4 lf=8 W=601  queries [48, 44, 32, 25]  OOD [1, 1, 1, 1]  batching first-curve
+   round 0: J(64) rho=2^-9.91 n=2^30.91 A=65485518 a=2^-4.942 q=48 -> 237.23 + z;  list <= 2^10.91
+   round 1: J(64) rho=2^-10.91 n=2^30.91 A=46305254 a=2^-5.442 q=44 -> 239.46 + z;  list <= 2^11.43
+   round 2: J(64) rho=2^-14.91 n=2^30.91 A=11576314 a=2^-7.442 q=32 -> 238.15 + z;  list <= 2^13.45
+   round 3: J(64) rho=2^-18.91 n=2^30.91 A=2894079 a=2^-9.442 q=25 -> 236.06 + z;  list <= 2^15.43
+     -268.06  whir query r3 incl. grinding z=32 (L4.5, L5.1)
+     -269.23  whir query r0 incl. grinding z=32 (L4.5, L5.1)
+     -270.15  whir query r2 incl. grinding z=32 (L4.5, L5.1)
+     -271.46  whir query r1 incl. grinding z=32 (L4.5, L5.1)
+     -287.53  whir mu batching (DKT26 first-order curve, ell=W-1) (L4.2)
+     -293.06  logup alpha,beta (L3.1)
+     -302.63  whir fold r3.1 (L4.3)
+     -302.63  whir fold r3.2 (L4.3)
+   worst move: whir query r3 incl. grinding z=32 (L4.5, L5.1)  2^-268.06
 
-eps_rbr-KS (max over all moves of all layers) = 2^-268.55   [inner NV (layers 1..d-1): whir query r0 incl. grinding z=32 (L4.5, L5.1)]
-
-Theorem 6.1 / 7.2 (one compressed database for all d+1 layers; T* transcript):
-   t' = 2t (Lemma 6.3) ; G^2 = 10 max(3t'/2^336, eps + 2^20(2t'+1)/2^384)
-   total soundness/extraction failure  <= 2^-135.23
-   conservative union over d+1 = 7 layers: 2^-132.42
-   conservative union over d+1 = 8 layers: 2^-132.23
-
-cross-checks (not used for the claim):
-   CMS19 Thm 8.6 constants 6(t^2 eps + 4t^3/2^336):        2^-137.52
-   CDHZ Thm 11.3 + 6.10 + 8.3 (w <= t, k = 200 rounds):   2^-130.40
-
-code as written (sequential squeeze chain, PoW bits in the absorb output):
-   no proven grinding credit -> eps = 2^-236.55 -> Thm 6.1 gives 2^-105.23  (and even this needs the one-call model [H-M])
-
-PASS: total <= 2^-128 with 4.42 bits margin (conservative 7-layer union), conditional on the assumptions listed in GAPS.md (A-IC, NV-faithful, Base-faithful, T* transcript).
+eps_rbr-KS (max over all moves of all layers) = 2^-268.01   [final (layer d): whir query r1 incl. grinding z=32 (L4.5, L5.1)]
+Theorem 6.4 / 7.4: total <= 2^-134.69;  conservative union over 7 layers 2^-131.89
+   cross-checks: CMS19 2^-137.10;  CDHZ 2^-130.22
+PASS: total <= 2^-128 with 3.89 bits margin (7-layer union), conditional on GAPS.md (A-IC(tau), NV-faithful, Base-faithful, T*, DKT26->WHIR step paper-level).

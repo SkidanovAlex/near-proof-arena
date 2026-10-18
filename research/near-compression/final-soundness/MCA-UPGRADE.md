@@ -13,12 +13,20 @@ Companion files in `calc/`:
 
 `GAPS.md` rows S-12 and S-14 are updated; S-26 and S-27 are new.
 
+**Status (2026-10-18): adopted as U-13** (O-1 + O-2; V3-D3A-STUDY.md U-13 row). Verified by
+`lane/pq-dkt-verify` @ d9dc1c0e3 (DKT-VERIFY.md): ArkLib built at the pin, every cited theorem
+fully proven (axioms propext / Classical.choice / Quot.sound only), Thm 5.12 → Cor 7.7/7.8 glue
+proven there (`lean/DKTGlue.lean`), all 36 certificates re-checked by the Lean kernel, schedules
+reproduced independently. The citation corrections from that review are applied below, and the
+§4 edits are applied to PROOF.md, GAPS.md and calc/bound.py. **Lean pin:** ArkLib fork
+github.com/quangvdao/ArkLib @ a5aa2677fee4e3a79d6bb05136631cce4a08587d (not Verified-zkEVM/ArkLib).
+
 ## 0. Bottom line
 
 | result | what it gives us | verdict under U-2 |
 |---|---|---|
-| **DKT26 Thm 5.12** (Johnson line MCA) + Cor 7.7/7.8 (interleaving, folds) | Line MCA at √ρ + η. The error is **linear in n** and **42 bits** smaller than BCGM even at BCGM's own radius, so m = 64 costs nothing. Worst non-query move 2⁻²⁸⁹·⁷. | **Usable now** as a Lean-checked [P′] bound: the theorem statements are checked in ArkLib @ a5aa267. Before PROOF.md cites it as [P], two checks: build ArkLib at the pin with `#print axioms`, and an independent read of Thm 5.12 and Cor 7.7 (preprint, not refereed). |
-| **DKT26 first order** (Thm 5.8, Prop 5.10, Lemmas 5.9/5.11, Cor 7.3/7.5/7.7) | Agreement **below √ρ**: a_i/√ρ_i = 0.77–0.90 is certified. List ≤ 2⁴³·⁴, MCA error ≤ 2⁻²⁸⁰·⁷. BabyBear qualifies: p = 2³⁰·⁹ > max(k−1, B∂). | **Usable after review.** The theorems are Lean-checked, but our 36 integer certificates are checked only by the authors' exact-arithmetic Python. Very new; AI-assisted discovery and formalisation (their §1.1). |
+| **DKT26 Thm 5.12** (Johnson line MCA) + Cor 7.7/7.8 (interleaving, folds) | Line MCA at √ρ + η. The error is **linear in n** and **42 bits** smaller than BCGM even at BCGM's own radius, so m = 64 costs nothing. Worst non-query move 2⁻²⁸⁹·⁷. | **Usable now; adopted (U-13).** Fully proven in Lean (quangvdao/ArkLib @ a5aa267; axioms checked on lane/pq-dkt-verify). The constant used is the Lean `johnsonE0` (4Dμh form, ≥ the paper's Ψ_D form). The list bound uses only the pairwise term of (67), which Lean proves and which is the smaller term at every code here. O-1's μ-batching uses three first-order curve certificates, so O-1 as configured is not purely Johnson-regime. Paper unrefereed. |
+| **DKT26 first order** (Prop 5.10 + Lemma 5.6 squarefree transfer, Lemma 5.11, Cor 7.3/7.5/7.7) | Agreement **below √ρ**: a_i/√ρ_i = 0.77–0.90 is certified. List ≤ 2⁴³·⁴, MCA error ≤ 2⁻²⁸⁰·⁷. BabyBear qualifies: p = 2³⁰·⁹ > max(k−1, B∂). | **Adopted (U-13).** The 36 certificates instantiate Lemma 5.6 (factorwise squarefree, free ordinary tail, tight Taylor exponent); all 36 re-checked by the Lean kernel via `CurveCertificate.exists_exceptional_exact_powerAgreement_squarefree_sharp_optimized` and `finiteSquarefreeListBound_of_profile` (lane/pq-dkt-verify `lean/DKTCerts.lean`). Paper unrefereed; AI-assisted (their §1.1). |
 | **BCHKS25 Thm 4.6** (powers MCA up to Johnson) | Same regime as DKT for powers batching, error O(n/η⁵). | Usable after review: preprint, and the §4 proof is a sketch. **Not needed**: a first-order powers-curve certificate covers batching. |
 | **Hab25 Thm 2** | Lines only, at BCGM's radius with BCGM's constant. | Not applicable: no gain, superseded. |
 | **BCGM v5** | Def 9.1 / Thm 9.2 unchanged. Our local copy is v5. CCC 2026 states it only as an informal "Theorem 5". | Current basis; unchanged. |
@@ -94,24 +102,25 @@ main results" and wrote the Lean formalisation (§1.1, "AI assistance").
   johnsonE0/|F|.
 * At our parameters: E/q = 2⁻³⁰²…2⁻³¹⁴ at m_DKT ≤ 64, and still 2⁻²⁸⁶ at m = 3000. BCGM at
   m = 3 is 2⁻²⁶⁹·⁶…2⁻²⁸⁰. bound_mca.py uses the larger of the two printed E_ord forms (Lemma 5.3
-  and the Thm 5.8 display). I checked (68) numerically against E_ord at n = 2¹⁶, 2²⁰ for
+  and the Thm 5.8 display); the larger is always the Lean `johnsonE0` (4Dμh form), so the constant
+  used is exactly the Lean one. I checked (68) numerically against E_ord at n = 2¹⁶, 2²⁰ for
   ρ ∈ {½ … 1/256}: it holds.
 
-**First order: Thm 5.7/5.8, Prop 5.10, Lemma 5.9 (successive stages), Lemma 5.11 (finite list).**
+**First order: Prop 5.10 (certificate ⇒ interpolant), Lemma 5.6 (factorwise-squarefree transfer, the route our certificates use), Lemma 5.11 (finite list); Thm 5.7/5.8 and Lemma 5.9 are alternatives the engine also evaluates.**
 * Hypotheses: a > a₁(ρ) (eq. 31; a₁/√ρ → 1/√2 as ρ → 0), characteristic 0 or
   p > max(k − 1, B∂), any n distinct points. A support certificate (m, B∂, B_jet) must satisfy
   N_coef > n·R_loc and give a challenge height B_Z (63/64).
 * Then:
   * Λ ≤ L of Lemma 5.11;
   * line exceptional count ≤ max_d min_L E_d(L) of (59);
-  * the curve version for powers of degree ℓ is Cor 7.3 / Lemma 5.9, linear in ℓ;
+  * the curve version for powers of degree ℓ is Cor 7.3 with Lemma 5.6, linear in ℓ;
   * width independence for interleaved codes is Cor 7.5 (lists) and Cor 7.7 (MCA);
   * an h-level fold costs h·E/q (Cor 7.8).
-* Lean statements: `firstOrderBranch_finiteLength_*`, `exists_exceptional_retainedSquarefreeCurveMCA_sharp_*`,
+* Lean statements (quangvdao/ArkLib @ a5aa267): `CurveCertificate.exists_exceptional_exact_powerAgreement_squarefree_sharp_optimized` (the profile wrapper; it discharges the interpolant hypotheses of `exists_exceptional_retainedSquarefreeCurveMCA_sharp_at` from the certificate), `finiteSquarefreeListBound_of_profile`,
   `uniformExactInterleavedPowerAgreement_of_scalar_arbitrary`, `tensorFoldBad_card_le`,
   `fullSetLevelWitness_interleaved_of_exactAgreement`.
 * BabyBear: char(Ext12) = p = 15·2²⁷ + 1 > 2²¹ ≥ k for every code here, and every certificate
-  has B∂ ≤ 192, so the hypothesis holds.
+  has B∂ ≤ 52, so the hypothesis holds.
 
 **Applicability to WHIR.**
 * Domains: any set of distinct points, so ×15 cosets and their 2^s-power images qualify.
@@ -240,7 +249,7 @@ Agreement ratios a_i/√ρ_i for O-1 + O-2:
 * Size model: `bits()` becomes rate/2 − log₂ c(ρ), with c = 1 + 1/128 (O-1), or
   a₁(ρ)/√ρ + 0.05 (O-2 rule, plus a 48 B/round OOD reserve).
 
-## 4. Exact PROOF.md edits (to apply when O-1 / O-2 is adopted)
+## 4. Exact PROOF.md edits (applied 2026-10-18 under U-13, with the lane/pq-dkt-verify citation fixes)
 
 1. **§1.1, bullets 2–3.** Replace "q_i = ⌈236/(−log₂ α_i)⌉ with α_i = √ρ_i·(1 + 1/(2m))
    (config.rs:332-346, 405-457). m = 3 (ListDecoding)." with:
@@ -253,23 +262,23 @@ Agreement ratios a_i/√ρ_i for O-1 + O-2:
 2. **§4, preamble.** Replace "δ_i = J_m(ρ_i), ℓ_i = m/ρ_i" with:
 
    > δ_i = 1 − a_i; C^(i,s) = RS[L_i^(2^s), m_i − s], s = 0..k_i; ℓ_i = max_s of the list bound
-   > of C^(i,s) at agreement ⌈a_i|L_i^(2^s)|⌉. That is DKT26 Thm 5.12 eq. (67) (O-1) or
+   > of C^(i,s) at agreement ⌈a_i|L_i^(2^s)|⌉. That is the pairwise term ⌊n(A−D)/(A²−nD)⌋ of DKT26 eq. (67) (O-1; Lean `closePolynomialSet_finite_and_ncard_le_johnsonPairwise`) or
    > Lemma 5.11 with Cor 7.5 (O-2), valid at every interleaving width.
 
 3. **Lemma 4.1, paragraph 3.** Replace "BCGM Thm 9.2 and the Johnson bound hold for arbitrary
    evaluation sets." with:
 
-   > DKT26 Thm 5.12 and Thm 5.8/Prop 5.10 hold for any n distinct points. The first-order ones
-   > need char > max(k−1, B∂): p = 2³⁰·⁹ > 2²¹ ≥ k, B∂ ≤ 192.
+   > DKT26 Thm 5.12 and Prop 5.10 + Lemma 5.6 hold for any n distinct points. The first-order ones
+   > need char > max(k−1, B∂): p = 2³⁰·⁹ > 2²¹ ≥ k, B∂ ≤ 52.
 
    Add Pus26's hypotheses (list decodability of every C^(i,s); MCA radius B⋆ ≥ ρ; char ≠ 2).
 
 4. **Lemma 4.2.** Replace the BCGM batching bound with:
 
    > ε_μ ≤ E_{W−1}/|F| + ℓ₀(W−1)/|F|, where E_{W−1} is the full agreement-set exceptional count
-   > of the powers curve of degree W−1 at agreement a₀. It is given by DKT26 Lemma 5.9 /
+   > of the powers curve of degree W−1 at agreement a₀. It is given by DKT26 Prop 5.10 + Lemma 5.6 /
    > Cor 7.3, with the support certificate in dkt_certs.json, and is valid at any a₀ > a₁(ρ₀),
-   > hence also for O-1. [P′ DKT26; Lean `exists_exceptional_retainedSquarefreeCurveMCA_sharp_at`]
+   > hence also for O-1. [P DKT26 (Lean); `CurveCertificate.exists_exceptional_exact_powerAgreement_squarefree_sharp_optimized`, lane/pq-dkt-verify `lean/DKTCerts.lean`]
 
 5. **Lemma 4.3.** Replace with:
 
@@ -291,8 +300,8 @@ Agreement ratios a_i/√ρ_i for O-1 + O-2:
    6.7 bits (3.9 with the union).
 
 10. **References.** Add:
-    * [DKT26] ePrint 2026/2056, Thms 5.8, 5.12, Prop 5.10, Lemmas 5.9, 5.11, Cors 7.3, 7.5, 7.7,
-      ArkLib @ a5aa267;
+    * [DKT26] ePrint 2026/2056, Thm 5.12, Prop 5.10, Lemmas 5.6, 5.11, Cors 7.3, 7.5, 7.7, 7.8;
+      Lean: github.com/quangvdao/ArkLib @ a5aa2677;
     * [Pus26] Tartu MSc 2026, Thm 5.3.
 
     Re-pin [BCGM] as ePrint v5 (19 May 2026), Def 9.1 / Thm 9.2.
@@ -312,8 +321,8 @@ Agreement ratios a_i/√ρ_i for O-1 + O-2:
   The artifact's checker compares statement excerpts with the pinned ArkLib objects. It does not
   build Lean. We did not build ArkLib or check for `sorry`/axioms. Our 36 integer instances are
   checked by Python exact arithmetic only (`dkt_certs.py --check`; the authors' engine). To close:
-  * build ArkLib @ a5aa267 and `#print axioms`;
-  * confirm that `johnsonE0` equals the E_ord we use;
+  * ~~build ArkLib @ a5aa267 and `#print axioms`~~ done (lane/pq-dkt-verify);
+  * ~~confirm that `johnsonE0` equals the E_ord we use~~ done: it is the larger form, used;
   * either port the certificate inequalities for our 36 tuples to `norm_num`, or re-implement
     (59)/(61)–(63) independently.
 * **First-order lists are large (≤ 2⁴³·⁴).** One OOD sample suffices only because |F| = 2³⁷⁰·⁹.
