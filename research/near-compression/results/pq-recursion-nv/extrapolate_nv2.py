@@ -38,9 +38,9 @@ L15 = math.log2(15)
 # DKT26 Thm 5.12, ListDecoding{m: 64}), 'O2' (O-1 + O-2: per-round first-order agreement
 # a_i = (a1(rho_i)/sqrt(rho_i) + 0.05) sqrt(rho_i), the rule certified in
 # lane/pq-mca-upgrade calc/dkt_certs.json / bound_mca.py; the table a_i is bound into the vk;
-# +48 B per later round reserved for a second OOD answer).  Env NV_MCA; default m3.
+# +48 B per later round reserved for a second OOD answer).  Env NV_MCA; default O2 (U-13).
 # O-1 / O-2 are pending verification (lane/pq-mca-upgrade @6841b5f56, MCA-UPGRADE.md).
-MCA = os.environ.get('NV_MCA', 'm3')
+MCA = os.environ.get('NV_MCA', 'O2')   # U-13: m = 64 + O-2 is the PQ default
 O2_MARGIN = 0.05
 
 
@@ -74,17 +74,30 @@ def bits_mca(rate, m):
 def o2_reserve(rounds):
     return 48 * (rounds - 1) if MCA == 'O2' else 0
 L_SKIP = 2
-COLS, ROT = 74 + 171 + 13 + 5, 36 + 144 + 11 + 2   # NvAir 74 columns (measured A2 at 268 bits)
-D = 21
+# SHA AIR: v4 (lane/pq-sha384-air3 @34a427692, default) or v2.1 (env NV_SHA=v21)
+SHA = os.environ.get('NV_SHA', 'v4')
+if SHA == 'v4':
+    SHA_COLS, SHA_ROT, SHA_DEG, SHA_IPR_, SHA_ROWS_, TAB_ROWS, TAB_COLS, TAB_ROT = 83, 73, 9, 17, 128, 128, 9, 7
+else:
+    SHA_COLS, SHA_ROT, SHA_DEG, SHA_IPR_, SHA_ROWS_, TAB_ROWS, TAB_COLS, TAB_ROT = 171, 144, 21, 14, 43, 64, 13, 11
+COLS, ROT = 74 + SHA_COLS + TAB_COLS + 5, 37 + SHA_ROT + TAB_ROT + 2   # NvAir 74 columns, 37 rotated (measured)
+D = max(8, SHA_DEG)
 AIRS = 4
-NV_IPR, SHA_IPR, SHA_ROWS = 55, 14, 43
+NV_IPR, SHA_IPR, SHA_ROWS = 49, SHA_IPR_, SHA_ROWS_   # NvAir 49 interactions/row (sampled words from GLUE)
 # measured program costs (A2 of nvp2-T102: child = the NV level itself)
 P_FIXED = 72_278          # preamble + app table (10,9k) + GKR + DAG + stacking
 APP_ROWS = 10_988          # level-1 table (data rows)
 Q0_COST = 451              # round 0 (k1 = 1), depth 20 + 4 (x15)
 QR_COST = 530              # rounds >= 1 (k = 4), depth 17 + 4
 PER_LEVEL = 10             # ALU rows per Merkle path level
-FINAL_PER_Q = 110          # final WHIR check per query (powers, eq, Horner)
+FINAL_PER_Q = 110          # final WHIR check per query at log_final = 3 (powers, eq, Horner)
+# component costs (rows), calibrated on the measured QCOST lines (depth 24 / 21 at 10 rows per level):
+Q0_BASE = Q0_COST - 24 * 10    # round-0 query minus its Merkle path
+QR_BASE = QR_COST - 21 * 10    # later-round query minus its Merkle path (fold 15 butterflies x 7)
+FINAL_EQ = 66                  # final check eq_mle (6 rows per variable)
+FINAL_OTHER = FINAL_PER_Q - FINAL_EQ - 16   # powers + combine; Horner = 2 * 2^lf rows
+def final_per_q(lf):
+    return FINAL_EQ + FINAL_OTHER + 2 * (1 << lf)
 TRANSCRIPT_BLOCKS = 1_600  # transcript compressions (measured ~1.5k)
 TR_ROWS = 6_000            # hash-chain + sample rows
 DEDUP = False              # in-circuit multiproof dedup: NOT possible with a static (bound) program -
@@ -114,11 +127,17 @@ def p2(x):
     return 1 << math.ceil(math.log2(x))
 
 
-def nv_circuit(rounds_q, depth0, depthr, child_W):
+CALIB_W = 21          # child stacked width of the calibration run (T102 A2)
+FOLD_ROW = 7          # rows per fold butterfly (5 with the cheaper butterfly)
+
+
+def nv_circuit(rounds_q, depth0, depthr, child_W, lf=3, k1=1):
     """NV circuit size verifying a child with WHIR schedule rounds_q (per-round queries)."""
     q0, qr = rounds_q[0], sum(rounds_q[1:])
-    prog = P_FIXED + q0 * (Q0_COST + PER_LEVEL * (depth0 - 24)) + qr * (QR_COST + PER_LEVEL * (depthr - 21)) \
-        + FINAL_PER_Q * (q0 + qr)
+    # round 0: Horner over the 2^k1 opened rows of W felts, 2^k1 - 1 butterflies, Merkle path
+    q0_cost = Q0_BASE - 2 * CALIB_W - 7 + (1 << k1) * child_W + FOLD_ROW * ((1 << k1) - 1)
+    prog = P_FIXED + q0 * (q0_cost + PER_LEVEL * depth0) + qr * (QR_BASE + PER_LEVEL * depthr) \
+        + final_per_q(lf) * (q0 + qr)
     prog_log = math.ceil(math.log2(prog + 2))
     # compressions: leaf jobs (round 0: 2 rows of W felts; later: 16 Ext12 values) + nodes
     blk = lambda nbytes: -(-(nbytes + 33 + 8 + 17) // 128)
@@ -129,18 +148,18 @@ def nv_circuit(rounds_q, depth0, depthr, child_W):
             return sum(min(q, (1 << (depth - l)) * (1 - (1 - 2.0 ** -(depth - l)) ** q)) for l in range(depth))
         per_r = [rounds_q[0]] + list(rounds_q[1:])
         nn = nodes(q0, depth0) + sum(nodes(x, depthr) for x in rounds_q[1:])
-        comps = int(q0 * blk(2 * child_W * 4) + qr * blk(16 * 48) + nn) + TRANSCRIPT_BLOCKS
+        comps = int(q0 * blk((1 << k1) * child_W * 4) + qr * blk(16 * 48) + nn) + TRANSCRIPT_BLOCKS
     else:
-        comps = q0 * (blk(2 * child_W * 4) + depth0) + qr * (blk(16 * 48) + depthr) + TRANSCRIPT_BLOCKS
+        comps = q0 * (blk((1 << k1) * child_W * 4) + depth0) + qr * (blk(16 * 48) + depthr) + TRANSCRIPT_BLOCKS
     glue = 8 * comps
     prog += prog % 2
     nv_rows = prog + prog // 2 + APP_ROWS // 2 + glue + TR_ROWS
     sha_rows = SHA_ROWS * comps
     return dict(prog=prog, prog_log=prog_log, comps=comps, nv_rows=nv_rows, sha_rows=sha_rows,
-                cells=nv_rows * 74 + sha_rows * 171 + 64 * 13 + 65536 * 5,
+                cells=nv_rows * 74 + sha_rows * SHA_COLS + TAB_ROWS * TAB_COLS + 65536 * 5,
                 # GKR runs over the full (power-of-two) trace heights; tight heights only shrink
                 # the commitment (measured: A2 at 268 bits, L = 25 from 2^19 NvAir / SHA rows)
-                inter=p2(nv_rows) * NV_IPR + p2(sha_rows) * SHA_IPR + 64 * 2 + 65536)
+                inter=p2(nv_rows) * NV_IPR + p2(sha_rows) * SHA_IPR + TAB_ROWS * 2 + 65536)
 
 
 def best_capped(cells, P, bmax):
@@ -183,14 +202,23 @@ def schedule(cells, b, k1, k, log_h, lf, target):
     return r['q'], [math.ceil(math.log2(rd['leaves']) - 1e-9) for rd in r['rounds']]
 
 
-def fixed_point(pen_target, fin_target, digest, b, n_stack, k1=1, k=4, fin_bmax=None):
+def fixed_point(pen_target, fin_target, digest, b, n_stack, k1=1, k=4, fin_bmax=None, lf=None):
     log_h = L_SKIP + n_stack
-    lf = next(x for x in range(3, 12) if (log_h - k1 - x) % k == 0)
+    if lf is None:
+        # penultimate log_final: the cheapest valid one (smaller -> cheaper final check, more rounds)
+        best = None
+        for x in range(1, 12):
+            if (log_h - k1 - x) % k == 0:
+                r = fixed_point(pen_target, fin_target, digest, b, n_stack, k1, k, fin_bmax, x)
+                if best is None or r[1]['total'] < best[1]['total']:
+                    best = r
+        return best
     cells = 1 << 26
     for _ in range(30):
         q, depths = schedule(cells, b, k1, k, log_h, lf, pen_target)
         W = -(-cells // (1 << log_h))
-        c = nv_circuit(q, depths[0], depths[1] if len(depths) > 1 else depths[0], W)
+        c = nv_circuit(q, depths[0], depths[1] if len(depths) > 1 else depths[0], W, lf, k1)
+        c['pen_lf'] = lf
         if abs(c['cells'] - cells) < cells // 1000:
             break
         cells = c['cells']

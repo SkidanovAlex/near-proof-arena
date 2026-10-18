@@ -775,3 +775,264 @@ within 0.3 % of the measured 332,952]:
 | small items | ~1.8 KB |
 
 The rest of the measured final is GKR 34,952, relations 43,348 and stacking 4,720.
+
+## O-2 implemented (U-13) and NvAir down to 49 interactions per row (L = 24) [measured: tests; model]
+
+**O-2: the per-round first-order agreement table** (`stark-backend-unified.patch`).
+* **Config.** `WhirConfig.agreement: Option<AgreementTable>` holds `target_bits`,
+  `margin_milli` (50), `m` (64), and per round `(n_i, k_i, A_i, q_i)`.
+  * `with_first_order(..)` builds the canonical table: `A_i = ceil(min(a1(ρ_i)/√ρ_i + 0.05,
+    1 + 1/(2m)) · √((k_i−1)/n_i) · n_i)` and `q_i = ceil(target / −log2(A_i/n_i))`. This is
+    lane/pq-mca-upgrade `bound_mca.py` regime 'F'.
+  * It sets each round's query count from the table.
+  * The table is serialized into the vk (skipped when absent), so it is bound into the vk
+    pre-hash. Default parameters are unchanged: gas-failure5 is still byte-identical,
+    `ba042e71…`.
+* **Native verifier.** `verify` first runs `check_agreement`: the table must be canonical for
+  the schedule, and the round query counts must equal the table's. Otherwise it returns
+  `VerifierError::AgreementTableMismatch`.
+* **NV circuit.** The program takes the child's query counts from the child vk, whose table
+  is a program constant via the pre-hash. The builder also re-checks the table and records a
+  failure if it is not canonical.
+* **The PQ default is now m = 64 + O-2.** `params_from_env` applies `{prefix}_O2` (default 1),
+  and the chain's default `LIST_M` is 64.
+* **Test `o2_agreement_table`:**
+  * query counts equal the table's, the proof verifies, and NV verifies the O-2 child;
+  * an altered A_0 is rejected, both by an engine holding the altered parameters and by the
+    honest engine;
+  * a weaker but self-consistent table is rejected by the honest verifier, and its vk
+    pre-hash differs.
+* **To check against the certificates:** the A_i for the real shapes should be checked against
+  the DKT certificate grid (lane/pq-dkt-verify).
+
+**NvAir: 55 → 49 interactions per row.** Before this change, 6 of the 55 were the hash role's
+word sends on a separate word bus.
+* **New source for sampled words.** The sample role now receives its 64-bit word directly from
+  GLUE's digest rows. The bus is the digest bus, the key is `8 + word`, and the message is
+  `(job, 8+w, 3 limbs, 0, 0, 0)`.
+* **GLUE side.** GLUE has new columns `dx[2]`: on the digest rows of untruncated (transcript)
+  jobs, each read word is sent once more.
+  * Constraints: `dx` is boolean, nonzero only on digest rows (`last·q2·(1−q0q1)`), and zero
+    on truncated jobs.
+  * The multiplicity is pinned by the bus balance.
+  * GLUE's interactions on the digest bus go from 1 to 3, which equals the hash role's 3, so
+    the bus maximum does not change.
+* **Sample role.** It has a new column `w0`, the run's first word (0 for squeeze or PoW-run
+  blocks, 1 for B_1).
+  * `is_first·(wi − w0) = 0`, and w0 stays constant within a run.
+  * w0 is carried in the t.sample message, and the hash row requires it to equal `op_p`.
+    Before, the start word was pinned by the multiset of the hash role's word sends.
+* **Hash role.** It no longer sends words. `rdw` stays, only for the last-word / full / count
+  constraints.
+* **Size.** The bus census is now 49, and NvAir stays at 74 columns. Interactions are
+  2^19·49 + 2^19·14 + tables = 2^24.98 < 2^25, so L = 24 (−2.5 KB GKR). The margin is thin:
+  NvAir must stay at 49 or below.
+* **Test `nv_sample_word_source_tamper`:** a squeeze run starting at word 1 is rejected, and so
+  are a dropped word send and an extra word send.
+* **Suites:** the NV suite passes in 48-B, 42-B + coset and all-child-levers modes (50 tests
+  each), and the backend has 230 tests passing.
+
+**For the re-audit:**
+1. GLUE `dx` word sends, which replace the hash role's `rdw`-weighted word bus.
+2. The sample run's start pinned by `w0` in the t.sample message, not by the word multiset.
+3. The O-2 table check, which is native and Rust-side in the NV builder. The table is a vk
+   constant.
+
+The program-binding argument is unchanged.
+
+**New extrapolation** (`extrapolate_nv2.py`: 49 interactions per row, GKR on power-of-two
+heights, default regime O-2):
+
+| regime | final |
+|---|---|
+| m = 3 | 324,003 B |
+| m = 64 | 313,807 B |
+| **O-2 (U-13)** | **301,157 B** |
+
+The O-2 breakdown is WHIR 219,908, GKR 32,408 (L = 24), relations 43,280 and stacking 5,344.
+The final shape is b = 7, k1 = 1, k = 4, log_h 20, log_final 7. The penultimate is b = 6,
+n_stack = 17. The remaining 1.2 KB, and more, is expected from SHA AIR v4
+(lane/pq-sha384-air3, about −17.5 KB).
+
+Milestone check of the O-2 + 49-interaction tree: `nv_app_binding` and `nv_opening_formula` pass in
+48-B and 42-B + coset modes (statement passthrough, app-table tamper and digest re-exposure tamper
+rejected; 17.4 / 17.0 GB peak). Logs: `logs/o2/`.
+
+### O-2 thresholds against the DKT certificates [checked: `dkt_cert_check.py`, output `dkt_cert_check.out`]
+
+The script recomputes A_i with the implemented rule (`AgreementTable::canonical`, the same in
+f64 and in 80-digit Decimal). For every round it then looks up the round code and the fold
+sub-codes C^(i,s), s = 0..k_i, which is what `bound_mca.py` `codes_for` needs, in
+lane/pq-dkt-verify `calc/dkt_certs.json`: 38 per-plan certificates plus the 51-entry grid at
+n = 15·2^27.
+
+**Result: no real shape is fully certified.** Three things are wrong, and every shape hits at
+least one of them:
+
+1. **Off-by-one on the grid.** The grid stores A one above the rule at some k: for example
+   (2^27·15, 2^20) has 37,140,792 where the rule gives 37,140,791, and (·, 2^19) has 26,000,208
+   where the rule gives 26,000,207. A certificate at A+1 does not cover A, so the grid and the
+   implementation must agree on one integer rule. (For k = 2^11, 2^15 and 2^16 they agree.)
+2. **Fold sub-codes s = 3, 4 are missing.** The grid covers s = 0..2 only, but k = 4 rounds need
+   s up to 4. This affects every k = 4 round of the final, the inner layer and the base, and
+   s = 3 of the k = 3 final in `bound.py`.
+3. **Domains other than 15·2^27 have no canonical certificates.**
+   * The inner NV layer (b = 6, h = 19, n = 15·2^25): the 503M grid entries are fold sub-codes of
+     the 2^27 codes, scaled, not this rule's A at n = 15·2^25.
+   * The measured-chain shapes (b = 2, n = 15·2^22 and 15·2^23) are entirely outside the grid.
+
+Flagged rounds, all of them uncovered as listed in `dkt_cert_check.out`:
+* final (b7 h20): rounds 0–3;
+* final (`bound.py`, b8 h19): rounds 0–3;
+* inner NV (b6 h19): rounds 0–3;
+* base stress (b6 h21): rounds 0–3;
+* both measured shapes: every round.
+
+What is needed, either option:
+* the certificate lane certifies the exact (n_i, k_i, A_i) of each shape and its fold
+  sub-codes s ≤ k_i under the implemented rule, at n = 15·2^25 and 15·2^27. The table could then
+  carry the certified triples directly.
+* or the table falls back to J (m = 64, DKT26 Thm 5.12, no certificate) for uncovered rounds,
+  at a few queries each.
+
+Until then, O-2 bytes are not covered by certificates for these shapes; only O-1 (m = 64) is.
+
+### O-2 is now certificate-gated (fallback to O-1) [measured: tests; model]
+
+The certificate check above showed no real shape fully covered. The coordinator adopted the
+fallback as the soundness fix:
+
+* **Backend.** `AgreementTable::canonical(codes, k_rounds, target, margin, m, certs)` decides
+  each round separately.
+  * A round uses its first-order threshold A^F only if its code and every fold sub-code
+    `(n >> s, k >> s, ceil(A^F / 2^s))`, s = 0..k_i, are in the certificate set.
+  * Otherwise it uses the Johnson fallback `A^J = ceil((1 + 1/(2m)) √(k/n) n)` with m = 64
+    (O-1, DKT26 Thm 5.12, no certificate needed).
+  * Each `AgreementRound` records its regime (`first_order`). The table is bound into the vk
+    as before.
+  * The verifier (`check_agreement`) re-derives every round from its declared regime and
+    checks the query counts.
+  * `all_first_order_certified(certs, k_rounds)` is the setup-side check: V_d or the tests run
+    it against the certificate file.
+* **Recursion crate.** `params_from_env` passes the set from env `{prefix}_DKT_CERTS` or
+  `NEARPROOF_DKT_CERTS`, a `dkt_certs.json` path read by `load_dkt_certs`, which takes every
+  `"n,k,A,1"` key, top level and `_grid`. Without a path, every round falls back.
+* **Test `o2_agreement_table`:**
+  * without certificates, all rounds are Johnson;
+  * a set covering only round 0 gives round 0 first-order and the rest Johnson, identical to
+    the no-certificate rounds;
+  * a set missing one fold sub-code makes round 0 fall back;
+  * the proof verifies, and NV verifies it;
+  * an altered A_0 is rejected, and so is a fallback round relabelled first-order (both engines);
+  * a weaker but consistent table is rejected, and its pre-hash differs.
+* **Test `dkt_cert_loader`** covers the loader.
+* **Suites:** the fast NV suite (51 tests) and the backend (230 tests) pass.
+
+**Bytes with every round on the fallback, until certificates for the exact shapes arrive.**
+This is O-1, m = 64, with 49 interactions per row, so L = 24: **313,807 B** (model). With the
+program cut it is 311,745 B. Once lane/pq-dkt-verify certifies the exact rule's codes, the
+certified rounds move toward the O-2 figure (301,157 B with every round certified).
+
+## SHA AIR v4 merged (lane/pq-sha384-air3 @ 34a427692) [measured: tests; model]
+
+**Merge.** I re-applied the v4 lane's NV source changes onto the current tree, which has O-2,
+certificate gating and 49 interactions per row: `compress4_{air,trace}.rs` generated by
+`native/sha384-air4/port_nv.py`, plus the NV call sites (circuit, GLUE, hash role, and the tests).
+The diff applied cleanly.
+
+v4 is 83 columns, 73 of them rotated, degree 9, 17 interactions per row, and 128 rows per
+compression (cid = 128 × index), with a new 128 × 9 table.
+
+**v2.1 is not selectable** in the circuit. It would need a dispatch layer through GLUE, the hash
+role and the v4-specific faithful/hash tests, which is not cheap. v2.1 stays at 59831ffb1.
+**The model does keep both:** set `NV_SHA=v21` or `v4` in `extrapolate_nv2.py`; v4 is the
+default.
+
+**Tests:** the fast NV suite passes in 48-B and in 42-B + coset, 51 tests each
+(`logs/v4/`). The census (`nv_degrees`) is NvAir 74 columns / 49 interactions / 37 rotated,
+Sha512Air4 83 / 17 / 73 at degree 9, TableAir4 9 / 2 / 7, and Byte 5 / 1 / 2.
+
+**Combined extrapolation** (`size_v4.py`, output `size_v4.out`; v4 + 49 interactions per row):
+
+| regime | program cut | final | GKR (L) | NvAir height | SHA height | interactions |
+|---|---|---|---|---|---|---|
+| O-1, all rounds on fallback (backed) | no | 304,943 | 34,952 (25) | 2^19 | 2^20 | 2^25.377 |
+| O-1, all rounds on fallback (backed) | −28 % | **300,399** | 32,408 (24) | 2^18 | 2^20 | 2^24.873 |
+| O-2, all rounds certified | no | 292,589 | 34,952 (25) | 2^19 | 2^20 | 2^25.377 |
+| O-2, all rounds certified | −28 % | **288,165** | 32,408 (24) | 2^18 | 2^20 | 2^24.873 |
+
+**v4 pushes GKR back to L = 25.** v4 has 128 rows per compression, so SHA is about 840–860k
+rows and its trace height is 2^20. SHA alone then contributes 2^20 × 17 = 17.8M interactions.
+Adding NvAir at 2^19 × 49 = 25.7M gives 2^25.38, above 2^25. L = 24 now needs one of:
+* NvAir under 2^18 rows, which is what the program cut gives (30.7M = 2^24.87);
+* NvAir at 29 interactions per row or fewer (30 gives 2^25.003, still over).
+
+L = 23 (2^24) is out of reach: SHA's 17.8M alone exceeds 16.8M.
+
+**Backed O-1 + v4 + cut is 399 B over 300,000.** The cheapest levers left:
+* **Certify any O-2 round** (lane/pq-dkt-verify, in progress). That needs no code change; the
+  certificate-gated table picks it up. O-2 against O-1 is −12.4 KB over the final's 4 rounds,
+  so roughly 3 KB per certified round, and one round is enough.
+* **Program cut.** −4.5 KB, already counted above. It is required for L = 24 under v4 (as is
+  the alternative, NvAir at 29 interactions per row or fewer).
+* **Fewer transcript compressions.** At 128 SHA rows per compression, every compression costs
+  rows. Halving the transcript blocks (1,600 → 800) is −3.6 KB (301,343 B without the cut). A
+  realistic step is about −0.45 KB per 100 compressions: for example, larger flush jobs with
+  fewer framing blocks.
+
+## Program cut, milestone 1: Merkle level 10 → 5 rows, fold butterfly 7 → 5, factorised eq in the final check [measured: tests]
+
+**What changed.** The changes are in `nv/isa.rs`, `nv/uair.rs`, `nv/builder.rs` and
+`nv/verifier.rs`:
+
+| change | rows before | rows after |
+|---|---|---|
+| Merkle level | 10 (2 loads, `one_minus`, `NodeJob`, 4 `UnitWS`, 2 `Dig`) | 5 (`NodeJob`, `DigWS4`, `DigWS2`, `SibWS4`, `SibWS2`) |
+| fold butterfly (WHIR rounds ≥ 1) | 7 | 5 |
+| eq in the final check, per variable | 6 | 2 |
+
+* **Merkle level, details.** The root still takes one `Dig` pair plus the assertion.
+* **Ops.** There are 36 ops now. `OP_HI` goes from 4 to 5. The ALU view is 54 columns, still
+  inside the pool, so NvAir stays at 74 columns, 49 interactions and 37 rotated columns.
+* **Fold butterfly, details.** The new value is `v_m + G_i (v_i − v_m)` with
+  `G_i = H_j ω^{−i} + 1/2` and `H_j = α_j x^{−2^j} / 2`, one product per j. This is the same
+  value as before: `(α − t)·ti = H_j ω^{−i} − 1/2`, because `t·ti = 1/2`.
+* **Factorised eq, details.** It uses `eq(α, y) = Π(1 − α_m) · Π(1 + y_m A_m)` with
+  `A_m = (2α_m − 1)/(1 − α_m)`. The per-α factors and suffix products are computed once, then
+  each query point costs 2 rows per variable: `mul`, then `MulAddA`.
+
+**Soundness implications, for the re-audit of §2(b), §R.2 and `nv_bind_tamper`:**
+1. **`SibWS4` / `SibWS2`** (op 32 / 33).
+   * c is a free witness, as `Load` was; B is the path bit cell, boolean by `LoadBit`.
+   * The units are word units of c at key `P3 + 2k + 12(1 − b)` (4 or 2 words) for job P2.
+   * The unit messages are exactly what `Load` + `one_minus` + `UnitWS*(nb)` produced.
+   * `SibWS2` constrains c[6..12] = 0, as Dig's high cell does.
+   * The GLUE range-checks every word unit (bytes), as before.
+2. **`DigWS4` / `DigWS2`** (op 34 / 35).
+   * c is free, determined by the digest bus.
+   * `DigWS4` receives pairs 0 and 1 of job P0 (the A field holds the child job id, and is not
+     read as an address). `DigWS2` receives pair 2, with c[6..12] = 0.
+   * The units are word units of c at `P3 + 2k + 12 b` for parent job P2, as `UnitWS*` with the
+     bit.
+   * Each child digest is still received exactly once: GLUE sends node and leaf digests with
+     multiplicity 1, and they were consumed by one `Dig` before. The root is consumed by the
+     final `Dig`.
+   * When the leaves are per-row jobs combined by `node()`, the first level reads the cells and
+     the later levels use `DigWS*`.
+   * The digest-bus receive field is now `s(Dig)·P2 + s(DigWS)·P0` with pair
+     `s(Dig)·(P3+h) + s(DigWS4)·h + 2·s(DigWS2)`: a degree-3 field, interaction count unchanged.
+3. **The new ops are bound to P1 by the B-field range.** Op codes up to 35 give
+   P1 < 36·2^20 < p, so `B + op·2^20` still decomposes uniquely.
+4. **The fold and eq changes are program-level only.** They are algebraic identities and add
+   no AIR change.
+   * The eq factorisation needs `1 − α_m ≠ 0`. Each inverse is a `Load`, checked by `mul = 1`.
+     α_m = 1 has negligible probability, and the builder records a failure if it happens
+     (completeness only).
+5. **The B-field range check itself is unchanged.** Only the op range grew.
+
+**Tests:**
+* The fast NV suite passes in 48-B (51 tests) and 42-B + coset (52), including the DOF
+  harness, which now knows `OP_HI = 5` and the new free ops.
+* New test `nv_merkle_op_tamper`: a changed `SibWS4` limb, a changed `DigWS4` and `DigWS2`
+  child-digest limb, and a nonzero `SibWS2` high coefficient are all rejected.
+* `nv_circuit_tamper`'s Merkle left/right swap is still rejected.

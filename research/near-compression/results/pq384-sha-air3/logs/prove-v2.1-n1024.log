@@ -1,0 +1,11 @@
+PROFILE digit_k=3 degree=21 n_stack=20 k=3 log_blowup=3 queries=[210, 118, 82, 63, 51, 43, 37] interaction_log=27
+KEYGEN_SECONDS 0.01
+AIR Sha512Air next_row_cols=144 width=[171] degree=21 constraints=329 interactions=14 need_rot=true dag_nodes=12718
+AIR TableAir next_row_cols=11 width=[13] degree=4 constraints=28 interactions=2 need_rot=true dag_nodes=1128
+AIR HarnessAir next_row_cols=0 width=[9] degree=2 constraints=1 interactions=1 need_rot=false dag_nodes=13
+SOUNDNESS target=268 total=268.3 logup=332.6 proximity=321.9 query=268.3
+SHAPE n=1024 main_rows_used=44032 main_height=65536 main_width=171 main_cells=11206656 cells_per_compression_padded=10944.0 cells_per_compression_dense=7353 table=64x13 harness=16384x9
+PROOF_BYTES total=828957 gkr=31256 relations=36424 stacking=2416 whir=758764
+WHIR_CENSUS auth_bytes=584448 auth_digests=12176 unique_auth_digests=8805 initial_values_bytes=20160 codeword_values_bytes=151296
+TIMES tracegen_s=0.04 prove_s=892.19 verify_s=0.025
+PEAK_RSS_KIB 5124892
