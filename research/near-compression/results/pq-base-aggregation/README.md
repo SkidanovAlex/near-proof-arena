@@ -173,5 +173,11 @@ Two N1 nodes, each 2-to-1 over two Fib-machine segment proofs. Parameters: PAREN
   (NvAir 2¹⁹) did not prove within the lane's 16 GB cap:
   * first attempt: stacked-height error at n_stack 16;
   * second attempt: OOM-killed at n_stack 17.
-* The level-2 node logic is instead checked in the debug checker by `agg_node_debug` (see the log).
+* The level-2 node logic is instead checked in the debug checker by `agg_node_debug`
+  (`logs/agg-node-debug.log`; PARENT n_stack 15, b 2, 8 bits; AGG_LOG_ROWS2 20).
+  * Two real N1 proofs feed one N2 trace: 136,988 program rows, 1,048 Merkle nodes, 166.5M cells
+    (NvAir 2²⁰ × 73, SHA 2¹⁹ × 171).
+  * The trace passes all constraints and buses, and exposes the composed statement of segments [0, 4).
+  * Rejected: a wrong preimage (claims another boundary state), swapped children, a duplicated child.
+  * Peak 5.2 GB; the run took 34 min.
 * Since G needs no N2, this is not pursued further.
