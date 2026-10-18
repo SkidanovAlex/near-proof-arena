@@ -896,3 +896,39 @@ What is needed, either option:
   at a few queries each.
 
 Until then, O-2 bytes are not covered by certificates for these shapes; only O-1 (m = 64) is.
+
+### O-2 is now certificate-gated (fallback to O-1) [measured: tests; model]
+
+The certificate check above showed no real shape fully covered. The coordinator adopted the
+fallback as the soundness fix:
+
+* **Backend.** `AgreementTable::canonical(codes, k_rounds, target, margin, m, certs)` decides
+  each round separately.
+  * A round uses its first-order threshold A^F only if its code and every fold sub-code
+    `(n >> s, k >> s, ceil(A^F / 2^s))`, s = 0..k_i, are in the certificate set.
+  * Otherwise it uses the Johnson fallback `A^J = ceil((1 + 1/(2m)) √(k/n) n)` with m = 64
+    (O-1, DKT26 Thm 5.12, no certificate needed).
+  * Each `AgreementRound` records its regime (`first_order`). The table is bound into the vk
+    as before.
+  * The verifier (`check_agreement`) re-derives every round from its declared regime and
+    checks the query counts.
+  * `all_first_order_certified(certs, k_rounds)` is the setup-side check: V_d or the tests run
+    it against the certificate file.
+* **Recursion crate.** `params_from_env` passes the set from env `{prefix}_DKT_CERTS` or
+  `NEARPROOF_DKT_CERTS`, a `dkt_certs.json` path read by `load_dkt_certs`, which takes every
+  `"n,k,A,1"` key, top level and `_grid`. Without a path, every round falls back.
+* **Test `o2_agreement_table`:**
+  * without certificates, all rounds are Johnson;
+  * a set covering only round 0 gives round 0 first-order and the rest Johnson, identical to
+    the no-certificate rounds;
+  * a set missing one fold sub-code makes round 0 fall back;
+  * the proof verifies, and NV verifies it;
+  * an altered A_0 is rejected, and so is a fallback round relabelled first-order (both engines);
+  * a weaker but consistent table is rejected, and its pre-hash differs.
+* **Test `dkt_cert_loader`** covers the loader.
+* **Suites:** the fast NV suite (51 tests) and the backend (230 tests) pass.
+
+**Bytes with every round on the fallback, until certificates for the exact shapes arrive.**
+This is O-1, m = 64, with 49 interactions per row, so L = 24: **313,807 B** (model). With the
+program cut it is 311,745 B. Once lane/pq-dkt-verify certifies the exact rule's codes, the
+certified rounds move toward the O-2 figure (301,157 B with every round certified).

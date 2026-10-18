@@ -6128,10 +6128,10 @@ index 0000000..9823e17
 +mod faithful_tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..a4cc8db
+index 0000000..47752cd
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,1001 @@
+@@ -0,0 +1,1041 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -7040,47 +7040,69 @@ index 0000000..a4cc8db
 +    println!("FINAL_DOMAIN cross-verification rejected both ways");
 +}
 +
-+/// O-2 (U-13): the WHIR query counts come from the per-round first-order agreement table bound
-+/// into the vk; the native verifier re-derives the table; NV verifies an O-2 child (its query
-+/// counts are the table's); a vk with an altered table is rejected.
++/// O-2 (U-13), certificate-gated: a round uses its first-order threshold only if its code and
++/// fold sub-codes are in the certificate set; otherwise Johnson m = 64 (O-1). The table is bound
++/// into the vk; the native verifier re-derives each round from its declared regime; NV verifies
++/// an O-2 child; an uncertified round falls back; altered tables are rejected.
 +#[test]
 +fn o2_agreement_table() {
-+    use openvm_stark_backend::StarkEngine;
-+    let mut p = child_params_small();
-+    let (lb, lh) = (p.log_blowup, p.l_skip + p.n_stack);
-+    let plain: Vec<usize> = p.whir.rounds.iter().map(|r| r.num_queries).collect();
-+    p.whir = p.whir.clone().with_first_order(lb, lh, 5 + p.whir.query_phase_pow_bits, 50, 64);
++    use openvm_stark_backend::{AgreementTable, CertSet, StarkEngine};
++    let base = child_params_small();
++    let (lb, lh) = (base.log_blowup, base.l_skip + base.n_stack);
++    let bits = 5 + base.whir.query_phase_pow_bits;
++    // no certificate set: every round on the Johnson fallback
++    let mut p0 = base.clone();
++    p0.whir = p0.whir.clone().with_first_order(lb, lh, bits, 50, 64, None);
++    let t0 = p0.whir.agreement.clone().unwrap();
++    assert!(t0.rounds.iter().all(|r| !r.first_order));
++    // a certificate set covering exactly round 0's code and fold sub-codes
++    let codes = base.whir.round_codes(lb, lh);
++    let kr = base.whir.k_rounds();
++    let (n0, k0) = codes[0];
++    let a0 = AgreementTable::first_order_agree(n0, k0, 50, 64);
++    let certs: CertSet = (0..=kr[0]).map(|s| (n0 >> s, k0 >> s, (a0 + (1 << s) - 1) >> s)).collect();
++    let mut p = base.clone();
++    p.whir = p.whir.clone().with_first_order(lb, lh, bits, 50, 64, Some(&certs));
 +    crate::sha384::e2e_tests::describe("O2_CHILD", &p);
 +    let t = p.whir.agreement.clone().unwrap();
++    assert!(t.rounds[0].first_order && t.rounds[1..].iter().all(|r| !r.first_order), "uncertified rounds must fall back");
++    assert_eq!(t.rounds[1..], t0.rounds[1..], "fallback rounds = Johnson m = 64");
++    assert!(t.all_first_order_certified(&certs, &kr));
++    // a set missing the last fold sub-code of round 0 -> round 0 falls back too
++    let mut partial = certs.clone();
++    partial.remove(&(n0 >> kr[0], k0 >> kr[0], (a0 + (1 << kr[0]) - 1) >> kr[0]));
++    let mut pp = base.clone();
++    pp.whir = pp.whir.clone().with_first_order(lb, lh, bits, 50, 64, Some(&partial));
++    assert!(!pp.whir.agreement.as_ref().unwrap().rounds[0].first_order, "missing sub-code certificate must fall back");
++    assert!(!t.all_first_order_certified(&partial, &kr));
++    println!("O2 table (certified round 0) {:?}", t.rounds.iter().map(|r| (r.agree, r.queries, r.first_order)).collect::<Vec<_>>());
 +    let o2: Vec<usize> = p.whir.rounds.iter().map(|r| r.num_queries).collect();
 +    assert_eq!(o2, t.rounds.iter().map(|r| r.queries as usize).collect::<Vec<_>>());
-+    println!("O2 queries plain {plain:?} -> table {o2:?}");
 +    let engine = Sha384CpuEngine::new(p.clone());
 +    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
 +    engine.verify(&vk, &proof).expect("O-2 proof verifies");
-+    // NV verifies the O-2 child with the table's query counts
 +    nv_debug_mats(&vk, &proof, 16, |_, _| {});
 +    println!("O2 NV debug ok");
-+    // altered table entry (A_0 + 1, its queries recomputed so the vk is self-consistent but not
-+    // canonical) -> rejected by the verifier, even by an engine holding the altered params
-+    let mut vk_bad = vk.clone();
-+    {
-+        let tb = vk_bad.inner.params.whir.agreement.as_mut().unwrap();
-+        tb.rounds[0].agree += 1;
++    // altered threshold, or a fallback round relabelled first-order -> rejected
++    for (name, f) in [
++        ("A_0 + 1", Box::new(|t: &mut AgreementTable| t.rounds[0].agree += 1) as Box<dyn Fn(&mut AgreementTable)>),
++        ("round 1 relabelled first-order", Box::new(|t: &mut AgreementTable| t.rounds[1].first_order = true)),
++    ] {
++        let mut vk_bad = vk.clone();
++        f(vk_bad.inner.params.whir.agreement.as_mut().unwrap());
++        let bad_engine = Sha384CpuEngine::new(vk_bad.inner.params.clone());
++        assert!(bad_engine.verify(&vk_bad, &proof).is_err(), "{name} accepted");
++        assert!(engine.verify(&vk_bad, &proof).is_err(), "{name} accepted by the honest engine");
 +    }
-+    let bad_engine = Sha384CpuEngine::new(vk_bad.inner.params.clone());
-+    assert!(bad_engine.verify(&vk_bad, &proof).is_err(), "altered agreement accepted");
-+    assert!(engine.verify(&vk_bad, &proof).is_err(), "altered vk accepted by the honest engine");
-+    // a consistent table for a weaker target: canonical, but a different vk (params and
-+    // pre-hash) -> the honest verifier (pinned params) rejects it
++    // a consistent table for a weaker target: a different vk (params, pre-hash) -> rejected
 +    let mut weak = p.clone();
-+    weak.whir = weak.whir.clone().with_first_order(lb, lh, 2 + p.whir.query_phase_pow_bits, 50, 64);
++    weak.whir = weak.whir.clone().with_first_order(lb, lh, bits - 3, 50, 64, Some(&certs));
 +    let mut vk_weak = vk.clone();
 +    vk_weak.inner.params = weak;
 +    assert!(engine.verify(&vk_weak, &proof).is_err(), "weaker table accepted");
 +    let (_, vk2) = Sha384CpuEngine::new(vk_weak.inner.params.clone()).keygen(&FibFixture::new(0, 1, 1 << 5).airs());
 +    assert_ne!(vk2.pre_hash, vk.pre_hash, "table not bound into the vk pre-hash");
-+    println!("O2 altered tables rejected; table bound into the pre-hash");
++    println!("O2 uncertified rounds fall back; altered tables rejected; table bound into the pre-hash");
 +}
 +
 +/// Sampled words come from GLUE's digest rows (digest bus, key 8 + word; 49 NvAir interactions
@@ -7132,6 +7154,24 @@ index 0000000..a4cc8db
 +            })
 +        });
 +    }
++}
++
++/// The DKT certificate loader reads every "n,k,A,1" key (top level and `_grid.certs`).
++#[test]
++fn dkt_cert_loader() {
++    let dir = std::env::temp_dir().join(format!("nv-dkt-{}", std::process::id()));
++    std::fs::create_dir_all(&dir).unwrap();
++    let path = dir.join("certs.json");
++    std::fs::write(
++        &path,
++        r#"{"2013265920,1048576,37140791,1": {"E": "1/2", "list": "3"}, "x,1,2,1": {}, "5,6,7,2": {},
++            "_grid": {"margin": 0.05, "n": 2013265920, "certs": {"251658240,4096,790689,1": {"m": 16}}}}"#,
++    )
++    .unwrap();
++    let c = crate::sha384::e2e_tests::load_dkt_certs(path.to_str().unwrap());
++    assert_eq!(c.len(), 2);
++    assert!(c.contains(&(2013265920, 1048576, 37140791)) && c.contains(&(251658240, 4096, 790689)));
++    std::fs::remove_dir_all(&dir).unwrap();
 +}
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
 new file mode 100644
@@ -14315,10 +14355,10 @@ index 0000000..f589e8d
 +}
 diff --git a/crates/recursion/src/sha384/e2e_tests.rs b/crates/recursion/src/sha384/e2e_tests.rs
 new file mode 100644
-index 0000000..e704e96
+index 0000000..d72901d
 --- /dev/null
 +++ b/crates/recursion/src/sha384/e2e_tests.rs
-@@ -0,0 +1,476 @@
+@@ -0,0 +1,495 @@
 +//! End-to-end: the ported verifier sub-circuit verifies real SHA-384/Ext12 child proofs.
 +//!
 +//!   cargo test --release -p openvm-recursion-circuit --lib e2e_ -- --nocapture
@@ -14523,6 +14563,20 @@ index 0000000..e704e96
 +}
 +
 +/// SWIRL params from `{PREFIX}_*` env vars (defaults: native PQ profile shape).
++/// Load a DKT certificate set (lane/pq-dkt-verify calc/dkt_certs.json): every key "n,k,A,1"
++/// anywhere in the file (top level and `_grid.certs`).
++pub fn load_dkt_certs(path: &str) -> openvm_stark_backend::CertSet {
++    let text = std::fs::read_to_string(path).unwrap_or_else(|e| panic!("DKT certificates {path}: {e}"));
++    let mut out = openvm_stark_backend::CertSet::new();
++    for key in text.split('"').skip(1).step_by(2) {
++        let f: Vec<&str> = key.split(',').collect();
++        if f.len() == 4 && f.iter().all(|x| !x.is_empty() && x.bytes().all(|c| c.is_ascii_digit())) && f[3] == "1" {
++            out.insert((f[0].parse().unwrap(), f[1].parse().unwrap(), f[2].parse().unwrap()));
++        }
++    }
++    out
++}
++
 +pub fn params_from_env(prefix: &str, d: [usize; 4]) -> SystemParams {
 +    use openvm_stark_backend::{interaction::LogUpSecurityParameters, WhirProximityStrategy};
 +    let e = |n: &str, dflt: usize| env_usize(&format!("{prefix}_{n}"), dflt);
@@ -14562,7 +14616,12 @@ index 0000000..e704e96
 +    // O-2 (user decision U-13): per-round first-order agreement table, bound into the vk; the
 +    // PQ default (with m = 64).  `{prefix}_O2=0` keeps the plain list-decoding query counts.
 +    if list_m > 0 && e("O2", 1) == 1 {
-+        p.whir = p.whir.clone().with_first_order(log_blowup, l_skip + n_stack, bits, e("O2_MARGIN_MILLI", 50) as u32, list_m as u32);
++        // certificate-gated: a round uses its first-order threshold only if its codes are in the
++        // DKT certificate set (env `{prefix}_DKT_CERTS` or `NEARPROOF_DKT_CERTS`, a dkt_certs.json
++        // path); every other round falls back to Johnson m = 64 (O-1)
++        let path = std::env::var(format!("{prefix}_DKT_CERTS")).or_else(|_| std::env::var("NEARPROOF_DKT_CERTS")).ok();
++        let certs = path.map(|p| load_dkt_certs(&p));
++        p.whir = p.whir.clone().with_first_order(log_blowup, l_skip + n_stack, bits, e("O2_MARGIN_MILLI", 50) as u32, list_m as u32, certs.as_ref());
 +    }
 +    p
 +}
@@ -14605,11 +14664,11 @@ index 0000000..e704e96
 +    );
 +    if let Some(t) = &p.whir.agreement {
 +        println!(
-+            "{tag}_O2 target={} margin_milli={} m={} rounds(n,k,A,q)={:?}",
++            "{tag}_O2 target={} margin_milli={} m={} rounds(n,k,A,q,first_order)={:?}",
 +            t.target_bits,
 +            t.margin_milli,
 +            t.m,
-+            t.rounds.iter().map(|r| (r.n, r.kdim, r.agree, r.queries)).collect::<Vec<_>>()
++            t.rounds.iter().map(|r| (r.n, r.kdim, r.agree, r.queries, r.first_order)).collect::<Vec<_>>()
 +        );
 +    }
 +}
