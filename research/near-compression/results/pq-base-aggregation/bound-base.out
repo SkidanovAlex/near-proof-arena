@@ -1,4 +1,4 @@
-bound.py @ f8c168f98 (lane/pq-final-soundness), base shapes pinned by DESIGN-BASE.md §3
+bound.py @ f8c168f98 (lane/pq-final-soundness), base shapes pinned by DESIGN-BASE.md §3; z = 24 on base/inner/node layers, 32 on the final layer
 
 |F| = 2^370.88;  t = 2^64;  target 268 = 236 query bits + z = 32;  m = 3;  x15 domains;  digests 336 b;  FS state 384 b
 
@@ -32,26 +32,26 @@ bound.py @ f8c168f98 (lane/pq-final-soundness), base shapes pinned by DESIGN-BAS
      -366.13  whir final gamma r3 (L4.6)
    worst move: whir query r1 incl. grinding z=32 (L4.5, L5.1)  2^-268.78
 
-== inner NV (layers 1..d-1): log_h=19 b=6 k1=1 k=4 lf=6 W=141  queries [50, 46, 33, 26]  (= backend schedule)
-   round 0: k=1 rho=2^-9.91 n=2^28.91 1-delta=2^-4.731 q=50 -> query bits 236.55 + z = 268.55;  list m/rho = 2^11.49
-   round 1: k=4 rho=2^-10.91 n=2^28.91 1-delta=2^-5.231 q=46 -> query bits 240.63 + z = 272.63;  list m/rho = 2^12.49
-   round 2: k=4 rho=2^-14.91 n=2^28.91 1-delta=2^-7.231 q=33 -> query bits 238.62 + z = 270.62;  list m/rho = 2^16.49
-   round 3: k=4 rho=2^-18.91 n=2^28.91 1-delta=2^-9.231 q=26 -> query bits 240.01 + z = 272.01;  list m/rho = 2^20.49
-     -268.55  whir query r0 incl. grinding z=32 (L4.5, L5.1)
-     -270.62  whir query r2 incl. grinding z=32 (L4.5, L5.1)
-     -272.01  whir query r3 incl. grinding z=32 (L4.5, L5.1)
-     -272.63  whir query r1 incl. grinding z=32 (L4.5, L5.1)
+== inner NV (layers 1..d-1), z=24: log_h=19 b=6 k1=1 k=4 lf=6 W=141  queries [52, 47, 34, 27]
+   round 0: k=1 rho=2^-9.91 n=2^28.91 1-delta=2^-4.731 q=52 -> query bits 246.01 + z = 278.01;  list m/rho = 2^11.49
+   round 1: k=4 rho=2^-10.91 n=2^28.91 1-delta=2^-5.231 q=47 -> query bits 245.86 + z = 277.86;  list m/rho = 2^12.49
+   round 2: k=4 rho=2^-14.91 n=2^28.91 1-delta=2^-7.231 q=34 -> query bits 245.86 + z = 277.86;  list m/rho = 2^16.49
+   round 3: k=4 rho=2^-18.91 n=2^28.91 1-delta=2^-9.231 q=27 -> query bits 249.24 + z = 281.24;  list m/rho = 2^20.49
+     -269.86  whir query r2 incl. grinding z=24 (L4.5, L5.1)
+     -269.86  whir query r1 incl. grinding z=24 (L4.5, L5.1)
+     -270.01  whir query r0 incl. grinding z=24 (L4.5, L5.1)
+     -273.24  whir query r3 incl. grinding z=24 (L4.5, L5.1)
      -273.64  whir fold r3.1 (L4.3)
      -280.01  whir mu batching, MCA d=W-1 (L4.2)
      -307.71  logup alpha,beta (L3.1)
      -320.90  whir OOD r3 (L4.4)
      -324.90  whir OOD r2 (L4.4)
      -328.90  whir OOD r1 (L4.4)
-     -345.30  whir gamma r2 (L4.6)
+     -345.26  whir gamma r2 (L4.6)
      -347.39  constraint batching lambda (L3.4)
-     -348.84  whir gamma r1 (L4.6)
+     -348.81  whir gamma r1 (L4.6)
      -349.57  stacking lambda (L3.7)
-     -352.72  whir gamma r0 (L4.6)
+     -352.66  whir gamma r0 (L4.6)
      -353.35  zerocheck univariate round r_0 (L3.5)
      -354.93  zerocheck multilinear round (L3.5)
      -355.93  claim batching mu (L3.4)
@@ -59,33 +59,33 @@ bound.py @ f8c168f98 (lane/pq-final-soundness), base shapes pinned by DESIGN-BAS
      -356.81  stacking univariate u_0 (L3.7)
      -357.07  gkr lambda_j / mu_j (L3.2)
      -358.39  stacking round u_j (L3.7)
-     -366.13  whir final gamma r3 (L4.6)
-   worst move: whir query r0 incl. grinding z=32 (L4.5, L5.1)  2^-268.55
+     -366.08  whir final gamma r3 (L4.6)
+   worst move: whir query r2 incl. grinding z=24 (L4.5, L5.1)  2^-269.86
 
-== base seg-v1 (c=1, b=1, m=16): log_h=24 b=1 k1=1 k=4 lf=7 W=24  queries [518, 247, 80, 48, 34]
-   round 0: k=1 rho=2^-1.00 n=2^25.00 1-delta=2^-0.456 q=518 -> query bits 236.00 + z = 268.00;  list m/rho = 2^5.00
-   round 1: k=4 rho=2^-2.00 n=2^25.00 1-delta=2^-0.956 q=247 -> query bits 236.03 + z = 268.03;  list m/rho = 2^6.00
-   round 2: k=4 rho=2^-6.00 n=2^25.00 1-delta=2^-2.956 q=80 -> query bits 236.45 + z = 268.45;  list m/rho = 2^10.00
-   round 3: k=4 rho=2^-10.00 n=2^25.00 1-delta=2^-4.956 q=48 -> query bits 237.87 + z = 269.87;  list m/rho = 2^14.00
-   round 4: k=4 rho=2^-14.00 n=2^25.00 1-delta=2^-6.956 q=34 -> query bits 236.49 + z = 268.49;  list m/rho = 2^18.00
-     -268.00  whir query r0 incl. grinding z=32 (L4.5, L5.1)
-     -268.03  whir query r1 incl. grinding z=32 (L4.5, L5.1)
-     -268.45  whir query r2 incl. grinding z=32 (L4.5, L5.1)
-     -268.49  whir query r4 incl. grinding z=32 (L4.5, L5.1)
-     -269.87  whir query r3 incl. grinding z=32 (L4.5, L5.1)
+== base seg-v1 (c=1, b=1, m=16): log_h=24 b=1 k1=1 k=4 lf=7 W=24  queries [536, 256, 83, 50, 36]
+   round 0: k=1 rho=2^-1.00 n=2^25.00 1-delta=2^-0.456 q=536 -> query bits 244.20 + z = 276.20;  list m/rho = 2^5.00
+   round 1: k=4 rho=2^-2.00 n=2^25.00 1-delta=2^-0.956 q=256 -> query bits 244.64 + z = 276.64;  list m/rho = 2^6.00
+   round 2: k=4 rho=2^-6.00 n=2^25.00 1-delta=2^-2.956 q=83 -> query bits 245.32 + z = 277.32;  list m/rho = 2^10.00
+   round 3: k=4 rho=2^-10.00 n=2^25.00 1-delta=2^-4.956 q=50 -> query bits 247.78 + z = 279.78;  list m/rho = 2^14.00
+   round 4: k=4 rho=2^-14.00 n=2^25.00 1-delta=2^-6.956 q=36 -> query bits 250.40 + z = 282.40;  list m/rho = 2^18.00
+     -268.20  whir query r0 incl. grinding z=24 (L4.5, L5.1)
+     -268.64  whir query r1 incl. grinding z=24 (L4.5, L5.1)
+     -269.32  whir query r2 incl. grinding z=24 (L4.5, L5.1)
+     -271.78  whir query r3 incl. grinding z=24 (L4.5, L5.1)
      -273.16  whir fold r4.1 (L4.3)
+     -274.40  whir query r4 incl. grinding z=24 (L4.5, L5.1)
      -288.13  whir mu batching, MCA d=W-1 (L4.2)
      -306.88  logup alpha,beta (L3.1)
      -324.88  whir OOD r4 (L4.4)
      -328.88  whir OOD r3 (L4.4)
      -332.88  whir OOD r2 (L4.4)
      -336.88  whir OOD r1 (L4.4)
-     -347.27  whir gamma r3 (L4.6)
-     -350.54  whir gamma r2 (L4.6)
+     -347.21  whir gamma r3 (L4.6)
+     -350.49  whir gamma r2 (L4.6)
      -351.88  constraint batching lambda (L3.4)
-     -352.93  whir gamma r1 (L4.6)
+     -352.88  whir gamma r1 (L4.6)
      -354.88  stacking lambda (L3.7)
-     -355.86  whir gamma r0 (L4.6)
+     -355.81  whir gamma r0 (L4.6)
      -359.31  claim batching mu (L3.4)
      -361.13  zerocheck univariate round r_0 (L3.5)
      -362.71  zerocheck multilinear round (L3.5)
@@ -93,20 +93,20 @@ bound.py @ f8c168f98 (lane/pq-final-soundness), base shapes pinned by DESIGN-BAS
      -363.30  stacking univariate u_0 (L3.7)
      -363.56  gkr lambda_j / mu_j (L3.2)
      -364.88  stacking round u_j (L3.7)
-     -365.75  whir final gamma r4 (L4.6)
-   worst move: whir query r0 incl. grinding z=32 (L4.5, L5.1)  2^-268.00
+     -365.67  whir final gamma r4 (L4.6)
+   worst move: whir query r0 incl. grinding z=24 (L4.5, L5.1)  2^-268.20
 
-== base alt (c=1, b=2, m=8): log_h=24 b=2 k1=1 k=4 lf=7 W=24  queries [259, 168, 70, 44, 32]
-   round 0: k=1 rho=2^-2.00 n=2^26.00 1-delta=2^-0.913 q=259 -> query bits 236.35 + z = 268.35;  list m/rho = 2^5.00
-   round 1: k=4 rho=2^-3.00 n=2^26.00 1-delta=2^-1.413 q=168 -> query bits 237.31 + z = 269.31;  list m/rho = 2^6.00
-   round 2: k=4 rho=2^-7.00 n=2^26.00 1-delta=2^-3.413 q=70 -> query bits 238.88 + z = 270.88;  list m/rho = 2^10.00
-   round 3: k=4 rho=2^-11.00 n=2^26.00 1-delta=2^-5.413 q=44 -> query bits 238.15 + z = 270.15;  list m/rho = 2^14.00
-   round 4: k=4 rho=2^-15.00 n=2^26.00 1-delta=2^-7.413 q=32 -> query bits 237.20 + z = 269.20;  list m/rho = 2^18.00
-     -268.35  whir query r0 incl. grinding z=32 (L4.5, L5.1)
-     -269.20  whir query r4 incl. grinding z=32 (L4.5, L5.1)
-     -269.31  whir query r1 incl. grinding z=32 (L4.5, L5.1)
-     -270.15  whir query r3 incl. grinding z=32 (L4.5, L5.1)
-     -270.88  whir query r2 incl. grinding z=32 (L4.5, L5.1)
+== base alt (c=1, b=2, m=8): log_h=24 b=2 k1=1 k=4 lf=7 W=24  queries [268, 173, 72, 46, 33]
+   round 0: k=1 rho=2^-2.00 n=2^26.00 1-delta=2^-0.913 q=268 -> query bits 244.56 + z = 276.56;  list m/rho = 2^5.00
+   round 1: k=4 rho=2^-3.00 n=2^26.00 1-delta=2^-1.413 q=173 -> query bits 244.37 + z = 276.37;  list m/rho = 2^6.00
+   round 2: k=4 rho=2^-7.00 n=2^26.00 1-delta=2^-3.413 q=72 -> query bits 245.70 + z = 277.70;  list m/rho = 2^10.00
+   round 3: k=4 rho=2^-11.00 n=2^26.00 1-delta=2^-5.413 q=46 -> query bits 248.98 + z = 280.98;  list m/rho = 2^14.00
+   round 4: k=4 rho=2^-15.00 n=2^26.00 1-delta=2^-7.413 q=33 -> query bits 244.61 + z = 276.61;  list m/rho = 2^18.00
+     -268.37  whir query r1 incl. grinding z=24 (L4.5, L5.1)
+     -268.56  whir query r0 incl. grinding z=24 (L4.5, L5.1)
+     -268.61  whir query r4 incl. grinding z=24 (L4.5, L5.1)
+     -269.70  whir query r2 incl. grinding z=24 (L4.5, L5.1)
+     -272.98  whir query r3 incl. grinding z=24 (L4.5, L5.1)
      -276.36  whir fold r4.1 (L4.3)
      -291.33  whir mu batching, MCA d=W-1 (L4.2)
      -306.88  logup alpha,beta (L3.1)
@@ -114,12 +114,12 @@ bound.py @ f8c168f98 (lane/pq-final-soundness), base shapes pinned by DESIGN-BAS
      -328.88  whir OOD r3 (L4.4)
      -332.88  whir OOD r2 (L4.4)
      -336.88  whir OOD r1 (L4.4)
-     -347.39  whir gamma r3 (L4.6)
-     -350.73  whir gamma r2 (L4.6)
+     -347.33  whir gamma r3 (L4.6)
+     -350.69  whir gamma r2 (L4.6)
      -351.88  constraint batching lambda (L3.4)
-     -353.48  whir gamma r1 (L4.6)
+     -353.44  whir gamma r1 (L4.6)
      -354.88  stacking lambda (L3.7)
-     -356.86  whir gamma r0 (L4.6)
+     -356.81  whir gamma r0 (L4.6)
      -359.31  claim batching mu (L3.4)
      -361.13  zerocheck univariate round r_0 (L3.5)
      -362.71  zerocheck multilinear round (L3.5)
@@ -127,33 +127,33 @@ bound.py @ f8c168f98 (lane/pq-final-soundness), base shapes pinned by DESIGN-BAS
      -363.30  stacking univariate u_0 (L3.7)
      -363.56  gkr lambda_j / mu_j (L3.2)
      -364.88  stacking round u_j (L3.7)
-     -365.84  whir final gamma r4 (L4.6)
-   worst move: whir query r0 incl. grinding z=32 (L4.5, L5.1)  2^-268.35
+     -365.80  whir final gamma r4 (L4.6)
+   worst move: whir query r1 incl. grinding z=24 (L4.5, L5.1)  2^-268.37
 
-== base alt (c=15, b=0, m=8): log_h=24 b=0 k1=1 k=4 lf=7 W=24  queries [127, 100, 55, 38, 29]
-   round 0: k=1 rho=2^-3.91 n=2^27.91 1-delta=2^-1.866 q=127 -> query bits 236.98 + z = 268.98;  list m/rho = 2^6.91
-   round 1: k=4 rho=2^-4.91 n=2^27.91 1-delta=2^-2.366 q=100 -> query bits 236.60 + z = 268.60;  list m/rho = 2^7.91
-   round 2: k=4 rho=2^-8.91 n=2^27.91 1-delta=2^-4.366 q=55 -> query bits 240.13 + z = 272.13;  list m/rho = 2^11.91
-   round 3: k=4 rho=2^-12.91 n=2^27.91 1-delta=2^-6.366 q=38 -> query bits 241.91 + z = 273.91;  list m/rho = 2^15.91
-   round 4: k=4 rho=2^-16.91 n=2^27.91 1-delta=2^-8.366 q=29 -> query bits 242.61 + z = 274.61;  list m/rho = 2^19.91
-     -268.60  whir query r1 incl. grinding z=32 (L4.5, L5.1)
-     -268.98  whir query r0 incl. grinding z=32 (L4.5, L5.1)
+== base alt (c=15, b=0, m=8): log_h=24 b=0 k1=1 k=4 lf=7 W=24  queries [131, 104, 56, 39, 30]
+   round 0: k=1 rho=2^-3.91 n=2^27.91 1-delta=2^-1.866 q=131 -> query bits 244.44 + z = 276.44;  list m/rho = 2^6.91
+   round 1: k=4 rho=2^-4.91 n=2^27.91 1-delta=2^-2.366 q=104 -> query bits 246.06 + z = 278.06;  list m/rho = 2^7.91
+   round 2: k=4 rho=2^-8.91 n=2^27.91 1-delta=2^-4.366 q=56 -> query bits 244.50 + z = 276.50;  list m/rho = 2^11.91
+   round 3: k=4 rho=2^-12.91 n=2^27.91 1-delta=2^-6.366 q=39 -> query bits 248.27 + z = 280.27;  list m/rho = 2^15.91
+   round 4: k=4 rho=2^-16.91 n=2^27.91 1-delta=2^-8.366 q=30 -> query bits 250.98 + z = 282.98;  list m/rho = 2^19.91
+     -268.44  whir query r0 incl. grinding z=24 (L4.5, L5.1)
+     -268.50  whir query r2 incl. grinding z=24 (L4.5, L5.1)
      -269.68  whir fold r4.1 (L4.3)
-     -272.13  whir query r2 incl. grinding z=32 (L4.5, L5.1)
-     -273.91  whir query r3 incl. grinding z=32 (L4.5, L5.1)
-     -274.61  whir query r4 incl. grinding z=32 (L4.5, L5.1)
+     -270.06  whir query r1 incl. grinding z=24 (L4.5, L5.1)
+     -272.27  whir query r3 incl. grinding z=24 (L4.5, L5.1)
+     -274.98  whir query r4 incl. grinding z=24 (L4.5, L5.1)
      -284.66  whir mu batching, MCA d=W-1 (L4.2)
      -304.98  logup alpha,beta (L3.1)
      -321.07  whir OOD r4 (L4.4)
      -325.07  whir OOD r3 (L4.4)
      -329.07  whir OOD r2 (L4.4)
      -333.07  whir OOD r1 (L4.4)
-     -345.69  whir gamma r3 (L4.6)
-     -349.17  whir gamma r2 (L4.6)
+     -345.65  whir gamma r3 (L4.6)
+     -349.14  whir gamma r2 (L4.6)
      -349.98  constraint batching lambda (L3.4)
-     -352.32  whir gamma r1 (L4.6)
+     -352.26  whir gamma r1 (L4.6)
      -352.98  stacking lambda (L3.7)
-     -355.98  whir gamma r0 (L4.6)
+     -355.93  whir gamma r0 (L4.6)
      -357.41  claim batching mu (L3.4)
      -359.22  zerocheck univariate round r_0 (L3.5)
      -360.81  zerocheck multilinear round (L3.5)
@@ -161,29 +161,29 @@ bound.py @ f8c168f98 (lane/pq-final-soundness), base shapes pinned by DESIGN-BAS
      -361.39  stacking univariate u_0 (L3.7)
      -361.65  gkr lambda_j / mu_j (L3.2)
      -362.98  stacking round u_j (L3.7)
-     -365.98  whir final gamma r4 (L4.6)
-   worst move: whir query r1 incl. grinding z=32 (L4.5, L5.1)  2^-268.60
+     -365.93  whir final gamma r4 (L4.6)
+   worst move: whir query r0 incl. grinding z=24 (L4.5, L5.1)  2^-268.44
 
-== base gas-failure5 vk @ U-10 (c=1, b=7, m=3): log_h=17 b=7 k1=1 k=3 lf=7 W=3  queries [73, 63, 45, 35]
-   round 0: k=1 rho=2^-7.00 n=2^24.00 1-delta=2^-3.278 q=73 -> query bits 239.27 + z = 271.27;  list m/rho = 2^8.58
-   round 1: k=3 rho=2^-8.00 n=2^24.00 1-delta=2^-3.778 q=63 -> query bits 237.99 + z = 269.99;  list m/rho = 2^9.58
-   round 2: k=3 rho=2^-11.00 n=2^24.00 1-delta=2^-5.278 q=45 -> query bits 237.49 + z = 269.49;  list m/rho = 2^12.58
-   round 3: k=3 rho=2^-14.00 n=2^24.00 1-delta=2^-6.778 q=35 -> query bits 237.22 + z = 269.22;  list m/rho = 2^15.58
-     -269.22  whir query r3 incl. grinding z=32 (L4.5, L5.1)
-     -269.49  whir query r2 incl. grinding z=32 (L4.5, L5.1)
-     -269.99  whir query r1 incl. grinding z=32 (L4.5, L5.1)
-     -271.27  whir query r0 incl. grinding z=32 (L4.5, L5.1)
+== base gas-failure5 vk @ U-10 (c=1, b=7, m=3): log_h=17 b=7 k1=1 k=3 lf=7 W=3  queries [75, 65, 47, 37]
+   round 0: k=1 rho=2^-7.00 n=2^24.00 1-delta=2^-3.278 q=75 -> query bits 245.82 + z = 277.82;  list m/rho = 2^8.58
+   round 1: k=3 rho=2^-8.00 n=2^24.00 1-delta=2^-3.778 q=65 -> query bits 245.54 + z = 277.54;  list m/rho = 2^9.58
+   round 2: k=3 rho=2^-11.00 n=2^24.00 1-delta=2^-5.278 q=47 -> query bits 248.05 + z = 280.05;  list m/rho = 2^12.58
+   round 3: k=3 rho=2^-14.00 n=2^24.00 1-delta=2^-6.778 q=37 -> query bits 250.77 + z = 282.77;  list m/rho = 2^15.58
+     -269.54  whir query r1 incl. grinding z=24 (L4.5, L5.1)
+     -269.82  whir query r0 incl. grinding z=24 (L4.5, L5.1)
+     -272.05  whir query r2 incl. grinding z=24 (L4.5, L5.1)
+     -274.77  whir query r3 incl. grinding z=24 (L4.5, L5.1)
      -290.82  whir fold r3.1 (L4.3)
      -300.32  whir mu batching, MCA d=W-1 (L4.2)
      -306.30  logup alpha,beta (L3.1)
      -330.71  whir OOD r3 (L4.4)
      -333.71  whir OOD r2 (L4.4)
      -336.71  whir OOD r1 (L4.4)
-     -349.77  whir gamma r2 (L4.6)
+     -349.71  whir gamma r2 (L4.6)
      -352.09  stacking lambda (L3.7)
-     -352.30  whir gamma r1 (L4.6)
+     -352.25  whir gamma r1 (L4.6)
      -353.25  constraint batching lambda (L3.4)
-     -355.09  whir gamma r0 (L4.6)
+     -355.05  whir gamma r0 (L4.6)
      -357.54  zerocheck univariate round r_0 (L3.5)
      -359.13  zerocheck multilinear round (L3.5)
      -359.30  claim batching mu (L3.4)
@@ -191,29 +191,29 @@ bound.py @ f8c168f98 (lane/pq-final-soundness), base shapes pinned by DESIGN-BAS
      -359.71  stacking univariate u_0 (L3.7)
      -359.98  gkr lambda_j / mu_j (L3.2)
      -361.30  stacking round u_j (L3.7)
-     -365.71  whir final gamma r3 (L4.6)
-   worst move: whir query r3 incl. grinding z=32 (L4.5, L5.1)  2^-269.22
+     -365.63  whir final gamma r3 (L4.6)
+   worst move: whir query r1 incl. grinding z=24 (L4.5, L5.1)  2^-269.54
 
-== agg node N2 (2-to-1, NV AIRs): log_h=20 b=6 k1=1 k=4 lf=7 W=141  queries [50, 46, 33, 26]
-   round 0: k=1 rho=2^-9.91 n=2^29.91 1-delta=2^-4.731 q=50 -> query bits 236.55 + z = 268.55;  list m/rho = 2^11.49
-   round 1: k=4 rho=2^-10.91 n=2^29.91 1-delta=2^-5.231 q=46 -> query bits 240.63 + z = 272.63;  list m/rho = 2^12.49
-   round 2: k=4 rho=2^-14.91 n=2^29.91 1-delta=2^-7.231 q=33 -> query bits 238.62 + z = 270.62;  list m/rho = 2^16.49
-   round 3: k=4 rho=2^-18.91 n=2^29.91 1-delta=2^-9.231 q=26 -> query bits 240.01 + z = 272.01;  list m/rho = 2^20.49
-     -268.55  whir query r0 incl. grinding z=32 (L4.5, L5.1)
-     -270.62  whir query r2 incl. grinding z=32 (L4.5, L5.1)
+== agg node N2 (2-to-1, NV AIRs): log_h=20 b=6 k1=1 k=4 lf=7 W=141  queries [52, 47, 34, 27]
+   round 0: k=1 rho=2^-9.91 n=2^29.91 1-delta=2^-4.731 q=52 -> query bits 246.01 + z = 278.01;  list m/rho = 2^11.49
+   round 1: k=4 rho=2^-10.91 n=2^29.91 1-delta=2^-5.231 q=47 -> query bits 245.86 + z = 277.86;  list m/rho = 2^12.49
+   round 2: k=4 rho=2^-14.91 n=2^29.91 1-delta=2^-7.231 q=34 -> query bits 245.86 + z = 277.86;  list m/rho = 2^16.49
+   round 3: k=4 rho=2^-18.91 n=2^29.91 1-delta=2^-9.231 q=27 -> query bits 249.24 + z = 281.24;  list m/rho = 2^20.49
+     -269.86  whir query r2 incl. grinding z=24 (L4.5, L5.1)
+     -269.86  whir query r1 incl. grinding z=24 (L4.5, L5.1)
+     -270.01  whir query r0 incl. grinding z=24 (L4.5, L5.1)
      -271.64  whir fold r3.1 (L4.3)
-     -272.01  whir query r3 incl. grinding z=32 (L4.5, L5.1)
-     -272.63  whir query r1 incl. grinding z=32 (L4.5, L5.1)
+     -273.24  whir query r3 incl. grinding z=24 (L4.5, L5.1)
      -278.01  whir mu batching, MCA d=W-1 (L4.2)
      -305.59  logup alpha,beta (L3.1)
      -319.90  whir OOD r3 (L4.4)
      -323.90  whir OOD r2 (L4.4)
      -327.90  whir OOD r1 (L4.4)
-     -345.30  whir gamma r2 (L4.6)
+     -345.26  whir gamma r2 (L4.6)
      -347.39  constraint batching lambda (L3.4)
-     -348.84  whir gamma r1 (L4.6)
+     -348.81  whir gamma r1 (L4.6)
      -349.57  stacking lambda (L3.7)
-     -352.72  whir gamma r0 (L4.6)
+     -352.66  whir gamma r0 (L4.6)
      -353.35  zerocheck univariate round r_0 (L3.5)
      -354.93  zerocheck multilinear round (L3.5)
      -355.93  claim batching mu (L3.4)
@@ -221,29 +221,29 @@ bound.py @ f8c168f98 (lane/pq-final-soundness), base shapes pinned by DESIGN-BAS
      -356.81  stacking univariate u_0 (L3.7)
      -357.07  gkr lambda_j / mu_j (L3.2)
      -358.39  stacking round u_j (L3.7)
-     -366.13  whir final gamma r3 (L4.6)
-   worst move: whir query r0 incl. grinding z=32 (L4.5, L5.1)  2^-268.55
+     -366.08  whir final gamma r3 (L4.6)
+   worst move: whir query r2 incl. grinding z=24 (L4.5, L5.1)  2^-269.86
 
-== agg node N1 (2 segments, NV AIRs): log_h=21 b=3 k1=1 k=4 lf=8 W=141  queries [74, 64, 42, 31]
-   round 0: k=1 rho=2^-6.91 n=2^27.91 1-delta=2^-3.231 q=74 -> query bits 239.10 + z = 271.10;  list m/rho = 2^8.49
-   round 1: k=4 rho=2^-7.91 n=2^27.91 1-delta=2^-3.731 q=64 -> query bits 238.79 + z = 270.79;  list m/rho = 2^9.49
-   round 2: k=4 rho=2^-11.91 n=2^27.91 1-delta=2^-5.731 q=42 -> query bits 240.70 + z = 272.70;  list m/rho = 2^13.49
-   round 3: k=4 rho=2^-15.91 n=2^27.91 1-delta=2^-7.731 q=31 -> query bits 239.66 + z = 271.66;  list m/rho = 2^17.49
-     -270.79  whir query r1 incl. grinding z=32 (L4.5, L5.1)
-     -271.10  whir query r0 incl. grinding z=32 (L4.5, L5.1)
-     -271.66  whir query r3 incl. grinding z=32 (L4.5, L5.1)
-     -272.70  whir query r2 incl. grinding z=32 (L4.5, L5.1)
+== agg node N1 (2 segments, NV AIRs): log_h=21 b=3 k1=1 k=4 lf=8 W=141  queries [76, 66, 43, 32]
+   round 0: k=1 rho=2^-6.91 n=2^27.91 1-delta=2^-3.231 q=76 -> query bits 245.56 + z = 277.56;  list m/rho = 2^8.49
+   round 1: k=4 rho=2^-7.91 n=2^27.91 1-delta=2^-3.731 q=66 -> query bits 246.25 + z = 278.25;  list m/rho = 2^9.49
+   round 2: k=4 rho=2^-11.91 n=2^27.91 1-delta=2^-5.731 q=43 -> query bits 246.44 + z = 278.44;  list m/rho = 2^13.49
+   round 3: k=4 rho=2^-15.91 n=2^27.91 1-delta=2^-7.731 q=32 -> query bits 247.39 + z = 279.39;  list m/rho = 2^17.49
+     -269.56  whir query r0 incl. grinding z=24 (L4.5, L5.1)
+     -270.25  whir query r1 incl. grinding z=24 (L4.5, L5.1)
+     -270.44  whir query r2 incl. grinding z=24 (L4.5, L5.1)
+     -271.39  whir query r3 incl. grinding z=24 (L4.5, L5.1)
      -280.14  whir fold r3.1 (L4.3)
      -286.51  whir mu batching, MCA d=W-1 (L4.2)
      -304.59  logup alpha,beta (L3.1)
      -324.90  whir OOD r3 (L4.4)
      -328.90  whir OOD r2 (L4.4)
      -332.90  whir OOD r1 (L4.4)
-     -347.96  whir gamma r2 (L4.6)
+     -347.93  whir gamma r2 (L4.6)
      -350.39  constraint batching lambda (L3.4)
-     -351.37  whir gamma r1 (L4.6)
+     -351.32  whir gamma r1 (L4.6)
      -352.57  stacking lambda (L3.7)
-     -355.16  whir gamma r0 (L4.6)
+     -355.12  whir gamma r0 (L4.6)
      -356.35  zerocheck univariate round r_0 (L3.5)
      -357.93  zerocheck multilinear round (L3.5)
      -358.93  claim batching mu (L3.4)
@@ -251,24 +251,58 @@ bound.py @ f8c168f98 (lane/pq-final-soundness), base shapes pinned by DESIGN-BAS
      -359.81  stacking univariate u_0 (L3.7)
      -360.07  gkr lambda_j / mu_j (L3.2)
      -361.39  stacking round u_j (L3.7)
-     -365.88  whir final gamma r3 (L4.6)
-   worst move: whir query r1 incl. grinding z=32 (L4.5, L5.1)  2^-270.79
+     -365.84  whir final gamma r3 (L4.6)
+   worst move: whir query r0 incl. grinding z=24 (L4.5, L5.1)  2^-269.56
 
-eps_rbr-KS (max over all moves of all layers) = 2^-268.00   [base seg-v1 (c=1, b=1, m=16): whir query r0 incl. grinding z=32 (L4.5, L5.1)]
+== L1 (design G, NV AIRs, c=1, b=3, m=8): log_h=22 b=3 k1=1 k=4 lf=5 W=141  queries [173, 128, 63, 42, 31]
+   round 0: k=1 rho=2^-3.00 n=2^25.00 1-delta=2^-1.413 q=173 -> query bits 244.37 + z = 276.37;  list m/rho = 2^6.00
+   round 1: k=4 rho=2^-4.00 n=2^25.00 1-delta=2^-1.913 q=128 -> query bits 244.80 + z = 276.80;  list m/rho = 2^7.00
+   round 2: k=4 rho=2^-8.00 n=2^25.00 1-delta=2^-3.913 q=63 -> query bits 246.49 + z = 278.49;  list m/rho = 2^11.00
+   round 3: k=4 rho=2^-12.00 n=2^25.00 1-delta=2^-5.913 q=42 -> query bits 248.33 + z = 280.33;  list m/rho = 2^15.00
+   round 4: k=4 rho=2^-16.00 n=2^25.00 1-delta=2^-7.913 q=31 -> query bits 245.29 + z = 277.29;  list m/rho = 2^19.00
+     -268.37  whir query r0 incl. grinding z=24 (L4.5, L5.1)
+     -268.80  whir query r1 incl. grinding z=24 (L4.5, L5.1)
+     -269.29  whir query r4 incl. grinding z=24 (L4.5, L5.1)
+     -270.49  whir query r2 incl. grinding z=24 (L4.5, L5.1)
+     -272.33  whir query r3 incl. grinding z=24 (L4.5, L5.1)
+     -276.86  whir fold r4.1 (L4.3)
+     -289.23  whir mu batching, MCA d=W-1 (L4.2)
+     -307.88  logup alpha,beta (L3.1)
+     -324.88  whir OOD r4 (L4.4)
+     -328.88  whir OOD r3 (L4.4)
+     -332.88  whir OOD r2 (L4.4)
+     -336.88  whir OOD r1 (L4.4)
+     -346.46  whir gamma r3 (L4.6)
+     -349.88  whir gamma r2 (L4.6)
+     -352.87  whir gamma r1 (L4.6)
+     -352.88  constraint batching lambda (L3.4)
+     -355.06  stacking lambda (L3.7)
+     -356.44  whir gamma r0 (L4.6)
+     -358.84  zerocheck univariate round r_0 (L3.5)
+     -360.42  zerocheck multilinear round (L3.5)
+     -361.42  claim batching mu (L3.4)
+     -362.08  gkr sumcheck round + xi coordinate (L3.2, L3.3)
+     -362.30  stacking univariate u_0 (L3.7)
+     -362.56  gkr lambda_j / mu_j (L3.2)
+     -363.88  stacking round u_j (L3.7)
+     -365.88  whir final gamma r4 (L4.6)
+   worst move: whir query r0 incl. grinding z=24 (L4.5, L5.1)  2^-268.37
+
+eps_rbr-KS (max over all moves of all layers) = 2^-268.20   [base seg-v1 (c=1, b=1, m=16): whir query r0 incl. grinding z=24 (L4.5, L5.1)]
 
 Theorem 6.1 / 7.2 (one compressed database for all d+1 layers; T* transcript):
    t' = 2t (Lemma 6.3) ; G^2 = 10 max(3t'/2^336, eps + 2^20(2t'+1)/2^384)
-   total soundness/extraction failure  <= 2^-134.68
-   conservative union over d+1 = 7 layers: 2^-131.87
-   conservative union over d+1 = 8 layers: 2^-131.68
+   total soundness/extraction failure  <= 2^-134.88
+   conservative union over d+1 = 7 layers: 2^-132.08
+   conservative union over d+1 = 8 layers: 2^-131.88
 
 cross-checks (not used for the claim):
-   CMS19 Thm 8.6 constants 6(t^2 eps + 4t^3/2^336):        2^-137.10
-   CDHZ Thm 11.3 + 6.10 + 8.3 (w <= t, k = 200 rounds):   2^-130.22
+   CMS19 Thm 8.6 constants 6(t^2 eps + 4t^3/2^336):        2^-137.25
+   CDHZ Thm 11.3 + 6.10 + 8.3 (w <= t, k = 200 rounds):   2^-130.29
 
 code as written (sequential squeeze chain, PoW bits in the absorb output):
-   no proven grinding credit -> eps = 2^-236.00 -> Thm 6.1 gives 2^-104.68  (and even this needs the one-call model [H-M])
+   no proven grinding credit -> eps = 2^-236.20 -> Thm 6.1 gives 2^-104.88  (and even this needs the one-call model [H-M])
 
-PASS: total <= 2^-128 with 3.87 bits margin (conservative 7-layer union), conditional on the assumptions listed in GAPS.md (A-IC, NV-faithful, Base-faithful, T* transcript).
+PASS: total <= 2^-128 with 4.08 bits margin (conservative 7-layer union), conditional on the assumptions listed in GAPS.md (A-IC, NV-faithful, Base-faithful, T* transcript).
 
-tree (S = 146 segments, 145 nodes, 4 tail layers = 295 proofs): single database 2^-134.68; per-proof union 2^-126.48 (FAIL as a union)
+tree (S = 146 segments, 145 nodes, 4 tail layers = 295 proofs): single database 2^-134.88; per-proof union 2^-126.68 (FAIL as a union)

@@ -1,9 +1,9 @@
 diff --git a/crates/recursion/src/nv/agg.rs b/crates/recursion/src/nv/agg.rs
 new file mode 100644
-index 0000000..47c0237
+index 0000000..35dd810
 --- /dev/null
 +++ b/crates/recursion/src/nv/agg.rs
-@@ -0,0 +1,343 @@
+@@ -0,0 +1,404 @@
 +//! [agg] n-to-1 aggregation node on NV (lane/pq-base-aggregation, DESIGN-BASE.md §5).
 +//!
 +//! One NV proof verifies k >= 2 child proofs.  Each child's verifier runs on its own
@@ -242,6 +242,67 @@ index 0000000..47c0237
 +}
 +
 +// ---------------------------------------------------------------------------------------
++// Design G level 1: one main (shared-transcript) base proof + linked sub-proofs (P-PERF-8 PREP /
++// code-hash proofs).  No segment statements: continuity is inside the main proof.
++// ---------------------------------------------------------------------------------------
++
++/// A cross-proof link: public value `sub_pv` of AIR 0 of child `sub` must equal public value
++/// `main_pv` of AIR 0 of the main child (child 0), e.g. "PREP proof's code-table commitment = the
++/// commitment the main proof's FETCH table uses".
++#[derive(Clone, Copy, Debug)]
++pub struct Link {
++    pub sub: usize,
++    pub sub_pv: usize,
++    pub main_pv: usize,
++}
++
++/// L1 of design G: verify child 0 (the main base proof) and children 1.. (sub-proofs, any vks), each on
++/// its own transcript; check the links; expose level 1 and the tag-8 statement digest of the main
++/// proof's public values (the recursion lane's G1 format, so T1.. pass it through unchanged).
++pub fn build_l1_linked(
++    b: &mut Builder,
++    children: &[(&MultiStarkVerifyingKey<Sha384Config>, &Proof<Sha384Config>)],
++    links: &[Link],
++) -> Digest {
++    b.agg = true;
++    let mut pvs: Vec<Vec<Vec<V>>> = vec![];
++    for (i, &(vk, proof)) in children.iter().enumerate() {
++        if i > 0 {
++            b.restart_transcript();
++        }
++        pvs.push(build_verifier(b, vk, proof));
++    }
++    for (n, l) in links.iter().enumerate() {
++        assert!(l.sub >= 1 && l.sub < children.len());
++        let (x, y) = (pvs[l.sub][0][l.sub_pv], pvs[0][0][l.main_pv]);
++        b.assert_eq(x, y, &format!("link {n}: sub-proof {} pv {} = main pv {}", l.sub, l.sub_pv, l.main_pv));
++    }
++    let one = b.c(F::ONE);
++    b.pv_level(one);
++    let main = &pvs[0];
++    let mut cells: Vec<V> = vec![b.c(F::from_usize(main.len()))];
++    for p in main {
++        let n = b.c(F::from_usize(p.len()));
++        cells.push(n);
++    }
++    cells.extend(main.iter().flatten().copied());
++    let job = b.job_start(crate::sha384::config::TAG_STATEMENT, 4 * cells.len());
++    for (i, &x) in cells.iter().enumerate() {
++        b.unit1(x, job, 2 + i as u32);
++    }
++    let d = crate::sha384::config::statement_digest(&children[0].1.public_values);
++    let dc = b.dig(job, d);
++    b.pv_digest(&dc);
++    d
++}
++
++/// Native check of the G statement: public values 1..19 = tag-8 digest of the main proof's values.
++pub fn check_statement(nv_public_values: &[F], main_public_values: &[Vec<F>]) -> bool {
++    let (lo, hi) = super::builder::digest_cells(crate::sha384::config::statement_digest(main_public_values));
++    nv_public_values.len() == super::uair::NV_NUM_PVS && nv_public_values[1..13] == lo[..] && nv_public_values[13..19] == hi[..6]
++}
++
++// ---------------------------------------------------------------------------------------
 +// Segment fixture: a Fibonacci machine split into segments (state (l, r), r' = l + r)
 +// ---------------------------------------------------------------------------------------
 +
@@ -349,10 +410,10 @@ index 0000000..47c0237
 +}
 diff --git a/crates/recursion/src/nv/agg_tests.rs b/crates/recursion/src/nv/agg_tests.rs
 new file mode 100644
-index 0000000..aac429f
+index 0000000..a0fa75a
 --- /dev/null
 +++ b/crates/recursion/src/nv/agg_tests.rs
-@@ -0,0 +1,390 @@
+@@ -0,0 +1,443 @@
 +//! [agg] Tests of the n-to-1 aggregation node (nv/agg.rs).
 +use openvm_stark_backend::{keygen::types::MultiStarkVerifyingKey, proof::Proof, test_utils::TestFixture, StarkEngine};
 +use p3_field::PrimeCharacteristicRing;
@@ -743,6 +804,59 @@ index 0000000..aac429f
 +    parent.debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
 +    b
 +}
++
++/// Design G, level 1: main proof (a segment-machine proof whose ctx[0] stands for the code-table
++/// commitment its FETCH table uses) + one PREP-like sub-proof (Fib, public value 2 = its output, the
++/// "commitment"), linked; plus a second sub-proof of a different vk to show heterogeneous children.
++#[test]
++fn agg_g_l1_linked() {
++    use super::agg::{build_l1_linked, check_statement, Link};
++    use openvm_stark_backend::test_utils::FibFixture;
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let fib = FibFixture::new(0, 1, 1 << 5);
++    let (vf, pf) = fib.keygen_and_prove(&engine);
++    let code = pf.public_values[0][2];
++    let mut main = chunk_segments(&[0], 1, 32).remove(0);
++    main.ctx = vec![code];
++    let mut bad_main = main.clone();
++    bad_main.ctx = vec![code + F::ONE];
++    let pr = prove_segs(&[main.clone(), bad_main]);
++    let (vk_m, p_m) = &pr[0];
++    let link = [Link { sub: 1, sub_pv: 2, main_pv: 0 }];
++    let run = |main: &(Vk, Pf), log_rows: usize, mutate: &dyn Fn(&mut Vec<RowMajorMatrix<F>>, &mut Vec<F>)| -> Builder {
++        use openvm_cpu_backend::CpuBackend;
++        use openvm_stark_backend::prover::{AirProvingContext, ProvingContext};
++        let circ = NvCircuit::new(3, log_rows, 1);
++        let airs = circ.airs::<Sha384Config>();
++        let (mut mats, b) = circ.generate_with(|b| {
++            build_l1_linked(b, &[(&main.0, &main.1), (&vf, &pf)], &link);
++        });
++        let mut pvs = b.public_values();
++        mutate(&mut mats, &mut pvs);
++        let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
++            .into_iter()
++            .enumerate()
++            .map(|(i, m)| if i == 0 { AirProvingContext::simple(m, pvs.clone()) } else { AirProvingContext::simple_no_pis(m) })
++            .collect();
++        Sha384CpuEngine::new(debug_params()).debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
++        b
++    };
++    let b = run(&pr[0], 17, &|_, _| {});
++    assert!(b.failures.is_empty(), "{:?}", b.failures);
++    assert!(check_statement(&b.public_values(), &p_m.public_values));
++    println!("AGG_G_L1 rows={} chain_starts={}", b.instrs.len(), b.transcript.starts.len() + 1);
++    let _ = vk_m;
++    // a main proof using a different code commitment than the sub-proof proves: rejected
++    let mut bb = Builder::new(18, 0);
++    build_l1_linked(&mut bb, &[(&pr[1].0, &pr[1].1), (&vf, &pf)], &link);
++    assert!(!bb.failures.is_empty());
++    must_fail("G: broken link", || {
++        run(&pr[1], 17, &|_, _| {});
++    });
++    must_fail("G: statement digest limb", || {
++        run(&pr[0], 17, &|_, pvs| pvs[3] += F::ONE);
++    });
++}
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 index 144421c..7262ed8 100644
 --- a/crates/recursion/src/nv/builder.rs
@@ -961,7 +1075,7 @@ index efc54ef..aaed136 100644
 +    (vk, proof, shapes)
  }
 diff --git a/crates/recursion/src/nv/glue.rs b/crates/recursion/src/nv/glue.rs
-index 0f8dd27..faff34f 100644
+index 0f8dd27..b6a20ee 100644
 --- a/crates/recursion/src/nv/glue.rs
 +++ b/crates/recursion/src/nv/glue.rs
 @@ -501,7 +501,8 @@ pub fn glue_rows(jobs: &[Job2], job_blocks: &[(Vec<Comp>, [u64; 6])], cid_base:
@@ -970,7 +1084,7 @@ index 0f8dd27..faff34f 100644
          let w42 = sha_levers().digest_bytes == 42;
 -        let merkle = j.node || j.tag == 0 || j.tag == crate::sha384::config::TAG_COSET_LEAF;
 +        // ALU-started jobs are truncated (job bus tr = 1): leaves, coset leaves, [agg] range statements
-+        let merkle = j.node || j.tag == 0 || j.tag == crate::sha384::config::TAG_COSET_LEAF || j.tag == crate::sha384::config::TAG_RANGE;
++        let merkle = j.node || j.tag == 0 || j.tag == crate::sha384::config::TAG_COSET_LEAF || j.tag == crate::sha384::config::TAG_RANGE || j.tag == crate::sha384::config::TAG_STATEMENT;
          let trunc = w42 && merkle;
          let mut hs = false;
          if j.node {
@@ -1279,13 +1393,29 @@ index 2bac28e..2ee0cf8 100644
  
  /// Program binding (DESIGN §2.1): the child's ALU (air 0) program columns P0..P3 must
 diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384/config.rs
-index e679d06..38133b3 100644
+index e679d06..40a5117 100644
 --- a/crates/recursion/src/sha384/config.rs
 +++ b/crates/recursion/src/sha384/config.rs
-@@ -43,6 +43,27 @@ pub const TAG_COMMIT: u8 = 4;
+@@ -43,6 +43,43 @@ pub const TAG_COMMIT: u8 = 4;
  pub const TAG_SQUEEZE: u8 = 5;
  pub const TAG_COSET_LEAF: u8 = 6;
  pub const TAG_POW: u8 = 7;
++/// Statement digest (NV level 1 hashes the app proof's public values; final-soundness G1;
++/// identical to lane/pq-recursion-sha384's passthrough)
++pub const TAG_STATEMENT: u8 = 8;
++
++/// The statement message of an app proof's public values: [num_airs, len_0, .., len_{m-1},
++/// pv_0.., pv_1.., ..] (per-AIR lengths make it injective).
++pub fn statement_values(pvs: &[Vec<F>]) -> Vec<F> {
++    let mut v = vec![F::from_usize(pvs.len())];
++    v.extend(pvs.iter().map(|p| F::from_usize(p.len())));
++    v.extend(pvs.iter().flatten().copied());
++    v
++}
++/// Statement digest = SHA-384(prefix, tag 8, statement_values) (truncated like Merkle digests).
++pub fn statement_digest(pvs: &[Vec<F>]) -> Digest {
++    digest_from_bytes(truncate_digest(hash_parts(TAG_STATEMENT, &[&felt_bytes(&statement_values(pvs))])))
++}
 +/// [agg] Segment-range statement digest (aggregation tree; results/pq-base-aggregation):
 +/// D = SHA-384(prefix, tag 9, range_values(..)), truncated like Merkle digests (42 B under the
 +/// lever; narrow-leaf oracle class with tags 0 and 6).

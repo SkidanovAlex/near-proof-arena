@@ -28,7 +28,79 @@ patch, set up with `native/recursion/setup_agg_deps.sh`.
 
 ---
 
-## 0. Summary
+## 0. Summary (revised 2026-10-18 after lane/pq-prover-latency d1a208ef7)
+
+**The design is G.** Measured NV recursion costs **≈ 400–1,250 work cell-eq per NV cell** in the mid case
+(136–658 optimistic). Zerocheck + GKR of the degree-21 SHA AIR in Ext12 is 94–97 % of a layer
+(LATENCY.md §4.3).
+
+My first version assumed 4–30. At the measured cost, every design with recursion levels per segment group
+is out of real time: T8 ≈ 87 s (LATENCY.md), and T2 / H are worse. The pipeline is therefore:
+
+> one shared-transcript base proof over all GPUs (PERF P-PERF-4) → L1 → T1 → T2 → FINAL
+
+LATENCY.md puts it at 5.7 s mid / 1.6 s optimistic after execution, at adversarial 1 Pgas on 32 H200, with
+a 2.6 s mid tail.
+
+**Does G need an n-to-1 NV layer? Only at L1, and only for side proofs.**
+* **No layer per segment.** In G the segments are GPU slices of one proof with one transcript. Continuity
+  between segments (state, memory, timestamps) is a set of ordinary global-bus terms of that single proof,
+  as in PERF §5.2.
+  * There are no per-segment statements, no boundary digests and no continuity checks in a verifier
+    circuit.
+  * The base proof's public values are the chunk statement itself: ctx, enc S_0, enc S_S. L1 hashes them
+    under tag 8, exactly as in the recursion lane's G1 passthrough. Intermediate boundaries never leave
+    the proof.
+  * A digest over segments inside the base proof would add in-AIR SHA work and buy nothing.
+* **L1 is k-to-1 only if independent side proofs exist.** The candidates are P-PERF-8's early PREP and
+  code-hash sub-proofs, which start at t = 0 because contract code is known at chunk start.
+  * L1 then verifies the main base proof plus those sub-proofs, each on its own transcript, and checks
+    cross-proof links. Example: the PREP proof's code-table commitment equals the one the main proof's
+    FETCH table uses.
+  * This is exactly the level-1 capability the prototype provides: no program binding (children are
+    base-layer proofs), linear cost, heterogeneous vks.
+  * **Built and tested: `build_l1_linked`** (`agg_g_l1_linked`). An honest main + sub-proof pass the
+    debug check. A main proof using a different commitment than the sub-proof proves is rejected, and so
+    is a tampered statement limb.
+* **The range-statement tree** (segment statements, N1/N2, tag 9) **stays as the fallback.** It is for
+  configurations a single transcript cannot span, such as several clusters or failure isolation. It is
+  not on the real-time path.
+
+**Grinding: z = 24 on base and inner layers, z = 32 on the final layer** (LATENCY.md §5.3: a per-segment
+z = 32 would cost 697 GPU-s). `bound.py` re-run with that split
+(`base_bound.py`, `bound-base.out`; uniform z = 32 kept in `bound-base-z32.out`):
+* base seg-v1 queries become [536, 256, 83, 50, 36];
+* inner NV becomes [52, 47, 34, 27];
+* worst move: base round-0 query, 2^−268.20;
+* **total 2^−134.88: PASS**. The 7-layer union is 2^−132.08.
+
+The query move is target-calibrated (q·log α − z ≈ −268), so lowering z raises q, not the error.
+
+In design G the chain has ≤ 5 + (number of side proofs) proofs. Even the conservative per-proof union then
+passes (2^−132), so the tree caveat of §9.1 does not arise.
+
+**Pinned base parameters** (§3):
+* c = 1, b = 1, m = 16, k₁ = 1, k = 4;
+* stacked height 2²⁴ per GPU slice, W ≤ 24;
+* ≤ 32 AIRs, degree ≤ 8, interactions ≤ 2²⁸;
+* 42-B digests, z = 24, target 268, T\*.
+
+In G the global proof has W ≈ 690 at 2²⁶ (or slices stacked per GPU, PERF §5.2). The bound terms do not
+depend on W at this size.
+
+**Unchanged findings:**
+* k-to-1 is cheap at level 1: 0 extra columns, per-child rows equal to the 1-ary verifier.
+* It is quadratic at levels ≥ 2 because of in-circuit program binding.
+* The final proof size is independent of aggregation.
+* Base-faithful (§10) is open for any real segment AIR set.
+* Independent proofs must cut at receipt boundaries (§2.3).
+
+The sections below keep the original analysis. Where a figure was superseded, it is marked
+**(superseded)**.
+
+---
+
+## 0a. Original summary (superseded where marked)
 
 * **Statement chain.**
   * A chunk claim fixes an initial boundary state S_0 (from the pre-state root and the chunk inputs) and a
@@ -66,7 +138,7 @@ patch, set up with `native/recursion/setup_agg_deps.sh`.
   At **levels ≥ 2** the in-circuit program binding needs one BIND pass over the parent's program per
   child, which is quadratic in k. So the minimal tree is **2-to-1 with two BIND regions**. A k-ary node at
   levels ≥ 2 needs a preprocessed program commitment (linear in k), §5.3.
-* **Latency at adversarial 1 Pgas on 32 H200, after execution** (`model.py`, §7):
+* **(superseded: A-4 was 1–2 orders of magnitude too low; see §0 and §7)** Latency at adversarial 1 Pgas on 32 H200, after execution (`model.py`, §7):
 
   | design | latency (s) |
   |---|---:|
@@ -203,9 +275,12 @@ PERF §5.2). The same size works there.
 | interactions, message length | ≤ 2²⁸, ≤ 16 | 19 fractions/op adversarial ⇒ 2^27.25 |
 | commitments | 1 (common main; no preprocessed) | current NV restriction |
 | WHIR | c = 1, b = 1 (rate 1/2), m = 16, k₁ = 1, k = 4, final length 2⁷, keep-domain, WHIR-Y, multiproof, coset leaves, z = 32, target 268 (236 query bits) | base LDE 2× (PERF: base rate 1/2); m = 16 recovers query bits at rate 1/2 |
-| queries per round | **[518, 247, 80, 48, 34]** [B] | — |
+| queries per round | **[536, 256, 83, 50, 36] at z = 24** (current); [518, 247, 80, 48, 34] at z = 32 [B] | — |
+| grinding | **z = 24** on base, node and inner layers; z = 32 only on the final layer | LATENCY.md §5.3 |
 
-**`bound.py` result** (`bound-base.out`, `bound.py` @ f8c168f98, run via `base_bound.py`):
+**`bound.py` result, z split (current)** (`bound-base.out`): ε_rbr = 2^−268.20 (base round-0 query), total ≤ **2^−134.88, PASS** (7-layer union 2^−132.08); inner NV at z = 24 has queries [52, 47, 34, 27]; L1 of design G (NV AIRs, c = 1, b = 3, m = 8) [173, 128, 63, 42, 31].
+
+**`bound.py` result, uniform z = 32** (`bound-base-z32.out`, `bound.py` @ f8c168f98, run via `base_bound.py`):
 * worst move: base round-0 WHIR query, 2^−268.00;
 * ε_rbr = 2^−268.00;
 * total ≤ **2^−134.68**, **PASS**; the conservative 7-layer union is 2^−131.87.
@@ -339,7 +414,32 @@ The prototype's native check is `agg::check_range_statement(pvs, &RangeStmt)`.
 
 ---
 
-## 7. Prover time and memory per level (`model.out`)
+## 7. Prover time and memory per level
+
+**Current (design G).** Use LATENCY.md (lane/pq-prover-latency, d1a208ef7). It measures NV layer cost
+(zerocheck + GKR dominate) and distributes each tail layer over the GPUs. At adversarial 1 Pgas, after
+execution:
+
+| | 8 H200 | 16 H200 | 32 H200 |
+|---|---:|---:|---:|
+| optimistic / mid / pessimistic (s) | 8.9 / 20.9 / 68 | 4.3 / 12.3 / 46 | 1.6 / 5.7 / 23 |
+
+* The tail is 2.6 s mid (0.8 s optimistic) at 32 H200.
+* The largest remaining lever is the SHA AIR's zerocheck: degree 9 gives a 1.84 s mid tail.
+* `model.out` was re-run with the measured 140 / 400 / 1,250 cell-eq per NV cell. It puts every node on
+  one GPU, so its absolute numbers overstate G: 7.3 / 17 / 50 s.
+* It is kept for the **ratios** between designs at equal node placement, at 400 cell-eq per NV cell:
+
+  | design | after execution (s) |
+  |---|---:|
+  | G | 17 |
+  | H | 24 |
+  | T8 | 41 |
+  | T2 | 109–172 |
+
+  Trees stay 2.4–10× worse than G.
+
+### 7.0 Original table (superseded: A-4 = 4–30 cell-eq per NV cell)
 
 All figures are [A] model outputs at adversarial 1 Pgas on 4 × 8 H200 at 7.1 G cell-eq/s per GPU (PERF,
 35 % of peak). Each latency cell is the 4 / 10 / 30 cell-eq per NV cell triple.
@@ -384,7 +484,9 @@ Measured prototype numbers (CPU, test parameters) are in `README.md`.
 * **A-2** SWIRL main cells and work per op are PERF §4.6's ML figures (98 / 207 / 455 cell-eq at E = 10),
   scaled ×1.2 for Ext12. Unmeasured on SWIRL.
 * **A-3** GPU rate 7.1 G cell-eq/s per H200 (35 % of peak INT32; PERF §0). There is no H200 measurement.
-* **A-4** NV prover work per NV cell is 4–30 cell-eq: the degree-21 SHA AIR's zerocheck dominates.
+* **A-4 (superseded)** NV prover work per NV cell was assumed to be 4–30 cell-eq.
+  * **Measured/modelled by lane/pq-prover-latency: 400–1,250 (mid), 136–658 (optimistic).**
+  * The degree-21 SHA AIR's zerocheck dominates, as stated below.
   * Measured on CPU, the NV prover runs at ≈ 3.7 k cells/s per thread, against 16 M for PERF's calibrated
     LDE.
   * **No GPU NV prover exists.**
@@ -481,7 +583,19 @@ stays **relies-on-unreviewed / open**.
 
 ---
 
-## 11. Risks (ranked)
+## 11. Risks (ranked; revised)
+
+* **R0 (new, decisive)** Recursion layers cost ≈ 400–1,250 cell-eq per NV cell (LATENCY.md).
+  * Only design G can be real time, and it needs a cluster-wide shared-transcript SWIRL prover:
+    sumcheck all-reduces, one WHIR over all GPUs, WHIR round codewords by all-gather.
+  * Nothing of that prover exists yet.
+  * The tail (2.6 s mid) is on the critical path and set by the SHA AIR's zerocheck.
+* **R1–R8 below**:
+  * R2 is now measured (see R0).
+  * R3, R5 and R7 apply only to the tree fallback.
+  * R1, R4 and R6 still apply to G.
+
+
 
 * **R1 Base cost on SWIRL at Ext12.** ≈ 546 cell-eq per adversarial op, against PERF's univariate 281.
   That alone is 1.73 s after execution on 32 H200.
@@ -504,7 +618,21 @@ stays **relies-on-unreviewed / open**.
 * **R8 Inner-NV LDE at c = 15, b = 6 is 960×.** Tree nodes must use low blowup. Their verification then
   costs more queries in the parent: [168, 124, 61, 40, 30] instead of [50, 46, 33, 26].
 
-## 12. Next steps (phase 2)
+## 12. Next steps (phase 2, revised for G)
+
+1. **G's L1.** Productise `build_l1_linked`:
+   * fixed side-proof slots, so the program shape is fixed;
+   * vk pre-hash constants per side-proof kind;
+   * link layout.
+
+   Merge with the recursion lane's G1 passthrough: tag 8 and `PvD` are already identical.
+2. Chunk-statement public values of the global base proof: ctx, enc S_0, enc S_S, and the layout V_d
+   recomputes.
+3. Shared-transcript SWIRL prover across GPUs (with lane/pq-prover-latency).
+4. Base-faithful BF1/BF2 for the first real seg-v1 tables.
+5. Tree fallback items (below) only if a multi-cluster configuration is wanted.
+
+Original list:
 
 1. Generalise the prototype's N2 to two BIND regions: per-child E-table reserved rows, a region index in
    BIND rows, and two ACC rows. Then prove a real 2-to-1 N2 with binding.

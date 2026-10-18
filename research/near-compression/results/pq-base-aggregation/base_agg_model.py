@@ -32,7 +32,10 @@ E_SCALE = 1.2                     # [A] Ext12 instead of Ext10: GKR/zerocheck ex
 GPU_RATE = 7.1e9                  # [A] work cell-eq / s / H200 at 35 % of peak INT32 (PERF §0)
 GPUS = 32                         # 4 x 8 H200
 EXEC_S = 1.2                      # [A] native execution of 1 Pgas with checkpoints (PERF §5.5)
-NV_WORK_PER_CELL = (4, 10, 30)    # [A] work cell-eq per NV cell (degree-21 SHA AIR zerocheck); unmeasured
+# [M/model] work cell-eq per NV cell: lane/pq-prover-latency LATENCY.md §4.3 (d1a208ef7): optimistic
+# 136-658, mid 396-1,247 (zerocheck + GKR of the degree-21 SHA AIR in Ext12 = 94-97 % of a layer).
+# (The first version of this model assumed 4 / 10 / 30, 1-2 orders of magnitude too low.)
+NV_WORK_PER_CELL = (140, 400, 1250)
 LEVEL_OVERHEAD_S = 0.02           # [A] per-level fixed cost (transfers, keygen-free prove setup)
 
 # ---------------------------------------------------------------- pinned base shape [B]
@@ -163,7 +166,7 @@ def report():
           f"L1 2^{lg(g1['cells']):.2f} | N1 2^{lg(n1['cells']):.2f} | N2 2^{lg(n2['cells']):.2f} (child q {n2['q_child']}) | "
           f"N1x8 2^{lg(n1w['cells']):.2f} | N2x4 2^{lg(n4_cells):.2f} | H1 2^{lg(h1['cells']):.2f}; node WHIR {NODE_WHIR}")
     print("   latency after execution = base (GPU-bound remainder) + levels on the critical path "
-          "[A: 7.1 G cell-eq/s/GPU; NV work per cell 4 / 10 / 30; node GPUs as listed]:")
+          "[A: 7.1 G cell-eq/s/GPU; NV work per cell 140 / 400 / 1250 (LATENCY.md); node GPUs as listed]:")
     for name, dsg in designs.items():
         cells_line = []
         for w in NV_WORK_PER_CELL:

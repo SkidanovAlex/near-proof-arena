@@ -31,7 +31,10 @@ def patch(s, old, new, count=1):
 # per-shape c (odd domain factor) and m (list multiplicity); defaults = bound.py's constants
 src = patch(src, "sch = whir_schedule(s['log_h'], s['b'], s['k1'], s['k'], s['lf'], s.get('keep', True))",
             "sch = whir_schedule(s['log_h'], s['b'], s['k1'], s['k'], s['lf'], s.get('keep', True), "
-            "c=s.get('c', C_ODD), m=s.get('m', M_LIST))")
+            "c=s.get('c', C_ODD), m=s.get('m', M_LIST), z=s.get('z', Z))")
+# per-shape grinding z (prover-latency lane: z = 24 on base and inner layers, 32 on the final layer)
+src = patch(src, "add(f'whir query r{j} incl. grinding z={Z} (L4.5, L5.1)', -Z + r['q'] * r['log_alpha'])",
+            "add(f'whir query r{j} incl. grinding z={s.get(\"z\", Z)} (L4.5, L5.1)', -s.get('z', Z) + r['q'] * r['log_alpha'])")
 src = patch(src, "lsum(log_mca(W - 1, r0['log_n'], r0['log_rho']),",
             "lsum(log_mca(W - 1, r0['log_n'], r0['log_rho'], m=s.get('m', M_LIST)),")
 src = patch(src, "lsum(log_mca(1, ln, r['log_rho']),", "lsum(log_mca(1, ln, r['log_rho'], m=s.get('m', M_LIST)),")
@@ -52,11 +55,18 @@ NV = ns['NV_COMMON']
 #   (incl. rotations); interactions <= 2^28 (19 fractions/op adversarial = 2^27.25), message
 #   length <= 16; T* transcript, 42-B digests, z = 32, target 268, keep-domain, k1 = 1, k = 4.
 # WHIR domain: c = 1 (plain 2-adic), log_blowup b = 1 (rate 1/2), list multiplicity m = 16.
-BASE = dict(log_int=28, msg_len=16, n_constraints=2**14, airs=32, degree=8, cols=1024,
+# z split (Z_SPLIT=1, default): z = 24 on base, node and inner layers, z = 32 on the final layer
+# (lane/pq-prover-latency LATENCY.md §5.3).  Z_SPLIT=0 reproduces the uniform z = 32 run.
+Z_SPLIT = os.environ.get('Z_SPLIT', '1') == '1'
+ZI = 24 if Z_SPLIT else 32
+_inner = dict(ns['SHAPES']['inner NV (layers 1..d-1)'])
+if Z_SPLIT:
+    _inner.pop('expect_q')
+BASE = dict(z=ZI, log_int=28, msg_len=16, n_constraints=2**14, airs=32, degree=8, cols=1024,
             log_h=24, b=1, k1=1, k=4, lf=7, W=24, c=1, m=16, commits=1)
 SHAPES = {
     'final (layer d)': ns['SHAPES']['final (layer d)'],
-    'inner NV (layers 1..d-1)': ns['SHAPES']['inner NV (layers 1..d-1)'],
+    f'inner NV (layers 1..d-1), z={ZI}': dict(_inner, z=ZI),
     # base, pinned (production segment shape)
     'base seg-v1 (c=1, b=1, m=16)': dict(BASE),
     # alternatives considered (DESIGN-BASE.md §3.2)
@@ -67,17 +77,21 @@ SHAPES = {
     # degree <= 8, log_h 17), re-parameterised to U-10 (its recorded proof: b = 7, no PoW)
     'base gas-failure5 vk @ U-10 (c=1, b=7, m=3)': dict(log_int=26, msg_len=32, n_constraints=531, airs=3,
                                                       degree=8, cols=2 * 295, log_h=17, b=7, k1=1, k=3,
-                                                      lf=7, W=3, c=1, m=3, commits=1),
+                                                      lf=7, W=3, c=1, m=3, commits=1, z=ZI),
     # 2-to-1 aggregation node: NV AIRs; 2 children -> ~2x cells; shape at the inner-NV settings
-    'agg node N2 (2-to-1, NV AIRs)': dict(NV, log_int=25.4, log_h=20, b=6, k1=1, k=4, lf=7, W=141),
+    'agg node N2 (2-to-1, NV AIRs)': dict(NV, log_int=25.4, log_h=20, b=6, k1=1, k=4, lf=7, W=141, z=ZI),
     # level-1 node N1 verifying k1 = 2 base segments (NV AIRs, its own WHIR at b = 3, c = 15)
-    'agg node N1 (2 segments, NV AIRs)': dict(NV, log_int=27.4, log_h=21, b=3, k1=1, k=4, lf=8, W=141),
+    'agg node N1 (2 segments, NV AIRs)': dict(NV, log_int=27.4, log_h=21, b=3, k1=1, k=4, lf=8, W=141, z=ZI),
+    # design G: L1 = NV verifying the one global base proof (+ PREP sub-proofs); log_h 22 at b = 3
+    'L1 (design G, NV AIRs, c=1, b=3, m=8)': dict(NV, log_int=27.0, log_h=22, b=3, k1=1, k=4, lf=5, W=141,
+                                                  c=1, m=8, z=ZI),
 }
 ns['SHAPES'] = SHAPES
 ns['main'].__globals__['SHAPES'] = SHAPES
 
 if __name__ == '__main__':
-    print(f"bound.py @ {BOUND_COMMIT[:9]} (lane/pq-final-soundness), base shapes pinned by DESIGN-BASE.md §3\n")
+    print(f"bound.py @ {BOUND_COMMIT[:9]} (lane/pq-final-soundness), base shapes pinned by DESIGN-BASE.md §3; "
+          f"z = {ZI} on base/inner/node layers, 32 on the final layer\n")
     ok = True
     try:
         ns['main']()
@@ -86,7 +100,6 @@ if __name__ == '__main__':
     # tree-shaped composition: the single-database theorem needs no union; a per-proof union
     # over every proof of a 1 Pgas tree (S segments + S - 1 nodes + tail) is shown for reference
     import math
-    sch, mv = ns['layer_moves'](SHAPES['inner NV (layers 1..d-1)'])
     eps = max(e for shp in SHAPES.values() for _, e in ns['layer_moves'](shp)[1])
     tot = ns['fs_bound_k0'](eps, ns['T_LOG'])
     print(f"\ntree (S = 146 segments, 145 nodes, 4 tail layers = 295 proofs): single database 2^{tot:.2f}; "

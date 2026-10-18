@@ -2,12 +2,27 @@
 
 Lane `lane/pq-base-aggregation`. The architecture is in `DESIGN-BASE.md`.
 
+**Revision (2026-10-18, after lane/pq-prover-latency d1a208ef7).**
+
+The design is **G**: one shared-transcript base proof → L1 → T1 → T2 → FINAL.
+* **G has no aggregation layer over segments.** Continuity between segments is global-bus terms inside the
+  one proof.
+* **L1 is k-to-1 only for independent side proofs** (P-PERF-8 PREP / code-hash). The prototype covers it:
+  `build_l1_linked`, test `agg_g_l1_linked`.
+  * An honest main + sub-proof pass the full debug check (19,028 program rows, 2 transcript chains).
+  * A main proof whose code commitment differs from the sub-proof's is rejected, by the program and by the
+    circuit.
+  * A tampered statement limb is rejected.
+* **Bound with z = 24 on base and inner layers, z = 32 on the final layer: PASS, 2^−134.88**
+  (`bound-base.out`; uniform z = 32: 2^−134.68 in `bound-base-z32.out`).
+* The range-statement tree (N1/N2) below is the fallback for multi-cluster setups.
+
 ## What is here
 
 | file | what |
 |---|---|
 | `DESIGN-BASE.md` | the end-to-end architecture: base AIR set, segments, statement, aggregation, V_d digest, cost per level, assumptions, tree soundness, Base-faithful (S-22), risks |
-| `base_bound.py` → `bound-base.out` | S-24: final-soundness `calc/bound.py` (read with `git show` at f8c168f98, not copied) re-run with the pinned base shapes. **PASS, 2^−134.68** |
+| `base_bound.py` → `bound-base.out` (z split), `bound-base-z32.out` | S-24: final-soundness `calc/bound.py` (read with `git show` at f8c168f98, not copied) re-run with the pinned base shapes. **PASS, 2^−134.88 (z = 24 base and inner, 32 final); 2^−134.68 (uniform z = 32)** |
 | `base_agg_model.py` → `model.out` | cost model for designs G / T2 / T8 / H at adversarial 1 Pgas on 32 H200 |
 | `../../native/recursion/patches/openvm-recursion-agg.patch` | the prototype: an overlay on `openvm-recursion-sha384.patch` |
 | `../../native/recursion/setup_agg_deps.sh` | builds the overlaid tree under `NEARPROOF_PQ_DEPS` (default `/data/illia/nearproof-deps/pq-base-agg`) and verifies it |
@@ -142,6 +157,21 @@ The alternatives and node shapes also pass (`bound-base.out`).
 **Tree caveat.** A per-proof union over a 295-proof tree gives 2^−126.48, which **fails** as a union. The
 claim needs Theorem 7.4's single database (DESIGN §9.1).
 
-## agg_chain (real proofs)
+## agg_chain (real proofs, CPU, 32 threads; `logs/agg-chain-T10*.log`)
 
-(filled in below when the run completes)
+Two N1 nodes, each 2-to-1 over two Fib-machine segment proofs. Parameters: PARENT n_stack 16, b 3,
+10 query bits, queries [8, 5, 4, 3, 2, 2].
+
+| node | cells | program rows | Merkle nodes | chain starts | proof | prove | peak RSS |
+|---|---:|---:|---:|---:|---|---:|---:|
+| N1a (segments 0-1) | 21.1M | 19,030 | 464 | 2 | 139,609 B (GKR 40,904 / relations 44,640 / stacking 5,776 / WHIR 48,104) | 845–932 s | 4.8 GB |
+| N1b (segments 2-3) | 21.1M | 19,030 | 464 | 2 | 139,609 B | 384–922 s | 5.5 GB |
+
+* Both proofs verify natively.
+* Their exposed public values equal `check_range_statement` of the composed range statements.
+* **N2** (2-to-1 over the two N1 proofs) has a program of 118,916 rows (59.5k per NV child). Its trace
+  (NvAir 2¹⁹) did not prove within the lane's 16 GB cap:
+  * first attempt: stacked-height error at n_stack 16;
+  * second attempt: OOM-killed at n_stack 17.
+* The level-2 node logic is instead checked in the debug checker by `agg_node_debug` (see the log).
+* Since G needs no N2, this is not pursued further.
