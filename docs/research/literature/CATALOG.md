@@ -28,6 +28,13 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Numbers:** Their tables: eps 0.25-0.35, m=16-32; smaller field, not smaller proofs.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`, `docs/research/NOVEL-FINDINGS.md`
 
+### [ReedWeave26]
+
+- **Citation:** (ePrint 2026/2147). *ReedWeave (relaxed smoothness for RS IOPPs)*. ePrint 2026/2147, 2026. <https://eprint.iacr.org/2026/2147>
+- **Topics:** T1 · **Relevance:** N — not-yet-evaluated (alternative to ×15 domains)
+- **Gives:** Relaxes domain smoothness by a factor m (abstract only).
+- **Where in repo:** `research/novelty/PRIOR-ART.md`
+
 ### [SWIRL]
 
 - **Citation:** OpenVM team (Axiom). *SWIRL: the OpenVM 2.0 proof system (stark-backend v2: LogUp-GKR, zerocheck, stacking, WHIR)*. whitepaper, openvm.dev/swirl.pdf, 2026. <https://openvm.dev/swirl.pdf>
@@ -74,9 +81,9 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 
 - **Citation:** WizardOfMenlo / worldfnd. *whir (Rust reference implementation)*. GitHub, 2025. <https://github.com/worldfnd/whir>
 - **Topics:** T1, T7 · **Relevance:** U — used (parameter regime cross-check)
-- **Gives:** Reference WHIR code incl. params/regime.rs (unique, Johnson, capacity regimes).
+- **Gives:** Reference WHIR code incl. params/regime.rs (unique, Johnson, capacity regimes); commits 1d392aa (3-smooth NTT) and 2556d4e (exact non-power-of-two index sampler) are prior art for NF-6.
 - **Numbers:** Johnson agreement sqrt(rho)+eta, eta=sqrt(rho)/20; capacity cites STIR Conj. 5.6 (excluded).
-- **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`
+- **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`, `research/novelty/PRIOR-ART.md`
 
 ### [ACFY24]
 
@@ -134,6 +141,13 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Citation:** H. Zeilberger, B. Chen, B. Fisch. *BaseFold: Efficient Field-Agnostic Polynomial Commitment Schemes from Foldable Codes*. CRYPTO 2024; ePrint 2023/1705, 2023. <https://eprint.iacr.org/2023/1705>
 - **Topics:** T1 · **Relevance:** N — not-yet-evaluated (WHIR chosen)
 - **Gives:** Multilinear PCS from foldable codes (FRI-like with sumcheck).
+
+### [ECFFT2]
+
+- **Citation:** E. Ben-Sasson, D. Carmon, S. Kopparty, D. Levit. *Elliptic Curve Fast Fourier Transform (ECFFT) Part II*. ePrint 2022/1542, 2022. <https://eprint.iacr.org/2022/1542>
+- **Topics:** T1 · **Relevance:** R — evaluated-rejected (L4-C: extension/EC domains killed; ×15 chosen)
+- **Gives:** FFT-friendly domains over any field via elliptic curves.
+- **Where in repo:** `lane/pq-x15-domains:research/near-compression/l4-study/C-invention.md`, `research/novelty/PRIOR-ART.md`
 
 ### [GLSTW21]
 
@@ -526,6 +540,13 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Citation:** D. Unruh. *Compressed Permutation Oracles (And the Collision-Resistance of Sponge/SHA3)*. ePrint 2021/062, 2021. <https://eprint.iacr.org/2021/062>
 - **Topics:** T3 · **Relevance:** C — cited (background)
 - **Gives:** Compressed oracles for permutations (attempt).
+
+### [ethSTARK21]
+
+- **Citation:** StarkWare. *ethSTARK Documentation (v1.2)*. ePrint 2021/582, 2021. <https://eprint.iacr.org/2021/582>
+- **Topics:** T3, T1 · **Relevance:** C — cited (closest prior art for NF-1)
+- **Gives:** STARK protocol spec incl. grinding (§3.11.3) and its soundness theorems (§6.3 Thms 6/8).
+- **Where in repo:** `research/novelty/PRIOR-ART.md`, `docs/research/NOVEL-FINDINGS.md`
 
 ### [CY20-barriers]
 

@@ -7,7 +7,7 @@ Indexed, maintained record of the papers, code and systems relevant to NEAR Proo
 * [refs.bib](refs.bib): BibTeX for every entry (best effort; keys = tags).
 * Related registers: `docs/research/NOVEL-FINDINGS.md` (our own candidate results; use this catalogue for prior-art fields).
 
-**Counts:** 255 items in 11 topics. used 35, evaluated (kept / watch) 62, evaluated-rejected 39, cited only 58, not-yet-evaluated 61.
+**Counts:** 258 items in 11 topics. used 35, evaluated (kept / watch) 62, evaluated-rejected 40, cited only 59, not-yet-evaluated 62.
 
 ## How to maintain
 
@@ -20,12 +20,13 @@ Indexed, maintained record of the papers, code and systems relevant to NEAR Proo
 ## Topics
 
 
-### T1. Hash-based IOPPs and polynomial commitments (31)
+### T1. Hash-based IOPPs and polynomial commitments (34)
 
 * [CF26](CATALOG.md#cf26) R · FRI Soundness Above Johnson via Threshold Halving (2026)
 * [LXYYZ26](CATALOG.md#lxyyz26) R · How to Fold Linear Error-Correcting Codes with Optimal Proximity Gaps (2026)
 * [Mar26-IsaSTARK](CATALOG.md#mar26-isastark) N · Isabelle/STARK: query-bounded STARK soundness (2026)
 * [Plonky3](CATALOG.md#plonky3) U · Plonky3 toolkit (BabyBear/KoalaBear/M31, FRI, uni-stark, security calculator) (2026)
+* [ReedWeave26](CATALOG.md#reedweave26) N · ReedWeave (relaxed smoothness for RS IOPPs) (2026)
 * [SWIRL](CATALOG.md#swirl) U · SWIRL: the OpenVM 2.0 proof system (stark-backend v2: LogUp-GKR, zerocheck, stacking, W… (2026)
 * [Ska26](CATALOG.md#ska26) C · SoK: Hash-Based Polynomial Commitments and Low-Degree Tests: From FRI to Basefold, STIR… (2026)
 * [simple-rbr-fri](CATALOG.md#simple-rbr-fri) N · simple-rbr-fri: Lean 4 proof of FRI round-by-round soundness (2026)
@@ -49,7 +50,9 @@ Indexed, maintained record of the papers, code and systems relevant to NEAR Proo
 * [BGKTTZ23](CATALOG.md#bgkttz23) N · Fiat-Shamir Security of FRI and Related SNARKs (2023)
 * [DP23-Binius](CATALOG.md#dp23-binius) E · Succinct Arguments over Towers of Binary Fields (Binius) (2023)
 * [ZCF23-Basefold](CATALOG.md#zcf23-basefold) N · BaseFold: Efficient Field-Agnostic Polynomial Commitment Schemes from Foldable Codes (2023)
+* [ECFFT2](CATALOG.md#ecfft2) R · Elliptic Curve Fast Fourier Transform (ECFFT) Part II (2022)
 * [GLSTW21](CATALOG.md#glstw21) N · Brakedown: Linear-time and field-agnostic SNARKs for R1CS (2021)
+* [ethSTARK21](CATALOG.md#ethstark21) C · ethSTARK Documentation (v1.2) (2021)
 * [Virgo20](CATALOG.md#virgo20) C · Transparent Polynomial Delegation and Its Applications to Zero Knowledge Proof (Virgo) (2020)
 * [BBHR18](CATALOG.md#bbhr18) R · Fast Reed-Solomon Interactive Oracle Proofs of Proximity (FRI) (2018)
 * [BCS16](CATALOG.md#bcs16) U · Interactive Oracle Proofs (2016)
@@ -79,7 +82,7 @@ Indexed, maintained record of the papers, code and systems relevant to NEAR Proo
 * [Zei24-BFLD](CATALOG.md#zei24-bfld) C · Basefold in the List Decoding Regime (2024)
 * [BCIKS20](CATALOG.md#bciks20) U · Proximity Gaps for Reed-Solomon Codes (2020)
 
-### T3. Fiat–Shamir / BCS in the ROM and QROM; hashing, Merkle binding, grinding (69)
+### T3. Fiat–Shamir / BCS in the ROM and QROM; hashing, Merkle binding, grinding (70)
 
 * [AESgrind26](CATALOG.md#aesgrind26) N · AES-Based Grinding for MPC-in-the-Head Signatures (2026)
 * [BCG26](CATALOG.md#bcg26) E · It Takes Two: Proofs of Work for Fiat-Shamir (2026)
@@ -128,6 +131,7 @@ Indexed, maintained record of the papers, code and systems relevant to NEAR Proo
 * [HLR21](CATALOG.md#hlr21) R · Fiat-Shamir via List-Recoverable Codes (or: Parallel Repetition of GMW is not Zero-Know… (2021)
 * [LMS21](CATALOG.md#lms21) C · Post-Quantum Zero Knowledge, Revisited (collapsing Sigma-protocols) (2021)
 * [Unr21](CATALOG.md#unr21) C · Compressed Permutation Oracles (And the Collision-Resistance of Sponge/SHA3) (2021)
+* [ethSTARK21](CATALOG.md#ethstark21) C · ethSTARK Documentation (v1.2) (2021)
 * [CY20-barriers](CATALOG.md#cy20-barriers) C · Barriers for Succinct Arguments in the Random Oracle Model (2020)
 * [DFM20](CATALOG.md#dfm20) R · The Measure-and-Reprogram Technique 2.0: Multi-Round Fiat-Shamir and More (2020)
 * [HM20](CATALOG.md#hm20) U · Quantum Time-Space Tradeoff for Finding Multiple Collision Pairs (2020)
