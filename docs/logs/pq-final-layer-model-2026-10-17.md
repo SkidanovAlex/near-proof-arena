@@ -617,3 +617,13 @@ model 308.5 → 298.9 KB.
 * Base stress b6h21: round 0 must be J(64) (squared O-2 list with 2 commitments → 2^-231.8);
   +2 base queries; needs bound-aware per-round regime (soundness fix, adopted, NV lane).
 * E2E vertical slice lane started (lane/pq-e2e-slice, user choice); GPU: CPU-only for now.
+
+## 2026-10-18 — streamed commit: best-shape final measured (lane/pq-stream-commit @ 117d85604)
+
+* All WHIR codewords streamed (recompute on query, top Merkle levels kept, no disk).
+  b=2 final streamed is byte-identical (sha256 e5e526a2…), peak 64.4 → 35.5 GB.
+* Best shape b=7, ×15, log_h 20, on the measured 7cdc8c90e chain (no O-2/v4/cut):
+  m=3 339,747 B (model 339,370), m=64 330,149 B (model 329,478); peak ~39 GB, ~61 min.
+  Model validated within 0.2 % at the target shape. GKR temp tables now set the peak.
+* Next: re-run the ~3 h chain on the recursion lane's final circuit (v4 + program cut +
+  cert-gated O-2) and prove the streamed final → the measured < 300 KB number.
