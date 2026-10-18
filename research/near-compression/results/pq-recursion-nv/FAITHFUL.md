@@ -12,7 +12,7 @@ counts), `faithful_sha_tests.rs` (SHA/GLUE), `faithful_tr_tests.rs` (transcript/
 Scripts: `scripts/sha_carry_bounds.py` (exact carry/residual bounds, 1,319 checks),
 `scripts/run_faithful.sh` (everything; 48 B and 42 B + coset-leaf modes).
 
-## R. Re-audit at lane/pq-recursion-sha384 @ 95c08894c (head 7cdc8c90e), 2026-10-18
+## R. Re-audit at lane/pq-recursion-sha384 @ 95c08894c (head 7cdc8c90e), then 2bf42f573 (§R.7), 2026-10-18
 
 **This section supersedes §0, §1.1 (public values), §2(b) B-2, §2(d)(vi) and §6/§7 where they
 differ.** The circuit at 7cdc8c90e is the one at 95c08894c. Later commits (9be29d65b, a647370c2,
@@ -213,10 +213,77 @@ in-view columns `v<i>` and names every T\* HASH field.
   * The carry bounds are computed for k = 3 only.
   * `nv_app_binding` (17 GB) was not re-run under the 16 GB cap; main's log
     `nvp2e-app.log` reports honest ok and tamper rejected.
-* **Not landed yet; audit when they arrive:** the O-2 per-round agreement table in the vk, and
+* **Landed and audited:** the O-2 agreement table (§R.7). **Not landed yet:**
   "4 program rows per binding row". The latter changes BIND (B1–B4: the pair step, the
   `ya/2` byte check, the E1 reads); §2(b)/R.2 and `nv_bind_tamper` must be redone.
 
+
+### R.7 Re-audit of 2bf42f573 (O-2 agreement table; sampled words from GLUE digest rows)
+
+**Sampled-word source.** The HASH → SAMP word bus (t.word) is gone, which brings NvAir from
+55 to 49 interactions per row. The words now come from GLUE.
+
+* *GLUE side.* A digest row (last block, q ∈ {4, 5, 6}) holds output words 2(q−4) and
+  2(q−4)+1, pinned by the compression's iface output pair. It may send each of its two words
+  once more on the digest bus as `(job, 8 + w, l0, l1, l2, 0, 0, 0)`, with count `dx[h]`, where:
+  * `dx` is boolean;
+  * `dx = 0` off digest rows;
+  * `dx = 0` on truncated jobs (`tr = 1`: leaf, node, statement).
+* *SAMP side.* Each SAMP row receives `(job, wi + 8, limbs(b), 0, 0, 0)`. A run starts at
+  `wi = w0`, w0 is constant in the run, and the run summary on t.sample now carries w0. The HASH
+  row receives that summary with `w0 = op_p`: B_1 is read from word 1, every other block from
+  word 0. The rdw prefix still fixes last_word and `full`.
+* *Soundness.* Word keys 8..13 are disjoint from digest-pair keys: GLUE/HASH pairs use 0..2,
+  ALU `Dig` uses P3 + h ≤ 3. Job ids are unique (R.3.1), and the SAMP job is pinned to its HASH
+  row through t.sample.
+
+  So for every (job, w), the number of SAMP rows reading it equals GLUE's dx ∈ {0, 1}. That
+  means each word of the hash row's output is read at most once, and the run structure (start
+  w0, consecutive words, last_word from HASH) fixes exactly which words are read. The limbs are
+  the GLUE state pair, i.e. the SHA output (§2(c) C8) and HASH's state_out (pairs on the same
+  bus). Truncated jobs cannot feed samples (`dx·tr = 0`), so samples come only from the full
+  48-byte transcript blocks.
+
+  Invariant D\* (R.3) step 5 therefore holds with "word bus" replaced by "digest bus, key
+  8 + w".
+* *Tests.* `nv_sample_word_source_tamper` (main): a run starting at word 1, a dropped word send
+  and an extra word send are all rejected. Added here: the DOF runs below, with the new columns
+  (GLUE dx, SAMP w0) unnamed. Unnamed columns now count as in-view, so any undetected one would
+  fail.
+
+**O-2 agreement table.**
+* The WHIR query counts are derived from a per-round table in `WhirConfig`, which is bound into
+  the vk pre-hash. The native verifier checks that the table is canonical; the NV program checks
+  it at generation (`check_agreement`).
+* For NV this is a change of program constants only (F2: vk_{i−1}'s params are constants of
+  P_i), not of the constraints. The per-round query counts that the program unrolls are the
+  table's (`o2_agreement_table`: NV debug-accepts an O-2 child; altered or weaker tables are
+  rejected natively and change the pre-hash).
+* The soundness of the table's query counts belongs to the protocol proof.
+
+**ε_LogUp** with 49 interactions per row: N ≤ 2^24.98 at the 2^19 shape (2^23.98 at 2^18;
+`nv_logup_counts`), and ℓ = 20, so ε ≤ 2^−317.6.
+
+**Verdict: no new soundness bug.**
+
+Run on 2bf42f573 (merged as f9bffb304): every `nv_` test except `nv_chain` / `nv_app_binding`
+passes. That is 44 / 44 in 48 B (incl. `o2_agreement_table`, `nv_sample_word_source_tamper`,
+`nv_statement_passthrough`, the B1–B6 tests) and 43 / 43 in 42 B + coset (passthrough skipped
+there). The DOF covers every cell:
+
+| fixture | digests | cells | constraint | bus | undetected | unexpected | mem-coupled accepted |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Fib | 48 B | 10,781,504 | 9,950,626 | 597,157 | 233,721 | 0 | 0 / 17,292 |
+| interactions + levers | 48 B | 10,781,504 | 9,911,216 | 627,068 | 243,220 | 0 | 0 / 17,592 |
+| ×15 + WHIR levers | 48 B | 7,979,840 | 7,388,431 | 422,529 | 168,880 | 0 | 0 / 15,648 |
+| app table | 48 B | 10,781,504 | 9,944,790 | 600,305 | 236,409 | 0 | 0 / 17,400 |
+| Fib | 42 B + coset leaf | 7,979,840 | 7,323,150 | 462,622 | 194,068 | 0 | 0 / 15,780 |
+| interactions + levers | 42 B + coset leaf | 7,979,840 | 7,283,717 | 492,402 | 203,721 | 0 | 0 / 16,080 |
+| ×15 + WHIR levers | 42 B + coset leaf | 7,979,840 | 7,427,477 | 392,525 | 159,838 | 0 | 0 / 14,400 |
+| app table | 42 B + coset leaf | 7,979,840 | 7,317,314 | 465,770 | 196,756 | 0 | 0 / 15,888 |
+
+Still to land: "4 program rows per binding row". It changes BIND, so §2(b), R.2 and
+`nv_bind_tamper` must be redone.
 
 ## 0. Result (audit of 3c9d479ab; see §R for the current head)
 
