@@ -1,0 +1,16 @@
+# pq-e2e-slice chunk claim v0. STUB = carried in the statement, read by no AIR.
+chain_id slice-testnet
+height 1000
+prev_block_hash 61a68db349de9ad29892b31383227fd68d88191ebdfdc3f32a53a52f190eacdf
+gas_price 100000000
+protocol_version 86
+pre_state_root cecda5378f7f73733b22e3921eaed3161076f92043a0b2374d8457f158779b97
+receipt slice.test main 1000000000000000 44d3621bdfae8ea2da59c74e7f57f04824286160690b416415f5809ab792e332
+entry 0 0 999999914400189 0 0
+code 0 0 65 12 1 0 3291024
+code 1 0 65 23 0 0 0
+code 2 0 106 0 0 0 0
+code 3 0 26 0 0 0 0
+code 4 0 11 0 0 0 0
+post_state_root 4c282261554e87f90c6b62965cf29c31150341cfb924898b03d5bbdfe6f38b7b
+final 0 4 999999911109165 1 0
