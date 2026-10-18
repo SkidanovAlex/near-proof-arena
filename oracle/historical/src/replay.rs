@@ -342,7 +342,116 @@ pub fn run(req: Request, storage: &PartialStorage) -> Executed {
     Executed { request: req, claim: Some(claim), witness_values, apply_witness, nearcore, clean, problems, receiver_pre }
 }
 
-/// Build a historical case directory.
+/// Execute one AUTHENTIC CHUNK of the sync-prev block (v3 lane): the chunk's
+/// own incoming receipts (no transactions for the D0 targets) under the real
+/// pinned `Runtime::apply` on the partial trie from harvested mainnet parts,
+/// recording everything read (`ApplyResult.proof`) — the raw material of the
+/// witness `base_state`. Unlike the v1 slice, outcome statuses/logs may be
+/// anything (real chunks carry failing transfers too): exact comparison
+/// against the chain's own outcomes is the Python driver's anchor job. This
+/// function reports, and does not judge.
+pub fn run_chunk(req: Request, storage: &PartialStorage, out_witness: Option<&Path>) -> Result<serde_json::Value, String> {
+    let pre_root = req.pre_state_root;
+    let mk = || Trie::from_recorded_storage(storage.clone(), pre_root, true);
+    // Receiver paths must be present before apply, so a missing-region loop
+    // (Python side) can distinguish "state not harvested yet" from a genuine
+    // apply failure.
+    for r in &req.receipts {
+        let k = domain::account_key(r.receiver_id().as_str());
+        match mk().get(&k, AccessOptions::DEFAULT) {
+            Ok(Some(_)) | Ok(None) => {}
+            Err(e) => return Err(format!("receiver path not in harvested trie: {e:?}")),
+        }
+    }
+    let config = RuntimeConfigStore::new(None).get_config(req.protocol_version).clone();
+    let epoch_info_provider = MockEpochInfoProvider::default();
+    let shard_layout = epoch_info_provider.shard_layout(&EpochId::default()).unwrap();
+    let shard_uid = shard_layout.shard_uids().next().unwrap();
+    let congestion_info = BlockCongestionInfo::new(
+        shard_layout.shard_ids().map(|s| (s, ExtendedCongestionInfo::default())).collect(),
+    );
+    let apply_state = ApplyState {
+        apply_reason: ApplyChunkReason::UpdateTrackedShard,
+        block_height: req.block_height,
+        prev_block_hash: CryptoHash::default(),
+        shard_id: shard_uid.shard_id(),
+        epoch_id: EpochId::default(),
+        epoch_height: 0,
+        gas_price: near_primitives::types::Balance::from_yoctonear(req.block_gas_price),
+        block_timestamp: 1_000,
+        gas_limit: Some(Gas::from_gas(req.gas_limit)),
+        random_seed: CryptoHash::default(),
+        current_protocol_version: req.protocol_version,
+        config: config.clone(),
+        next_wasm_config: None,
+        cache: None,
+        trie_access_tracker_state: Default::default(),
+        is_new_chunk: true,
+        save_receipt_to_tx: false,
+        congestion_info,
+        bandwidth_requests: BlockBandwidthRequests::empty(),
+        on_post_state_ready: None,
+    };
+    let trie = mk().recording_reads_new_recorder();
+    let t0 = std::time::Instant::now();
+    let result = Runtime::new()
+        .apply(
+            trie,
+            &None,
+            &apply_state,
+            &req.receipts,
+            SignedValidPeriodTransactions::empty(),
+            &epoch_info_provider,
+            Default::default(),
+        )
+        .map_err(|e| format!("Runtime::apply: {e:?}"))?;
+    let apply_ns = t0.elapsed().as_nanos() as u64;
+    let outcomes: Vec<serde_json::Value> = result
+        .outcomes
+        .iter()
+        .map(|o| {
+            json!({
+                "id": hx(&o.id),
+                "status": format!("{:?}", o.outcome.status),
+                "gas_burnt": o.outcome.gas_burnt.as_gas(),
+                "tokens_burnt": o.outcome.tokens_burnt.as_yoctonear().to_string(),
+                "logs": o.outcome.logs,
+                "receipt_ids": o.outcome.receipt_ids.iter().map(|h| h.to_string()).collect::<Vec<_>>(),
+            })
+        })
+        .collect();
+    let gas_total: u64 = result.outcomes.iter().map(|o| o.outcome.gas_burnt.as_gas()).sum();
+    let hashes: Vec<Vec<CryptoHash>> =
+        result.outcomes.iter().map(ExecutionOutcomeWithId::to_hashes).collect();
+    let (outcome_root, _) = merklize(&hashes);
+    let state_changes: Vec<serde_json::Value> = result
+        .state_changes
+        .iter()
+        .map(|ch| json!({"key": hex::encode(ch.trie_key.to_vec()), "deleted": ch.changes.last().unwrap().data.is_none()}))
+        .collect();
+    if let Some(path) = out_witness {
+        if let Some(p) = &result.proof {
+            std::fs::write(path, borsh::to_vec(&p.nodes).map_err(|e| format!("witness: {e}"))?)
+                .map_err(|e| format!("write witness: {e}"))?;
+        }
+    }
+    Ok(json!({
+        "apply": "ok",
+        "apply_ns": apply_ns,
+        "nearcore_commit": NEARCORE_COMMIT,
+        "protocol_version": req.protocol_version,
+        "pre_state_root": hx(&pre_root),
+        "post_state_root": hx(&result.state_root),
+        "outcome_root": hx(&CryptoHash(outcome_root.0)),
+        "gas_burnt_receipts_total": gas_total,
+        "delayed_receipts_count": result.delayed_receipts_count,
+        "outgoing_receipts": result.outgoing_receipts.iter().map(|r| r.receipt_id().to_string()).collect::<Vec<_>>(),
+        "outcomes": outcomes,
+        "state_changes": state_changes,
+        "recorded_nodes": match &result.proof { Some(p) => match &p.nodes { PartialState::TrieValues(v) => v.len(), _ => 0 }, None => 0 },
+    }))
+}
+
 pub fn build(req: Request, storage: &PartialStorage, out: &Path) -> Result<serde_json::Value, String> {
     let ex = run(req, storage);
     let aw = ex.apply_witness.as_ref().ok_or_else(|| format!("apply failed: {:?}", ex.problems))?;
