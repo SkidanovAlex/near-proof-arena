@@ -853,3 +853,46 @@ The O-2 breakdown is WHIR 219,908, GKR 32,408 (L = 24), relations 43,280 and sta
 The final shape is b = 7, k1 = 1, k = 4, log_h 20, log_final 7. The penultimate is b = 6,
 n_stack = 17. The remaining 1.2 KB, and more, is expected from SHA AIR v4
 (lane/pq-sha384-air3, about −17.5 KB).
+
+Milestone check of the O-2 + 49-interaction tree: `nv_app_binding` and `nv_opening_formula` pass in
+48-B and 42-B + coset modes (statement passthrough, app-table tamper and digest re-exposure tamper
+rejected; 17.4 / 17.0 GB peak). Logs: `logs/o2/`.
+
+### O-2 thresholds against the DKT certificates [checked: `dkt_cert_check.py`, output `dkt_cert_check.out`]
+
+The script recomputes A_i with the implemented rule (`AgreementTable::canonical`, the same in
+f64 and in 80-digit Decimal). For every round it then looks up the round code and the fold
+sub-codes C^(i,s), s = 0..k_i, which is what `bound_mca.py` `codes_for` needs, in
+lane/pq-dkt-verify `calc/dkt_certs.json`: 38 per-plan certificates plus the 51-entry grid at
+n = 15·2^27.
+
+**Result: no real shape is fully certified.** Three things are wrong, and every shape hits at
+least one of them:
+
+1. **Off-by-one on the grid.** The grid stores A one above the rule at some k: for example
+   (2^27·15, 2^20) has 37,140,792 where the rule gives 37,140,791, and (·, 2^19) has 26,000,208
+   where the rule gives 26,000,207. A certificate at A+1 does not cover A, so the grid and the
+   implementation must agree on one integer rule. (For k = 2^11, 2^15 and 2^16 they agree.)
+2. **Fold sub-codes s = 3, 4 are missing.** The grid covers s = 0..2 only, but k = 4 rounds need
+   s up to 4. This affects every k = 4 round of the final, the inner layer and the base, and
+   s = 3 of the k = 3 final in `bound.py`.
+3. **Domains other than 15·2^27 have no canonical certificates.**
+   * The inner NV layer (b = 6, h = 19, n = 15·2^25): the 503M grid entries are fold sub-codes of
+     the 2^27 codes, scaled, not this rule's A at n = 15·2^25.
+   * The measured-chain shapes (b = 2, n = 15·2^22 and 15·2^23) are entirely outside the grid.
+
+Flagged rounds, all of them uncovered as listed in `dkt_cert_check.out`:
+* final (b7 h20): rounds 0–3;
+* final (`bound.py`, b8 h19): rounds 0–3;
+* inner NV (b6 h19): rounds 0–3;
+* base stress (b6 h21): rounds 0–3;
+* both measured shapes: every round.
+
+What is needed, either option:
+* the certificate lane certifies the exact (n_i, k_i, A_i) of each shape and its fold
+  sub-codes s ≤ k_i under the implemented rule, at n = 15·2^25 and 15·2^27. The table could then
+  carry the certified triples directly.
+* or the table falls back to J (m = 64, DKT26 Thm 5.12, no certificate) for uncovered rounds,
+  at a few queries each.
+
+Until then, O-2 bytes are not covered by certificates for these shapes; only O-1 (m = 64) is.
