@@ -38,7 +38,9 @@ recursion-crate overlay `openvm-recursion-stream.patch` adds one test file, and 
 * `nv::stream_tests` (SHA-384/Ext12): b = 2, all levers + ×15 + wide PoW, inner and final
   domains, k = 3 and 4, 48 B and 42 B + coset leaves. Streamed proofs equal in-memory proofs
   byte for byte at drop 0, 3 and 4 (36 of 36 cases per digest setting).
-* Full scale: see the b = 2 streamed run below.
+* **Full scale.** The real b = 2 final streamed (`logs/b2st-stream-final.log`) gives the same
+  416,171 B and the same sha256 `e5e526a2…` as the in-memory re-run. Peak RSS falls from 64.4 GB
+  to **35.5 GB**, and wall time is 50.7 min against 100 min on the same shared box.
 
 ## Memory profile of the in-memory b = 2 final
 
