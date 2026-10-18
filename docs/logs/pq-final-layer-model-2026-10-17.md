@@ -606,3 +606,14 @@ model 308.5 → 298.9 KB.
 * v4 NV-port audit done (lane/pq-nv-circuit-soundness @ 912187d21 §V): full sweep 4 fixtures ×
   2 modes, Sha512Air4/TableAir4 0 undetected; 44/44 + 43/43 tests; port reproducible byte for
   byte; ε_LogUp ≈ 2^-316.8. Next re-audit trigger: program-cut ops on the recursion lane.
+
+## 2026-10-18 — O-2 certified for real shapes (lane/pq-dkt-verify @ 69e5df327)
+
+* 129 certificates (93 round/fold sub-codes + 36 round-0 batching curves) for the backend's
+  exact rule `AgreementTable::canonical`; Lean kernel 129/129 (222 theorems, std axioms).
+  Old grid off-by-one was a bug in the --grid script. File calc/dkt_certs_o2.json.
+* Final b7h20/b8h19, inner b6h19, both b2 chain shapes: covered and full bound passes →
+  final O-2 bytes are certificate-backed.
+* Base stress b6h21: round 0 must be J(64) (squared O-2 list with 2 commitments → 2^-231.8);
+  +2 base queries; needs bound-aware per-round regime (soundness fix, adopted, NV lane).
+* E2E vertical slice lane started (lane/pq-e2e-slice, user choice); GPU: CPU-only for now.
