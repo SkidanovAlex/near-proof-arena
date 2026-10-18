@@ -1,7 +1,7 @@
 # NV-faithful: the narrow verifier circuit arithmetises the native SWIRL verifier
 
-Lane `lane/pq-nv-circuit-soundness`, 2026-10-18. **Audited version: lane/pq-recursion-sha384 @
-3c9d479ab** (patch `native/recursion/patches/openvm-recursion-sha384.patch`, unified backend
+Lane `lane/pq-nv-circuit-soundness`, 2026-10-18. **Audited versions: lane/pq-recursion-sha384 @
+3c9d479ab (§0–§7), re-audited @ 95c08894c / head 7cdc8c90e (§R)** (patch `native/recursion/patches/openvm-recursion-sha384.patch`, unified backend
 `stark-backend-unified.patch`). The fixes below are on this branch only (not merged into
 lane/pq-recursion-sha384). Target statement: Lemma 7.1 (F1–F6) of
 `lane/pq-final-soundness` `final-soundness/PROOF.md` @ ae0ae8a7b.
@@ -12,7 +12,213 @@ counts), `faithful_sha_tests.rs` (SHA/GLUE), `faithful_tr_tests.rs` (transcript/
 Scripts: `scripts/sha_carry_bounds.py` (exact carry/residual bounds, 1,319 checks),
 `scripts/run_faithful.sh` (everything; 48 B and 42 B + coset-leaf modes).
 
-## 0. Result
+## R. Re-audit at lane/pq-recursion-sha384 @ 95c08894c (head 7cdc8c90e), 2026-10-18
+
+**This section supersedes §0, §1.1 (public values), §2(b) B-2, §2(d)(vi) and §6/§7 where they
+differ.** The circuit at 7cdc8c90e is the one at 95c08894c. Later commits (9be29d65b, a647370c2,
+54700fd7a, e0c7e7d71, 6af52d94f, 7cdc8c90e) touch only README, models and logs, not the
+patch. What changed since 3c9d479ab:
+
+* 32fb63327: unpadded program; Acc2/Acc at fixed early rows.
+* 46b7e62e2: T\* (counter-mode squeeze blocks, PoW blocks, op_q rows, the chain bus); NvAir 70 → 74
+  columns.
+* 95c08894c:
+  * B1–B6 re-applied by hand;
+  * B5 extended to PoW-run blocks;
+  * the statement passthrough: op PvD (31), tag-8 digest, `check_statement`;
+  * the final-layer hash domain (`new_final`).
+
+**Verdict: no new soundness bug.** All fixes B1–B6 are present and their tests pass. Lemma
+NV-faithful (§0) now holds with these changes:
+* (F1) is stated for the **T\*** transcript;
+* (F3) holds in full: level, app flag and the base-statement digest.
+
+The additive error becomes ε_LogUp ≤ ℓ·N²/(2|F|) + 2N/|F| ≈ **2^−317.4**:
+* ℓ = 20: the longest message is now the chain bus, 19 fields + bus;
+* N ≤ 2^25.11: NvAir has 55 interactions per row; 2^24.11 at the 2^18 shape (`nv_logup_counts`).
+
+One harness defect was fixed (D1, below). It did not hide anything.
+
+### R.1 Tests on the new head
+
+| run | result |
+|---|---|
+| all `nv_` tests except `nv_chain` / `nv_app_binding` (48 B; T\* default on) | 42 / 42 pass (incl. B1–B6 tests, `nv_tstar_tamper`, `nv_statement_digest`, `nv_opening_formula`) |
+| the same, 42 B + coset leaves | 42 / 42 pass |
+| `nv_statement_passthrough` (new): level 2 over a proved level-1 NV proof re-exposes the child's statement; 5 tampered limbs rejected | pass, 3.0 GB peak |
+| DOF, every cell, 4 fixtures × 2 digest modes | 0 unexpected undetected cells; Sha512Air/TableAir 0 undetected; memory-coupled pass 0 accepted (table R.4) |
+| DOF on the level-2 passthrough trace (≤ 1,000 rows per role, 8.6M cells, after fix D1) | 0 unexpected |
+
+### R.2 Program binding with the unpadded program (§2(b) B-2, revised)
+
+The program now has length n: even, n ≤ 2^prog_log, no padding. Acc sits at a fixed address
+s1 and Acc2 at s2 = s1 − 1, right after the reserved and data rows. Acc has P0 = n − 2; Acc2
+has P0 = |T_app| − 2. Argument:
+
+1. P[s1] ≠ 0, so ka = 1 there (C4). Stage is monotone (C5), so every row < s1 is an ALU row.
+2. Acc (op bound to P1 by A-2) receives `(acc_total, y2_last)` from the unique last BIND row and
+   asserts y2_last = n − 2. BIND steps by 2 from 0 (B1–B3), so it has exactly n/2 rows.
+3. These rows receive `(y, pc)` for every y < n on the bind permutation bus. The only senders
+   are ALU rows, with their own row index y (C2). So every row of [0, n) is an ALU row with
+   pc = P[y].
+4. An ALU row ≥ n would send an unmatched `(y, 0)`. So the ALU region is exactly [0, n).
+5. Rows ≥ n are not ALU rows, so P = 0 there (C4).
+
+The kernel (B-4): E2 still has 2^prog_log / 512 entries, and acc_total = Σ_{y<n} w_r(y)·ptau(P[y]).
+The child's opening sums over all rows. By Schwartz–Zippel, equality forces child P = own P on
+[0, n) and 0 elsewhere, which is the zero-extended table P_NV.
+
+App binding: T_app is now the **whole** level-1 program, including its Acc row, so
+app_extra = 0. The argument is the same with (bind2, acc2) and the Data region
+[app_base, app_base + |T_app|).
+
+Deferred check: `defer_acc_check` reads the fixed addresses (s2, s1) instead of
+(L − 2, L − 1). It is unchanged otherwise.
+
+### R.3 Transcript under T\* (§2(d) under T\*)
+
+**Native T\*** (`ShaTranscript`, tstar on):
+* Absorb: flush σ' = H(3, σ‖felts); commit σ' = H(4, σ‖digest).
+* A sample run after an absorb: κ = σ; blocks B_j = H(5, κ‖le32(j)) for j = 1, 2, …; candidates
+  are read from word 0 on. The state after the run is the last block consumed.
+* PoW: B_1 = H(7, σ‖w‖le32(1)); the first z bits of B_1 must be zero. Challenges that follow
+  come from B_1's words 1..5, then from B_j = H(7, σ‖w‖le32(j)), j ≥ 2, read from word 0.
+  The state afterwards is the last block.
+* z = 0: the witness must be 0 (G-11).
+
+**HASH rows** (`Hash2Cols`, 63 columns; pool 63, NvAir 74):
+* one-hot op ∈ {f, c, s, p, q};
+* `state_in[18]`, now explicit, received on the **chain bus**, keyed by job, from the predecessor
+  row (`nxt` = next job);
+* counter `ctr`, witness count `nwit`, `scnt` (samples read from B_1), `rd`, `nsq`, `ns`.
+
+**Invariant D\*.** In a satisfying trace, the HASH rows in order are exactly the native T\*
+oracle calls on the event log E\* of the ALU's units. Every emitted sample equals the native
+sample at its tidx. Proof, by row k (assumptions A1–A5 as in §2(d)(ii)):
+
+1. *Unique ids.* Static ids are pinned by anchors (one per program job). Squeeze and PoW-run
+   ids are `TJOB_SQUEEZE_BASE + ns`, with ns incremented by `op_s + op_q`
+   (`sq·(job − 2^25 − ns) = 0`, `is_first·ns = 0`). This is B5 extended to op_q: in 46b7e62e2
+   alone, op_q ids were free, which main found and fixed in 95c08894c; `nv_tr_squeeze_id_collision`
+   covers it. The id ranges are disjoint, so the chain, unit, word and digest messages of
+   different rows cannot be exchanged.
+2. *State links.* Each non-first row k receives `(job_k, state_in_k)` once, and row k−1 sends
+   `(nxt_{k−1} = job_k, x)` once, so state_in_k = x. Here x = state_in_{k−1} when
+   keep = nsq·(op_s+op_p+op_q) = 1, i.e. the next row continues a run (op_s after op_s, or op_q
+   after op_p/op_q): the run's key κ or σ. Otherwise x = state_out_{k−1}: after an absorb, after
+   the last block of a run, and before any absorb or PoW. Row 0 has state_in = H(2, ∅) constants.
+   This is exactly the native rule "same key within a run, last block afterwards".
+3. *Run structure* (transition constraints):
+   * op_s follows an absorb (ctr = 1) or a fully read op_s (ctr + 1);
+   * op_q follows a fully read op_p or op_q (ctr + 1, nwit inherited);
+   * op_p has ctr = 1 and nwit = cnt (anchored);
+   * op_s never follows op_p/op_q, and op_q never follows f/c/s;
+   * `rej` (last read candidate rejected) forces a continuation block.
+
+   These are native's block sequence and counters.
+4. *Messages.* GLUE hashes `prefix‖tag‖(48,0)‖state_in‖(len,0)‖payload` (A1), where
+   * tag = 3 / 4 / 5 / 7 / 7 for f / c / s / p / q;
+   * len = 4·cnt, the digest width, 4, or 4(nwit+1);
+   * the payload is the ALU units (flush, commit), le32(ctr) at unit 16 (squeeze), or the
+     witness units 16.. followed by le32(ctr) at 16 + nwit (p and q; the q witness units are
+     ALU `Unit1` rows of the **same** LoadF witness cells).
+
+   Its digest is state_out (A2).
+5. *Reads.* op_s/op_q rows read from word 0 (rdw[0] = 1); op_p reads from word 1
+   (rdw[0] = 0, prefix from rdw[1]). The read interval starts at t_start + op_p·cnt. Then
+   n.t_start = t_start + cnt + scnt.
+   * If op_p does not read (rd = 0), scnt is unconstrained locally. But the next static row's
+     t_start is pinned by its anchor, so any non-zero scnt leaves ALU sample tidx's that no SAMP
+     run serves (SAMP runs are tied to their hash row's interval on the t.sample bus), and the
+     slot bus fails. So scnt equals native's count.
+   * The acceptance gadget and the split-limb argument are unchanged (§2(d)(ii).4, .6).
+6. *PoW.* B_1's word-0 limbs are sent on chan 3 to PowChk (op_p only). The LoadF l0 (B3) and
+   the LoadBit recomposition prove that the first z bits are zero (z ≤ 43, asserted). The
+   z = 0 path asserts that the witness is 0.
+
+Tests: `nv_tstar_tamper` (main; wrong counter, old-chain PoW, PoW-word challenges, key limb),
+`nv_tr_*` (all pass under T\*), and the DOF runs, now with every T\* HASH column named.
+
+**The §2(d)(vi) checklist is now implemented.** The remaining proof debt is the same as before:
+GKR, batch-constraint and stacking port fidelity rests on differential tests.
+
+### R.4 Statement passthrough (F3)
+
+NvAir public values: pv0 = level, pv1..pv18 = statement digest limbs (lo cell → pv1..12, hi cell
+→ pv13..18). Op **PvD** (31) copies a into c, constrains `P2 ∈ {0,1}`, and constrains
+`a_k = (1 − P2)·pv_{1+k} + P2·[k<6]·pv_{13+k}`. So the hi cell's c6..c11 are 0. The program
+emits PvD(lo, P2 = 0) and PvD(hi, P2 = 1) exactly once each (`pv_digest`). The rows are fixed
+by P_i, so the public values are pinned by the cells.
+
+* **Level 1** (`bind = child_nv = false`): the cells are `Dig` of a tag-8 ALU job whose felt
+  units are `[#airs, |pv_a| …, pv values]`. The program lengths are constants; the pv values
+  are the **same** LoadF cells that are observed into the child's transcript (B3: base field).
+  GLUE/SHA give digest = truncated SHA-384 of `hash_parts(8, statement_values(pvs))`, which is
+  native `statement_digest` (42-B truncation included: tag-8 jobs carry the Merkle/truncation
+  flag in both the trace generator and the ALU `Job` message). So pv1..18 = digest(x_0's
+  public values).
+* **Level ≥ 2** (`bind` or `child_nv`): the child's pv cells 1..18 are LoadF cells observed
+  into the transcript. They equal the child proof's public values by the transcript argument
+  (§2(d)): the observed felts are hashed into the chain. They are packed as lo = Σ_k x_k·X^k
+  and hi with Mul-by-constant and Add (ALU semantics), and PvD exposes them. So
+  pv1..18(x_i) = pv1..18(x_{i−1}). (F3) holds by induction. The native final verifier checks
+  level = d and `check_statement(pv, chunk public values)`.
+* Opcode space: 0..31 are all defined, so no undefined-op relabel remains (§2(a) A-2).
+* Tests:
+  * `nv_statement_digest` (main): level 1, 4 limbs, and a changed app public value;
+  * `nv_statement_passthrough` (new): level 2 re-exposes the child's digest and
+    `check_statement` holds on it; tampering any of limbs 1, 7, 12, 13, 18 is rejected.
+
+**Final-layer domain (`new_final`).** The final proof π_d uses a separate transcript init
+H(2,['F']) and node prefix 'F'. It is verified only natively, so no circuit constraint changes;
+the in-circuit initial state and node prefix stay the inner-layer constants. This is consistent
+with Lemma 7.1, since every V_{i−1} that NV_i arithmetises is an inner-layer verifier.
+
+### R.5 DOF on the new head (every cell)
+
+| fixture | digests | cells | constraint | bus | undetected | unexpected | mem-coupled accepted |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Fib | 48 B | 10,781,504 | 9,942,282 | 597,157 | 242,065 | 0 | 0 / 17,292 |
+| interactions + Gruen, derived claims, next-mask, WHIR-Y | 48 B | 10,781,504 | 9,902,267 | 627,068 | 252,169 | 0 | 0 / 17,592 |
+| Fib + k1, keep-domain, multiproof, wide PoW, WHIR-Y, ×15 | 48 B | 7,979,840 | 7,383,264 | 422,529 | 174,047 | 0 | 0 / 15,648 |
+| Fib + synthetic app table | 48 B | 10,781,504 | 9,936,446 | 600,305 | 244,753 | 0 | 0 / 17,400 |
+| Fib | 42 B + coset leaf | 7,979,840 | 7,318,155 | 462,622 | 199,063 | 0 | 0 / 15,780 |
+| interactions + levers | 42 B + coset leaf | 7,979,840 | 7,278,127 | 492,402 | 209,311 | 0 | 0 / 16,080 |
+| ×15 + WHIR levers | 42 B + coset leaf | 7,979,840 | 7,423,014 | 392,525 | 164,301 | 0 | 0 / 14,400 |
+| app table | 42 B + coset leaf | 7,979,840 | 7,312,319 | 465,770 | 201,751 | 0 | 0 / 15,888 |
+| level 2 over a level-1 NV proof (passthrough), ≤ 1,000 rows per role | 48 B | 8,629,797 | 7,460,214 | 778,967 | 390,616 | 0 | — |
+
+New don't-care classes (T\*; each tag carries the HASH op, so these rules cannot match other
+ops):
+* `nwit` on flush, commit and squeeze rows: it is read only on PoW rows (len, the counter unit
+  index, op_q inheritance).
+* `ctr` on flush and commit rows: it is read only by the counter unit and the run counters
+  (op_s/op_p/op_q).
+
+**Harness defect D1 (fixed).** `nv_col_names` labelled unnamed columns inside a role's view
+`poolNN`, the same label as columns beyond the view, which are don't-care. So an undetected
+unnamed column would have been silently allowed. At 3c9d479ab every Hash2Cols field was named,
+so the earlier results stand. Under T\* the six new HASH fields were unnamed, and ctr/nwit
+showed up as undetected only after the fix. They are the benign classes above. The fix labels
+in-view columns `v<i>` and names every T\* HASH field.
+
+### R.6 Status of the open items (replaces §6 where different)
+
+* **G1: closed** (R.4).
+* **T\*: implemented and audited** (R.3).
+* **Still open:**
+  * GKR, batch-constraint and stacking port fidelity, including the tight-heights kernel,
+    rests on differential tests only.
+  * lo6 is pinned only by its consumers.
+  * The carry bounds are computed for k = 3 only.
+  * `nv_app_binding` (17 GB) was not re-run under the 16 GB cap; main's log
+    `nvp2e-app.log` reports honest ok and tamper rejected.
+* **Not landed yet; audit when they arrive:** the O-2 per-round agreement table in the vk, and
+  "4 program rows per binding row". The latter changes BIND (B1–B4: the pair step, the
+  `ya/2` byte check, the E1 reads); §2(b)/R.2 and `nv_bind_tamper` must be redone.
+
+
+## 0. Result (audit of 3c9d479ab; see §R for the current head)
 
 **Lemma NV-faithful(i) (proved here for the branch head, modulo §6).** Let vk_i be NV_i's key,
 P_i its program table (P_1 = app-verifier program, P_i = P_NV for i ≥ 2). Let T be a trace of
@@ -31,7 +237,7 @@ value pv0. Define
 Then:
 
 * **(F1)** V′_{i−1}^{SHA-384}(vk_{i−1}, x_{i−1}, π_{i−1}) = 1, for the native verifier of the
-  unified backend with the **current** transcript (not yet T\*, §2(d)(vi)), WHIR-Y, the ×15
+  unified backend with the T\* transcript at the current head (§R.3; at 3c9d479ab: the chain transcript), WHIR-Y, the ×15
   sampler, multiproof, coset leaves, 42-B digests and PoW, run with vk_{i−1}'s constants; every
   SHA-384 output used equals the true SHA-384 output (§2(c)). Exception: with the multiproof
   lever, re-encoding fails only if T itself contains a Merkle-compression collision, which is
@@ -40,8 +246,8 @@ Then:
   program/app binding check against P_NV (child level ≥ 2) or P_1 (child level 1) is ordinary
   ALU code of P_i (§2(b) B-4).
 * **(F3)** level(x_i) = level(x_{i−1}) + 1 and the app-mode flag = [level(x_{i−1}) ≠ 1]
-  (levels ≥ 2; level 1 exposes the constant 1). **The base-statement digest is not passed
-  through: NV has one public value (gap G1, §6).**
+  (levels ≥ 2; level 1 exposes the constant 1). The base-statement digest is passed
+  through at the current head (§R.4; at 3c9d479ab it was not: gap G1).
 * **(F4)** mod-p balance gives the intended multiset / subset semantics (§2(f)).
 * **(F5)** all-zero rows satisfy every constraint and emit no interaction (§2(c), §1.1, §4).
 * **(F6)** every SHA-384 evaluation that (F1) uses is a GLUE job whose compressions are 43-row
@@ -101,7 +307,8 @@ Constraints (every row, wrap-around window (h−1, 0) has `is_transition = 0`):
   [−6, 6] and the product forces it into {0..6}: stage is non-decreasing, so the roles occupy
   contiguous regions in the order ALU < BIND < APPB < GLUE < HASH < SAMP < padding.
 
-Public values: **one**, `pv0 = level` (§5, gap G1).
+Public values: at 3c9d479ab **one**, `pv0 = level` (gap G1); at the current head pv0 = level and
+pv1..18 = the statement digest limbs (§R.4).
 
 Interactions: each role's interactions are collected separately and merged into shared slots
 per bus (`merge_push`): message = Σ_role flag·message_role, count = Σ_role count_role (every
@@ -1092,6 +1299,9 @@ Program words change (LoadF, UnitWT, anchor tags), so P_NV changes; column count
   cap); the app rows are covered by the synthetic-table DOF run and `nv_bind_tamper`.
 
 ## 7. Later commits on lane/pq-recursion-sha384 to re-audit
+
+*(Done: 32fb63327, 46b7e62e2 and 95c08894c were re-audited in §R; the later commits through
+7cdc8c90e do not touch the circuit.)*
 
 One commit after 3c9d479ab touches the circuit (as of 2026-10-18 03:xx UTC):
 

@@ -2322,10 +2322,10 @@ index 0000000..dd43568
 +}
 diff --git a/crates/recursion/src/nv/faithful_dof.rs b/crates/recursion/src/nv/faithful_dof.rs
 new file mode 100644
-index 0000000..fb9165a
+index 0000000..3ce18d2
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_dof.rs
-@@ -0,0 +1,506 @@
+@@ -0,0 +1,526 @@
 +//! NV-faithful degree-of-freedom check (results/pq-recursion-nv/FAITHFUL.md §4).
 +//!
 +//! For an honest NV trace set, every cell of every AIR is perturbed one at a time
@@ -2559,6 +2559,19 @@ index 0000000..fb9165a
 +    for j in 0..4 {
 +        n[cm.p[j]] = format!("P{j}");
 +    }
++    // columns inside the role's view are "v<i>" until named below; only columns beyond the view
++    // are "pool<i>" (the don't-care class "beyond the role view" must not hide unnamed columns)
++    let view = match role {
++        r if r.starts_with("ALU") => AB_W,
++        "BIND" | "APPB" => BIND_W,
++        r if r.starts_with("GLUE") => super::glue::GLUE_W,
++        r if r.starts_with("HASH") => super::transcript2::HASH2_WIDTH,
++        r if r.starts_with("SAMP") => super::transcript2::SAMP2_WIDTH,
++        _ => 0,
++    };
++    for i in 0..view {
++        n[N_COMMON + i] = format!("v{i}");
++    }
 +    let pool = &idx[N_COMMON..];
 +    let mut set = |i: usize, s: String| n[i] = s;
 +    match role {
@@ -2623,11 +2636,14 @@ index 0000000..fb9165a
 +        }
 +        r if r.starts_with("HASH") => {
 +            let c: &Hash2Cols<usize> = pool[..super::transcript2::HASH2_WIDTH].borrow();
-+            for (s, v) in [("is_first", c.is_first), ("op_f", c.op_f), ("op_c", c.op_c), ("op_s", c.op_s), ("op_p", c.op_p), ("job", c.job), ("nxt", c.nxt), ("hn", c.hn), ("t_start", c.t_start), ("cnt", c.cnt), ("last_word", c.last_word), ("last_half", c.last_half), ("last_acc", c.last_acc), ("full", c.full), ("ns", c.ns)] {
++            for (s, v) in [("is_first", c.is_first), ("op_f", c.op_f), ("op_c", c.op_c), ("op_s", c.op_s), ("op_p", c.op_p), ("job", c.job), ("nxt", c.nxt), ("hn", c.hn), ("t_start", c.t_start), ("cnt", c.cnt), ("last_word", c.last_word), ("last_half", c.last_half), ("last_acc", c.last_acc), ("full", c.full), ("ns", c.ns), ("op_q", c.op_q), ("scnt", c.scnt), ("ctr", c.ctr), ("nwit", c.nwit), ("rd", c.rd), ("nsq", c.nsq)] {
 +                set(v, s.into());
 +            }
 +            for (k, &v) in c.state_out.iter().enumerate() {
 +                set(v, format!("state_out{k}"));
++            }
++            for (k, &v) in c.state_in.iter().enumerate() {
++                set(v, format!("state_in{k}"));
 +            }
 +            for k in 0..6 {
 +                set(c.rdw[k], format!("rdw{k}"));
@@ -2682,7 +2698,11 @@ index 0000000..fb9165a
 +    }
 +    if row[cm.kh] == F::ONE {
 +        let c: &Hash2Cols<usize> = idx[N_COMMON..N_COMMON + super::transcript2::HASH2_WIDTH].borrow();
-+        return if row[c.hn] == F::ONE { "HASH".into() } else { "HASH:hn0".into() };
++        let op = [(c.op_f, "f"), (c.op_c, "c"), (c.op_s, "s"), (c.op_p, "p"), (c.op_q, "q")]
++            .iter()
++            .find(|(i, _)| row[*i] == F::ONE)
++            .map_or("?", |x| x.1);
++        return if row[c.hn] == F::ONE { format!("HASH:{op}") } else { format!("HASH:{op}:hn0") };
 +    }
 +    if row[cm.ks] == F::ONE {
 +        return "SAMP".into();
@@ -3317,10 +3337,10 @@ index 0000000..535a621
 +}
 diff --git a/crates/recursion/src/nv/faithful_tests.rs b/crates/recursion/src/nv/faithful_tests.rs
 new file mode 100644
-index 0000000..f59193e
+index 0000000..57357e5
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_tests.rs
-@@ -0,0 +1,680 @@
+@@ -0,0 +1,729 @@
 +//! NV-faithful: degree-of-freedom (single-cell perturbation) runs and tamper tests for the ALU,
 +//! BIND and app-binding roles (results/pq-recursion-nv/FAITHFUL.md).
 +//!
@@ -3411,7 +3431,16 @@ index 0000000..f59193e
 +    if role == "SAMP:inv-operand-0" {
 +        return Some("SAMP is-zero gadget: the inverse column is free when its operand is 0");
 +    }
-+    if role == "HASH:hn0" && col == "nxt" {
++    if role.starts_with("HASH:") {
++        let op = role.split(':').nth(1).unwrap_or("?");
++        if col == "nwit" && matches!(op, "f" | "c" | "s") {
++            return Some("T* HASH: nwit is read only on PoW rows (len, counter index, op_q inheritance)");
++        }
++        if col == "ctr" && matches!(op, "f" | "c") {
++            return Some("T* HASH: ctr is read only on squeeze / PoW rows (counter unit, run counters)");
++        }
++    }
++    if role.starts_with("HASH:") && role.ends_with(":hn0") && col == "nxt" {
 +        return Some("last hash-chain row: nxt is gated by hn = 0");
 +    }
 +    None
@@ -3999,6 +4028,46 @@ index 0000000..f59193e
 +            println!("NV_LOGUP_CONSTRAINT heights={heights:?} #{i} coeffs={:?} sum={sum} (2^{:.2}) threshold={} ok={}", c.coefficients, (sum as f64).log2(), c.threshold, sum < c.threshold as u64);
 +            assert!(sum < c.threshold as u64);
 +        }
++    }
++}
++
++/// (F3) statement passthrough at level >= 2: an NV level verifying an NV child re-exposes the
++/// child's public values 1..19 (the base statement digest) unchanged; any other value is
++/// rejected.  With NV_DOF_L2=1 also runs the single-cell perturbation over the level-2 trace
++/// (pack + PvD rows, NV-child DAG).
++#[test]
++fn nv_statement_passthrough() {
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk0, p0) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let mut pp = openvm_stark_backend::test_utils::test_system_params_small(2, 16, 3);
++    pp.max_constraint_degree = debug_params().max_constraint_degree;
++    let parent = Sha384CpuEngine::new(pp);
++    let circ1 = NvCircuit::new(3, 16, 1);
++    let (vk1, p1, _b1, _) = super::circuit::prove_level(&circ1, &parent, &vk0, &p0);
++    let child_pv = p1.public_values[0].clone();
++    assert!(super::circuit::check_statement(&child_pv, &p0.public_values));
++    let mut circ2 = NvCircuit::new(3, 19, 1);
++    circ2.child_nv = true;
++    let airs = circ2.airs::<Sha384Config>();
++    let (mats, b2) = circ2.generate(&vk1, &p1);
++    assert!(b2.failures.is_empty(), "{:?}", b2.failures);
++    let pv2 = b2.public_values();
++    assert_eq!(pv2[1..], child_pv[1..], "statement digest passed through");
++    assert!(super::circuit::check_statement(&pv2, &p0.public_values));
++    let pvs = vec![pv2.clone(), vec![], vec![], vec![]];
++    debug_check(&airs, mats.clone(), &pvs);
++    println!("NV_PASSTHROUGH honest level 2 ok");
++    for k in [1usize, 7, 12, 13, 18] {
++        let mut bad = pvs.clone();
++        bad[0][k] += F::ONE;
++        must_fail(&format!("level-2 exposed statement limb {k}"), || debug_check(&airs, mats.clone(), &bad));
++    }
++    if std::env::var("NV_DOF_L2").is_ok() {
++        let (bad_c, unb) = global_check(&airs, &mats, &pvs);
++        assert_eq!((bad_c, unb), (0, 0));
++        let t = run_dof(&airs, &mats, &pvs, cap(), 0xBEEF);
++        let bad = report("level2-passthrough", &t);
++        assert!(bad.is_empty(), "{bad:#?}");
 +    }
 +}
 diff --git a/crates/recursion/src/nv/faithful_tr_tests.rs b/crates/recursion/src/nv/faithful_tr_tests.rs
