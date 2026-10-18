@@ -617,3 +617,39 @@ rows and SHA has 309,858 rows.
 
   Getting under 300 KB needs the SHA AIR shape (S lane) or the MCA upgrade (lane/pq-mca-upgrade,
   −15 to −45 KB on WHIR, not counted here). NV-side program cuts alone cannot do it.
+
+### MCA regimes (lane/pq-mca-upgrade @ 6841b5f56) and the program cut [MODEL]
+
+`extrapolate_nv2.py` now takes the env `NV_MCA` to pick how many bits each WHIR query buys:
+* `m3`: today's default, BCGM with `ListDecoding{m: 3}`.
+* `m64`: O-1, DKT26 Thm 5.12 with `ListDecoding{m: 64}`.
+* `O2`: O-1 plus O-2. Each round uses a first-order agreement
+  a_i = (a1(ρ_i)/√ρ_i + 0.05)√ρ_i, which is `agreement_table()`, the rule in that lane's
+  `dkt_certs.json` / `bound_mca.py`. The table is bound into the vk, and 48 B per later round
+  are reserved for a second OOD answer.
+
+Both upgrades are still pending verification. In the chain config, m is chosen with
+`PARENT_LIST_M` / `FINAL_LIST_M`, and the default stays m = 3. The hook reproduces the lane's
+numbers exactly: 323,955 / 313,759 / 300,733 B.
+
+`size_cut_mca.py` gives each regime with the program cut (best penultimate b and n_stack):
+
+| regime | baseline | program −28 % (< 2^17 rows) | plus 30 interactions per NvAir row |
+|---|---|---|---|
+| m = 3 | 323,955 (program 181,754) | 320,565 (126,690) | 318,117 |
+| m = 64 | 313,759 (177,222) | 311,745 (123,804) | 309,297 |
+| O-2 | 300,733 (165,884) | **299,229** (120,918) | **296,781** |
+
+The program has no power-of-two padding, so the cut pays linearly: 1.5–3.4 KB for 28 %. 2^17
+is no longer a threshold. Under O-2 the cut is what crosses 300,000 B.
+
+Where the rows go, from the measured A2 at 268 bits with b = 2 (234,533 rows):
+* preamble, including the app table: 38.4k;
+* DAG: 22.1k;
+* stacking: 12.5k;
+* queries plus the final check: 161.6k.
+
+Each Merkle level costs 10 rows: 2 sibling loads, 1 `one_minus`, `NodeJob`, 4 `UnitWS`, and 2
+`Dig`. That is about 58k rows over all paths. A "load-and-push" UnitWS op that takes the sibling
+as a free witness would remove the 2 load rows per level, about −12k rows (−0.8 KB). It needs a
+33rd op, which means a fifth op-selector half and one more NvAir column.

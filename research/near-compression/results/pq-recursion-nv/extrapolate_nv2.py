@@ -30,7 +30,49 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, '..', 'pq384-sha-air2', 'model'))
 import ext  # noqa: E402
 
+ext.bits = lambda rate, m: bits_mca(rate, m)  # MCA regime hook (see bits_mca)
+
 L15 = math.log2(15)
+
+# ---- WHIR per-query bits regime (MCA): 'm3' (today: BCGM, ListDecoding{m: 3}), 'm64' (O-1:
+# DKT26 Thm 5.12, ListDecoding{m: 64}), 'O2' (O-1 + O-2: per-round first-order agreement
+# a_i = (a1(rho_i)/sqrt(rho_i) + 0.05) sqrt(rho_i), the rule certified in
+# lane/pq-mca-upgrade calc/dkt_certs.json / bound_mca.py; the table a_i is bound into the vk;
+# +48 B per later round reserved for a second OOD answer).  Env NV_MCA; default m3.
+# O-1 / O-2 are pending verification (lane/pq-mca-upgrade @6841b5f56, MCA-UPGRADE.md).
+MCA = os.environ.get('NV_MCA', 'm3')
+O2_MARGIN = 0.05
+
+
+def a1(r):
+    """First-order agreement a1(rho) of DKT26 (size_mca.py / bound_mca.py)."""
+    rc = 11 - 3 * math.sqrt(13)
+    if r < rc:
+        s, lo, hi = math.sqrt(r / 2), 0.0, 1.0
+        for _ in range(200):
+            mid = (lo + hi) / 2
+            lo, hi = (mid, hi) if mid * mid * (mid + 3) < s else (lo, mid)
+        return s * (1 + lo)
+    return (3 * r + 2 * math.sqrt(r * (5 - r) * (2 - r))) / (8 - r)
+
+
+def agreement_table(rates):
+    """O-2: per-round agreement a_i / sqrt(rho_i) for the rounds' rates (-log2 rho_i)."""
+    return [min(a1(2 ** -r) / math.sqrt(2 ** -r) + O2_MARGIN, 1 + 1 / 128) for r in rates]
+
+
+def bits_mca(rate, m):
+    if MCA == 'm3':
+        return rate / 2 - math.log2(1 + 1 / 6)
+    if MCA == 'm64':
+        return rate / 2 - math.log2(1 + 1 / 128)
+    if MCA == 'O2':
+        return rate / 2 - math.log2(agreement_table([rate])[0])
+    raise ValueError(MCA)
+
+
+def o2_reserve(rounds):
+    return 48 * (rounds - 1) if MCA == 'O2' else 0
 L_SKIP = 2
 COLS, ROT = 73 + 171 + 13 + 5, 36 + 144 + 11 + 2   # NvAir 73 columns after T*
 D = 21
@@ -125,7 +167,7 @@ def proof_bytes(c, target, digest, bmax=None):
     n = math.ceil(math.log2(max(c['nv_rows'], c['sha_rows']))) - L_SKIP
     rel = relations(n)
     st = stacking(n_stack, W)
-    return dict(total=round(w + g + rel + st + 73), whir=round(w), gkr=g, L=L, rel=rel, stk=st, W=W,
+    return dict(total=round(w + g + rel + st + 73 + o2_reserve(len(r['q']))), whir=round(w), gkr=g, L=L, rel=rel, stk=st, W=W,
                 q=r['q'], shape=dict(b=r['b'], k1=r['k1'], k=r['k'], log_h=log_h, lf=r['log_final']))
 
 
