@@ -12,7 +12,8 @@ all evaluated by the Lean kernel (`decide +kernel`).  No code of the authors' Py
   python3 -I dkt_lean_certs.py eval  > ../lean/DKTCertsEval.lean   # stage 1: find L0, L by #eval!
   python3 -I dkt_lean_certs.py proof <eval-output> > ../lean/DKTCerts.lean   # stage 2: kernel proofs
 Environment: DKT_JSON=<certificate json> (default dkt_certs.json; dkt_certs_o2.json for the O-2
-table), DKT_CHUNK=i/N (only every N-th certificate starting at i, to bound kernel memory).
+table), DKT_CHUNK=i/N (only every N-th certificate starting at i, to bound kernel memory),
+DKT_KEYS=<file> (only the keys listed in it, applied before DKT_CHUNK).
 """
 import json
 import os
@@ -37,6 +38,9 @@ def certs():
         c = d[key]
         out.append(dict(key=key, n=n, k=k, A=A, ell=ell, m=c['m'], M=c['B_d'], mu=c['B_jet'],
                         H=c['H'], E=Fr(c['E']), list=Fr(c['list'])))
+    if os.environ.get('DKT_KEYS'):      # only the keys listed (one per line) in this file
+        keep = set(open(os.environ['DKT_KEYS']).read().split())
+        out = [c for c in out if c['key'] in keep]
     if CHUNK:
         i, nchunks = map(int, CHUNK.split('/'))
         out = out[i::nchunks]

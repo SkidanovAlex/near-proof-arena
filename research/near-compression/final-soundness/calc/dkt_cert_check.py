@@ -2,7 +2,7 @@
 # lane/pq-dkt-verify calc/dkt_certs.json (round codes and fold sub-codes s = 0..k_i).
 # Usage: python3 dkt_cert_check.py <dkt_certs.json | dkt_certs_o2.json>
 # Copied from lane/pq-recursion-sha384 @ cf2262a24 results/pq-recursion-nv/dkt_cert_check.py; changes:
-# '_grid' optional; the first-curve (ell = W-1) round-0 certificates and '_no_certificate' are reported.
+# '_grid' optional; penultimate candidate shapes added (3c4324e8c size_cut3.py); the first-curve (ell = W-1) round-0 certificates and '_no_certificate' are reported.
 import sys
 import json, math
 from decimal import Decimal, getcontext
@@ -36,6 +36,9 @@ SH = {
   'base app stress b6 h21 k1=1 k4 lf8':             dict(log_h=21, b=6, k1=1, k=4, lf=8),
   'measured chain inner b2 h20 k1=1 k4 lf3':        dict(log_h=20, b=2, k1=1, k=4, lf=3),
   'measured chain final b2 h21 k1=1 k3 lf8':        dict(log_h=21, b=2, k1=1, k=3, lf=8),
+  'penultimate b8 h20 k1=2 k4 lf6 (n=15*2^28: NOT a BabyBear domain)': dict(log_h=20, b=8, k1=2, k=4, lf=6),
+  'penultimate b8 h19 k1=2 k4 lf9':                 dict(log_h=19, b=8, k1=2, k=4, lf=9),
+  'penultimate b7 h20 k1=2 k4 lf6':                 dict(log_h=20, b=7, k1=2, k=4, lf=6),
 }
 for name, s in SH.items():
     nr = 1 + math.ceil((s['log_h'] - s['k1'] - s['lf']) / s['k'])

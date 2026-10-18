@@ -440,7 +440,7 @@ round-0 code. `dkt_cert_check.py` does not test this; the table mode adds it.
   words therefore gives the W-word statement. If the NV lane's W differs, use the next ℓ above
   W − 1.
 
-All entries: 93 + 18 + 18 = **129** in `dkt_certs_o2.json`.
+All entries: 93 + 18 + 18 = **129** in `dkt_certs_o2.json` for the six shapes; 173 with the penultimate candidates of §8.7.
 
 ### 8.4 Full bound with these certificates, and the one fallback
 
@@ -506,3 +506,59 @@ DKT_JSON=calc/dkt_certs_o2.json python3 -I calc/dkt_lean_certs.py eval > lean/DK
 DKT_JSON=calc/dkt_certs_o2.json DKT_CHUNK=i/6 python3 -I calc/dkt_lean_certs.py proof lean/DKTCertsO2Eval.out > lean/DKTCertsO2_i.lean
 (in ArkLib) HEAVY_MEM=24G heavy lake env lean <worktree>/.../lean/DKTCertsO2_i.lean
 ```
+
+### 8.7 Penultimate candidates (lane/pq-recursion-sha384 @ 3c4324e8c, `size_cut3.py`)
+
+The recursion lane's best penultimate is (b 8, n_stack 18, k1 2, k 4, lf 6), so log_h = 20. It was
+counted on Johnson because it was not in this file. It was certified on request, with the same rule
+and process.
+
+**Domain problem.** That shape's initial WHIR domain is 15·2²⁸. BabyBear has p − 1 = 15·2²⁷
+(2-adicity 27), so no multiplicative subgroup of that order exists, and with an odd factor of 1
+the domain 2²⁸ does not exist either. `ext.py` enforces `maxdom = 27` for the final-layer search,
+but `size_cut3.py`'s penultimate loop (b up to 8, n_stack up to 18) does not. This is a
+domain/spec question for the NV lane, so this lane did not choose a replacement. It also certified
+the two realizable neighbours with log_h + b = 27.
+
+| shape (n) | round: A_i (k_i, q_i) | codes | worst E/\|F\| | worst list | status |
+|---|---|---|---|---|---|
+| b8 h20 k1 2 lf6 (15·2²⁸, **not a BabyBear domain**) | 0: 52,000,438 (2, 38) · 1: 25,592,250 (4, 33) · 2: 6,273,989 (4, 26) · 3: 1,552,217 (4, 21) | 18 | 2⁻²⁸⁰·⁸⁸ | 2⁴³·⁸⁹ | 17 / 18; round 3, s = 0 has no certificate |
+| b8 h19 k1 2 lf9 (15·2²⁷) | 0: 26,000,207 (2, 38) · 1: 12,796,101 (4, 33) · 2: 3,136,899 (4, 26) | 13 | 2⁻²⁸³·²¹ | 2⁴²·⁸⁹ | all certified |
+| b7 h20 k1 2 lf6 (15·2²⁷) | 0: 37,140,791 (2, 41) · 1: 18,228,420 (4, 35) · 2: 4,453,003 (4, 27) · 3: 1,099,669 (4, 22) | 18 | 2⁻²⁸²·⁴² | 2⁴³·³⁷ | all certified |
+
+Each shape also has round-0 curve certificates at ℓ = 52, 140 and 600, at A₀ and at A_J. That
+makes 44 new entries, and **173** in total.
+
+**The uncertifiable code** is (4,026,531,840, 1,024, 1,552,217), round 3 at s = 0 of the
+infeasible shape.
+* The list bound is the obstacle: the best is 2⁴⁴·⁵⁸ at m = 24 against the cap of 2⁴⁴, while E has
+  margin (2⁻²⁸²·⁸⁶).
+* On a 0.2 % grid, the smallest certifiable A is 1,561,531 (+0.6 %), and q stays 21.
+* A certificate at a larger A does not cover the vk-bound A, so it is not stored. The round falls
+  back to J64 (q 22, +1). `_no_certificate` records this.
+
+**Bound** (`o2_table_bound.py`, NV inner parameters, W = 141, 1 commitment):
+
+| shape | plan | q (sum) | worst non-query |
+|---|---|---|---|
+| b8 h20 | O-2 with r3 = J64 | [38, 33, 26, 22] (119) vs all-J64 [40, 34, 27, 22] (123) | 2⁻²⁷⁰·¹¹ (pass, thin) |
+| b8 h19 | O-2 | [38, 33, 26] (97) vs [40, 34, 27] (101) | 2⁻²⁷⁰·²⁷ (pass, thin) |
+| b7 h20 | O-2 | [41, 35, 27, 22] (125) vs [44, 37, 28, 23] (132) | 2⁻²⁷²·¹¹ (pass) |
+
+**Bytes** (recursion lane model at 3c4324e8c: `size_cut3.py` run unmodified in a scratch copy, last
+row "+ v4 child DAG", final b7 h20 O-2 throughout):
+
+| penultimate | final |
+|---|---|
+| b8 h20 on Johnson (current figure; infeasible domain) | 287,037 B |
+| b8 h20 certified (model counts round 3 at O-2 q 21; the J64 fallback adds 1 query there) | 286,285 B (−752) |
+| realizable only (log_h + b ≤ 27), nothing new certified: best b8 ns17 k1 1, on Johnson | 287,413 B |
+| realizable only, with b8 h19 / b7 h20 certified: best b7 ns18 k1 2, q [41, 35, 27, 22] | **287,037 B** |
+
+So under the domain constraint, the certified, realizable penultimate gives the same 287,037 B as
+the current (infeasible, Johnson) figure. The −752 B is available only if a 15·2²⁸ domain were
+realizable, which it is not over BabyBear.
+
+**Lean.** The 44 new entries: `#eval!` gives `CurveVerification` true for 44 / 44, with E and list
+exactly equal to the JSON. Kernel proofs: `lean/DKTCertsO2_6.lean` and `lean/DKTCertsO2_7.lean`
+(keys in `lean/DKTCertsO2_6.keys`): running at this commit.

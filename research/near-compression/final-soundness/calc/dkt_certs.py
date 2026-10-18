@@ -141,6 +141,12 @@ O2_SHAPES = {   # name: (log_h, b, k1, k, lf, priority)   -- dkt_cert_check.py S
     'base app stress b6 h21 k1=1 k4 lf8': (21, 6, 1, 4, 8, 0),
     'measured chain inner b2 h20 k1=1 k4 lf3': (20, 2, 1, 4, 3, 1),
     'measured chain final b2 h21 k1=1 k3 lf8': (21, 2, 1, 3, 8, 1),
+    # penultimate candidates (lane/pq-recursion-sha384 @ 3c4324e8c size_cut3.py).  b8 h20 has
+    # log_h + b = 28 > 27 = 2-adicity of BabyBear: its domain 15*2^28 does not exist in F_p^*
+    # (certified on request, abstract RS code); the two log_h + b = 27 neighbours are realizable.
+    'penultimate b8 h20 k1=2 k4 lf6 (n=15*2^28: NOT a BabyBear domain)': (20, 8, 2, 4, 6, 0),
+    'penultimate b8 h19 k1=2 k4 lf9': (19, 8, 2, 4, 9, 0),
+    'penultimate b7 h20 k1=2 k4 lf6': (20, 7, 2, 4, 6, 0),
 }
 
 

@@ -35,6 +35,9 @@ SHAPES = {
     'base app stress b6 h21 k1=1 k4 lf8': S['base app (layer 0, stress)'],
     'measured chain inner b2 h20 k1=1 k4 lf3': dict(NVI, log_h=20, b=2, k=4, lf=3),
     'measured chain final b2 h21 k1=1 k3 lf8': dict(NVF, log_h=21, b=2, k=3, lf=8),
+    'penultimate b8 h20 k1=2 k4 lf6 (n=15*2^28: NOT a BabyBear domain)': dict(NVI, log_h=20, b=8, k1=2, k=4, lf=6),
+    'penultimate b8 h19 k1=2 k4 lf9': dict(NVI, log_h=19, b=8, k1=2, k=4, lf=9),
+    'penultimate b7 h20 k1=2 k4 lf6': dict(NVI, log_h=20, b=7, k1=2, k=4, lf=6),
 }
 
 
@@ -48,15 +51,25 @@ def f_ratio(r):
 def main():
     for nm, s in SHAPES.items():
         rs = BM.rounds_of(s)
-        plans = {'O-2': [f_ratio(r) for r in rs],
-                 'r0=J64': [('J', 64)] + [f_ratio(r) for r in rs[1:]],
+        # rounds with a missing certificate (any sub-code) fall back to J64 in the 'O-2' plan
+        certs = BM._certs if BM._certs is not None else __import__('json').load(open(BM.CERTS))
+        BM._certs = certs
+
+        def covered(r):
+            A = D.o2_agree(r['n'], r['kdim'])
+            return all(f"{r['n'] >> j},{r['kdim'] >> j},{-(-A // 2 ** j)},1" in certs for j in range(r['k'] + 1))
+        fb = [i for i, r in enumerate(rs) if not covered(r)]
+        plans = {'O-2' + (f' (r{",".join(map(str, fb))}=J64)' if fb else ''):
+                 [('J', 64) if i in fb else f_ratio(r) for i, r in enumerate(rs)],
                  'all J64': [('J', 64)] * len(rs)}
         print(f'== {nm}  (W = {s["W"]}, commits = {s.get("commits", 1)})')
+        if 0 not in fb:
+            plans['r0=J64'] = [('J', 64)] + [('J', 64) if i in fb else f_ratio(r) for i, r in enumerate(rs) if i]
         for pn, plan in plans.items():
             res = BM.layer(dict(s), plan, 'first-curve')
             e, mv = res['worst_nonquery']
             ok = e <= BM.BUDGET
-            print(f'  {pn:8s} q = {res["q"]} (sum {sum(res["q"])})  r0 list 2^{res["rounds"][0]["log_list"]:.2f}  '
+            print(f'  {pn:12s} q = {res["q"]} (sum {sum(res["q"])})  r0 list 2^{res["rounds"][0]["log_list"]:.2f}  '
                   f'worst non-query 2^{e:.2f} [{mv}]  {"PASS" if ok else "FAIL (> 2^-270)"}')
 
 
