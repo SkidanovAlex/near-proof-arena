@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..fd3c096
+index 0000000..b25408a
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,879 @@
+@@ -0,0 +1,896 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -2060,6 +2060,7 @@ index 0000000..fd3c096
 +        }
 +        let n = self.instrs.len();
 +        assert!(n <= self.prog_len());
++        assert_horner_chains(&self.instrs);
 +        let tp = super::uair::tau_pows();
 +        let e1n = super::uair::E1_SIZE;
 +        let pw = |w: [u32; 4]| -> EF { (0..4).map(|j| tp[j] * F::from_u32(w[j])).sum() };
@@ -2117,6 +2118,22 @@ index 0000000..fd3c096
 +}
 +
 +
++
++/// Horner chains must be complete (FAITHFUL.md §W): a HornR / HornE row's own c is pinned only by
++/// the previous row's transition constraint, so it must follow HornS or HornR; a HornS / HornR
++/// row constrains the next row's c, so it must be followed by HornR or HornE (never the last
++/// program row, whose next row is BIND's first row).
++pub fn assert_horner_chains(instrs: &[Instr]) {
++    use Op::*;
++    for (i, ins) in instrs.iter().enumerate() {
++        if matches!(ins.op, HornR | HornE) {
++            assert!(i > 0 && matches!(instrs[i - 1].op, HornS | HornR), "row {i}: {:?} not preceded by HornS / HornR", ins.op);
++        }
++        if matches!(ins.op, HornS | HornR) {
++            assert!(i + 1 < instrs.len() && matches!(instrs[i + 1].op, HornR | HornE), "row {i}: {:?} not followed by HornR / HornE", ins.op);
++        }
++    }
++}
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
 index 0000000..3a6e942
@@ -2376,10 +2393,10 @@ index 0000000..3a6e942
 +}
 diff --git a/crates/recursion/src/nv/faithful_dof.rs b/crates/recursion/src/nv/faithful_dof.rs
 new file mode 100644
-index 0000000..4ac9a95
+index 0000000..1f26c7e
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_dof.rs
-@@ -0,0 +1,526 @@
+@@ -0,0 +1,527 @@
 +//! NV-faithful degree-of-freedom check (results/pq-recursion-nv/FAITHFUL.md §4).
 +//!
 +//! For an honest NV trace set, every cell of every AIR is perturbed one at a time
@@ -2643,6 +2660,7 @@ index 0000000..4ac9a95
 +                set(c.g[k], format!("g{k}"));
 +            }
 +            set(c.wit, "wit".into());
++            set(c.wit2, "wit2".into());
 +            set(c.mult, "mult".into());
 +            set(c.rx, "rx".into());
 +            set(c.ry, "ry".into());
@@ -3393,10 +3411,10 @@ index 0000000..e1db382
 +}
 diff --git a/crates/recursion/src/nv/faithful_tests.rs b/crates/recursion/src/nv/faithful_tests.rs
 new file mode 100644
-index 0000000..ecf3512
+index 0000000..09423b9
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_tests.rs
-@@ -0,0 +1,729 @@
+@@ -0,0 +1,768 @@
 +//! NV-faithful: degree-of-freedom (single-cell perturbation) runs and tamper tests for the ALU,
 +//! BIND and app-binding roles (results/pq-recursion-nv/FAITHFUL.md).
 +//!
@@ -3461,8 +3479,11 @@ index 0000000..ecf3512
 +            if is(col, "b") && !o.reads_b() {
 +                return Some("operand b not read by this op");
 +            }
-+            if col == "wit" && o != Op::Horn {
-+                return Some("wit only used by Horn");
++            if col == "wit" && !matches!(o, Op::Horn | Op::Horn2) {
++                return Some("wit only used by Horn / Horn2");
++            }
++            if col == "wit2" && o != Op::Horn2 {
++                return Some("wit2 only used by Horn2");
 +            }
 +            if matches!(col, "rx" | "ry" | "rz") && o == Op::Data {
 +                return Some("B-field bytes unused on Data rows");
@@ -4125,6 +4146,42 @@ index 0000000..ecf3512
 +        let bad = report("level2-passthrough", &t);
 +        assert!(bad.is_empty(), "{bad:#?}");
 +    }
++}
++
++/// §W: every generated program has complete Horner chains (HornS HornR* HornE, contiguous), and
++/// the assertion in `Builder::finish` rejects a broken one.
++#[test]
++fn nv_horner_chain_shape() {
++    use super::isa::Instr;
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let circ = NvCircuit::new(vk.inner.params.k_whir(), 16, 1);
++    let (_, b) = circ.generate(&vk, &proof);
++    let chains = b.instrs.iter().filter(|i| i.op == Op::HornS).count();
++    let rs = b.instrs.iter().filter(|i| i.op == Op::HornR).count();
++    println!("NV_HORNER chains={chains} HornR rows={rs} program={}", b.instrs.len());
++    assert!(chains > 0);
++    super::builder::assert_horner_chains(&b.instrs);
++    // a HornR whose predecessor is not a chain op, and a dangling HornS, are rejected
++    let r = b.instrs.iter().position(|i| i.op == Op::HornR).unwrap();
++    let mut bad = b.instrs.clone();
++    bad[r - 1] = Instr::NOP;
++    must_fail("HornR without predecessor", || super::builder::assert_horner_chains(&bad));
++    let mut bad = b.instrs.clone();
++    let e = bad.iter().position(|i| i.op == Op::HornE).unwrap();
++    bad[e] = Instr::NOP;
++    must_fail("chain without HornE", || super::builder::assert_horner_chains(&bad));
++}
++
++/// §W: DOF on a child with stacked width >= 2 (n_stack 3), whose program has Horn2 rows.
++#[test]
++fn nv_dof_horn2() {
++    let mut p = openvm_stark_backend::test_utils::test_system_params_small(2, 3, 3);
++    p.max_constraint_degree = 4;
++    let engine = Sha384CpuEngine::new(p);
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let bad = dof_case("horn2", &vk, &proof, None);
++    assert!(bad.is_empty(), "unexpected degrees of freedom: {bad:#?}");
 +}
 diff --git a/crates/recursion/src/nv/faithful_tr_tests.rs b/crates/recursion/src/nv/faithful_tr_tests.rs
 new file mode 100644

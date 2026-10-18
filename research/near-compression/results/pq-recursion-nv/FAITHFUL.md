@@ -1551,3 +1551,146 @@ traces pass the evaluator's global check (0 constraints, 0 unbalanced messages).
   * The interaction-count limit 2^28 holds.
 
 **§V verdict: SHA AIR v4 and its NV integration are faithful. I found no soundness bug.**
+
+## W. Re-audit: program cut (bfad906ec milestone 1, 8d34fdf70 milestone 2, head 3c4324e8c)
+
+Merged into this branch as 324bde53d. **Verdict: no soundness bug.** One hardening fix was
+added: `assert_horner_chains` (W.2). The program-binding argument (§2(b), §R.2) is unchanged.
+
+### W.1 Op binding and the new ops (§2(a))
+
+* **40 ops** fill the 8 × 5 selector grid (OP_HI = 5). P1 = B + op·2^20 < 40·2^20 < p, and the
+  B-field range is still the pair check `(rz, 16 rz)` (B1). So A-2 holds unchanged: op =
+  ⌊P1/2^20⌋. There is no undefined code left, so no undefined-op relabel exists.
+* **SibWS4 / SibWS2** (32, 33):
+  * c is a free witness (the sibling), and SibWS2 has c6..c11 = 0.
+  * B is the path bit's address (`reads_b`); A is not read.
+  * The units are word units of c for job P2, at key `P3 + 2k + 12(1 − b0)` (k < 4 resp. 2).
+  * These are exactly the messages of the old `Load` + `one_minus` + `UnitWS*(1 − b)` sequence.
+    GLUE range-checks every word unit, so the sibling is canonical.
+* **DigWS4 / DigWS2** (34, 35):
+  * c is received on the digest bus: `(P0, h, c[6h..6h+6])` for h = 0, 1 (DigWS4), or
+    `(P0, 2, c[0..6])` with c6..c11 = 0 (DigWS2).
+  * P0 is the child job id and is not read as an address (not in `reads_a`).
+  * The units are word units of c for job P2 at `P3 + 2k + 12·b0`.
+  * GLUE sends each job's digest pairs once, so each child digest is consumed by exactly one
+    op, as it was with `Dig`. The root is still `Dig` plus the equality with the commitment
+    cells.
+* **Merkle level (5 rows: NodeJob, DigWS4, DigWS2, SibWS4, SibWS2):** the parent job's 24 word
+  units are the child digest on side b and the free sibling on side 1 − b. Every row reads the
+  same LoadBit cell. Claim E (§2(e)) carries over unchanged: the authentication path recomputes
+  the observed root with the direction bits taken from the canonical index decomposition.
+* **Horn2** (39): c = (a·b + w1)·b + w2, degree 3, so NvAir is degree 9 (= SHA v4).
+  * w1 = `wit` and w2 = `wit2` are pushed as felt units P3 + 1 and P3 of job P2 (k = 1, 0).
+  * The same witness cells are hashed into the leaf and folded, as with `Horn`.
+  * The unit order against native is pinned by honest acceptance (the leaf digest must match
+    the Merkle root) and by `nv_horn2_tamper`.
+* **Fold butterfly and factorised eq:** program-level algebraic identities with no AIR change.
+  The eq factorisation's inverses of 1 − α_m are `Load` cells checked by `x·inv = 1`.
+
+### W.2 Horner chains: soundness requires complete chains
+
+Constraints:
+* `HornS`: c = a (copy) and **transition** n.c = a.
+* `HornR`: own c free, transition n.c = c·b + a.
+* `HornE`: own c free.
+
+So a HornR or HornE row's c is pinned **only** by the previous row's transition. An isolated
+HornR or HornE would be a free witness.
+
+**Lemma (chain completeness).** In every program P_i, each HornR/HornE row is directly preceded
+by HornS or HornR, and each HornS/HornR row is directly followed by HornR or HornE.
+
+*Proof.* The only emitter is `Builder::horner_chain`, which pushes HornS, then n − 1 HornR, then
+HornE, by consecutive `push` calls with no other emission in between: `push` appends one row,
+and constants are created before the chain (`coeffs`, `x` are inputs). No other code path emits
+these ops (grep). The program is fixed and bound (§2(b)), so the trace's rows are exactly these.
+Hence, by induction along a chain:
+* HornS's next c is the top coefficient a_{n−1};
+* each HornR turns the incoming c into c·x + a_i;
+* HornE holds Σ a_i x^i.
+
+This is the Horner value the native verifier computes.
+
+*Hardening (this branch).* `assert_horner_chains` runs in `Builder::finish`, so a program with a
+broken chain is never generated. It also excludes a chain op as the last program row: that row's
+transition would read BIND's first row, whose accumulator positions are the moved c columns.
+Test `nv_horner_chain_shape`: the honest programs pass, and a HornR without a predecessor or a
+chain without HornE is rejected.
+
+* **Moved result columns.** c now sits at pool 36..48, which is also BIND's acc. A `const`
+  assertion pins the offsets. Transitions are gated by the local row's ALU selector, so they
+  never fire on BIND rows. The next-row mask comes from keygen's DAG, so it contains these
+  columns (PROOF S-11).
+
+### W.3 x15 query index (new decomposition)
+
+x = low + 2^m(15q + a), where:
+* low has m LoadBits;
+* q has 27 − m LoadBits;
+* a has 4 LoadBits with AND(a) = 0, i.e. a ≠ 15.
+
+The maximum is (2^m − 1) + 2^m(15(2^{27−m} − 1) + 14) = 15·2^27 − 1 = p − 2 < p. So the
+recomposition is an integer, equal to the canonical x. x = p − 1 has no representation and is
+rejected (native re-samples; completeness only, ≤ q/p), and the mixed-radix representation is
+unique. index = low + 2^m·a = x mod 15·2^m, which is native `sample_index_exact`. Test:
+`nv_tr_x15_hook_tamper` (a = 15 with q − 1, swap, other leaf).
+
+### W.4 O-2 round-0 multi-commitment rule
+
+This is native and proof-shape only: round 0 uses Johnson when a layer can have more than one
+stacked commitment, and the regime is bound in the vk. NV layers have exactly one commitment
+(`build_verifier` asserts no preprocessed or cached traces), so the NV constraints are
+untouched. The child's table is a vk constant of the program (F2).
+
+### W.5 §2(b) / §R.2 / `nv_bind_tamper` redone
+
+BIND, APPB, Acc/Acc2 and the deferred check are byte-identical in logic. Only the ALU view moved
+(c → pool 36..48), and the test helpers address fields through the struct (`AbCols` offsets). So
+R.2 holds as written:
+* the Acc row at its fixed address forces [0, n) to be ALU rows;
+* BIND has n/2 rows, pinned by Acc's P0 = n − 2;
+* the bind permutation bus gives pc = P;
+* the (ya, yb) split is unique;
+* the kernel and SZ argument are unchanged.
+
+`nv_bind_tamper` passes on the new head: the alternative split, the premature bl and the APPB
+word are all rejected.
+
+### W.6 Tests and sweep on the new head (8 threads, 24 GB cap)
+
+**Tests.** Every `nv_` and `o2_` test except `nv_chain` and `nv_app_binding` passes:
+* 49 / 49 in 48 B (`nv_program_probe` is ignored by design);
+* 46 / 46 in 42 B + coset leaves (passthrough skipped there).
+
+These include:
+* B1–B6: `nv_alu_relabel_*`, `nv_alu_base_load_pow`, the `nv_tr_*` tests,
+  `nv_faithful_tail_framing_unique`;
+* `nv_bind_tamper`, `nv_statement_passthrough`;
+* upstream's `nv_merkle_op_tamper`, `nv_horn2_tamper`, `o2_round0_multi_commit`,
+  `o2_agreement_table`;
+* the new `nv_horner_chain_shape` and `nv_dof_horn2`.
+
+**Perturbation sweep, every cell.** In the harness, `wit2` is now named. A don't-care `wit` cell
+is allowed only off Horn and Horn2 rows, and a don't-care `wit2` cell only off Horn2 rows.
+
+| fixture | digests | cells | constraint | bus | undetected Sha512Air4 / TableAir4 | undetected total (all don't-care) | unexpected | mem-coupled accepted |
+|---|---|---:|---:|---:|---|---:|---:|---:|
+| Fib | 48 B | 10,617,984 | 9,476,600 | 934,547 | 0 / 0 | 206,837 | 0 | 0 / 20,184 |
+| interactions + levers | 48 B | 16,057,472 | 14,850,969 | 990,495 | 0 / 0 | 216,008 | 0 | 0 / 20,832 |
+| ×15 + WHIR levers | 48 B | 10,617,984 | 9,869,830 | 610,560 | 0 / 0 | 137,594 | 0 | 0 / 16,020 |
+| app table | 48 B | 10,617,984 | 9,470,828 | 937,695 | 0 / 0 | 209,461 | 0 | 0 / 20,292 |
+| Fib, n_stack 3 (Horn2 rows) | 48 B | 10,617,984 | 9,972,733 | 525,200 | 0 / 0 | 120,051 | 0 | 0 / 13,512 |
+| Fib | 42 B + coset leaf | 10,617,984 | 9,802,584 | 647,862 | 0 / 0 | 167,538 | 0 | 0 / 15,984 |
+| interactions + levers | 42 B + coset leaf | 10,617,984 | 9,738,168 | 702,953 | 0 / 0 | 176,863 | 0 | 0 / 16,632 |
+| ×15 + WHIR levers | 42 B + coset leaf | 10,617,984 | 9,941,298 | 548,256 | 0 / 0 | 128,430 | 0 | 0 / 14,580 |
+| app table | 42 B + coset leaf | 10,617,984 | 9,796,812 | 651,010 | 0 / 0 | 170,162 | 0 | 0 / 16,092 |
+| Fib, n_stack 3 (Horn2 rows) | 42 B + coset leaf | 6,538,368 | 5,843,686 | 205,927 | 0 / 0 | 95,331 | 0 | 0 / 9,912 |
+
+The new ops appear in the swept traces: HornS, HornR, HornE, SibWS4/2 and DigWS4/2 in every
+fixture, and Horn2 in the n_stack-3 fixture. Their only undetected cells are pool columns
+beyond the ALU view and operands the op does not read. In particular every Horn2 `wit`/`wit2`
+cell and every HornR/HornE `c` cell is detected: on single cells, by the previous row's
+transition or the memory key.
+
+**LogUp:** unchanged from §V.7 (49 NvAir interactions per row, Sha512Air4 17; ε ≈ 2^−316.8).
