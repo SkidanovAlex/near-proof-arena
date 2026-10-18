@@ -108,48 +108,72 @@ def report():
     print(f"[L] verifying one segment proof in NV: program {one['prog']:,} rows, {one['comps']:,} compressions, "
           f"2^{lg(one['cells']):.2f} cells (inner NV child: 2^26.1)")
 
-    rows = []
-    # ---- design T: binary tree over independent segment proofs
+    # ---------------- designs (all share the base work; they differ in how proofs are combined)
+    W_g = math.ceil(OPS_1PGAS_ADV * MAIN_CELLS_PER_OP[cls] / 2 ** 26)
+    s_g = dict(BASE, log_h=26, lf=9)         # BabyBear 2-adicity: log_h + b <= 27 at c = 1
+    tail = [('T1', 2 ** 26.13), ('T2', 2 ** 26.13), ('FINAL', 2 ** 26.13)]   # [L] NV fixed point (recursion lane)
+    designs = {}
+    # G: one shared-transcript base proof over all 32 GPUs (PERF P-PERF-4), then a linear NV chain
+    g1 = node(1, s_g, W_g, bind_regions=0)
+    designs['G  global base proof -> L1 -> tail'] = dict(base_after=max(base_gpu_s / GPUS, EXEC_S) - EXEC_S,
+                                                       levels=[('L1', g1['cells'], 8)] + [(n, c, 1) for n, c in tail])
+    # T2: independent segment proofs, binary tree (N1 over 2 segments; N2 2-to-1 with 2 BIND regions)
     n1 = node(2, BASE, W_seg, bind_regions=0)
     s_n1, w_n1 = nv_shape(n1['cells'])
     n2 = node(2, s_n1, w_n1, bind_regions=2)
-    for _ in range(6):                      # N2 fixed point (children are N2 of the same shape)
+    for _ in range(6):
         s_n2, w_n2 = nv_shape(n2['cells'])
         n2 = node(2, s_n2, w_n2, bind_regions=2)
-    depth = math.ceil(lg(math.ceil(S / 2)))
-    tail = [('T1 (1-ary over N2, app-table binding)', 2 ** 26.13), ('T2 (inner NV fixed point)', 2 ** 26.13),
-            ('FINAL (b = 8)', 2 ** 26.13)]
-    print(f"\n== Design T: S = {S} segment proofs -> N1 (2-to-1 over segments, no binding) -> "
-          f"{depth} levels of N2 (2-to-1, 2 BIND regions) -> tail (3 levels)")
-    print(f"   N1: 2^{lg(n1['cells']):.2f} cells, program {n1['prog']:,}, compressions {n1['comps']:,}, "
-          f"interactions 2^{lg(n1['inter']):.2f}; proves at {s_n1}")
-    print(f"   N2: 2^{lg(n2['cells']):.2f} cells, program {n2['prog']:,}, compressions {n2['comps']:,}, "
-          f"child queries {n2['q_child']}, interactions 2^{lg(n2['inter']):.2f}; proves at {s_n2}")
-    levels_T = [('N1', n1['cells'])] + [('N2', n2['cells'])] * depth + tail
-    # ---- design H: one distributed (shared-transcript) segment per machine, k = 4 at level 1
+    d2 = math.ceil(lg(math.ceil(S / 2)))
+    designs[f'T2 binary tree ({S} segments, depth 1 + {d2})'] = dict(
+        base_after=max(base_gpu_s / GPUS, EXEC_S) - EXEC_S,
+        levels=[('N1', n1['cells'], 1)] + [('N2', n2['cells'], 1)] * d2 + [(n, c, 1) for n, c in tail])
+    # T8: wide tree: N1 over 8 segments (linear, no binding); N2 4-to-1 with a preprocessed program
+    # commitment instead of BIND (linear in k; +~1.3k compressions per child [A, DESIGN §2.1 of NV])
+    n1w = node(8, BASE, W_seg, bind_regions=0)
+    s_n1w, w_n1w = nv_shape(n1w['cells'])
+    n4 = node(4, s_n1w, w_n1w, bind_regions=0)
+    for _ in range(6):
+        s_n4, w_n4 = nv_shape(n4['cells'])
+        n4 = node(4, s_n4, w_n4, bind_regions=0)
+    n4_cells = n4['cells'] + 4 * 1300 * (43 * 171 + 8 * 73)
+    d4 = math.ceil(math.log(math.ceil(S / 8), 4) - 1e-9)
+    designs[f'T8 wide tree (N1 8-to-1, N2 4-to-1 preprocessed, depth 1 + {d4})'] = dict(
+        base_after=max(base_gpu_s / GPUS, EXEC_S) - EXEC_S,
+        levels=[('N1x8', n1w['cells'], 8)] + [('N2x4', n4_cells, 8)] * d4 + [(n, c, 1) for n, c in tail])
+    # H: one contiguous range per 8-GPU machine (P-PERF-4 inside the machine), H1 4-to-1 over machines.
+    # Contiguous ranges are executed in order, so ranges are sized to finish together:
+    # start_g + work_g / 8 = T_f, start_g = EXEC_S * sum_{h<g} f_h
     mach = 4
-    mseg_cells = OPS_1PGAS_ADV / mach * MAIN_CELLS_PER_OP[cls]
-    s_m = dict(BASE, log_h=26, lf=9)         # BabyBear 2-adicity: log_h + b <= 27 at c = 1
+    per = base_gpu_s / 8
+    f = [1.0]
+    for g in range(1, mach):
+        f.append(f[0] * (1 - EXEC_S / per * sum(f[:g])))
+    tot = sum(f)
+    f = [x / tot for x in f]
+    t_f = per * f[0]
+    mseg_cells = OPS_1PGAS_ADV * f[0] * MAIN_CELLS_PER_OP[cls]
+    s_m = dict(BASE, log_h=26, lf=9)
     W_m = math.ceil(mseg_cells / 2 ** 26)
     h1 = node(mach, s_m, W_m, bind_regions=0)
-    s_h1, _ = nv_shape(h1['cells'])
-    qm, _ = schedule(s_m)
-    print(f"\n== Design H: {mach} machine-segments (P-PERF-4 inside each 8-GPU machine; 2^{lg(mseg_cells):.2f} cells, "
-          f"W = {W_m} at 2^26, queries {qm}) -> H1 ({mach}-to-1, no binding) -> tail (3 levels)")
-    print(f"   H1: 2^{lg(h1['cells']):.2f} cells, program {h1['prog']:,}, compressions {h1['comps']:,}, "
-          f"interactions 2^{lg(h1['inter']):.2f}; proves at {s_h1}")
-    levels_H = [('H1', h1['cells'])] + tail
+    designs[f'H  {mach} machine ranges (fractions {", ".join(f"{x:.2f}" for x in f)}) -> H1 -> tail'] = dict(
+        base_after=t_f - EXEC_S, levels=[('H1', h1['cells'], 8)] + [(n, c, 1) for n, c in tail])
 
-    print("\n   critical path after execution (base GPU-bound part + levels), seconds [A: GPU rate, NV work/cell]:")
-    for name, levels, gpus_first in (('T', levels_T, 1), ('H', levels_H, 8)):
+    print("\n   node sizes [L]: "
+          f"L1 2^{lg(g1['cells']):.2f} | N1 2^{lg(n1['cells']):.2f} | N2 2^{lg(n2['cells']):.2f} (child q {n2['q_child']}) | "
+          f"N1x8 2^{lg(n1w['cells']):.2f} | N2x4 2^{lg(n4_cells):.2f} | H1 2^{lg(h1['cells']):.2f}; node WHIR {NODE_WHIR}")
+    print("   latency after execution = base (GPU-bound remainder) + levels on the critical path "
+          "[A: 7.1 G cell-eq/s/GPU; NV work per cell 4 / 10 / 30; node GPUs as listed]:")
+    for name, dsg in designs.items():
+        cells_line = []
         for w in NV_WORK_PER_CELL:
-            tl = [t_level(c, gpus_first if i == 0 else 1, w) for i, (_, c) in enumerate(levels)]
-            base_after = max(base_gpu_s / GPUS, EXEC_S) - EXEC_S
-            print(f"     design {name}, {w:>2} cell-eq/NV cell: base {base_after:.2f} + {len(levels)} levels "
-                  f"{sum(tl):.2f} = {base_after + sum(tl):.2f} s   (levels: "
-                  + ', '.join(f"{n} {t:.3f}" for (n, _), t in zip(levels, tl)) + ")")
+            tl = [t_level(c, g, w) for (_, c, g) in dsg['levels']]
+            cells_line.append(f"{dsg['base_after'] + sum(tl):.2f}")
+        lv = ' + '.join(f"{n}" for n, _, _ in dsg['levels'])
+        print(f"     {name:<66} base {dsg['base_after']:.2f} + [{lv}] = {' / '.join(cells_line)} s")
+    s_h1, _ = nv_shape(h1['cells'])
     # memory per node (H200 141 GB): trace + LDE (blowup c 2^b) in base field + GKR ext buffers
-    for nm, cells, s in (('N1', n1['cells'], s_n1), ('N2', n2['cells'], s_n2), ('H1', h1['cells'], s_h1)):
+    for nm, cells, s in (('N1', n1['cells'], s_n1), ('N2', n2['cells'], s_n2), ('N1x8', n1w['cells'], s_n1w), ('H1', h1['cells'], s_h1)):
         lde = cells * s['c'] * 2 ** s['b'] * 4
         print(f"   memory {nm}: trace {cells * 4 / 2**30:.1f} GiB, LDE {lde / 2**30:.0f} GiB (c 2^b = {s['c'] * 2 ** s['b']}) "
               f"[A: streamed/sharded if > 100 GiB]")

@@ -1030,7 +1030,7 @@ index df6e338..989e18b 100644
  #[cfg(test)]
  mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
-index cdd15d6..47bb216 100644
+index cdd15d6..e112272 100644
 --- a/crates/recursion/src/nv/tests.rs
 +++ b/crates/recursion/src/nv/tests.rs
 @@ -93,7 +93,7 @@ fn nv_debug(fx: &impl TestFixture<Sha384Config>, log_rows: usize) {
@@ -1051,6 +1051,15 @@ index cdd15d6..47bb216 100644
          .collect();
      let parent = Sha384CpuEngine::new(nv_debug_params());
      parent.debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
+@@ -675,7 +675,7 @@ fn nv_app_binding() {
+         let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
+             .into_iter()
+             .enumerate()
+-            .map(|(i, m)| if i == 0 { AirProvingContext::simple(m, vec![F::from_u32(b2.level)]) } else { AirProvingContext::simple_no_pis(m) })
++            .map(|(i, m)| if i == 0 { AirProvingContext::simple(m, b2.public_values()) } else { AirProvingContext::simple_no_pis(m) })
+             .collect();
+         Sha384CpuEngine::new(nv_debug_params()).debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
+         b2.failures
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
 index 46f052a..25d2d3b 100644
 --- a/crates/recursion/src/nv/transcript2.rs
