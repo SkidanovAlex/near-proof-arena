@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..8887e43
+index 0000000..cc0d25a
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,728 @@
+@@ -0,0 +1,752 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1625,7 +1625,7 @@ index 0000000..8887e43
 +    /// Close the open flush job: anchor (job, t_start, count).
 +    fn tr_close(&mut self) {
 +        if let Some((job, t, cnt)) = self.tr_pending.take() {
-+            self.push(Op::Anchor, t, cnt, job, 0, EF::ZERO, F::ZERO);
++            self.push(Op::Anchor, t, cnt, job, crate::sha384::config::TAG_FLUSH as u32, EF::ZERO, F::ZERO);
 +        }
 +    }
 +    /// Proof-of-work check (levers spec, tag 7): flush; job H(7, [state, witness]) with the
@@ -1653,7 +1653,7 @@ index 0000000..8887e43
 +            let v = self.load_f(w);
 +            self.push(Op::Unit1, v.addr, 0, job, 16 + i as u32, v.val, F::ZERO);
 +        }
-+        self.push(Op::Anchor, t, witness.len() as u32, job, 0, EF::ZERO, F::ZERO);
++        self.push(Op::Anchor, t, witness.len() as u32, job, crate::sha384::config::TAG_POW as u32, EF::ZERO, F::ZERO);
 +        // output word 0 as limbs (l0, l1, l2) from the hash chain
 +        let state = self.transcript.inner.state;
 +        let w0 = u64::from_be_bytes(state[..8].try_into().unwrap());
@@ -1665,7 +1665,23 @@ index 0000000..8887e43
 +        let cell = self.push(Op::PowChk, 0, 0, job, 0, ef_from(c), F::ZERO);
 +        // keep = number of low bits of limb k that may be non-zero
 +        let o = super::fmt::limb_off();
-+        let mut acc = self.load_f(F::from_u32(l[0]));
++        // the low limb is not range-checked here (free Load): every zero bit must lie in limbs 1, 2
++        assert!(bits <= 64 - o[1], "PoW bits {bits} exceed the checked limbs (max {})", 64 - o[1]);
++        let mut acc = if !ok && super::verifier::tamper_now(super::verifier::Tamper::PowFreeLimb) {
++            // test hook (bug B3 demo): at 3c9d479ab the base-field load was a Load row with free c1..c11, so the low-limb cell
++            // can absorb the non-zero top bits of limbs 1, 2 that the BIT rows cannot express
++            let mut c = [F::ZERO; 12];
++            c[0] = F::from_u32(l[0]);
++            for k in 1..3 {
++                let free_top = 64usize.saturating_sub(bits);
++                let keep = free_top.saturating_sub(o[k]).min(o[k + 1] - o[k]);
++                c[k] = F::from_u32(l[k]) - F::from_u32(l[k] & ((1u32 << keep) - 1));
++            }
++            // same program word as the honest LoadF row; only the witness value carries junk
++            self.push(Op::LoadF, 0, 0, 0, 0, ef_from(c), F::ZERO)
++        } else {
++            self.load_f(F::from_u32(l[0]))
++        };
 +        for k in 1..3 {
 +            let width = o[k + 1] - o[k];
 +            let free_top = 64usize.saturating_sub(bits); // bits [0, 64 - bits) may be non-zero
@@ -1753,8 +1769,13 @@ index 0000000..8887e43
 +            d
 +        );
 +        let lo = self.push(Op::UnitW, lo.addr, 4, job, 16, lo.val, F::ZERO);
-+        let hi = self.push(Op::UnitW, hi.addr, 2, job, 24, hi.val, F::ZERO);
-+        self.push(Op::Anchor, t, NV_DIGEST as u32, job, 0, EF::ZERO, F::ZERO);
++        // 42-B digests: word 5 is a 2-byte tail (its own unit kind, see glue.rs)
++        let hi = if crate::sha384::config::sha_levers().digest_bytes == 42 {
++            self.push(Op::UnitWT, hi.addr, 0, job, 24, hi.val, F::ZERO)
++        } else {
++            self.push(Op::UnitW, hi.addr, 2, job, 24, hi.val, F::ZERO)
++        };
++        self.push(Op::Anchor, t, NV_DIGEST as u32, job, crate::sha384::config::TAG_COMMIT as u32, EF::ZERO, F::ZERO);
 +        DigestCells { lo, hi, digest: d }
 +    }
 +    // ---- SHA jobs (leaf messages) ----
@@ -1864,8 +1885,11 @@ index 0000000..8887e43
 +            let (slo, shi) = digest_cells(sd);
 +            let slo = self.load(ef_from(slo));
 +            let shi = self.load(ef_from(shi));
-+            let bit = bits[lv];
-+            let nb = self.one_minus(bit);
++            let mut bit = bits[lv];
++            let mut nb = self.one_minus(bit);
++            if lv == 0 && super::verifier::tamper_now(super::verifier::Tamper::MerkleSwapLr) {
++                core::mem::swap(&mut bit, &mut nb);
++            }
 +            let b1 = coeffs(bit.val)[0] == F::ONE;
 +            let (ld, rd) = if b1 { (sd, cur.digest) } else { (cur.digest, sd) };
 +            // node job: cur goes left iff bit = 0 (UnitWS: unit index + 12 * bit)
@@ -2210,7 +2234,7 @@ index 0000000..906289b
 +}
 diff --git a/crates/recursion/src/nv/faithful_dof.rs b/crates/recursion/src/nv/faithful_dof.rs
 new file mode 100644
-index 0000000..d2eba87
+index 0000000..fb9165a
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_dof.rs
 @@ -0,0 +1,506 @@
@@ -2511,7 +2535,7 @@ index 0000000..d2eba87
 +        }
 +        r if r.starts_with("HASH") => {
 +            let c: &Hash2Cols<usize> = pool[..super::transcript2::HASH2_WIDTH].borrow();
-+            for (s, v) in [("is_first", c.is_first), ("op_f", c.op_f), ("op_c", c.op_c), ("op_s", c.op_s), ("op_p", c.op_p), ("job", c.job), ("nxt", c.nxt), ("hn", c.hn), ("t_start", c.t_start), ("cnt", c.cnt), ("last_word", c.last_word), ("last_half", c.last_half), ("last_acc", c.last_acc), ("full", c.full)] {
++            for (s, v) in [("is_first", c.is_first), ("op_f", c.op_f), ("op_c", c.op_c), ("op_s", c.op_s), ("op_p", c.op_p), ("job", c.job), ("nxt", c.nxt), ("hn", c.hn), ("t_start", c.t_start), ("cnt", c.cnt), ("last_word", c.last_word), ("last_half", c.last_half), ("last_acc", c.last_acc), ("full", c.full), ("ns", c.ns)] {
 +                set(v, s.into());
 +            }
 +            for (k, &v) in c.state_out.iter().enumerate() {
@@ -2720,12 +2744,495 @@ index 0000000..d2eba87
 +    }
 +    delta.values().all(|v| *v == F::ZERO)
 +}
+diff --git a/crates/recursion/src/nv/faithful_sha_tests.rs b/crates/recursion/src/nv/faithful_sha_tests.rs
+new file mode 100644
+index 0000000..535a621
+--- /dev/null
++++ b/crates/recursion/src/nv/faithful_sha_tests.rs
+@@ -0,0 +1,477 @@
++//! NV-faithful §2(c): tamper tests for the SHA-384 compression AIR v2.1 and the GLUE role
++//! (results/pq-recursion-nv/FAITHFUL.md).  Every attack trace is built *outside* the
++//! `catch_unwind`, so a rejection can only come from the debug constraint / LogUp checker.
++//!
++//! 42-byte-digest cases run only when the process has NEARPROOF_DIGEST_BYTES=42 (the hash
++//! levers are process-global); they print `NV_FAITHFUL_SKIP` otherwise.
++use std::{
++    panic::{catch_unwind, AssertUnwindSafe},
++    sync::Arc,
++};
++
++use openvm_cpu_backend::CpuBackend;
++use openvm_stark_backend::{
++    interaction::{InteractionBuilder, PermutationCheckBus},
++    prover::{AirProvingContext, ProvingContext},
++    test_utils::test_system_params_small,
++    AirRef, BaseAirWithPublicValues, PartitionedBaseAir, StarkEngine,
++};
++use p3_air::{Air, AirBuilder, BaseAir};
++use p3_field::{Field, PrimeCharacteristicRing, PrimeField32};
++use p3_matrix::{dense::RowMajorMatrix, Matrix};
++
++use super::{
++    fmt::*,
++    glue::{glue_matrix, GlueAir, GlueCols, GLUE_W},
++    hash::*,
++};
++use crate::sha384::{
++    compress2_air::{all_sign_coefs, big_sigma0, big_sigma1, ch2, limbs_of_signs, maj2, small_sigma0, small_sigma1, word, Layout, Sha512Air, TableAir, ROWS},
++    compress2_trace::{bsig0, bsig1, chf, gen_main, gen_table, main_height, majf, ssig0, ssig1, Comp, Rng},
++    config::*,
++};
++
++fn buses() -> HashBuses {
++    HashBuses { ctl: 0, k: 1, lb: 2, iface: 3, word: 4, slot: 5, job: 6, digest: 7, byte: 8 }
++}
++
++// producer row: [m_felt, m_word, m_job, m_dig, m_if, job, idx, v0, v1, v2, tag, d[18], cid, l[6], tr, half]
++const PW: usize = 38;
++#[derive(Clone, Copy)]
++struct Prod(HashBuses);
++impl<T> BaseAir<T> for Prod {
++    fn width(&self) -> usize {
++        PW
++    }
++}
++impl<T> BaseAirWithPublicValues<T> for Prod {}
++impl<T> PartitionedBaseAir<T> for Prod {}
++impl<AB: AirBuilder + InteractionBuilder> Air<AB> for Prod {
++    fn eval(&self, b: &mut AB) {
++        let main = b.main();
++        let l: Vec<AB::Expr> = main.row_slice(0).unwrap().iter().map(|&v| v.into()).collect();
++        for k in 0..5 {
++            b.assert_bool(l[k].clone());
++        }
++        b.assert_bool(l[37].clone());
++        self.0.send_felt(b, l[5].clone(), l[6].clone(), l[7].clone(), l[0].clone());
++        // word units (kind UNIT_WORD) and 42-B digest tails (kind UNIT_HALF), as the ALU sends them
++        let kind = AB::Expr::from_u32(UNIT_WORD) + l[37].clone() * AB::Expr::from_u32(UNIT_HALF.wrapping_sub(UNIT_WORD));
++        PermutationCheckBus::new(self.0.slot).send(
++            b,
++            [AB::Expr::ONE, l[5].clone(), l[6].clone(), kind, l[7].clone(), l[8].clone(), l[9].clone()],
++            l[1].clone(),
++        );
++        self.0.send_job_tr(b, l[5].clone(), l[10].clone(), l[36].clone(), l[2].clone());
++        self.0.receive_digest(b, l[5].clone(), &l[11..29], l[3].clone());
++        let mut msg = vec![l[29].clone(), l[6].clone()];
++        msg.extend(l[30..36].iter().cloned());
++        PermutationCheckBus::new(self.0.iface).receive(b, msg, l[4].clone());
++    }
++}
++
++fn is_merkle(j: &Job2) -> bool {
++    j.node || j.tag == 0 || j.tag == TAG_COSET_LEAF
++}
++
++/// Producer rows for the units of `units_of` (job order = `dig` order).
++fn prod_trace(units_of: &Work2, dig: &[[u64; 6]]) -> RowMajorMatrix<F> {
++    let mut rows: Vec<[u32; PW]> = vec![];
++    for (job, j) in units_of.jobs.iter().enumerate() {
++        let mut r = [0u32; PW];
++        r[2] = 1;
++        r[5] = j.id;
++        r[10] = if j.node { NODE_TAG } else { j.tag as u32 };
++        r[36] = is_merkle(j) as u32;
++        rows.push(r);
++        let mut idx = 0;
++        for u in &j.units {
++            let mut r = [0u32; PW];
++            r[5] = j.id;
++            r[6] = idx;
++            match *u {
++                U2::Felt(x) => {
++                    r[0] = 1;
++                    r[7] = F::from_u32(x).as_canonical_u32();
++                }
++                U2::Word(w) => {
++                    r[1] = 1;
++                    r[7..10].copy_from_slice(&wl(w));
++                }
++                U2::Half(w) => {
++                    r[1] = 1;
++                    // prefix-job tails are UNIT_HALF; node-job tails ride the fixed node framing (kind word)
++                    r[37] = (!j.node) as u32;
++                    r[7..10].copy_from_slice(&wl(w & 0xffff_0000_0000_0000));
++                }
++            }
++            idx += u.nunits() as u32;
++            rows.push(r);
++        }
++        let mut r = [0u32; PW];
++        r[3] = 1;
++        r[5] = j.id;
++        let trunc = sha_levers().digest_bytes == 42 && is_merkle(j);
++        for q in 0..6 {
++            let w = if trunc && q == 5 { dig[job][q] & 0xffff_0000_0000_0000 } else { dig[job][q] };
++            r[11 + 3 * q..14 + 3 * q].copy_from_slice(&wl(w));
++        }
++        rows.push(r);
++    }
++    let h = rows.len().next_power_of_two();
++    rows.resize(h, [0; PW]);
++    RowMajorMatrix::new(rows.into_iter().flatten().map(F::from_u32).collect(), PW)
++}
++
++struct Inst {
++    airs: Vec<AirRef<Sha384Config>>,
++    /// [compress, table, glue, byte, producer]
++    mats: Vec<RowMajorMatrix<F>>,
++    lay: Layout,
++    /// compressions in SHA-trace order
++    comps: Vec<Comp>,
++    counts: Vec<u32>,
++}
++
++/// GLUE + SHA traces for `glue_work`, producer for `units_of` (same job ids / order).
++fn inst(glue_work: &Work2, units_of: &Work2) -> Inst {
++    let b = buses();
++    let lay = Layout::new(sha_k());
++    let t = generate2(glue_work, lay, None);
++    let comps: Vec<Comp> = glue_work.jobs.iter().flat_map(|j| sha384_blocks(&j.message()).0).collect();
++    let airs: Vec<AirRef<Sha384Config>> = vec![
++        Arc::new(Sha512Air { lay, buses: b.sha(), cid_offset: 0 }),
++        Arc::new(TableAir { lay, buses: b.sha() }),
++        Arc::new(GlueAir { buses: b }),
++        Arc::new(ByteAir { buses: b }),
++        Arc::new(Prod(b)),
++    ];
++    let mats = vec![
++        t.compress,
++        t.table,
++        glue_matrix(&t.glue_rows, 1),
++        byte_table2(&t.byte_counts),
++        prod_trace(units_of, &t.job_digests),
++    ];
++    Inst { airs, mats, lay, comps, counts: t.byte_counts }
++}
++
++/// Debug-check; true = accepted.
++fn accepted(i: &Inst) -> bool {
++    let mats = i.mats.clone();
++    let lay = i.lay;
++    let airs = i.airs.clone();
++    catch_unwind(AssertUnwindSafe(move || {
++        let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> =
++            mats.into_iter().map(AirProvingContext::simple_no_pis).collect();
++        let mut params = test_system_params_small(2, 18, 3);
++        params.max_constraint_degree = lay.degree().max(4);
++        let engine = Sha384CpuEngine::new(params);
++        engine.debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
++    }))
++    .is_ok()
++}
++
++fn expect(name: &str, i: &Inst, ok: bool) {
++    let a = accepted(i);
++    assert_eq!(a, ok, "case `{name}`: accepted = {a}, expected {ok}");
++    println!("NV_FAITHFUL {} {name}", if ok { "ACCEPTED" } else { "REJECTED" });
++}
++
++fn glue_row(m: &mut RowMajorMatrix<F>, r: usize) -> &mut GlueCols<F> {
++    use core::borrow::BorrowMut;
++    let w = m.width();
++    m.values[r * w + 1..r * w + 1 + GLUE_W].borrow_mut()
++}
++fn glue_get(m: &RowMajorMatrix<F>, r: usize) -> &GlueCols<F> {
++    use core::borrow::Borrow;
++    let w = m.width();
++    m.values[r * w + 1..r * w + 1 + GLUE_W].borrow()
++}
++fn nglue(m: &RowMajorMatrix<F>) -> usize {
++    (0..m.height()).filter(|&r| m.values[r * m.width()] == F::ONE).count()
++}
++fn rebuild_bytes(i: &mut Inst) {
++    i.mats[3] = byte_table2(&i.counts);
++}
++fn u(x: F) -> usize {
++    x.as_canonical_u32() as usize
++}
++
++fn base_jobs(rng: &mut Rng) -> Vec<Job2> {
++    let mut out = vec![];
++    for (i, n) in [3usize, 14, 22, 49].into_iter().enumerate() {
++        let mut units = vec![];
++        let mut cnt = 0;
++        while cnt < n {
++            if cnt % 2 == 0 && cnt + 2 <= n && rng.next() % 2 == 0 {
++                units.push(U2::Word(rng.next()));
++                cnt += 2;
++            } else {
++                units.push(U2::Felt((rng.next() % 2013265921) as u32));
++                cnt += 1;
++            }
++        }
++        out.push(Job2 { id: i as u32, node: false, tag: [0u8, 3, 5, 6][i], units });
++    }
++    out
++}
++
++/// 42-B commit job: the digest tail (top 2 bytes of word 5) must be framed as a 2-byte tail.
++/// Attack: frame the same unit (same limbs (0, 0, top16 << 6)) as a full 8-byte word.  Both
++/// framings are internally consistent; before the UNIT_HALF fix the circuit accepted both, so
++/// the transcript state after every 42-B commit was a prover choice (1 bit per commit).
++#[test]
++fn nv_faithful_tail_framing_unique() {
++    if sha_levers().digest_bytes != 42 {
++        println!("NV_FAITHFUL_SKIP tail framing (needs NEARPROOF_DIGEST_BYTES=42)");
++        return;
++    }
++    let mut rng = Rng(0x7a11_f4a3_0000_0001);
++    let state: [u64; 6] = std::array::from_fn(|_| rng.next());
++    let mut d: [u64; 6] = std::array::from_fn(|_| rng.next());
++    d[5] &= 0xffff_0000_0000_0000; // a native 42-B digest (bytes 42..48 zero)
++    let mut units = vec![U2::Felt(48), U2::Felt(0)];
++    units.extend(state.iter().map(|&w| U2::Word(w)));
++    units.push(U2::Felt(42));
++    units.push(U2::Felt(0));
++    units.extend(digest_units(d));
++    assert!(matches!(units.last(), Some(U2::Half(_))));
++    let honest = Job2 { id: 7, node: false, tag: TAG_COMMIT, units: units.clone() };
++    // native framing: hash_parts(TAG_COMMIT, [state, digest_wire(d)])
++    let sb: Vec<u8> = state.iter().flat_map(|w| w.to_be_bytes()).collect();
++    let dw = digest_wire(digest_from_words(d));
++    assert_eq!(honest.message(), hash_parts_message(TAG_COMMIT, &[&sb, &dw]));
++    let w_honest = Work2 { jobs: vec![honest], nodes: vec![] };
++    expect("commit tail framed as tail", &inst(&w_honest, &w_honest), true);
++    let mut alt_units = units;
++    *alt_units.last_mut().unwrap() = U2::Word(d[5]);
++    let alt = Job2 { id: 7, node: false, tag: TAG_COMMIT, units: alt_units };
++    assert_ne!(alt.message(), w_honest.jobs[0].message());
++    let w_alt = Work2 { jobs: vec![alt], nodes: vec![] };
++    expect("commit tail re-framed as a full word", &inst(&w_alt, &w_honest), false);
++}
++
++/// The fractional-split attack on `limbs_from_bytes`: lo5 -> lo5 - 1/8 with b6 += 32 keeps
++/// limb 0 (65536 * (1/8) = 8192 = 32 * 256) and both byte-table lookups valid, but limb 1
++/// moves by 1/256, so the interface bus rejects (FAITHFUL.md §2(c), "×256 argument").
++#[test]
++fn nv_faithful_limb_split_fractional() {
++    let mut rng = Rng(0x11b5_0000_0000_0002);
++    let w = Work2 { jobs: base_jobs(&mut rng), nodes: vec![] };
++    let mut i = inst(&w, &w);
++    expect("honest", &i, true);
++    let (a5, a2) = split_bits();
++    let inv8 = F::from_u32(1 << (8 - a5)).inverse();
++    let g = &i.mats[2];
++    let r = (0..nglue(g))
++        .find(|&r| {
++            let c = glue_get(g, r);
++            u(c.lo[0]) >= 1 && u(c.b[6]) < 256 - (1 << (8 - a5 + 2)) && u(c.act) == 1
++        })
++        .expect("row");
++    let c = glue_get(&i.mats[2], r);
++    let (b6, b7, lo0, lo1) = (u(c.b[6]), u(c.b[7]), u(c.lo[0]), u(c.lo[1]));
++    let before = limbs_from_bytes(&core::array::from_fn(|k| c.b[k]), c.lo[0], c.lo[1]);
++    let bump = 1usize << (16 - 8 - (8 - a5)); // 2^(8 + a5 - 8) bytes of b6 per unit of lo5/2^(8-a5)
++    {
++        let c = glue_row(&mut i.mats[2], r);
++        c.lo[0] -= inv8;
++        c.b[6] += F::from_usize(bump);
++    }
++    let c = glue_get(&i.mats[2], r);
++    let after = limbs_from_bytes(&core::array::from_fn(|k| c.b[k]), c.lo[0], c.lo[1]);
++    assert_eq!(before[0], after[0], "limb 0 must be unchanged by the fractional split");
++    assert_ne!(before[1], after[1]);
++    // keep every byte lookup valid: (b6, b7) and (lo0 * 2^(8-a5), lo1 * 2^(8-a2))
++    i.counts[b6 + 256 * b7] -= 1;
++    i.counts[b6 + bump + 256 * b7] += 1;
++    let (x, y) = (lo0 << (8 - a5), lo1 << (8 - a2));
++    i.counts[x + 256 * y] -= 1;
++    i.counts[x - 1 + 256 * y] += 1;
++    let _ = a2;
++    rebuild_bytes(&mut i);
++    expect("fractional lo5 split with b6 compensation", &i, false);
++}
++
++/// Exhaustive form of the ×256 argument: for canonical limbs of a word, the only
++/// (bytes, lo5, lo2) with lo5 * 2^(8-a5), lo2 * 2^(8-a2) bytes and limbs_from_bytes = limbs is
++/// the big-endian encoding.  For each of the 2^16 (V5, U2) pairs the bytes are forced.
++#[test]
++fn nv_faithful_limb_split_exhaustive() {
++    let (a5, a2) = split_bits();
++    let o = limb_off();
++    assert_eq!(sha_k(), 3, "argument written for k = 3");
++    let mut rng = Rng(0x5eed_0000_0000_0003);
++    let mut words: Vec<u64> = vec![0, u64::MAX, 1 << 63, 0x00ff_00ff_00ff_00ff, 0xff00_ff00_ff00_ff00];
++    words.extend((0..40).map(|_| rng.next()));
++    let p = 2013265921u64;
++    let inv = |x: u64| -> u64 { F::from_u64(x).inverse().as_canonical_u32() as u64 };
++    for &wd in &words {
++        let l = wl(wd).map(|x| x as u64);
++        let mut sols = 0;
++        for v5 in 0..256u64 {
++            for u2 in 0..256u64 {
++                // lo5 = v5 / 2^(8-a5), lo2 = u2 / 2^(8-a2) (field)
++                let lo5 = v5 * inv(1 << (8 - a5)) % p;
++                let lo2 = u2 * inv(1 << (8 - a2)) % p;
++                // limb 0: b7 + 2^8 b6 = l0 - 2^16 lo5
++                let r0 = (l[0] + p - (65536 * lo5) % p) % p;
++                if r0 >= 65536 {
++                    continue;
++                }
++                // limb 1: hi5 + 2^3 b4 + 2^11 b3 = l1 - 2^19 lo2, hi5 = (b5 - lo5) / 2^a5: search b5
++                let r1 = (l[1] + p - ((1u64 << (40 - o[1])) * lo2) % p) % p;
++                let mut ok1 = false;
++                for b5 in 0..256u64 {
++                    let hi5 = (b5 + p - lo5) % p * inv(1 << a5) % p;
++                    let rest = (r1 + p - hi5) % p; // = 8 b4 + 2048 b3
++                    if rest < (1 << 19) && rest % 8 == 0 {
++                        ok1 = true;
++                    }
++                }
++                if !ok1 {
++                    continue;
++                }
++                let mut ok2 = false;
++                for b2 in 0..256u64 {
++                    let hi2 = (b2 + p - lo2) % p * inv(1 << a2) % p;
++                    let rest = (l[2] + p - hi2) % p; // = 64 b1 + 16384 b0
++                    if rest < (1 << 22) && rest % 64 == 0 {
++                        ok2 = true;
++                    }
++                }
++                if ok2 {
++                    sols += 1;
++                    assert!(v5 % (1 << (8 - a5)) == 0 && u2 % (1 << (8 - a2)) == 0, "fractional split solution for {wd:#x}: v5 {v5} u2 {u2}");
++                }
++            }
++        }
++        assert_eq!(sols, 1, "word {wd:#x}: {sols} split solutions");
++    }
++}
++
++/// Felt units are canonical: bytes of x + p (top byte 0x78, low bytes not all zero) are
++/// rejected; p - 1 (the zm case) is accepted.
++#[test]
++fn nv_faithful_noncanonical_felt() {
++    let p = 2013265921u32;
++    let job = |x: u32| Job2 { id: 0, node: false, tag: 3, units: vec![U2::Felt(5), U2::Felt(x), U2::Felt(9)] };
++    let ok = Work2 { jobs: vec![job(p - 1)], nodes: vec![] };
++    expect("felt p-1", &inst(&ok, &ok), true);
++    for x in [p, p + 5, 0x78ff_ffff] {
++        let w = Work2 { jobs: vec![job(x)], nodes: vec![] };
++        // the producer sends x mod p (what the ALU's value is); the bytes encode x >= p
++        expect(&format!("felt bytes of {x:#x} (= {} mod p)", x % p), &inst(&w, &w), false);
++    }
++}
++
++/// Zero-padding rows cannot hold a compression: a fully consistent extra segment after the
++/// last one (no GLUE consumer) and a reordering of two segments are rejected.
++#[test]
++fn nv_faithful_fake_and_reordered_segments() {
++    let mut rng = Rng(0xfa4e_0000_0000_0004);
++    let w = Work2 { jobs: base_jobs(&mut rng), nodes: vec![] };
++    let base = inst(&w, &w);
++    expect("honest", &base, true);
++    let lay = base.lay;
++    let regen = |i: &mut Inst, comps: &[Comp]| {
++        let h = main_height(comps.len()).max(i.mats[0].height());
++        let m = gen_main(lay, comps, h);
++        let t = gen_table(&lay, &m, h);
++        i.mats[0] = RowMajorMatrix::new(m.into_iter().map(F::from_u32).collect(), lay.width);
++        i.mats[1] = RowMajorMatrix::new(t.into_iter().map(F::from_u32).collect(), crate::sha384::compress2_air::T_WIDTH);
++    };
++    // extra consistent segment in the zero tail
++    let mut i = inst(&w, &w);
++    let mut comps = i.comps.clone();
++    assert!((comps.len() + 1) * ROWS <= i.mats[0].height(), "need tail room");
++    comps.push(rng.comp());
++    regen(&mut i, &comps);
++    expect("extra consistent segment in the zero tail", &i, false);
++    // the same extra segment as a copy of a consumed compression
++    let mut i = inst(&w, &w);
++    let mut comps = i.comps.clone();
++    comps.push(comps[1]);
++    regen(&mut i, &comps);
++    expect("duplicate of a consumed compression in the tail", &i, false);
++    // two segments swapped
++    let mut i = inst(&w, &w);
++    let mut comps = i.comps.clone();
++    comps.swap(0, 1);
++    regen(&mut i, &comps);
++    expect("two segments swapped", &i, false);
++}
++
++/// The bit-sign polynomials and sign-limb recomposition are exact on every digit value, and
++/// the sign forms of Σ0, Σ1, σ0, σ1, Ch, Maj equal FIPS 180-4 (k = 1, 2, 3).
++#[test]
++fn nv_faithful_sign_polys() {
++    let mut rng = Rng(0x5195_0000_0000_0005);
++    for k in 1..=3usize {
++        let lay = Layout::new(k);
++        let coef = all_sign_coefs::<F>(k);
++        let mut xs: Vec<u64> = (0..(1u64 << k)).map(|v| (0..lay.nd).fold(0u64, |a, j| a | ((v & ((1 << lay.dsize(j)) - 1)) << (k * j)))).collect();
++        xs.extend((0..64).map(|_| rng.next()));
++        let wv = |x: u64| {
++            let row: Vec<F> = lay.digits(x).into_iter().map(F::from_u64).collect();
++            word::<F, F>(&lay, &coef, &row, 0)
++        };
++        let half = F::from_u32(2).inverse();
++        let lim = |x: u64| lay.limbs(x).map(F::from_u64);
++        for (t, &x) in xs.iter().enumerate() {
++            let w = wv(x);
++            for i in 0..64 {
++                let s = if (x >> i) & 1 == 1 { -F::ONE } else { F::ONE };
++                assert_eq!(w.sg[i], s, "k {k} x {x:#x} bit {i}");
++            }
++            assert_eq!(w.limbs, lim(x));
++            let (y, z) = (xs[(t + 1) % xs.len()], xs[(t + 2) % xs.len()]);
++            let (wy, wz) = (wv(y), wv(z));
++            assert_eq!(limbs_of_signs::<F, F>(&lay, &big_sigma0(&w.sg), F::ONE), lim(bsig0(x)));
++            assert_eq!(limbs_of_signs::<F, F>(&lay, &big_sigma1(&w.sg), F::ONE), lim(bsig1(x)));
++            assert_eq!(limbs_of_signs::<F, F>(&lay, &small_sigma0(&w.sg), F::ONE), lim(ssig0(x)));
++            assert_eq!(limbs_of_signs::<F, F>(&lay, &small_sigma1(&w.sg), F::ONE), lim(ssig1(x)));
++            assert_eq!(limbs_of_signs::<F, F>(&lay, &ch2(&w.sg, &wy.sg, &wz.sg), half), lim(chf(x, y, z)));
++            assert_eq!(limbs_of_signs::<F, F>(&lay, &maj2(&w.sg, &wy.sg, &wz.sg), half), lim(majf(x, y, z)));
++        }
++    }
++    println!("NV_FAITHFUL sign polynomials exact for k = 1, 2, 3");
++}
++
++/// 42-B Merkle digests: lo6 (the truncated low 6 bits of limb 2 of word 5) is not free.
++#[test]
++fn nv_faithful_lo6_pinned() {
++    if sha_levers().digest_bytes != 42 {
++        println!("NV_FAITHFUL_SKIP lo6 (needs NEARPROOF_DIGEST_BYTES=42)");
++        return;
++    }
++    let mut rng = Rng(0x1060_0000_0000_0006);
++    let w = Work2 { jobs: base_jobs(&mut rng), nodes: vec![] };
++    let i0 = inst(&w, &w);
++    expect("honest", &i0, true);
++    let g = &i0.mats[2];
++    // last-block q = 6 row of the first Merkle job (tag 0 => tr = 1)
++    let r = (0..nglue(g))
++        .find(|&r| {
++            let c = glue_get(g, r);
++            c.tr == F::ONE && c.last == F::ONE && c.q.map(u) == [0, 1, 1]
++        })
++        .expect("merkle q6 row");
++    let lo6 = u(glue_get(g, r).lo6);
++    for (name, delta) in [("lo6 + 1", F::ONE), ("lo6 + 1/4 (fractional)", F::from_u32(4).inverse())] {
++        let mut i = inst(&w, &w);
++        glue_row(&mut i.mats[2], r).lo6 += delta;
++        let nl = u(glue_get(&i.mats[2], r).lo6) * 4 % 2013265921;
++        let newv = (F::from_usize(lo6) + delta) * F::from_u32(4);
++        let _ = nl;
++        // keep the byte lookup of lo6 valid where possible (old pattern: lo6 * 4 byte)
++        let nv = u(newv);
++        if nv < 256 {
++            i.counts[lo6 * 4] -= 1;
++            i.counts[nv] += 1;
++            rebuild_bytes(&mut i);
++        }
++        expect(name, &i, false);
++    }
++}
 diff --git a/crates/recursion/src/nv/faithful_tests.rs b/crates/recursion/src/nv/faithful_tests.rs
 new file mode 100644
-index 0000000..e310947
+index 0000000..2112c32
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_tests.rs
-@@ -0,0 +1,654 @@
+@@ -0,0 +1,680 @@
 +//! NV-faithful: degree-of-freedom (single-cell perturbation) runs and tamper tests for the ALU,
 +//! BIND and app-binding roles (results/pq-recursion-nv/FAITHFUL.md).
 +//!
@@ -3380,6 +3887,627 @@ index 0000000..e310947
 +    assert!(flip(&mut m));
 +    must_fail("pow low limb with extension junk (LoadF)", || debug_check(&airs, m, &pvs));
 +}
++
++/// (F4) LogUp count bounds of NV's own vk at the fixed-point heights: every per-bus constraint
++/// sum_a weight_a * h_a < p and the total interaction bound; message lengths <= 2^7.
++#[test]
++fn nv_logup_counts() {
++    let circ = NvCircuit::new(3, 18, 1);
++    let airs = circ.airs::<Sha384Config>();
++    let mut p = crate::sha384::e2e_tests::params_from_env("PARENT", [19, 3, 20, 3]);
++    p.max_constraint_degree = debug_params().max_constraint_degree;
++    let engine = Sha384CpuEngine::new(p);
++    let (_pk, vk) = engine.keygen(&airs);
++    for (a, v) in airs.iter().zip(&vk.inner.per_air) {
++        let ints = &v.symbolic_constraints.interactions;
++        let maxlen = ints.iter().map(|i| i.message.len() + 1).max().unwrap_or(0);
++        let w1 = ints.iter().filter(|i| i.count_weight > 0).count();
++        println!("NV_LOGUP_AIR {} interactions={} weighted={} max_msg_len={}", a.name(), ints.len(), w1, maxlen);
++        assert!(maxlen <= 1 << vk.inner.params.logup.log_max_message_length);
++    }
++    for heights in [[1usize << 18, 1 << 18, 64, 1 << 16], [1 << 19, 1 << 19, 64, 1 << 16]] {
++        for (i, c) in vk.inner.trace_height_constraints.iter().enumerate() {
++            let sum: u64 = heights.iter().zip(&c.coefficients).map(|(&h, &w)| h as u64 * w as u64).sum();
++            println!("NV_LOGUP_CONSTRAINT heights={heights:?} #{i} coeffs={:?} sum={sum} (2^{:.2}) threshold={} ok={}", c.coefficients, (sum as f64).log2(), c.threshold, sum < c.threshold as u64);
++            assert!(sum < c.threshold as u64);
++        }
++    }
++}
+diff --git a/crates/recursion/src/nv/faithful_tr_tests.rs b/crates/recursion/src/nv/faithful_tr_tests.rs
+new file mode 100644
+index 0000000..96fea12
+--- /dev/null
++++ b/crates/recursion/src/nv/faithful_tr_tests.rs
+@@ -0,0 +1,589 @@
++//! NV-faithful audit, parts (d) transcript/sampling and (e) Merkle openings: tamper tests.
++//! Each `must_fail` case is a cheating trace (or a cheating witness generated through a
++//! test-only hook in the verifier program) that the circuit must reject.
++use core::borrow::BorrowMut;
++
++use openvm_stark_backend::{test_utils::{FibFixture, TestFixture}, StarkEngine};
++use p3_field::{PrimeCharacteristicRing, PrimeField32};
++use p3_matrix::dense::RowMajorMatrix;
++
++use super::{
++    transcript2::{Hash2Cols, Samp2Cols, HASH2_WIDTH, SAMP2_WIDTH},
++    uair::N_COMMON,
++};
++use crate::sha384::{config::*, e2e_tests::child_params_small};
++
++type Vk = openvm_stark_backend::keygen::types::MultiStarkVerifyingKey<Sha384Config>;
++type Pf = openvm_stark_backend::proof::Proof<Sha384Config>;
++
++/// NvAir common-column flags.
++const KG: usize = 2;
++const KH: usize = 3;
++const KS: usize = 4;
++
++fn debug_params() -> openvm_stark_backend::SystemParams {
++    let mut p = crate::sha384::e2e_tests::parent_params_debug();
++    p.max_constraint_degree = super::circuit::NvCircuit::new(3, 16, 1).layout().degree().max(6);
++    p
++}
++
++/// Generate the NV traces for (vk, proof), apply `mutate`, run the debug constraint + bus check.
++fn check(vk: &Vk, proof: &Pf, log_rows: usize, mutate: impl FnOnce(&mut Vec<RowMajorMatrix<F>>)) {
++    use openvm_cpu_backend::CpuBackend;
++    use openvm_stark_backend::prover::{AirProvingContext, ProvingContext};
++    let circ = super::circuit::NvCircuit::new(vk.inner.params.k_whir(), log_rows, 1);
++    let airs = circ.airs::<Sha384Config>();
++    let (mut mats, _b) = circ.generate(vk, proof);
++    mutate(&mut mats);
++    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
++        .into_iter()
++        .enumerate()
++        .map(|(i, m)| if i == 0 { AirProvingContext::simple(m, vec![F::ONE]) } else { AirProvingContext::simple_no_pis(m) })
++        .collect();
++    Sha384CpuEngine::new(debug_params()).debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
++}
++
++fn must_fail(name: &str, f: impl FnOnce()) {
++    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
++    assert!(r.is_err(), "tamper `{name}` accepted");
++    println!("NV_TR_TAMPER_REJECTED {name}");
++}
++
++fn rows_with(m: &RowMajorMatrix<F>, flag: usize) -> Vec<usize> {
++    (0..m.values.len() / m.width).filter(|&r| m.values[r * m.width + flag] == F::ONE).collect()
++}
++fn hash_row(m: &mut RowMajorMatrix<F>, r: usize) -> &mut Hash2Cols<F> {
++    let w = m.width;
++    m.values[r * w + N_COMMON..r * w + N_COMMON + HASH2_WIDTH].borrow_mut()
++}
++fn samp_row(m: &mut RowMajorMatrix<F>, r: usize) -> &mut Samp2Cols<F> {
++    let w = m.width;
++    m.values[r * w + N_COMMON..r * w + N_COMMON + SAMP2_WIDTH].borrow_mut()
++}
++/// GLUE `job` column (pool offset 1).
++fn glue_job(m: &mut RowMajorMatrix<F>, r: usize) -> &mut F {
++    let w = m.width;
++    &mut m.values[r * w + N_COMMON + 1]
++}
++
++/// Rename every occurrence of transcript job id `from` to `to` (hash row, predecessor's `nxt`,
++/// sample rows, GLUE rows): an internally consistent relabeling of one squeeze job.
++fn rename_job(m: &mut RowMajorMatrix<F>, from: F, to: F) {
++    for r in rows_with(m, KH) {
++        let h = hash_row(m, r);
++        if h.job == from {
++            h.job = to;
++        }
++        if h.nxt == from {
++            h.nxt = to;
++        }
++    }
++    for r in rows_with(m, KS) {
++        let s = samp_row(m, r);
++        if s.job == from {
++            s.job = to;
++        }
++    }
++    for r in rows_with(m, KG) {
++        let j = glue_job(m, r);
++        if *j == from {
++            *j = to;
++        }
++    }
++}
++
++fn fib() -> (Vk, Pf) {
++    let engine = Sha384CpuEngine::new(child_params_small());
++    FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine)
++}
++
++fn squeeze_rows(m: &mut RowMajorMatrix<F>) -> Vec<usize> {
++    rows_with(m, KH).into_iter().filter(|&r| hash_row(m, r).op_s == F::ONE).collect()
++}
++
++/// Bug B1 (fixed): squeeze job ids were free witnesses.  Giving squeeze job #1 the id of squeeze
++/// job #0 makes two GLUE jobs, two sample runs and two hash rows share one id; the slot (state
++/// unit), word and digest buses then only constrain the *union* of their messages, so state words
++/// can be mixed between the two jobs (the hashed state is no longer the chain state).  Before
++/// the fix this relabeled trace was accepted; now `job = TJOB_SQUEEZE_BASE + #squeezes before`.
++#[test]
++fn nv_tr_squeeze_id_collision() {
++    let (vk, proof) = fib();
++    check(&vk, &proof, 16, |_| {});
++    must_fail("squeeze job id collision", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let sq = squeeze_rows(m);
++            assert!(sq.len() >= 2);
++            let j0 = hash_row(m, sq[0]).job;
++            let j1 = hash_row(m, sq[1]).job;
++            rename_job(m, j1, j0);
++        })
++    });
++    must_fail("squeeze job renamed (fresh id)", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let sq = squeeze_rows(m);
++            let j1 = hash_row(m, sq[1]).job;
++            rename_job(m, j1, F::from_u32(super::transcript2::TJOB_SQUEEZE_BASE + 100_000));
++        })
++    });
++}
++
++/// Bug B2 (fixed): the op of a static transcript job (flush / commit) was not bound to the
++/// program; the anchor now carries the tag (ALU `Anchor` P3 = tag, hash row receives its tag).
++/// Here a commit row is relabeled as a flush (everything else unchanged).
++#[test]
++fn nv_tr_anchor_tag() {
++    let (vk, proof) = fib();
++    must_fail("commit relabeled as flush", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let r = rows_with(m, KH).into_iter().find(|&r| hash_row(m, r).op_c == F::ONE).unwrap();
++            let h = hash_row(m, r);
++            h.op_c = F::ZERO;
++            h.op_f = F::ONE;
++        })
++    });
++}
++
++/// Hash-chain / sample-role tamper classes.
++#[test]
++fn nv_tr_tamper() {
++    let (vk, proof) = fib();
++    // reorder two consecutive static jobs (swap their rows, keep the nxt links consistent)
++    must_fail("reorder transcript jobs", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let hr = rows_with(m, KH);
++            let i = (1..hr.len() - 2)
++                .find(|&i| hash_row(m, hr[i]).op_s == F::ZERO && hash_row(m, hr[i + 1]).op_s == F::ZERO)
++                .expect("two consecutive static jobs");
++            let (a, b) = (hr[i], hr[i + 1]);
++            let w = m.width;
++            let ra: Vec<F> = m.values[a * w + N_COMMON..(a + 1) * w].to_vec();
++            let rb: Vec<F> = m.values[b * w + N_COMMON..(b + 1) * w].to_vec();
++            m.values[a * w + N_COMMON..(a + 1) * w].copy_from_slice(&rb);
++            m.values[b * w + N_COMMON..(b + 1) * w].copy_from_slice(&ra);
++            // relink: prev -> b' -> a' -> next
++            let (ja, jb) = (hash_row(m, b).job, hash_row(m, a).job);
++            let nxt_after = hash_row(m, a).nxt;
++            hash_row(m, hr[i - 1]).nxt = jb;
++            hash_row(m, a).nxt = ja;
++            hash_row(m, b).nxt = nxt_after;
++            let ts = hash_row(m, hr[i - 1]).t_start + hash_row(m, hr[i - 1]).cnt;
++            hash_row(m, a).t_start = ts;
++            let ts2 = ts + hash_row(m, a).cnt;
++            hash_row(m, b).t_start = ts2;
++        })
++    });
++    // anchor (t_start, cnt) of a static job shifted
++    must_fail("anchor t_start shifted", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let r = rows_with(m, KH).into_iter().find(|&r| hash_row(m, r).op_f == F::ONE).unwrap();
++            hash_row(m, r).t_start += F::ONE;
++        })
++    });
++    must_fail("anchor cnt changed", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let r = rows_with(m, KH).into_iter().find(|&r| hash_row(m, r).op_f == F::ONE).unwrap();
++            hash_row(m, r).cnt += F::ONE;
++        })
++    });
++    // sample from the wrong tidx: a squeeze job and its sample run shifted by one
++    must_fail("samples at shifted tidx", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let sq = squeeze_rows(m);
++            let j = hash_row(m, sq[1]).job;
++            hash_row(m, sq[1]).t_start += F::ONE;
++            for r in rows_with(m, KS) {
++                let s = samp_row(m, r);
++                if s.job == j {
++                    s.t_job += F::ONE;
++                }
++            }
++        })
++    });
++    // skip candidate 1 on a non-last sample row
++    must_fail("sample candidate skipped", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let r = rows_with(m, KS).into_iter().find(|&r| samp_row(m, r).is_last == F::ZERO).unwrap();
++            samp_row(m, r).h1 = F::ZERO;
++        })
++    });
++    // a rejected candidate declared accepted (acc flipped, gadgets left)
++    must_fail("sample acceptance flipped", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let r = rows_with(m, KS)[0];
++            let s = samp_row(m, r);
++            s.acc[0] = F::ONE - s.acc[0];
++        })
++    });
++    // read fewer state words (rdw prefix shortened) on a squeeze row
++    must_fail("squeeze reads fewer words", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let r = squeeze_rows(m)[0];
++            let h = hash_row(m, r);
++            let lw = h.last_word.as_canonical_u32() as usize;
++            if lw > 0 {
++                h.rdw[lw] = F::ZERO;
++                h.last_word -= F::ONE;
++            } else {
++                h.rdw[0] = F::ZERO;
++            }
++        })
++    });
++    // an extra squeeze row is impossible without a row; a flush declared last (hn = 0)
++    must_fail("chain cut (hn = 0 mid-chain)", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let r = rows_with(m, KH)[2];
++            hash_row(m, r).hn = F::ZERO;
++        })
++    });
++}
++
++/// PoW (tag 7): the free coefficients c[3..12] of the `PowChk` cell are forced to zero by the
++/// program's comparison; a forged output word or BIT row is rejected.
++#[test]
++fn nv_tr_pow_tamper() {
++    use super::isa::{Op, OP_LO};
++    let (vk, proof) = fib();
++    let find_op = |m: &RowMajorMatrix<F>, op: Op| -> Vec<usize> {
++        let w = m.width;
++        let h_off = N_COMMON + 36;
++        let g_off = h_off + OP_LO;
++        let v = op as usize;
++        (0..m.values.len() / w)
++            .filter(|&r| m.values[r * w] == F::ONE && m.values[r * w + h_off + v % OP_LO] == F::ONE && m.values[r * w + g_off + v / OP_LO] == F::ONE)
++            .collect()
++    };
++    check(&vk, &proof, 16, |mats| assert!(!find_op(&mats[0], Op::PowChk).is_empty(), "fixture has no PoW"));
++    must_fail("PowChk free coefficient c[3]", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let r = find_op(m, Op::PowChk)[0];
++            let w = m.width;
++            m.values[r * w + super::uair::U_C + 3] += F::ONE;
++        })
++    });
++    must_fail("PoW output word limb 1 (hash row)", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let r = rows_with(m, KH).into_iter().find(|&r| hash_row(m, r).op_p == F::ONE).unwrap();
++            hash_row(m, r).state_out[1] += F::ONE;
++        })
++    });
++    must_fail("PoW LoadBit row value", || {
++        check(&vk, &proof, 16, |mats| {
++            let m = &mut mats[0];
++            let r = find_op(m, Op::PowChk)[0];
++            // the first LoadBit after the PowChk row recomposes limb 1
++            let lb = find_op(m, Op::LoadBit).into_iter().find(|&x| x > r).unwrap();
++            let w = m.width;
++            let c = &mut m.values[lb * w + super::uair::U_C];
++            *c = F::ONE - *c;
++        })
++    });
++}
++
++/// Witness-level attacks generated through the verifier program's test hooks: the program is
++/// run with a cheating witness choice (all other cells consistent); the circuit must reject.
++#[test]
++fn nv_tr_hook_tamper() {
++    use super::verifier::{set_tamper, Tamper};
++    let (vk, proof) = fib();
++    for t in [Tamper::NonCanonicalIndex, Tamper::MerkleSwapLr, Tamper::OtherLeaf, Tamper::IndexBitFlip] {
++        let name = format!("{t:?}");
++        must_fail(&name, || {
++            set_tamper(t);
++            let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| check(&vk, &proof, 16, |_| {})));
++            let hit = super::verifier::tamper_hit();
++            set_tamper(Tamper::None);
++            assert!(hit, "tamper {t:?} found no applicable query");
++            if let Err(e) = r {
++                std::panic::resume_unwind(e);
++            }
++        });
++    }
++}
++
++/// x15 domain: the decomposition x >> m = 15 q + a with a = 15 (q - 1) must be rejected, as
++/// must a non-canonical index.
++#[test]
++fn nv_tr_x15_hook_tamper() {
++    use super::verifier::{set_tamper, Tamper};
++    use crate::sha384::e2e_tests::with_levers;
++    let mut p = openvm_stark_backend::test_utils::test_system_params_small(2, 8, 3);
++    p.max_constraint_degree = 4;
++    let p = with_levers(p, openvm_stark_backend::WhirLevers { multiproof: true, ..Default::default() }, 15, 5);
++    let engine = Sha384CpuEngine::new(p);
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    check(&vk, &proof, 16, |_| {});
++    for t in [Tamper::X15AEquals15, Tamper::MerkleSwapLr, Tamper::OtherLeaf] {
++        let name = format!("x15 {t:?}");
++        must_fail(&name, || {
++            set_tamper(t);
++            let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| check(&vk, &proof, 16, |_| {})));
++            let hit = super::verifier::tamper_hit();
++            set_tamper(Tamper::None);
++            assert!(hit, "tamper {t:?} found no applicable query");
++            if let Err(e) = r {
++                std::panic::resume_unwind(e);
++            }
++        });
++    }
++}
++
++/// Transcript schedule equals the native verifier's (end state) for every in-circuit lever, and
++/// the program is independent of the proof values.  Run once at default SHA levers and once with
++/// NEARPROOF_DIGEST_BYTES=42 NEARPROOF_COSET_LEAF=1.
++#[test]
++fn nv_tr_native_schedule_levers() {
++    use crate::sha384::e2e_tests::with_levers;
++    use openvm_stark_backend::{test_utils::InteractionsFixture11, StarkEngine, WhirLevers};
++    let base = WhirLevers::default();
++    let cases: Vec<(&str, WhirLevers, usize)> = vec![
++        ("default", base, 1),
++        ("whir_y", WhirLevers { whir_y: true, ..base }, 1),
++        ("x15+multiproof", WhirLevers { multiproof: true, ..base }, 15),
++        ("wide pow+k1+keep", WhirLevers { wide_query_pow: true, k_first: 1, keep_domain: true, ..base }, 1),
++        ("gruen+derive+mask", WhirLevers { gruen_gkr: true, gkr_derive_claims: true, gruen_zerocheck: true, next_mask: true, ..base }, 1),
++        ("tight+x15", WhirLevers { tight_heights: true, whir_y: true, ..base }, 15),
++    ];
++    for (name, lv, x15) in cases {
++        let mut p = openvm_stark_backend::test_utils::test_system_params_small(2, 8, 3);
++        p.max_constraint_degree = 4;
++        let p = with_levers(p, lv, x15, 5);
++        let engine = Sha384CpuEngine::new(p);
++        for fx in 0..2 {
++            let run = || {
++                let (vk, pr) = if fx == 0 { FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine) } else { InteractionsFixture11.keygen_and_prove(&engine) };
++                engine.verify(&vk, &pr).unwrap();
++                let mut b = super::builder::Builder::new(17, 0);
++                super::verifier::build_verifier(&mut b, &vk, &pr);
++                assert!(b.failures.is_empty(), "{name}: {:?}", b.failures);
++                let mut t = ShaTranscript::default();
++                openvm_stark_backend::verifier::verify(engine.config(), &vk, &pr, &mut t).unwrap();
++                assert_eq!(t.state, b.transcript.inner.state, "{name}: transcript diverged from native");
++                b
++            };
++            let (b1, b2) = (run(), run());
++            assert_eq!(b1.instrs, b2.instrs, "{name}: program depends on proof values");
++            println!("NV_TR_SCHEDULE {name} fixture={fx} levers={:?} ok rows={}", sha_levers(), b1.instrs.len());
++        }
++    }
++}
++
++/// Mutate the `k`-th value element of the proof (fixed traversal order; EF/F += 1, digest word
++/// bit 0 flipped); returns its label, or None past the last element.  Shape fields untouched.
++fn mutate_elem(p: &mut Pf, k: usize) -> Option<String> {
++    let mut i = 0usize;
++    macro_rules! ef { ($x:expr, $l:expr) => {{ if i == k { $x += EF::ONE; return Some($l); } i += 1; }}; }
++    macro_rules! ff { ($x:expr, $l:expr) => {{ if i == k { $x += F::ONE; return Some($l); } i += 1; }}; }
++    macro_rules! dg { ($x:expr, $l:expr) => {{ for w in 0..6 { if i == k { $x[w] ^= 1 << (w * 7 % 64); return Some(format!("{} word {w}", $l)); } i += 1; } }}; }
++    dg!(p.common_main_commit, "common_main_commit".to_string());
++    for a in 0..p.public_values.len() {
++        for j in 0..p.public_values[a].len() {
++            ff!(p.public_values[a][j], format!("public_values[{a}][{j}]"));
++        }
++    }
++    let g = &mut p.gkr_proof;
++    ff!(g.logup_pow_witness, "gkr.logup_pow_witness".into());
++    ef!(g.q0_claim, "gkr.q0_claim".into());
++    for l in 0..g.claims_per_layer.len() {
++        ef!(g.claims_per_layer[l].p_xi_0, format!("gkr.layer[{l}].p_xi_0"));
++        ef!(g.claims_per_layer[l].p_xi_1, format!("gkr.layer[{l}].p_xi_1"));
++        ef!(g.claims_per_layer[l].q_xi_0, format!("gkr.layer[{l}].q_xi_0"));
++        ef!(g.claims_per_layer[l].q_xi_1, format!("gkr.layer[{l}].q_xi_1"));
++    }
++    for a in 0..g.sumcheck_polys.len() {
++        for b in 0..g.sumcheck_polys[a].len() {
++            for c in 0..3 {
++                ef!(g.sumcheck_polys[a][b][c], format!("gkr.sumcheck_polys[{a}][{b}][{c}]"));
++            }
++        }
++    }
++    let bc = &mut p.batch_constraint_proof;
++    for a in 0..bc.numerator_term_per_air.len() {
++        ef!(bc.numerator_term_per_air[a], format!("bc.numerator[{a}]"));
++    }
++    for a in 0..bc.denominator_term_per_air.len() {
++        ef!(bc.denominator_term_per_air[a], format!("bc.denominator[{a}]"));
++    }
++    for a in 0..bc.univariate_round_coeffs.len() {
++        ef!(bc.univariate_round_coeffs[a], format!("bc.univariate[{a}]"));
++    }
++    for a in 0..bc.sumcheck_round_polys.len() {
++        for b in 0..bc.sumcheck_round_polys[a].len() {
++            ef!(bc.sumcheck_round_polys[a][b], format!("bc.sumcheck[{a}][{b}]"));
++        }
++    }
++    for a in 0..bc.column_openings.len() {
++        for b in 0..bc.column_openings[a].len() {
++            for c in 0..bc.column_openings[a][b].len() {
++                ef!(bc.column_openings[a][b][c], format!("bc.column_openings[{a}][{b}][{c}]"));
++            }
++        }
++    }
++    let sp = &mut p.stacking_proof;
++    for a in 0..sp.univariate_round_coeffs.len() {
++        ef!(sp.univariate_round_coeffs[a], format!("stacking.univariate[{a}]"));
++    }
++    for a in 0..sp.sumcheck_round_polys.len() {
++        for b in 0..2 {
++            ef!(sp.sumcheck_round_polys[a][b], format!("stacking.sumcheck[{a}][{b}]"));
++        }
++    }
++    for a in 0..sp.stacking_openings.len() {
++        for b in 0..sp.stacking_openings[a].len() {
++            ef!(sp.stacking_openings[a][b], format!("stacking.openings[{a}][{b}]"));
++        }
++    }
++    let w = &mut p.whir_proof;
++    ff!(w.mu_pow_witness, "whir.mu_pow_witness".into());
++    for a in 0..w.whir_sumcheck_polys.len() {
++        for b in 0..2 {
++            ef!(w.whir_sumcheck_polys[a][b], format!("whir.sumcheck[{a}][{b}]"));
++        }
++    }
++    for a in 0..w.codeword_commits.len() {
++        dg!(w.codeword_commits[a], format!("whir.codeword_commits[{a}]"));
++    }
++    for a in 0..w.ood_values.len() {
++        ef!(w.ood_values[a], format!("whir.ood[{a}]"));
++    }
++    for a in 0..w.folding_pow_witnesses.len() {
++        ff!(w.folding_pow_witnesses[a], format!("whir.folding_pow[{a}]"));
++    }
++    for a in 0..w.query_phase_pow_witnesses.len() {
++        ff!(w.query_phase_pow_witnesses[a], format!("whir.query_pow[{a}]"));
++    }
++    for t in 0..w.initial_round_opened_rows.len() {
++        for q in 0..w.initial_round_opened_rows[t].len() {
++            for j in 0..w.initial_round_opened_rows[t][q].len() {
++                for c in 0..w.initial_round_opened_rows[t][q][j].len() {
++                    ff!(w.initial_round_opened_rows[t][q][j][c], format!("whir.initial_rows[{t}][{q}][{j}][{c}]"));
++                }
++            }
++        }
++    }
++    for t in 0..w.initial_round_merkle_proofs.len() {
++        for q in 0..w.initial_round_merkle_proofs[t].len() {
++            for l in 0..w.initial_round_merkle_proofs[t][q].len() {
++                dg!(w.initial_round_merkle_proofs[t][q][l], format!("whir.initial_merkle[{t}][{q}][{l}]"));
++            }
++        }
++    }
++    for r in 0..w.codeword_opened_values.len() {
++        for q in 0..w.codeword_opened_values[r].len() {
++            for j in 0..w.codeword_opened_values[r][q].len() {
++                ef!(w.codeword_opened_values[r][q][j], format!("whir.codeword_values[{r}][{q}][{j}]"));
++            }
++        }
++    }
++    for r in 0..w.codeword_merkle_proofs.len() {
++        for q in 0..w.codeword_merkle_proofs[r].len() {
++            for l in 0..w.codeword_merkle_proofs[r][q].len() {
++                dg!(w.codeword_merkle_proofs[r][q][l], format!("whir.codeword_merkle[{r}][{q}][{l}]"));
++            }
++        }
++    }
++    for a in 0..w.final_poly.len() {
++        ef!(w.final_poly[a], format!("whir.final_poly[{a}]"));
++    }
++    let _ = i;
++    None
++}
++
++/// Program ≡ native on every single-element mutation of the proof: for each value element the
++/// native verifier accepts iff the NV program records no failure (every program failure is a
++/// `Zero` row / Merkle root comparison in-circuit).  This is the "no native check skipped, no
++/// proof element left unconsumed" test.
++#[test]
++fn nv_tr_every_proof_element() {
++    use crate::sha384::e2e_tests::with_levers;
++    use openvm_stark_backend::{test_utils::InteractionsFixture11, WhirLevers};
++    let base = WhirLevers::default();
++    let cases: Vec<(&str, WhirLevers, usize)> = vec![
++        ("default", base, 1),
++        ("x15+multiproof+whir_y+widepow", WhirLevers { multiproof: true, whir_y: true, wide_query_pow: true, ..base }, 15),
++        ("gruen+derive+mask+k1", WhirLevers { gruen_gkr: true, gkr_derive_claims: true, gruen_zerocheck: true, next_mask: true, k_first: 1, ..base }, 1),
++    ];
++    let mut mismatches = vec![];
++    for (name, lv, x15) in cases {
++        let mut p = openvm_stark_backend::test_utils::test_system_params_small(2, 8, 3);
++        p.max_constraint_degree = 4;
++        let p = with_levers(p, lv, x15, 5);
++        let engine = Sha384CpuEngine::new(p);
++        for fx in 0..2 {
++            let (vk, proof) = if fx == 0 { FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine) } else { InteractionsFixture11.keygen_and_prove(&engine) };
++            let (mut n, mut both_reject, mut both_accept) = (0, 0, 0);
++            for k in 0.. {
++                let mut bad = proof.clone();
++                let Some(label) = mutate_elem(&mut bad, k) else { break };
++                n += 1;
++                let mut t = ShaTranscript::default();
++                let native_ok = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++                    openvm_stark_backend::verifier::verify(engine.config(), &vk, &bad, &mut t).is_ok()
++                }))
++                .unwrap_or(false);
++                let prog_ok = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++                    let mut b = super::builder::Builder::new(17, 0);
++                    super::verifier::build_verifier(&mut b, &vk, &bad);
++                    b.failures.is_empty()
++                }))
++                .unwrap_or(false);
++                match (native_ok, prog_ok) {
++                    (false, false) => both_reject += 1,
++                    (true, true) => both_accept += 1,
++                    _ => mismatches.push(format!("{name} fx{fx} {label}: native_ok={native_ok} program_ok={prog_ok}")),
++                }
++            }
++            println!("NV_TR_ELEMENTS {name} fixture={fx} elements={n} both_reject={both_reject} both_accept={both_accept}");
++        }
++    }
++    for m in &mismatches {
++        println!("NV_TR_ELEMENT_MISMATCH {m}");
++    }
++    assert!(mismatches.is_empty(), "{} program/native mismatches", mismatches.len());
++}
++
++/// Bug B3 (fix: `LoadF` op, base-field loads with c1..c11 = 0 — made on the coordinator's tree):
++/// `Builder::pow` recomposes PoW output word 0 as load_f(l0) + x1 X + x2 X^2 and compares it with
++/// the `PowChk` cell; `load_f` was a plain `Load` (all 12 coefficients free), so coefficients 1, 2
++/// of the l0 cell absorb any non-zero top bits and the leading-zero check is vacuous.
++/// Setup: the child is proved with mu PoW bits b; the verifying key claims b + 16 bits (the PoW
++/// job's hash does not depend on the bit count and `pre_hash` is unchanged, so the transcript is
++/// identical) — the native verifier rejects, the honest program fails exactly at the PoW check,
++/// and the hook fills the l0 cell's coefficients 1, 2.  Fails (= trace accepted) without B3's fix.
++#[test]
++fn nv_tr_pow_free_limb() {
++    use super::verifier::{set_tamper, Tamper};
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let mut vk2 = vk.clone();
++    vk2.inner.params.whir.mu_pow_bits += 16;
++    let e2 = Sha384CpuEngine::new(vk2.inner.params.clone());
++    let mut t = ShaTranscript::default();
++    assert!(openvm_stark_backend::verifier::verify(e2.config(), &vk2, &proof, &mut t).is_err(), "native accepts");
++    let mut b = super::builder::Builder::new(17, 0);
++    super::verifier::build_verifier(&mut b, &vk2, &proof);
++    assert!(b.failures.iter().all(|f| f.starts_with("pow")) && !b.failures.is_empty(), "{:?}", b.failures);
++    must_fail("PoW below the claimed bits, low-limb cell absorbs top bits", || {
++        set_tamper(Tamper::PowFreeLimb);
++        let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| check(&vk2, &proof, 16, |_| {})));
++        let hit = super::verifier::tamper_hit();
++        set_tamper(Tamper::None);
++        assert!(hit);
++        if let Err(e) = r {
++            std::panic::resume_unwind(e);
++        }
++    });
++}
 diff --git a/crates/recursion/src/nv/fmt.rs b/crates/recursion/src/nv/fmt.rs
 new file mode 100644
 index 0000000..0c335cf
@@ -3470,10 +4598,10 @@ index 0000000..0c335cf
 +}
 diff --git a/crates/recursion/src/nv/glue.rs b/crates/recursion/src/nv/glue.rs
 new file mode 100644
-index 0000000..0f8dd27
+index 0000000..c60f8c2
 --- /dev/null
 +++ b/crates/recursion/src/nv/glue.rs
-@@ -0,0 +1,646 @@
+@@ -0,0 +1,650 @@
 +//! NV GLUE role: one row per *pair* of message words of a job compression (8 rows per
 +//! compression).  Replaces the packer (one row per word) and the block-chaining AIR
 +//! (one 102-column row per compression).
@@ -3507,7 +4635,7 @@ index 0000000..0f8dd27
 +
 +use super::{
 +    fmt::{limbs_from_bytes, split_bits, wl},
-+    hash::{cnt2, lookup_byte, lookup_pair, HashBuses, Job2, NODE_TAG, U2, UNIT_FELT, UNIT_WORD},
++    hash::{cnt2, lookup_byte, lookup_pair, HashBuses, Job2, NODE_TAG, U2, UNIT_FELT, UNIT_HALF, UNIT_WORD},
 +};
 +use crate::sha384::{
 +    compress2_air::ROWS,
@@ -3695,7 +4823,11 @@ index 0000000..0f8dd27
 +                    one.clone(),
 +                    l.job.into(),
 +                    uidx.clone(),
-+                    wordish.clone() * c(UNIT_WORD as u64) + (one.clone() - wordish.clone()) * c(UNIT_FELT as u64),
++                    // a 42-B digest tail has its own kind (UNIT_HALF), so a tail unit cannot be
++                    // framed as a full word and a word cannot be framed as a tail
++                    wdv.clone() * c(UNIT_WORD as u64)
++                        + hps.clone() * c(UNIT_HALF as u64)
++                        + (one.clone() - wordish.clone()) * c(UNIT_FELT as u64),
 +                    (one.clone() - wordish) * felt + wdv.clone() * u0 + hps.clone() * t0,
 +                    wdv.clone() * u1 + hps.clone() * t1,
 +                    wdv * u2 + hps.clone() * t2,
@@ -4122,10 +5254,10 @@ index 0000000..0f8dd27
 +}
 diff --git a/crates/recursion/src/nv/hash.rs b/crates/recursion/src/nv/hash.rs
 new file mode 100644
-index 0000000..7011bf4
+index 0000000..daf7380
 --- /dev/null
 +++ b/crates/recursion/src/nv/hash.rs
-@@ -0,0 +1,351 @@
+@@ -0,0 +1,353 @@
 +//! NV hashing subsystem, word format v2 (air2 limbs).  Same job model as
 +//! `sha384/airs.rs` (framed messages `PREFIX || tag || units`), with:
 +//! * units: a canonical felt (4 LE bytes) or a whole 64-bit word (8 BE bytes, e.g. a
@@ -4167,6 +5299,8 @@ index 0000000..7011bf4
 +
 +pub const UNIT_FELT: u32 = 0;
 +pub const UNIT_WORD: u32 = 2;
++/// kind of a 42-byte digest tail unit (top 2 bytes of word 5)
++pub const UNIT_HALF: u32 = 3;
 +/// job-bus tag of Merkle node jobs (outside the byte range of prefix-job tags)
 +pub const NODE_TAG: u32 = 256;
 +
@@ -4479,10 +5613,10 @@ index 0000000..7011bf4
 +}
 diff --git a/crates/recursion/src/nv/hash_tests.rs b/crates/recursion/src/nv/hash_tests.rs
 new file mode 100644
-index 0000000..2f39c16
+index 0000000..38265ea
 --- /dev/null
 +++ b/crates/recursion/src/nv/hash_tests.rs
-@@ -0,0 +1,213 @@
+@@ -0,0 +1,221 @@
 +//! Standalone test of the NV v2 hashing subsystem on the air2 compression AIR.
 +use std::sync::Arc;
 +
@@ -4509,7 +5643,7 @@ index 0000000..2f39c16
 +}
 +
 +// producer row: [m_felt, m_word, m_job, m_dig, m_if, job, idx, v0, v1, v2, tag, d[18], cid, l[6]]
-+const PW: usize = 11 + 18 + 7 + 1;
++const PW: usize = 11 + 18 + 7 + 1 + 1; // + half flag (42-B digest tail, kind UNIT_HALF)
 +#[derive(Clone, Copy)]
 +struct Prod(HashBuses);
 +impl<T> BaseAir<T> for Prod {
@@ -4527,7 +5661,13 @@ index 0000000..2f39c16
 +            b.assert_bool(l[k].clone());
 +        }
 +        self.0.send_felt(b, l[5].clone(), l[6].clone(), l[7].clone(), l[0].clone());
-+        self.0.send_word(b, l[5].clone(), l[6].clone(), [l[7].clone(), l[8].clone(), l[9].clone()], l[1].clone());
++        b.assert_bool(l[37].clone());
++        let kind = AB::Expr::from_u32(UNIT_WORD) + l[37].clone() * AB::Expr::from_u32(UNIT_HALF - UNIT_WORD);
++        PermutationCheckBus::new(self.0.slot).send(
++            b,
++            [AB::Expr::ONE, l[5].clone(), l[6].clone(), kind, l[7].clone(), l[8].clone(), l[9].clone()],
++            l[1].clone(),
++        );
 +        self.0.send_job_tr(b, l[5].clone(), l[10].clone(), l[1].clone() * AB::Expr::ZERO + l[36].clone(), l[2].clone());
 +        self.0.receive_digest(b, l[5].clone(), &l[11..29], l[3].clone());
 +        let mut msg = vec![l[29].clone(), l[6].clone()];
@@ -4597,6 +5737,8 @@ index 0000000..2f39c16
 +                }
 +                U2::Half(w) => {
 +                    r[1] = 1;
++                    // prefix-job tails are UNIT_HALF; node-job tails ride the fixed node framing (kind word)
++                    r[37] = (!j.node) as u32;
 +                    let l = wl(w & 0xffff_0000_0000_0000);
 +                    r[7..10].copy_from_slice(&l);
 +                }
@@ -4698,10 +5840,10 @@ index 0000000..2f39c16
 +}
 diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
 new file mode 100644
-index 0000000..224cd0e
+index 0000000..ba70935
 --- /dev/null
 +++ b/crates/recursion/src/nv/isa.rs
-@@ -0,0 +1,135 @@
+@@ -0,0 +1,138 @@
 +//! NV ALU instruction set.  One instruction per ALU row; every row writes its result
 +//! `c` (an Ext12 value) to memory address = its row index.  Program words:
 +//!   P0 = A  (operand address, or base-field immediate)
@@ -4782,9 +5924,12 @@ index 0000000..224cd0e
 +    /// c = free base-field witness: c1..c11 = 0 (a plain `Load` leaves all 12 coefficients
 +    /// free; base-field loads must use this op, FAITHFUL.md bug B3)
 +    LoadF = 29,
++    /// c = a; push word unit c[0..3] (kind word) at unit index P3 and the 42-byte digest tail
++    /// c[3..6] (kind UNIT_HALF) at P3 + 2 of job P2 (42-B commitment words 4, 5)
++    UnitWT = 30,
 +}
 +
-+pub const NUM_OPS: usize = 30;
++pub const NUM_OPS: usize = 31;
 +/// Op code = 8 * hi + lo, hi < OP_HI (UAIR one-hot selector halves).
 +pub const OP_LO: usize = 8;
 +pub const OP_HI: usize = 4;
@@ -4794,7 +5939,7 @@ index 0000000..224cd0e
 +        use Op::*;
 +        [
 +            Nop, Mul, Add, Sub, Const, ConstX, Load, Unit1, Anchor, UnitW, Smp1, Smp12, Unit12,
-+            Horn, Job, Bit, Zero, Dig, NodeJob, Acc, DblAdd, MulAddA, Pv, UnitWS4, UnitWS2, PowChk, Data, Acc2, LoadBit, LoadF,
++            Horn, Job, Bit, Zero, Dig, NodeJob, Acc, DblAdd, MulAddA, Pv, UnitWS4, UnitWS2, PowChk, Data, Acc2, LoadBit, LoadF, UnitWT,
 +        ]
 +    }
 +    pub fn reads_a(self) -> bool {
@@ -4802,7 +5947,7 @@ index 0000000..224cd0e
 +        matches!(
 +            self,
 +            Mul | Add | Sub | Unit1 | UnitW | Unit12 | Horn | Bit | Zero | DblAdd
-+                | MulAddA | Pv | UnitWS4 | UnitWS2
++                | MulAddA | Pv | UnitWS4 | UnitWS2 | UnitWT
 +        )
 +    }
 +    pub fn reads_b(self) -> bool {
@@ -4839,10 +5984,10 @@ index 0000000..224cd0e
 +}
 diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
 new file mode 100644
-index 0000000..1097010
+index 0000000..9823e17
 --- /dev/null
 +++ b/crates/recursion/src/nv/mod.rs
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,22 @@
 +//! NV: narrow fixed-point verifier circuit (see results/pq-recursion-nv/DESIGN.md).
 +pub mod builder;
 +pub mod circuit;
@@ -4854,7 +5999,11 @@ index 0000000..1097010
 +pub mod uair;
 +pub mod verifier;
 +#[cfg(test)]
++mod faithful_sha_tests;
++#[cfg(test)]
 +mod hash_tests;
++#[cfg(test)]
++mod faithful_tr_tests;
 +#[cfg(test)]
 +mod tests;
 +#[cfg(test)]
@@ -5525,10 +6674,10 @@ index 0000000..0217f7e
 +}
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
 new file mode 100644
-index 0000000..098b0c8
+index 0000000..b30b165
 --- /dev/null
 +++ b/crates/recursion/src/nv/transcript2.rs
-@@ -0,0 +1,639 @@
+@@ -0,0 +1,653 @@
 +//! NV in-circuit SHA-384 transcript, word format v2 (see transcript/sha_transcript.rs for
 +//! the protocol).  Differences: the state and commit digests are 18 air2 limbs and are
 +//! framed as word units; commit events are 18 limb events; samples are extracted per
@@ -5820,6 +6969,8 @@ index 0000000..098b0c8
 +    pub last_acc: T,
 +    /// = rdw[5] * last_half (all 12 candidates read)
 +    pub full: T,
++    /// squeeze jobs before this row (squeeze job ids are TJOB_SQUEEZE_BASE + ns: unique)
++    pub ns: T,
 +}
 +pub const HASH2_WIDTH: usize = Hash2Cols::<u8>::width();
 +
@@ -5840,6 +6991,10 @@ index 0000000..098b0c8
 +    }
 +    builder.assert_zero(g(l.op_f + l.op_c + l.op_s + l.op_p - one.clone()));
 +    builder.assert_zero(g(l.is_first * l.t_start));
++    // squeeze job ids are pinned (unique, disjoint from leaf / node / static ids): without this a
++    // prover could give two jobs one id and mix their state units / words on the shared buses
++    builder.assert_zero(g(l.is_first * l.ns));
++    builder.assert_zero(g(l.op_s * (l.job - c(TJOB_SQUEEZE_BASE as u64) - l.ns)));
 +    builder.assert_zero(g(l.op_c * (l.cnt - c(NV_DIGEST as u64))));
 +    builder.assert_zero(g(l.rdw[0] - l.op_s));
 +    for i in 0..5 {
@@ -5862,6 +7017,7 @@ index 0000000..098b0c8
 +        tr.assert_zero(kh.clone() * (l.hn - nkh.clone()));
 +        tr.assert_zero(both.clone() * (n.job - l.nxt));
 +        tr.assert_zero(both.clone() * (n.t_start - l.t_start - l.cnt));
++        tr.assert_zero(both.clone() * (n.ns - l.ns - l.op_s));
 +        tr.assert_zero(both.clone() * l.op_f * n.op_f);
 +        tr.assert_zero(kh.clone() * l.op_f * (one.clone() - nkh.clone()));
 +        tr.assert_zero(both.clone() * n.op_s * not_full);
@@ -5875,7 +7031,7 @@ index 0000000..098b0c8
 +        + l.op_c * c(TAG_COMMIT as u64)
 +        + l.op_s * c(TAG_SQUEEZE as u64)
 +        + l.op_p * c(crate::sha384::config::TAG_POW as u64);
-+    h.send_job(builder, l.job, tag, kh.clone());
++    h.send_job(builder, l.job, tag.clone(), kh.clone());
 +    h.send_felt(builder, l.job, c(0), c(48), kh.clone());
 +    h.send_felt(builder, l.job, c(1), c(0), kh.clone());
 +    // output state = state units 2..13 of the next job
@@ -5906,7 +7062,8 @@ index 0000000..098b0c8
 +    );
 +    let sout: Vec<AB::Expr> = l.state_out.iter().map(|&x| x.into()).collect();
 +    h.receive_digest(builder, l.job, &sout, kh.clone());
-+    // flush / commit jobs are anchored by the ALU: (2, job, 0, 0, t_start, cnt, 0)
++    // flush / commit / PoW jobs are anchored by the ALU: (2, job, 0, 0, t_start, cnt, tag); the tag
++    // binds the job's op to the program (otherwise a commit could be relabeled as a flush)
 +    PermutationCheckBus::new(h.slot).receive(
 +        builder,
 +        [
@@ -5916,7 +7073,7 @@ index 0000000..098b0c8
 +            AB::Expr::ZERO,
 +            l.t_start.into(),
 +            l.cnt.into(),
-+            AB::Expr::ZERO,
++            tag.clone(),
 +        ],
 +        g(l.op_f + l.op_c + l.op_p),
 +    );
@@ -6087,6 +7244,7 @@ index 0000000..098b0c8
 +    let mut counts = vec![0u32; super::hash::BYTE_TABLE];
 +    let (a5, a2) = split_bits();
 +    let mut srow = 0usize;
++    let mut ns = 0usize;
 +    let fu = |x: usize| F::from_usize(x);
 +    for (k, j) in jobs.iter().enumerate() {
 +        let job = j.id as usize;
@@ -6099,6 +7257,11 @@ index 0000000..098b0c8
 +        r.job = fu(job);
 +        r.t_start = fu(j.t_start);
 +        r.cnt = fu(j.cnt);
++        r.ns = fu(ns);
++        if j.op == Op2::Squeeze {
++            assert_eq!(j.id, TJOB_SQUEEZE_BASE + ns as u32, "squeeze jobs numbered in chain order");
++            ns += 1;
++        }
 +        if k + 1 < jobs.len() {
 +            r.hn = F::ONE;
 +            r.nxt = F::from_u32(jobs[k + 1].id);
@@ -6170,10 +7333,10 @@ index 0000000..098b0c8
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..5625564
+index 0000000..ec5881b
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
-@@ -0,0 +1,761 @@
+@@ -0,0 +1,769 @@
 +//! NV merged non-SHA AIR ("NvAir", U2): one AIR, row roles sharing a column pool.
 +//!
 +//! Common columns: role flags ka (ALU), kb (BIND), kg (GLUE), kh (transcript hash chain),
@@ -6565,7 +7728,7 @@ index 0000000..5625564
 +    let bb: [AB::Expr; 12] = l.b.map(Into::into);
 +    let ab = ext_field_multiply::<AB::Expr>(a.clone(), bb.clone());
 +    let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc) + s(Op::Dig) + s(Op::PowChk) + s(Op::Acc2) + s(Op::LoadBit) + s(Op::LoadF);
-+    let copy_a = s(Op::Unit1) + s(Op::UnitW) + s(Op::Unit12) + s(Op::Bit) + s(Op::Pv) + s(Op::UnitWS4) + s(Op::UnitWS2);
++    let copy_a = s(Op::Unit1) + s(Op::UnitW) + s(Op::UnitWT) + s(Op::Unit12) + s(Op::Bit) + s(Op::Pv) + s(Op::UnitWS4) + s(Op::UnitWS2);
 +    let mulab = s(Op::Mul) + s(Op::Horn);
 +    for k in 0..12 {
 +        let mut e = mulab.clone() * ab[k].clone()
@@ -6621,7 +7784,8 @@ index 0000000..5625564
 +    let slot = PermutationCheckBus::new(buses.slot);
 +    let smp = s(Op::Smp1) + s(Op::Smp12);
 +    let ws = s(Op::UnitWS4) + s(Op::UnitWS2);
-+    let chan = s(Op::Unit1) + s(Op::UnitW) + ws.clone() + s(Op::Unit12) + s(Op::Horn) + s(Op::Job) + s(Op::Anchor).double()
++    let wt = s(Op::UnitWT);
++    let chan = s(Op::Unit1) + s(Op::UnitW) + wt.clone() + ws.clone() + s(Op::Unit12) + s(Op::Horn) + s(Op::Job) + s(Op::Anchor).double()
 +        + s(Op::PowChk) * cst(3);
 +    for k in 0..12usize {
 +        let kk = cst(k as u64);
@@ -6635,7 +7799,7 @@ index 0000000..5625564
 +            send += s(Op::Job);
 +        }
 +        if k < 2 {
-+            send += s(Op::UnitW) + ws.clone();
++            send += s(Op::UnitW) + ws.clone() + wt.clone();
 +        } else if k < 4 {
 +            send += s(Op::UnitWS4);
 +            // B in {2, 4}: words 2, 3 only for B = 4
@@ -6643,13 +7807,18 @@ index 0000000..5625564
 +        }
 +        let key1 = p[2] + s(Op::Smp12) * kk.clone();
 +        let mut key2 = s(Op::Unit12) * (p[3] + kk.clone())
-+            + s(Op::UnitW) * (p[3] + cst(2 * k as u64))
++            + (s(Op::UnitW) + wt.clone()) * (p[3] + cst(2 * k as u64))
 +            + ws.clone() * (p[3] + cst(2 * k as u64) + l.b[0] * cst(12))
 +            + s(Op::Job) * kk.clone();
 +        if k == 0 {
 +            key2 += (s(Op::Horn) + s(Op::Unit1)) * p[3];
 +        }
-+        let kind = (s(Op::UnitW) + ws.clone()).double() + smp.clone() * cst(KIND_SAMPLE as u64);
++        let mut kind = (s(Op::UnitW) + ws.clone()).double() + smp.clone() * cst(KIND_SAMPLE as u64);
++        if k < 2 {
++            // UnitWT: word unit (kind 2), then the 42-B digest tail (kind UNIT_HALF)
++            let kk = if k == 0 { super::hash::UNIT_WORD } else { super::hash::UNIT_HALF };
++            kind += wt.clone() * cst(kk as u64);
++        }
 +        let mut v = [AB::Expr::ZERO, AB::Expr::ZERO, AB::Expr::ZERO];
 +        v[0] = (s(Op::Unit12) + s(Op::Smp12)) * l.c[k];
 +        if k == 0 {
@@ -6661,10 +7830,12 @@ index 0000000..5625564
 +                + s(Op::Job) * bfield.clone()
 +                + s(Op::Anchor) * p[0];
 +            v[1] += s(Op::Anchor) * bfield.clone();
++            // anchor tag (P3): binds the transcript job's op (flush / commit / PoW)
++            v[2] += s(Op::Anchor) * p[3];
 +        }
 +        if k < 4 {
 +            for t in 0..3 {
-+                v[t] += (s(Op::UnitW) + ws.clone()) * l.c[3 * k + t];
++                v[t] += (s(Op::UnitW) + ws.clone() + if k < 2 { wt.clone() } else { AB::Expr::ZERO }) * l.c[3 * k + t];
 +            }
 +        }
 +        let [v0, v1, v2] = v;
@@ -6937,10 +8108,10 @@ index 0000000..5625564
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..1419755
+index 0000000..f2a5093
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1481 @@
+@@ -0,0 +1,1551 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -6965,6 +8136,66 @@ index 0000000..1419755
 +use crate::sha384::config::{Sha384Config, ShaHasher, EF, F};
 +
 +type SC = Sha384Config;
++
++// ---------------------------------------------------------------------------------------
++// test-only cheating-witness hooks (NV-faithful audit, faithful_tr_tests.rs)
++// ---------------------------------------------------------------------------------------
++
++/// A cheating witness choice applied once (first applicable query) by the program generator.
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum Tamper {
++    None,
++    /// query index bits of x + p (when x + p < 2^31) instead of x
++    NonCanonicalIndex,
++    /// flip index bit 0 (recomposition must fail)
++    IndexBitFlip,
++    /// Merkle path level 0: current digest placed on the wrong side
++    MerkleSwapLr,
++    /// initial round, query 0: the opened rows of query 1 at query 0's index
++    OtherLeaf,
++    /// x15: x >> m = 15 (q - 1) + 15 instead of 15 q + 0
++    X15AEquals15,
++    /// PoW: the low-limb Load cell absorbs the top bits of limbs 1, 2 (bug B3 demo)
++    PowFreeLimb,
++}
++#[cfg(test)]
++thread_local! {
++    static TAMPER: core::cell::Cell<Tamper> = const { core::cell::Cell::new(Tamper::None) };
++    static TAMPER_HIT: core::cell::Cell<bool> = const { core::cell::Cell::new(false) };
++}
++#[cfg(test)]
++pub fn set_tamper(t: Tamper) {
++    TAMPER.with(|c| c.set(t));
++    TAMPER_HIT.with(|c| c.set(false));
++}
++#[cfg(test)]
++pub fn tamper_hit() -> bool {
++    TAMPER_HIT.with(|c| c.get())
++}
++/// True (once) if tamper `t` is active and not yet applied; marks it applied.
++#[cfg(test)]
++pub(crate) fn tamper_now(t: Tamper) -> bool {
++    let on = TAMPER.with(|c| c.get()) == t && !TAMPER_HIT.with(|c| c.get());
++    if on {
++        TAMPER_HIT.with(|c| c.set(true));
++    }
++    on
++}
++#[cfg(not(test))]
++#[inline(always)]
++pub(crate) fn tamper_now(_: Tamper) -> bool {
++    false
++}
++/// Peek without consuming.
++#[cfg(test)]
++pub(crate) fn tamper_active(t: Tamper) -> bool {
++    TAMPER.with(|c| c.get()) == t && !TAMPER_HIT.with(|c| c.get())
++}
++#[cfg(not(test))]
++#[inline(always)]
++pub(crate) fn tamper_active(_: Tamper) -> bool {
++    false
++}
 +
 +/// Shape facts the program depends on (asserted, not computed from the proof).
 +#[derive(Clone, Debug)]
@@ -7139,11 +8370,15 @@ index 0000000..1419755
 +/// Index bits of a sampled base element: all 31 bits are BIT rows (with the canonical
 +/// check value <= p - 1); returns the low `nbits` bits (LSB first).
 +fn decompose_index(b: &mut Builder, s: V, nbits: usize, qid: u32) -> Vec<V> {
-+    let x = coeffs(s.val)[0].as_canonical_u32();
++    let mut x = coeffs(s.val)[0].as_canonical_u32() as u64;
++    if (x + crate::sha384::config::BABYBEAR_P) < (1 << 31) && tamper_now(Tamper::NonCanonicalIndex) {
++        x += crate::sha384::config::BABYBEAR_P;
++    }
++    let flip = tamper_now(Tamper::IndexBitFlip) as u64;
 +    let bits: Vec<V> = (0..31)
 +        .map(|j| {
 +            let _ = qid;
-+            b.load_bit((x >> j) & 1 == 1)
++            b.load_bit(((x >> j) & 1 ^ if j == 0 { flip } else { 0 }) == 1)
 +        })
 +        .collect();
 +    // recompose (MSB first): acc = 2 acc + bit
@@ -7191,7 +8426,11 @@ index 0000000..1419755
 +    }
 +    b.zero(top, "x15 index: x = p - 1 rejected");
 +    let y = x >> m;
-+    let (q, a) = (y / 15, y % 15);
++    let (mut q, mut a) = (y / 15, y % 15);
++    if a == 0 && q >= 1 && tamper_now(Tamper::X15AEquals15) {
++        q -= 1;
++        a = 15;
++    }
 +    let mut yv = b.c(F::ZERO);
 +    for j in (m..31).rev() {
 +        yv = b.dbl_add(yv, bits[j]);
@@ -8216,6 +9455,8 @@ index 0000000..1419755
 +                // per commit: leaf jobs (one per coset row), Horner over all columns
 +                let rows = &w.initial_round_opened_rows;
 +                let width0 = rows[0][qi][0].len();
++                // test hook: open query 1's rows at query 0's index
++                let qi = if qi == 0 && nq > 1 && tamper_now(Tamper::OtherLeaf) { 1 } else { qi };
 +                let job_base = b.job_units.len() as u32;
 +                let coset = crate::sha384::config::sha_levers().coset_leaf;
 +                // coset leaf (lever): one tag-6 job holding all 2^k rows; else one job per row
