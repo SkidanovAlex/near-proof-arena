@@ -1119,3 +1119,17 @@ L = 23 (2^24) is out of reach: SHA's 17.8M alone exceeds 16.8M.
   so it runs on Johnson.
 * The NvAir margin under 2^18 is 6.4k rows (2.4 %). Measuring it needs an NV child at the real
   penultimate shape.
+
+**Milestone 2, measured.** The probe (Fib child, 268 bits, n_stack 14, b 2) on the head tree,
+which includes the multi-commitment rule:
+
+| | baseline | milestone 1 | milestone 2 |
+|---|---|---|---|
+| program rows | 125,782 | 93,142 | **79,840** (−36.5 %) |
+| round 0, rows per query | 393 | 287 | 241 |
+| rounds ≥ 1, rows per query | 503 | 384 | 329 |
+| final check, rows per query | 81 | 51 | 44 |
+
+The model predicted 243 and 340 rows per query: it is slightly conservative. On the head tree,
+the backend passes 230 tests and the fast NV suite passes 54 tests in each digest mode
+(`logs/cut/`).
