@@ -1,0 +1,33 @@
+
+running 1 test
+NV_PARENT_PARAMS l_skip=2 n_stack=18 k=4 log_blowup=1 queries=[32, 26, 15, 11, 9] pow(mu,fold,query,logup)=(0,0,32,0)
+NV_PHASE before_dag 1470
+NV_DAG air=0 nodes=21 rows_so_far=1520
+NV_PHASE after_dag 1533
+NV_PHASE after_stacking 1841
+NV_QCOST round=0 queries=10 rows=2693 per_query=269 nbits=8 k=3 merkle_nodes=80
+NV_QCOST round=1 queries=4 rows=1056 per_query=264 nbits=7 k=3 merkle_nodes=108
+NV_QCOST round=2 queries=2 rows=504 per_query=252 nbits=6 k=3 merkle_nodes=120
+NV_PHASE end 8917
+test nv::tests::nv_chain has been running for over 60 seconds
+A1_AIR NvAir h=262144 w=70 rot=1 int/row=52 deg=8
+A1_AIR Sha512Air h=16384 w=171 rot=1 int/row=14 deg=21
+A1_AIR TableAir h=64 w=13 rot=1 int/row=2 deg=4
+A1_AIR ByteAir h=65536 w=5 rot=1 int/row=1 deg=3
+A1_SUMMARY cols=259 opened=452 interactions=13926528 L=24 cells=21480256 sha_cells=2802496 other_cells=18677760 alu_used=8150 merkle_nodes=120 leaf_blocks=34 prove_s=1661.8
+A1_SOUNDNESS total=103.0 logup=330.6 proximity=311.7 query=103.0
+A1_PROOF_BYTES total=193537 gkr=29960 relations=42052 stacking=2848 whir=118550
+A1_HEIGHTS [262144, 16384, 64, 65536]
+NV_PHASE before_dag 35671
+NV_DAG air=0 nodes=3637 rows_so_far=40701
+NV_DAG air=3 nodes=32 rows_so_far=41990
+NV_DAG air=1 nodes=12718 rows_so_far=55417
+NV_DAG air=2 nodes=1128 rows_so_far=57068
+NV_PHASE after_dag 57165
+NV_PHASE after_stacking 72278
+NV_QCOST round=0 queries=32 rows=14424 per_query=451 nbits=20 k=1 merkle_nodes=768
+NV_QCOST round=1 queries=26 rows=13793 per_query=530 nbits=17 k=4 merkle_nodes=1314
+NV_QCOST round=2 queries=15 rows=7950 per_query=530 nbits=17 k=4 merkle_nodes=1629
+NV_QCOST round=3 queries=11 rows=5830 per_query=530 nbits=17 k=4 merkle_nodes=1860
+NV_QCOST round=4 queries=9 rows=4770 per_query=530 nbits=17 k=4 merkle_nodes=2049
+NV_PHASE end 129504

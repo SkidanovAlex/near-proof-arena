@@ -1,0 +1,12 @@
+
+running 7 tests
+test nv::tests::nv_program_detects_tampering ... ok
+test nv::tests::nv_program_fib ... ok
+test nv::tests::nv_program_interactions ... ok
+test nv::tests::nv_tight_heights ... ok
+test nv::tests::nv_whir_lever_tamper ... ok
+test nv::tests::nv_zero_tail_plain ... ok
+test nv::tests::unified_cpu_matches_reference ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 25 filtered out; finished in 62.39s
+

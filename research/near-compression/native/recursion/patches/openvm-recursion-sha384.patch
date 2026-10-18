@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..b2d42bc
+index 0000000..3b2ec98
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,727 @@
+@@ -0,0 +1,740 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1365,6 +1365,8 @@ index 0000000..b2d42bc
 +    pub late: Vec<usize>,
 +    /// app-verifier table rows (data region at the start of the program, after the reserved rows)
 +    pub app: Vec<[u32; 4]>,
++    /// addresses of the ACC2 / ACC rows (allocated by `begin`, right after the data region)
++    pub acc_slots: Option<(u32, u32)>,
 +    /// debug: batch point and the child's per-trace openings
 +    pub dbg_rs: Vec<EF>,
 +    pub dbg_openings: Vec<Vec<EF>>,
@@ -1400,6 +1402,7 @@ index 0000000..b2d42bc
 +            acc_flag: None,
 +            late: vec![],
 +            app: vec![],
++            acc_slots: None,
 +            dbg_rs: vec![],
 +            dbg_openings: vec![],
 +            dbg_tid: vec![],
@@ -1451,12 +1454,23 @@ index 0000000..b2d42bc
 +        self.app = app;
 +    }
 +
++    /// Allocate the ACC2 / ACC rows at fixed addresses (after reserved rows and the data region).
++    pub fn begin(&mut self) {
++        assert!(self.acc_slots.is_none());
++        let a2 = self.instrs.len() as u32;
++        for _ in 0..2 {
++            self.instrs.push(Instr::NOP);
++            self.vals.push(EF::ZERO);
++            self.wits.push(F::ZERO);
++        }
++        self.acc_slots = Some((a2, a2 + 1));
++    }
++
 +    /// Program binding check, evaluated at finish (ACC = own binding total at row L-1, ACC2 =
 +    /// app-table total at row L-2):  flag * own + (1 - flag) * (ACC2 + app_extra) == phat.
 +    /// Without an app table: flag * (own - phat) == 0.
 +    pub fn defer_acc_check(&mut self, phat: V, flag: V, app_extra: Option<V>) {
-+        let l1 = (self.prog_len() - 1) as u32;
-+        let l2 = (self.prog_len() - 2) as u32;
++        let (l2, l1) = self.acc_slots.expect("Builder::begin not called");
 +        let mut late = vec![];
 +        let mut op = |b: &mut Self, o: Op, x: u32, y: u32| -> u32 {
 +            let v = b.push(o, x, y, 0, 0, EF::ZERO, F::ZERO);
@@ -1895,39 +1909,38 @@ index 0000000..b2d42bc
 +    /// Finish: pad with NOPs, put the accumulator row last.  Returns the program length 2^log_rows.
 +    pub fn finish(&mut self) {
 +        self.tr_close();
-+        let n = self.prog_len();
-+        while self.instrs.len() < n - 1 {
++        if self.acc_slots.is_none() {
++            self.begin();
++        }
++        let (s2, s1) = self.acc_slots.unwrap();
++        // program length: even (BIND rows cover two rows each); no power-of-two padding
++        if self.instrs.len() % 2 == 1 {
 +            self.instrs.push(Instr::NOP);
 +            self.vals.push(EF::ZERO);
 +            self.wits.push(F::ZERO);
 +        }
++        let n = self.instrs.len();
++        assert!(n <= self.prog_len());
 +        let tp = super::uair::tau_pows();
 +        let e1n = super::uair::E1_SIZE;
 +        let pw = |w: [u32; 4]| -> EF { (0..4).map(|j| tp[j] * F::from_u32(w[j])).sum() };
-+        // ACC2 (row n - 2) when an app table is present: its total and pinned length
++        // ACC2 when an app table is present: its total and pinned length
 +        if !self.app.is_empty() {
-+            *self.instrs.last_mut().unwrap() = Instr { op: Op::Acc2, a: self.app.len() as u32 - 2, b: 0, k1: 0, k2: 0 };
++            self.instrs[s2 as usize] = Instr { op: Op::Acc2, a: self.app.len() as u32 - 2, b: 0, k1: 0, k2: 0 };
 +            let mut a2 = EF::ZERO;
 +            for (x, w) in self.app.iter().enumerate() {
 +                a2 += self.vals[x % e1n] * self.vals[e1n + x / e1n] * pw(*w);
 +            }
-+            *self.vals.last_mut().unwrap() = a2;
++            self.vals[s2 as usize] = a2;
 +        }
-+        self.instrs.push(Instr {
-+            op: Op::Acc,
-+            a: n as u32 - 2,
-+            b: 0,
-+            k1: 0,
-+            k2: 0,
-+        });
-+        self.vals.push(EF::ZERO);
-+        self.wits.push(F::ZERO);
++        // ACC: P0 = last BIND pair index, pinning the BIND region to the whole program
++        self.instrs[s1 as usize] = Instr { op: Op::Acc, a: n as u32 - 2, b: 0, k1: 0, k2: 0 };
 +        // binding sum over all rows (including the ACC row itself)
 +        let mut acc = EF::ZERO;
 +        for (x, ins) in self.instrs.iter().enumerate() {
 +            acc += self.vals[x % e1n] * self.vals[e1n + x / e1n] * pw(ins.words());
 +        }
-+        *self.vals.last_mut().unwrap() = acc;
++        self.vals[s1 as usize] = acc;
 +        // re-evaluate the deferred check
 +        let late = std::mem::take(&mut self.late);
 +        for &i in &late {
@@ -1967,10 +1980,10 @@ index 0000000..b2d42bc
 +
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..906289b
+index 0000000..af64b31
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
-@@ -0,0 +1,236 @@
+@@ -0,0 +1,235 @@
 +//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
 +use std::{collections::HashMap, sync::Arc};
 +
@@ -2112,10 +2125,8 @@ index 0000000..906289b
 +    /// The app-verifier table for level 2 from a level-1 program: rows [0, n) with n the
 +    /// first even number past the last non-Nop row below the fixed ACC2 / ACC rows.
 +    pub fn app_table(l1_program: &[super::isa::Instr]) -> Vec<[u32; 4]> {
-+        let l = l1_program.len();
-+        let last = (0..l - 2).rev().find(|&i| l1_program[i].op != Op::Nop).map_or(0, |i| i + 1);
-+        let n = (last.max(2) + 1) & !1;
-+        l1_program[..n].iter().map(|i| i.words()).collect()
++        // the whole level-1 program (even length, its ACC row included)
++        l1_program.iter().map(|i| i.words()).collect()
 +    }
 +
 +    /// Execute the verifier program and generate every trace (AIR order as `airs`).
@@ -2129,6 +2140,7 @@ index 0000000..906289b
 +        if let Some(app) = &self.app {
 +            b.emit_app(app.clone());
 +        }
++        b.begin();
 +        b.bind = self.bind;
 +        build_verifier(&mut b, vk, proof);
 +        b.finish();
@@ -3683,10 +3695,10 @@ index 0000000..df6e338
 +mod tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..0217f7e
+index 0000000..ff0ce72
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,656 @@
+@@ -0,0 +1,691 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -3999,13 +4011,34 @@ index 0000000..0217f7e
 +    let engine = Sha384CpuEngine::new(pp);
 +    let k = openvm_stark_backend::StarkEngine::params(&engine).k_whir();
 +    let _ = k;
-+    let run = |circ: &super::circuit::NvCircuit,
-+               vk: &MultiStarkVerifyingKey<Sha384Config>,
-+               p: &Proof<Sha384Config>,
-+               tag: &str| {
++    // optional final layer with its own parameters (env FINAL_*), proving the last phase-A proof
++    let final_engine = std::env::var("FINAL_LOG_BLOWUP").ok().map(|_| {
++        let mut fp = params_from_env("FINAL", [16, 3, 20, 3]);
++        fp.max_constraint_degree = nv_debug_params().max_constraint_degree;
++        describe("NV_FINAL", &fp);
++        Sha384CpuEngine::new(fp)
++    });
++    // per-level peak RSS: reset the high-water mark (clear_refs 5), read VmHWM after the level
++    let reset_hwm = || {
++        let _ = std::fs::write("/proc/self/clear_refs", "5");
++    };
++    let hwm_gb = || -> f64 {
++        std::fs::read_to_string("/proc/self/status")
++            .ok()
++            .and_then(|s| s.lines().find(|l| l.starts_with("VmHWM")).map(|l| l.split_whitespace().nth(1).unwrap().parse::<f64>().unwrap()))
++            .unwrap_or(0.0)
++            / 1048576.0
++    };
++    let run_with = |eng: &Sha384CpuEngine,
++                    circ: &super::circuit::NvCircuit,
++                    vk: &MultiStarkVerifyingKey<Sha384Config>,
++                    p: &Proof<Sha384Config>,
++                    tag: &str| {
++        reset_hwm();
 +        let t = std::time::Instant::now();
-+        let (vk1, p1, b, shapes) = super::circuit::prove_level(circ, &engine, vk, p);
++        let (vk1, p1, b, shapes) = super::circuit::prove_level(circ, eng, vk, p);
 +        let secs = t.elapsed().as_secs_f64();
++        println!("{tag}_RESOURCES wall_s={secs:.1} peak_rss_gb={:.2} program_rows={}", hwm_gb(), b.instrs.len());
 +        let airs = circ.airs::<Sha384Config>();
 +        let (mut cols, mut opened, mut ints, mut cells, mut sha_cells) = (0, 0, 0usize, 0usize, 0usize);
 +        for (i, a) in vk1.inner.per_air.iter().enumerate() {
@@ -4040,6 +4073,10 @@ index 0000000..0217f7e
 +        let app = super::circuit::NvCircuit::app_table(&b.instrs);
 +        (vk1, p1, shapes, app)
 +    };
++    let run = |circ: &super::circuit::NvCircuit,
++               vk: &MultiStarkVerifyingKey<Sha384Config>,
++               p: &Proof<Sha384Config>,
++               tag: &str| run_with(&engine, circ, vk, p, tag);
 +    // phase A: natural heights until the shape repeats
 +    let mut circ = super::circuit::NvCircuit::new(k, log_rows, 1);
 +    let (mut vka, mut pa, mut prev) = (vk0.clone(), p0.clone(), vec![]);
@@ -4055,16 +4092,26 @@ index 0000000..0217f7e
 +        }
 +        let hs: Vec<usize> = sh.iter().map(|s| s.0).collect();
 +        println!("A{i}_HEIGHTS {hs:?}");
++        vka = v;
++        pa = q;
 +        if hs == prev {
 +            fixed = hs;
 +            break;
 +        }
 +        fixed = if prev.is_empty() { hs.clone() } else { hs.iter().zip(&prev).map(|(a, b)| *a.max(b)).collect() };
 +        prev = hs;
-+        vka = v;
-+        pa = q;
 +    }
 +    println!("NV_FIXED_HEIGHTS {fixed:?}");
++    if let Some(fe) = &final_engine {
++        // final layer: verifies the last phase-A proof (an NV level at the fixed point)
++        let mut fc = super::circuit::NvCircuit::new(k, log_rows, 1); // k = the child (parent-param) folding factor
++        fc.app = circ.app.clone();
++        fc.prog_log = circ.prog_log;
++        let _ = run_with(fe, &fc, &vka, &pa, "FINAL");
++        if levels == 0 {
++            return;
++        }
++    }
 +    // phase B: fixed heights; binding from level 3
 +    let app_a = circ.app.clone();
 +    let mut circ = super::circuit::NvCircuit::new(k, log_rows, 1);
@@ -4990,7 +5037,7 @@ index 0000000..098b0c8
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..55cdb77
+index 0000000..9f59ad4
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
 @@ -0,0 +1,758 @@
@@ -5617,7 +5664,7 @@ index 0000000..55cdb77
 +    counts: &mut [u32],
 +) -> RowMajorMatrix<F> {
 +    let na = instrs.len();
-+    assert!(na.is_power_of_two() && na >= E1_SIZE);
++    assert!(na % 2 == 0 && na >= E1_SIZE);
 +    assert!(app.len() % 2 == 0);
 +    let nc = app.len() / 2;
 +    let used = na + na / 2 + nc + glue.len() + hash.len() + samp.len();
@@ -5698,7 +5745,7 @@ index 0000000..55cdb77
 +        let pw = |wd: [u32; 4]| -> EF { (0..4).map(|j| tp[j] * F::from_u32(wd[j])).sum() };
 +        acc += e2 * (e1a * pw(w0) + e1b * pw(w1));
 +    }
-+    debug_assert_eq!(acc, vals[na - 1], "ACC row must hold the full binding sum");
++    debug_assert!(vals.contains(&acc), "ACC row must hold the full binding sum");
 +    // app-binding rows: pair x = 2t of the app table, E1[x mod 512] E2[x / 512]
 +    let mut acc2 = EF::ZERO;
 +    for bt in 0..nc {
@@ -5754,10 +5801,10 @@ index 0000000..55cdb77
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..2c039f7
+index 0000000..2bac28e
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1471 @@
+@@ -0,0 +1,1459 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -6894,21 +6941,9 @@ index 0000000..2c039f7
 +        let term = b.mul(tj, o);
 +        phat = b.add(phat, term);
 +    }
-+    // app-verifier table (L2 checks L1): its total ACC2 covers rows [0, n_app); add the fixed
-+    // last row of the table (the child's ACC row: words [L-2, Acc << 20, 0, 0]).
-+    let app_extra = if b.app.is_empty() {
-+        None
-+    } else {
-+        let l = b.prog_len();
-+        let x = l - 1;
-+        let e1 = V { addr: (x % E1_SIZE) as u32, val: b.vals[x % E1_SIZE] };
-+        let e2 = V { addr: (E1_SIZE + x / E1_SIZE) as u32, val: b.vals[E1_SIZE + x / E1_SIZE] };
-+        let wl = b.mul(e1, e2);
-+        let acc_words = super::isa::Instr { op: super::isa::Op::Acc, a: l as u32 - 2, b: 0, k1: 0, k2: 0 }.words();
-+        let pt: EF = (0..4).map(|j| tp[j] * F::from_u32(acc_words[j])).sum();
-+        let ptc = b.ce(pt);
-+        Some(b.mul(wl, ptc))
-+    };
++    // app-verifier table (L2 checks L1): ACC2 is the multilinear evaluation of the whole
++    // level-1 program (its ACC row included)
++    let app_extra = if b.app.is_empty() { None } else { Some(b.c(F::ZERO)) };
 +    b.defer_acc_check(phat, flag, app_extra);
 +}
 +
