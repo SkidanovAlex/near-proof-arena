@@ -8,7 +8,7 @@ with a proof?
 **Answer: no, and this is now a theorem rather than a gap.** LEMMA.md Thm O [T] says that in every
 oracle model where native verification uses a random H and adversaries are bounded only in
 H-queries (the model of PROOF Thm 6.4), the depth-d ≥ 1 system is insecure. One adversary
-succeeds with probability ≈ 1 using ≤ 2⁴⁵ queries, as soon as the base verifier run with the
+succeeds with probability ≈ 1 using ≤ 2⁴⁶ queries, as soon as the base verifier run with the
 in-circuit hash accepts one proof of one false statement. That condition holds for 1 − 2⁻¹¹⁹⁹⁰ of
 all functions (Lemma E.3 [S]). Corollary O.1: any proof of the U-6 statement as worded (queries
 only, no time bound) for the recursive claim would show that V₀ with concrete SHA-384 is
@@ -149,7 +149,7 @@ Results are in LEMMA.md.
 * **Precise obstruction.**
   * Thm O [T]: the adversary hard-codes a false-statement proof π₀ that is valid under the
     in-circuit hash. It proves layers 1..d−1 honestly with that hash, using no H-queries, and
-    proves layer d honestly with H (≤ 2⁴⁵ queries).
+    proves layer d honestly with H (≤ 2⁴⁶ queries).
   * Remark 1.2: the set of pairs an AIR certifies cannot depend on a random H.
   * Cor O.2: the only failing step of PROOF Thm 7.4 is step 2, bullet 2. No argument inside an
     oracle model can repair it.

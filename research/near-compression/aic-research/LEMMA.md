@@ -12,7 +12,7 @@ published source; **[A]** assumption.
 
 | # | statement | tag |
 |---|---|---|
-| Thm O | In **every** oracle model in which native verification uses a random function H and adversaries are bounded only in their H-queries, the depth-d ≥ 1 recursive system is **insecure** (success probability ≈ 1, ≤ 2⁴⁵ H-queries), as soon as the base verifier, run with the in-circuit hash, accepts one proof of one false statement. | [T] |
+| Thm O | In **every** oracle model in which native verification uses a random function H and adversaries are bounded only in their H-queries, the depth-d ≥ 1 recursive system is **insecure** (success probability ≈ 1, ≤ 2⁴⁶ H-queries), as soon as the base verifier, run with the in-circuit hash, accepts one proof of one false statement. | [T] |
 | Lemma E.1 | That hypothesis holds unconditionally when the circuit's hash rows are unconstrained (the "relativized"/oracle-gate model). | [T] at protocol level |
 | Lemma E.2 | Abstract "lucky move" lemma: for a uniformly random in-circuit function F, one prover message turns a false sumcheck-type claim into a true one, except with probability ≤ 2⁻¹²⁰⁰⁰. | [T] |
 | Lemma E.3 | Hence, for a uniformly random F, the hypothesis of Thm O holds except with probability ≤ 2⁻¹¹⁹⁹⁰. | [S] |
@@ -71,7 +71,7 @@ free); for uniformly random F it fails with probability ≤ 2¹⁰·e^{−2³²}
 ## 2. Theorem O
 
 **Theorem O [T].** Fix d ≥ 1 and C with H-ex(C) and C-completeness. In M(C) there is an adversary
-A that makes at most Q_hon ≤ 2⁴⁵ queries to H such that
+A that makes at most Q_hon ≤ 2⁴⁶ queries to H such that
 
   Pr_H[ V_d^H accepts (x_d, π_d) ∧ the chunk statement named by x_d is false ] ≥ 1 − 2⁻¹⁰⁰⁰.
 
@@ -88,7 +88,7 @@ A that makes at most Q_hon ≤ 2⁴⁵ queries to H such that
    π_{d−1} (valid: π_{d−1} is V_{d−1}^C-accepting, which is exactly what R_{vk_d} certifies in
    M(C)). Its H-queries are its commitment hashing (≤ 2³⁰ for a domain of 2^{log h + b} = 2²⁷
    leaves plus folds and the W columns' leaf hashing) and its PoW grinding (≤ 8 query moves,
-   capped at 2⁴² attempts each). So Q_hon ≤ 2⁴⁵ ≪ t = 2⁶⁴.
+   capped at 2⁴² attempts each). So Q_hon ≤ 2⁴⁶ ≪ t = 2⁶⁴.
 3. **Acceptance.** SWIRL with H is perfectly complete except for the PoW and sampler caps. With
    z = 32 and a cap of 2⁴² attempts per move, a move fails with probability (1 − 2⁻³²)^{2⁴²} ≤
    e^{−2¹⁰}; the sampler-cap failure is ≤ (1/16)^{12·2²⁰} per move (PROOF Lemma 6.3). Union over
