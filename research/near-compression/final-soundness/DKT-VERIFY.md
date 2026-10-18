@@ -30,7 +30,7 @@ Companion files:
 |---|---|
 | **O-1**: DKT26 Thm 5.12 (Johnson line MCA), list (67), Cor 7.7 (interleaving), Cor 7.8 (folds); backend m = 3 → 64 | **Proven (Lean, no sorry), and the constants match. OK to cite as [P].** Every cited theorem uses only `propext`, `Classical.choice` and `Quot.sound`. The Lean error constant `johnsonE0` is exactly the constant bound_mca.py uses. Every number in the O-1 schedule re-derives exactly (§4). Caveat: O-1 as configured batches μ with three first-order curve certificates, which belong to the O-2 machinery. They pass the same Lean check (§5). |
 | **O-2**: first-order beyond-Johnson certificates (36 codes) | **Proven (Lean, no sorry), and the constants match. OK to cite as [P].** All 36 certificates were re-checked by the Lean kernel with ArkLib's own decidable checker. For each one, the exceptional-set and list-size theorems were derived over every field of characteristic p. The Lean-evaluated bounds equal the JSON rationals exactly: 36/36 for E and for lists (§5). The citations need correcting: the certificates instantiate the factorwise-squarefree transfer (Lemma 5.6), not Thm 5.8 / Lemma 5.9 (§3.5). |
-| **O-2 as implemented** (lane/pq-recursion-sha384 vk-bound `AgreementTable::canonical`, six real shapes; §8) | **All 129 certificates present** (93 round/fold-sub-codes s ≤ k_i + 36 round-0 batching curves) in `calc/dkt_certs_o2.json`. The backend's integer rule is kept unchanged. The full bound passes for both finals, inner NV and the b = 2 chain. Base app stress needs round 0 at J64 (+2 queries, budget not certificate). The final's 301,157 B is backed. |
+| **O-2 as implemented** (lane/pq-recursion-sha384 vk-bound `AgreementTable::canonical`, six real shapes; §8) | **All 129 certificates present and Lean-kernel checked** (93 round/fold sub-codes s ≤ k_i + 36 round-0 batching curves) in `calc/dkt_certs_o2.json`. The backend's integer rule is kept unchanged. The full bound passes for both finals, inner NV and the b = 2 chain. Base app stress needs round 0 at J64 (+2 queries, budget not certificate). The final's 301,157 B is backed. |
 
 No gap was found in either item. The remaining caveats are in §6:
 * the paper is still a preprint;
@@ -492,7 +492,7 @@ move.
 | `dkt_cert_check.py dkt_certs_o2.json` | 0 missing, 0 recorded as not certifiable (`calc/dkt_cert_check_o2.out`) |
 | `dkt_certs.py <engine> --check dkt_certs_o2.json`: authors' engine re-evaluation from the stored (m, B∂, B_jet), plus E/\|F\| ≤ 2⁻²⁷⁵, list ≤ 2⁴⁴, char guard | 129 / 129 ok (`calc/dkt_certs_o2_check.out`) |
 | Lean `#eval!` of ArkLib's checker (`lean/DKTCertsO2Eval.lean/.out`) | `CurveVerification` true 129 / 129; Lean E and list **exactly equal** to the JSON rationals, 129 / 129 |
-| Lean kernel proofs `lean/DKTCertsO2_{0..5}.lean` (§5 method, 6 interleaved slices) | pending (running at this commit) |
+| Lean kernel proofs `lean/DKTCertsO2_{0..5}.lean` (§5 method, 6 interleaved slices) | **129 / 129 pass**: exit 0 on all six slices, no errors; 222 theorems (129 `mca_i`, 93 `list_i`), each depending only on propext, Classical.choice, Quot.sound (`lean/DKTCertsO2_{0..5}.out`); wall 12–32 min per slice (138 min total), peak 19.2 GB (cap 24 GB) |
 
 ### 8.6 Reproduce
 
