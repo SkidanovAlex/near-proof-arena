@@ -30,8 +30,8 @@ Files:
 * The NV inner shape is c = 15, b = 6, n_stack = 17. The final layer has c = 15 and its own b.
 * The pipeline is DESIGN-BASE design **G**: one shared-transcript base proof over all GPUs (P-PERF-4),
   then L1 → T1 → T2 → FINAL.
-* With these settings the final proof is **≈ 325 KB** at every lever point below 340 KB. The model cannot
-  reach 300 KB at 268 bits (§5).
+* With these settings the final proof is **≈ 325 KB**. No lever point in the model reaches 300 KB at 268
+  bits (§5).
 
 **The critical path after execution ends.** In order: base phase B, then L1, T1, T2 and FINAL. These are
 four strictly sequential single proofs.
@@ -367,12 +367,13 @@ Adversarial, design G, mid case. The last column is in DESIGN-BASE's unit: work 
 * Ext12 round codewords go through the same treatment, so per-GPU memory stays ≤ ≈ 10 GB.
 * HBM traffic for the final at b = 6 is 0.29 TB of NTT output written once and read once by the hasher,
   if not fused. That is ≈ 0.12 s at 4.8 TB/s, spread over 32 GPUs: about 4 ms.
-* Interconnect traffic per layer is KBs: sumcheck messages, roots, PoW nonces. The exception is the
-  distributed Ext12 NTT of the WHIR rounds: an all-to-all of ≈ 97 GB / N per round at b = 6 on the final
-  layer.
-  * At 32 GPUs over 4 × 400 Gb/s per node, that is ≈ 0.06 s per round, or 0.18 s for 3 rounds.
-  * Within one node over NVLink: ≈ 15 ms.
-  * The model folds this into the multi-node efficiency (0.70). It should be measured.
+* Interconnect traffic per layer is small:
+  * sumcheck messages, roots and PoW nonces are KBs;
+  * the WHIR round codewords need no all-to-all. The folded round polynomial has only
+    2^(log_h − k₁ − k(i−1)) Ext12 coefficients, ≤ 2²⁰ × 48 B = 48 MB. It is all-gathered, and each GPU
+    evaluates and hashes its own cosets.
+  * A naive distributed NTT of the 97-GB final codeword would instead cost ≈ 0.1 s per round across
+    4 nodes.
 
 ## 5. Levers: proof size against latency (adversarial, mid, design G)
 
@@ -401,7 +402,7 @@ b = 6, 268 − z query bits.
 | z | final proof | grind GPU-s (mean) | FINAL at 8 / 32 H200 |
 |---:|---:|---:|---:|
 | 0 | 354,093 B | 0 | 1.40 / 0.47 s |
-| 16 | 338,673 B | 0.0003 | 1.40 / 0.47 s |
+| 16 | 338,673 B | ≈ 0 | 1.40 / 0.47 s |
 | 24 | 332,583 B | 0.01 | 1.40 / 0.47 s |
 | 28 | 327,951 B | 0.24 | 1.43 / 0.47 s |
 | **32** | **324,927 B** | 3.8 | 1.88 / 0.59 s |
@@ -557,8 +558,9 @@ Ordered by effect on latency:
    * a distributed base phase B (design G).
 
    Nothing like this exists in OpenVM, which scales by segments.
-8. **NV trace generation** at ≤ 50 ms per level on the host, or on GPU. Today it is ≈ 2–5 s on CPU at the
-   fixed point.
+8. **NV trace generation** at ≤ 50 ms per level, on the host or on GPU. Its current speed is not measured
+   here. Per level it executes the ≈ 174k-instruction verifier program and fills ≈ 300k SHA rows. It is on
+   the critical path between levels.
 
 ### 6.3 H200 count for real time
 
