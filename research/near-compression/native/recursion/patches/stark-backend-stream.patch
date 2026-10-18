@@ -1,0 +1,865 @@
+diff --git a/crates/cpu-backend/src/device.rs b/crates/cpu-backend/src/device.rs
+--- a/crates/cpu-backend/src/device.rs
++++ b/crates/cpu-backend/src/device.rs
+@@ -198,6 +198,7 @@ where
+                 &r,
+             );
+ 
++        openvm_stark_backend::prover::stream_pcs::memprof("openings.after_stacking");
+         let (&u0, u_rest) = u_prisma
+             .split_first()
+             .ok_or(openvm_stark_backend::prover::error::WhirProverError::UPrismaEmpty)?;
+diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/src/logup_zerocheck/mod.rs
+--- a/crates/cpu-backend/src/logup_zerocheck/mod.rs
++++ b/crates/cpu-backend/src/logup_zerocheck/mod.rs
+@@ -1461,6 +1461,7 @@ where
+         evals
+     };
+ 
++    openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.gkr_input");
+     let (frac_sum_proof, mut xi) =
+         fractional_sumcheck_with::<SC, _>(
+             transcript,
+@@ -1469,6 +1470,7 @@ where
+             mpk.params.whir.levers.gruen_gkr,
+         )?;
+ 
++    openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.after_gkr");
+     let n_global = max(n_max, n_logup);
+     debug!(%n_global);
+     while xi.len() != l_skip + n_global {
+diff --git a/crates/stark-backend/src/prover/mod.rs b/crates/stark-backend/src/prover/mod.rs
+--- a/crates/stark-backend/src/prover/mod.rs
++++ b/crates/stark-backend/src/prover/mod.rs
+@@ -19,6 +19,7 @@ pub mod metrics;
+ pub mod poly;
+ pub mod stacked_pcs;
+ pub mod stacked_reduction;
++pub mod stream_pcs;
+ pub mod sumcheck;
+ mod types;
+ pub mod whir;
+@@ -183,14 +184,17 @@ where
+             }
+         }
+ 
++        stream_pcs::memprof("prove.after_commit");
+         let (constraints_proof, r) =
+             self.device
+                 .prove_rap_constraints(transcript, mpk, &ctx, &common_main_pcs_data)?;
++        stream_pcs::memprof("prove.after_rap_constraints");
+ 
+         let opening_proof =
+             self.device
+                 .prove_openings(transcript, mpk, ctx, common_main_pcs_data, r.into())?;
+ 
++        stream_pcs::memprof("prove.after_openings");
+         let (gkr_proof, batch_constraint_proof) = constraints_proof.into();
+         let (stacking_proof, whir_proof) = opening_proof.into();
+ 
+diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backend/src/prover/stacked_pcs.rs
+--- a/crates/stark-backend/src/prover/stacked_pcs.rs
++++ b/crates/stark-backend/src/prover/stacked_pcs.rs
+@@ -1,3 +1,5 @@
++use std::collections::BTreeMap;
++
+ use getset::{CopyGetters, Getters};
+ use itertools::Itertools;
+ use p3_dft::{Radix2DitParallel, TwoAdicSubgroupDft};
+@@ -141,12 +143,21 @@ pub struct MerkleTree<F, Digest> {
+     #[serde(default = "one_coset")]
+     #[getset(get_copy = "pub")]
+     pub(crate) num_cosets: usize,
++    /// [stream research] `Some` for a streamed tree: `backing_matrix` is empty, the bottom
++    /// `dropped` levels are not stored, and rows / lower subtrees are recomputed on query (see
++    /// `crate::prover::stream_pcs`).
++    #[serde(skip, default = "no_stream")]
++    pub(crate) stream: Option<crate::prover::stream_pcs::StreamSource<F, Digest>>,
+ }
+ 
+ fn one_coset() -> usize {
+     1
+ }
+ 
++fn no_stream<F, Digest>() -> Option<crate::prover::stream_pcs::StreamSource<F, Digest>> {
++    None
++}
++
+ #[derive(Clone, Serialize, Deserialize, derive_new::new)]
+ pub struct StackedPcsData<F, Digest> {
+     /// Layout of the unstacked collection of matrices within the stacked matrix.
+@@ -158,7 +169,7 @@ pub struct StackedPcsData<F, Digest> {
+     pub tree: MerkleTree<F, Digest>,
+ }
+ 
+-impl<F, Digest: Clone> StackedPcsData<F, Digest> {
++impl<F: Clone + Send + Sync, Digest: Copy + Send + Sync> StackedPcsData<F, Digest> {
+     /// Returns the root of the Merkle tree.
+     pub fn commit(&self) -> Result<Digest, StackedPcsError> {
+         self.tree.root()
+@@ -227,13 +238,30 @@ where
+     H::Digest: Copy,
+ {
+     let (q_trace, layout) = stacked_matrix_tight(l_skip, n_stack, traces, tight)?;
+-    let tree = if domain_odd_factor == 1 {
++    crate::prover::stream_pcs::memprof("commit.stacked_matrix");
++    let tree = if crate::prover::stream_pcs::stream_enabled() {
++        // [stream research] never materialise the codeword (byte-identical tree, see stream_pcs)
++        let height = q_trace.height();
++        let coeffs: Vec<Vec<H::F>> = q_trace
++            .values
++            .par_chunks_exact(height)
++            .map(|col| eval_to_coeff_rs_message(l_skip, col))
++            .collect();
++        crate::prover::stream_pcs::stream_commit::<H::F, H::F, H>(
++            hasher,
++            coeffs,
++            log2_strict_usize(height) + log_blowup,
++            domain_odd_factor,
++            1 << k_whir,
++        )
++    } else if domain_odd_factor == 1 {
+         let rs_matrix = rs_code_matrix(l_skip, log_blowup, &q_trace)?;
+         MerkleTree::new(hasher, rs_matrix, 1 << k_whir)?
+     } else {
+         let rs_matrix = rs_code_matrix_odd(l_skip, log_blowup, domain_odd_factor, &q_trace)?;
+         MerkleTree::new_with_cosets(hasher, rs_matrix, 1 << k_whir, domain_odd_factor)?
+     };
++    crate::prover::stream_pcs::memprof("commit.tree");
+     let root = tree.root()?;
+     let data = StackedPcsData::new(layout, q_trace, tree);
+     Ok((root, data))
+@@ -605,6 +633,9 @@ pub fn rs_code_matrix_odd<F: TwoAdicField + Ord + p3_field::PrimeField64>(
+ 
+ impl<F, Digest> MerkleTree<F, Digest> {
+     pub fn query_stride(&self) -> usize {
++        if let Some(src) = &self.stream {
++            return src.height / self.rows_per_query;
++        }
+         if self.num_cosets == 1 {
+             self.digest_layers[0].len()
+         } else {
+@@ -614,17 +645,51 @@ impl<F, Digest> MerkleTree<F, Digest> {
+     }
+ 
+     pub fn proof_depth(&self) -> usize {
+-        self.digest_layers.len() - 1
++        self.digest_layers.len() - 1 + self.stream.as_ref().map_or(0, |s| s.dropped)
++    }
++
++    /// Height of the (possibly virtual) codeword matrix.
++    pub fn matrix_height(&self) -> usize {
++        self.stream.as_ref().map_or_else(|| self.backing_matrix.height(), |s| s.height)
++    }
++
++    /// Width of the (possibly virtual) codeword matrix.
++    pub fn matrix_width(&self) -> usize {
++        self.stream.as_ref().map_or_else(|| self.backing_matrix.width(), |s| s.width)
++    }
++
++    /// `true` for a streamed tree (codeword not materialised).
++    pub fn is_streamed(&self) -> bool {
++        self.stream.is_some()
+     }
+ }
+ 
+-impl<F, Digest: Clone> MerkleTree<F, Digest> {
++impl<F: Clone + Send + Sync, Digest: Copy + Send + Sync> MerkleTree<F, Digest> {
+     pub fn root(&self) -> Result<Digest, StackedPcsError> {
+-        Ok(self
++        Ok(*self
+             .digest_layers
+             .last()
+-            .ok_or(StackedPcsError::MerkleTreeNoRoot)?[0]
+-            .clone())
++            .ok_or(StackedPcsError::MerkleTreeNoRoot)?
++            .first()
++            .ok_or(StackedPcsError::MerkleTreeNoRoot)?)
++    }
++
++    /// Node `idx` of tree level `level` (level 0 = leaves); `low` holds the rebuilt lower
++    /// subtrees of a streamed tree.
++    fn node(&self, level: usize, idx: usize, low: &BTreeMap<usize, Vec<Vec<Digest>>>) -> Digest {
++        let d = self.stream.as_ref().map_or(0, |s| s.dropped);
++        if level >= d {
++            self.digest_layers[level - d][idx]
++        } else {
++            low[&(idx >> (d - level))][level][idx & ((1 << (d - level)) - 1)]
++        }
++    }
++
++    fn low_for(&self, indices: &[usize]) -> BTreeMap<usize, Vec<Vec<Digest>>> {
++        match &self.stream {
++            Some(s) if s.dropped > 0 => self.low_subtrees(indices),
++            _ => BTreeMap::new(),
++        }
+     }
+ 
+     pub fn query_merkle_proof(&self, query_idx: usize) -> Result<Vec<Digest>, StackedPcsError> {
+@@ -635,12 +700,11 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
+                 query_stride: stride,
+             });
+         }
+-
++        let low = self.low_for(&[query_idx]);
+         let mut idx = query_idx;
+         let mut proof = Vec::with_capacity(self.proof_depth());
+-        for layer in self.digest_layers.iter().take(self.proof_depth()) {
+-            let sibling = layer[idx ^ 1].clone();
+-            proof.push(sibling);
++        for level in 0..self.proof_depth() {
++            proof.push(self.node(level, idx ^ 1, &low));
+             idx >>= 1;
+         }
+         Ok(proof)
+@@ -663,8 +727,9 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
+                 });
+             }
+         }
++        let low = self.low_for(&known);
+         let mut proof = Vec::new();
+-        for layer in self.digest_layers.iter().take(self.proof_depth()) {
++        for level in 0..self.proof_depth() {
+             let mut next = Vec::with_capacity(known.len());
+             let mut i = 0;
+             while i < known.len() {
+@@ -673,7 +738,7 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
+                 if i + 1 < known.len() && known[i + 1] == pair {
+                     i += 2;
+                 } else {
+-                    proof.push(layer[pair].clone());
++                    proof.push(self.node(level, pair, &low));
+                     i += 1;
+                 }
+                 next.push(idx >> 1);
+@@ -751,6 +816,7 @@ where
+             digest_layers,
+             rows_per_query,
+             num_cosets: 1,
++            stream: None,
+         })
+     }
+ 
+@@ -813,6 +879,7 @@ where
+             digest_layers,
+             rows_per_query,
+             num_cosets,
++            stream: None,
+         })
+     }
+ 
+@@ -841,6 +908,7 @@ where
+             digest_layers,
+             rows_per_query,
+             num_cosets: 1,
++            stream: None,
+         }
+     }
+ 
+@@ -855,6 +923,9 @@ where
+             });
+         }
+ 
++        if let Some(src) = &self.stream {
++            return Ok(src.oracle.rows(&self.leaf_row_indices(index)));
++        }
+         let rows_per_query = self.rows_per_query;
+         let width = self.backing_matrix.width();
+         // Coset-major layout: index = a * qs + y, rows a * block + j * qs + y.
+diff --git a/crates/stark-backend/src/prover/stream_pcs.rs b/crates/stark-backend/src/prover/stream_pcs.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/stark-backend/src/prover/stream_pcs.rs
+@@ -0,0 +1,350 @@
++//! [stream research] Streamed Reed-Solomon commitments: the codeword is never materialised.
++//!
++//! The codeword of a polynomial `f` of length `2^n` on the coset-major `c * 2^L` domain (see
++//! `crate::odd_domain`; `c = 1` is the upstream power-of-two domain) is computed in sub-cosets:
++//! for `s = L - max(n, k)` (`2^k` rows per Merkle leaf), the positions `a * 2^L + r + 2^s v`
++//! (`v < 2^(L-s)`) are the coset `zeta^a omega_L^r <omega_(L-s)>`, i.e. one size-`2^(L-s)` coset
++//! DFT of the zero-padded coefficients. A leaf's rows `u0 + t * 2^(L-k)` share the residue
++//! `u0 mod 2^s` (`s <= L - k`), so every sub-coset holds whole leaves. The leaves of one radix-2
++//! block (one `a`) are hashed into a block-sized digest buffer, reduced by `dropped` levels, and
++//! only the layers from level `dropped` upward are kept.
++//!
++//! Queries recompute what was dropped: an opened row is evaluated directly from the coefficients
++//! (Horner at the domain point), and the dropped lower subtree of a queried leaf is rebuilt from
++//! its `2^dropped` leaves. The tree's digests, roots, opened rows and (multi)proofs are identical
++//! to the in-memory `MerkleTree::new` / `MerkleTree::new_with_cosets`, so proofs are byte-identical.
++//!
++//! Switch: env `NEARPROOF_STREAM_COMMIT=1` (process-global, like the SHA levers) or
++//! [`set_stream_override`]; `NEARPROOF_STREAM_DROP` = dropped levels (default 4).
++//! `NEARPROOF_MEMPROF=1` prints RSS / peak RSS at prover phase boundaries ([`memprof`]).
++
++use std::{
++    collections::BTreeMap,
++    fmt,
++    sync::{
++        atomic::{AtomicUsize, Ordering},
++        Arc,
++    },
++};
++
++use p3_dft::{Radix2DitParallel, TwoAdicSubgroupDft};
++use p3_field::{ExtensionField, PrimeField64, TwoAdicField};
++use p3_matrix::{bitrev::BitReversibleMatrix, dense::RowMajorMatrix, Matrix};
++use p3_maybe_rayon::prelude::*;
++use p3_util::{log2_ceil_usize, reverse_bits_len};
++
++use crate::{
++    hasher::MerkleHasher,
++    prover::{stacked_pcs::MerkleTree, ColMajorMatrix},
++};
++
++/// 0: follow the env, 1: force off, 2: force on.
++static OVERRIDE: AtomicUsize = AtomicUsize::new(0);
++
++/// Test hook: force streaming on / off (`None` = follow `NEARPROOF_STREAM_COMMIT`).
++pub fn set_stream_override(v: Option<bool>) {
++    OVERRIDE.store(
++        match v {
++            None => 0,
++            Some(false) => 1,
++            Some(true) => 2,
++        },
++        Ordering::SeqCst,
++    );
++}
++
++pub fn stream_enabled() -> bool {
++    match OVERRIDE.load(Ordering::SeqCst) {
++        1 => false,
++        2 => true,
++        _ => std::env::var("NEARPROOF_STREAM_COMMIT").map(|v| v == "1").unwrap_or(false),
++    }
++}
++
++/// Number of bottom tree levels that are not stored (recomputed on query).
++pub fn stream_drop_levels() -> usize {
++    std::env::var("NEARPROOF_STREAM_DROP")
++        .ok()
++        .and_then(|v| v.parse().ok())
++        .unwrap_or(4)
++}
++
++/// Prints `MEMPROF <label> rss_gb=.. hwm_gb=..` when `NEARPROOF_MEMPROF=1`.
++pub fn memprof(label: &str) {
++    if std::env::var("NEARPROOF_MEMPROF").map(|v| v == "1").unwrap_or(false) {
++        let (mut rss, mut hwm) = (0.0, 0.0);
++        if let Ok(s) = std::fs::read_to_string("/proc/self/status") {
++            for l in s.lines() {
++                let kb = || l.split_whitespace().nth(1).and_then(|x| x.parse::<f64>().ok()).unwrap_or(0.0);
++                if l.starts_with("VmRSS") {
++                    rss = kb() / 1048576.0;
++                } else if l.starts_with("VmHWM") {
++                    hwm = kb() / 1048576.0;
++                }
++            }
++        }
++        println!("MEMPROF {label} rss_gb={rss:.2} hwm_gb={hwm:.2}");
++    }
++}
++
++/// Evaluates codeword rows (row index in the coset-major codeword) on demand.
++pub trait RowOracle<V>: Send + Sync {
++    fn rows(&self, row_indices: &[usize]) -> Vec<Vec<V>>;
++}
++
++/// The recompute side of a streamed [`MerkleTree`].
++pub struct StreamSource<V, Digest> {
++    /// Virtual codeword height `c * 2^L` and width (number of polynomials).
++    pub height: usize,
++    pub width: usize,
++    /// Number of bottom levels not stored: `digest_layers[0]` is level `dropped`.
++    pub dropped: usize,
++    pub oracle: Arc<dyn RowOracle<V>>,
++    pub hash_leaf: Arc<dyn Fn(&[Vec<V>]) -> Digest + Send + Sync>,
++    pub compress: Arc<dyn Fn(Digest, Digest) -> Digest + Send + Sync>,
++}
++
++impl<V, Digest> Clone for StreamSource<V, Digest> {
++    fn clone(&self) -> Self {
++        Self {
++            height: self.height,
++            width: self.width,
++            dropped: self.dropped,
++            oracle: self.oracle.clone(),
++            hash_leaf: self.hash_leaf.clone(),
++            compress: self.compress.clone(),
++        }
++    }
++}
++
++impl<V, Digest> fmt::Debug for StreamSource<V, Digest> {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        write!(f, "StreamSource(height={}, width={}, dropped={})", self.height, self.width, self.dropped)
++    }
++}
++
++/// Coefficient-form oracle: column `j` is the polynomial `sum_i coeffs[j][i] X^i`, row `p` is the
++/// evaluation at `zeta^(p >> L) * omega_L^(p mod 2^L)`.
++pub struct PolyOracle<F, V> {
++    pub coeffs: Vec<Vec<V>>,
++    pub log_domain: usize,
++    pub zeta: F,
++}
++
++impl<F, V> PolyOracle<F, V>
++where
++    F: TwoAdicField + PrimeField64,
++    V: ExtensionField<F>,
++{
++    fn point(&self, p: usize) -> F {
++        let a = p >> self.log_domain;
++        let u = p & ((1 << self.log_domain) - 1);
++        self.zeta.exp_u64(a as u64) * F::two_adic_generator(self.log_domain).exp_u64(u as u64)
++    }
++}
++
++impl<F, V> RowOracle<V> for PolyOracle<F, V>
++where
++    F: TwoAdicField + PrimeField64,
++    V: ExtensionField<F>,
++{
++    fn rows(&self, row_indices: &[usize]) -> Vec<Vec<V>> {
++        const B: usize = 8;
++        let ncols = self.coeffs.len();
++        // one task per (row, block of B columns); the B Horner chains run interleaved
++        let tasks: Vec<(usize, usize)> =
++            (0..row_indices.len()).flat_map(|r| (0..ncols.div_ceil(B)).map(move |cb| (r, cb))).collect();
++        let vals: Vec<(usize, usize, [V; B])> = tasks
++            .into_par_iter()
++            .map(|(r, cb)| {
++                let x = self.point(row_indices[r]);
++                let cols = &self.coeffs[cb * B..((cb + 1) * B).min(ncols)];
++                let mut acc = [V::ZERO; B];
++                let len = cols.iter().map(|c| c.len()).max().unwrap_or(0);
++                for i in (0..len).rev() {
++                    for (j, c) in cols.iter().enumerate() {
++                        acc[j] = acc[j] * x + c.get(i).copied().unwrap_or(V::ZERO);
++                    }
++                }
++                (r, cb, acc)
++            })
++            .collect();
++        let mut out = vec![vec![V::ZERO; ncols]; row_indices.len()];
++        for (r, cb, acc) in vals {
++            for j in 0..B {
++                if cb * B + j < ncols {
++                    out[r][cb * B + j] = acc[j];
++                }
++            }
++        }
++        out
++    }
++}
++
++fn flatten_row<F: PrimeField64, V: ExtensionField<F>>(row: &[V]) -> Vec<F> {
++    row.iter().flat_map(|v| v.as_basis_coefficients_slice().to_vec()).collect()
++}
++
++/// Streamed commitment of the polynomials `coeffs` (each of length `<= 2^log_domain`) on the
++/// `c * 2^log_domain` domain with `rows_per_query` rows per leaf. Equal (root, digests, openings)
++/// to `MerkleTree::new_with_cosets(hasher, rs_encode(..), rows_per_query, c)`.
++pub fn stream_commit<F, V, H>(
++    hasher: &H,
++    coeffs: Vec<Vec<V>>,
++    log_domain: usize,
++    c: usize,
++    rows_per_query: usize,
++) -> MerkleTree<V, H::Digest>
++where
++    F: TwoAdicField + PrimeField64 + Ord,
++    V: ExtensionField<F> + TwoAdicField,
++    H: MerkleHasher<F = F>,
++{
++    let t0 = std::time::Instant::now();
++    let width = coeffs.len();
++    assert!(width > 0);
++    let d_ext = V::DIMENSION;
++    let k = log2_ceil_usize(rows_per_query);
++    assert_eq!(1 << k, rows_per_query);
++    assert!(k <= log_domain);
++    let len = coeffs.iter().map(|c| c.len()).max().unwrap();
++    let n = log2_ceil_usize(len.max(1));
++    assert!(n <= log_domain);
++    let s = log_domain - n.max(k);
++    let log_sub = log_domain - s;
++    let sub = 1usize << log_sub;
++    let log_qs = log_domain - k;
++    let qs = 1usize << log_qs;
++    let nv = qs >> s; // leaves per sub-coset
++    let dropped = stream_drop_levels().min(log_qs);
++    let zeta = if c == 1 { F::ONE } else { crate::odd_domain::odd_root::<F>(c) };
++    let omega = F::two_adic_generator(log_domain);
++
++    // Row-major base-field coefficient matrix: row i = coordinates of coefficient i of every
++    // polynomial (polynomial-major, basis order), zero rows up to the sub-coset size.
++    let bw = width * d_ext;
++    let mut base = F::zero_vec(sub * bw);
++    base.par_chunks_exact_mut(bw).enumerate().for_each(|(i, row)| {
++        for (j, col) in coeffs.iter().enumerate() {
++            if let Some(v) = col.get(i) {
++                row[j * d_ext..(j + 1) * d_ext].copy_from_slice(v.as_basis_coefficients_slice());
++            }
++        }
++    });
++
++    let dft = Radix2DitParallel::<F>::default();
++    let mut joined: Vec<H::Digest> = Vec::with_capacity((c * qs) >> dropped);
++    let filler = hasher.hash_slice(&[]);
++    for a in 0..c {
++        let za = zeta.exp_u64(a as u64);
++        let mut buf: Vec<H::Digest> = vec![filler; qs];
++        for r in 0..(1usize << s) {
++            let shift = za * omega.exp_u64(r as u64);
++            let evals = dft
++                .coset_dft_batch(RowMajorMatrix::new(base.clone(), bw), shift)
++                .bit_reverse_rows();
++            let digests: Vec<H::Digest> = (0..nv)
++                .into_par_iter()
++                .map(|v| {
++                    let rows: Vec<Vec<F>> = (0..rows_per_query)
++                        .map(|t| {
++                            let i = reverse_bits_len(v + t * nv, log_sub);
++                            evals.values[i * bw..(i + 1) * bw].to_vec()
++                        })
++                        .collect();
++                    hasher.hash_coset(&rows)
++                })
++                .collect();
++            drop(evals);
++            for (v, dg) in digests.into_iter().enumerate() {
++                buf[r + (v << s)] = dg;
++            }
++        }
++        for _ in 0..dropped {
++            buf = buf.par_chunks_exact(2).map(|p| hasher.compress(p[0], p[1])).collect();
++        }
++        joined.extend_from_slice(&buf);
++    }
++    drop(base);
++    let mut digest_layers = vec![joined];
++    while digest_layers.last().unwrap().len() > 1 {
++        let prev = digest_layers.last_mut().unwrap();
++        if prev.len() % 2 == 1 {
++            prev.push(filler);
++        }
++        let layer: Vec<_> = prev.par_chunks_exact(2).map(|p| hasher.compress(p[0], p[1])).collect();
++        digest_layers.push(layer);
++    }
++    if std::env::var("NEARPROOF_MEMPROF").map(|v| v == "1").unwrap_or(false) {
++        println!(
++            "STREAM_COMMIT width={width} ext={d_ext} c={c} log_domain={log_domain} k={k} n={n} sub=2^{log_sub} subcosets={} dropped={dropped} stored_digests={} secs={:.1}",
++            c << s,
++            digest_layers.iter().map(|l| l.len()).sum::<usize>(),
++            t0.elapsed().as_secs_f64()
++        );
++    }
++    let h1 = hasher.clone();
++    let h2 = hasher.clone();
++    let source = StreamSource {
++        height: c << log_domain,
++        width,
++        dropped,
++        oracle: Arc::new(PolyOracle::<F, V> { coeffs, log_domain, zeta }),
++        hash_leaf: Arc::new(move |rows: &[Vec<V>]| {
++            let flat: Vec<Vec<F>> = rows.iter().map(|r| flatten_row::<F, V>(r)).collect();
++            h1.hash_coset(&flat)
++        }),
++        compress: Arc::new(move |l, r| h2.compress(l, r)),
++    };
++    MerkleTree {
++        backing_matrix: ColMajorMatrix::new_any_height(vec![], width),
++        digest_layers,
++        rows_per_query,
++        num_cosets: c,
++        stream: Some(source),
++    }
++}
++
++impl<V: Clone + Send + Sync, Digest: Copy + Send + Sync> MerkleTree<V, Digest> {
++    /// Codeword row indices of leaf (query index) `index`.
++    pub(crate) fn leaf_row_indices(&self, index: usize) -> Vec<usize> {
++        let query_stride = self.query_stride();
++        let (base, stride, index) = if self.num_cosets == 1 {
++            (0, query_stride, index)
++        } else {
++            let qs = query_stride / self.num_cosets;
++            ((index / qs) * qs * self.rows_per_query, qs, index % qs)
++        };
++        (0..self.rows_per_query).map(|t| base + t * stride + index).collect()
++    }
++
++    /// Streamed tree: rebuilt lower subtrees (levels `0..dropped`) of the level-`dropped` blocks
++    /// containing `leaves`.
++    pub(crate) fn low_subtrees(&self, leaves: &[usize]) -> BTreeMap<usize, Vec<Vec<Digest>>> {
++        let src = self.stream.as_ref().unwrap();
++        let d = src.dropped;
++        let mut blocks: Vec<usize> = leaves.iter().map(|&i| i >> d).collect();
++        blocks.sort_unstable();
++        blocks.dedup();
++        if d == 0 {
++            return BTreeMap::new();
++        }
++        let leaf_ids: Vec<usize> = blocks.iter().flat_map(|&b| (b << d)..((b + 1) << d)).collect();
++        let row_ids: Vec<usize> = leaf_ids.iter().flat_map(|&i| self.leaf_row_indices(i)).collect();
++        let rows = src.oracle.rows(&row_ids);
++        let rpq = self.rows_per_query;
++        let leaf_digests: Vec<Digest> =
++            rows.par_chunks_exact(rpq).map(|leaf_rows| (src.hash_leaf)(leaf_rows)).collect();
++        let mut out = BTreeMap::new();
++        for (bi, &b) in blocks.iter().enumerate() {
++            let mut layers = vec![leaf_digests[(bi << d)..((bi + 1) << d)].to_vec()];
++            while layers.len() < d {
++                let prev = layers.last().unwrap();
++                let next: Vec<Digest> = prev.chunks_exact(2).map(|p| (src.compress)(p[0], p[1])).collect();
++                layers.push(next);
++            }
++            out.insert(b, layers);
++        }
++        out
++    }
++}
+diff --git a/crates/stark-backend/src/prover/whir.rs b/crates/stark-backend/src/prover/whir.rs
+--- a/crates/stark-backend/src/prover/whir.rs
++++ b/crates/stark-backend/src/prover/whir.rs
+@@ -139,6 +139,8 @@ where
+         })
+         .collect();
+ 
++    drop(mles);
++    crate::prover::stream_pcs::memprof("whir.f_evals");
+     // We assume `\hat{w}` in a WHIR round is always multilinear and maintain its
+     // evaluations on `H_m`.
+     let mut w_evals = evals_mobius_eq_hypercube(u);
+@@ -220,7 +222,16 @@ where
+         let (g_tree, z_0) = if !is_last_round {
+             // The tree is opened in the next round, with that round's folding factor.
+             let k_next = whir_params.k_round(whir_round + 1);
+-            let g_tree = if odd == 1 {
++            let g_tree = if crate::prover::stream_pcs::stream_enabled() {
++                // [stream research] streamed codeword commitment (byte-identical tree)
++                crate::prover::stream_pcs::stream_commit::<SC::F, SC::EF, _>(
++                    hasher,
++                    vec![g_mle.coeffs().to_vec()],
++                    log_rs_domain_size - shrink,
++                    odd,
++                    1 << k_next,
++                )
++            } else if odd == 1 {
+                 let dft = Radix2DitParallel::default();
+                 let mut g_coeffs = g_mle.coeffs().to_vec();
+                 debug_assert_eq!(g_coeffs.len(), 1 << (m - k_whir));
+@@ -242,6 +253,7 @@ where
+                     odd,
+                 )?
+             };
++            crate::prover::stream_pcs::memprof(&format!("whir.round{whir_round}.g_tree"));
+             let g_commit = g_tree.root()?;
+             transcript.observe_commit(g_commit);
+             codeword_commits.push(g_commit);
+@@ -310,7 +322,7 @@ where
+                 for com_idx in 0..committed_mats.len() {
+                     debug_assert_eq!(initial_round_merkle_proofs[com_idx].len(), query_idx);
+                     let tree = &committed_mats[com_idx].1;
+-                    let tree_height = tree.backing_matrix.height();
++                    let tree_height = tree.matrix_height();
+                     let expected = odd << log_rs_domain_size;
+                     if tree_height != expected {
+                         return Err(WhirProverError::TreeHeightMismatch {
+@@ -330,7 +342,7 @@ where
+             } else {
+                 let tree: &MerkleTree<SC::EF, SC::Digest> =
+                     rs_tree.as_ref().ok_or(WhirProverError::RsTreeNone)?;
+-                let width = tree.backing_matrix.width();
++                let width = tree.matrix_width();
+                 if width != 1 {
+                     return Err(WhirProverError::TreeWidthNotOne { width });
+                 }
+@@ -364,6 +376,7 @@ where
+             }
+         }
+         rs_tree = g_tree;
++        crate::prover::stream_pcs::memprof(&format!("whir.round{whir_round}.queries"));
+ 
+         // WHIR-Y lever: observe the shift-query answers y_i = g(z_i) before gamma.
+         if whir_params.levers.whir_y {
+diff --git a/crates/stark-backend/tests/stream_commit.rs b/crates/stark-backend/tests/stream_commit.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/stark-backend/tests/stream_commit.rs
+@@ -0,0 +1,173 @@
++//! [stream research] The streamed commitment (codeword never materialised) is identical to the
++//! in-memory one: Merkle digests, roots, opened rows, single and multi proofs, and whole proofs.
++
++use openvm_stark_backend::{
++    codec::Encode,
++    poly_common::Squarable,
++    prover::{
++        stacked_pcs::{rs_code_matrix_odd, MerkleTree},
++        stream_pcs::{set_stream_override, stream_commit},
++        ColMajorMatrix,
++    },
++    test_utils::{test_system_params_small, FibFixture, InteractionsFixture11, TestFixture},
++    StarkEngine, StarkProtocolConfig, SystemParams, WhirConfig, WhirLevers, WhirParams,
++};
++use openvm_stark_sdk::config::baby_bear_poseidon2::*;
++use p3_field::{PrimeCharacteristicRing, BasedVectorSpace};
++use rand::{rngs::StdRng, Rng, SeedableRng};
++
++type SC = BabyBearPoseidon2Config;
++type Engine = BabyBearPoseidon2RefEngine<DuplexSponge>;
++type F = <SC as StarkProtocolConfig>::F;
++type EF = <SC as StarkProtocolConfig>::EF;
++
++fn with_levers(mut p: SystemParams, levers: WhirLevers, x15: usize, bits: usize) -> SystemParams {
++    let w = &p.whir;
++    let h = p.l_skip + p.n_stack;
++    let lf = if levers.k_first != 0 {
++        let lf0 = p.log_final_poly_len();
++        lf0 + (h - levers.k_first - lf0) % w.k
++    } else {
++        p.log_final_poly_len()
++    };
++    let wp = WhirParams {
++        k: w.k,
++        log_final_poly_len: lf,
++        proximity: w.proximity,
++        // no grinding: the CPU grinder is parallel, so its witness (and the proof) is not
++        // deterministic run to run
++        query_phase_pow_bits: 0,
++        folding_pow_bits: 0,
++        mu_pow_bits: 0,
++    };
++    p.logup.pow_bits = 0;
++    p.whir = WhirConfig::new_full(p.log_blowup, h, wp, bits, levers, x15);
++    p
++}
++
++fn check_tree<V, Digest>(mem: &MerkleTree<V, Digest>, st: &MerkleTree<V, Digest>, rng: &mut StdRng)
++where
++    V: Clone + Send + Sync + PartialEq + std::fmt::Debug + p3_field::Field,
++    Digest: Copy + Send + Sync + PartialEq + std::fmt::Debug,
++{
++    assert!(st.is_streamed() && !mem.is_streamed());
++    assert_eq!(mem.root().unwrap(), st.root().unwrap(), "root");
++    assert_eq!(mem.proof_depth(), st.proof_depth(), "depth");
++    assert_eq!(mem.query_stride(), st.query_stride(), "stride");
++    assert_eq!(mem.matrix_height(), st.matrix_height());
++    assert_eq!(mem.matrix_width(), st.matrix_width());
++    let d = mem.digest_layers().len() - st.digest_layers().len();
++    assert_eq!(&mem.digest_layers()[d..], &st.digest_layers()[..], "stored layers");
++    let qs = mem.query_stride();
++    let picks: Vec<usize> = if qs <= 64 { (0..qs).collect() } else { (0..64).map(|_| rng.random_range(0..qs)).collect() };
++    for &i in &picks {
++        assert_eq!(mem.get_opened_rows(i).unwrap(), st.get_opened_rows(i).unwrap(), "rows {i}");
++        assert_eq!(mem.query_merkle_proof(i).unwrap(), st.query_merkle_proof(i).unwrap(), "proof {i}");
++    }
++    for n in [1usize, 3, 17, 40] {
++        let idx: Vec<usize> = (0..n).map(|_| rng.random_range(0..qs)).collect();
++        assert_eq!(mem.query_multiproof(&idx).unwrap(), st.query_multiproof(&idx).unwrap(), "multiproof");
++    }
++    // adjacent leaves (siblings derivable inside a dropped subtree)
++    let idx: Vec<usize> = (0..8.min(qs)).collect();
++    assert_eq!(mem.query_multiproof(&idx).unwrap(), st.query_multiproof(&idx).unwrap(), "multiproof adj");
++}
++
++#[test]
++fn stream_tree_matches_in_memory() {
++    let engine = Engine::new(test_system_params_small(2, 8, 3));
++    let hasher = engine.config().hasher().clone();
++    let mut rng = StdRng::seed_from_u64(7);
++    for drop in ["0", "2", "4", "30"] {
++        std::env::set_var("NEARPROOF_STREAM_DROP", drop);
++        for c in [1usize, 3, 15] {
++            // base field, several columns (initial round): n = 8 coefficients, blowup 2..3, k 1..3
++            for (log_n, b, k) in [(8usize, 2usize, 1usize), (8, 3, 3), (6, 1, 2)] {
++                let w = 5;
++                let coeffs: Vec<Vec<F>> =
++                    (0..w).map(|_| (0..1 << log_n).map(|_| F::from_u32(rng.random::<u32>() >> 2)).collect()).collect();
++                let log_rs = log_n + b;
++                let cw: Vec<F> = coeffs
++                    .iter()
++                    .flat_map(|col| openvm_stark_backend::odd_domain::rs_encode::<F, F>(col.clone(), log_rs, c))
++                    .collect();
++                let mem = MerkleTree::new_with_cosets(&hasher, ColMajorMatrix::new_any_height(cw, w), 1 << k, c).unwrap();
++                let st = stream_commit::<F, F, _>(&hasher, coeffs, log_rs, c, 1 << k);
++                check_tree(&mem, &st, &mut rng);
++            }
++            // extension field, one column (later WHIR rounds), keep-domain style rate
++            for (log_n, log_rs, k) in [(5usize, 9usize, 4usize), (7, 9, 3), (3, 6, 3)] {
++                let col: Vec<EF> = (0..1 << log_n)
++                    .map(|_| EF::from_basis_coefficients_fn(|_| F::from_u32(rng.random::<u32>() >> 2)))
++                    .collect();
++                let cw = openvm_stark_backend::odd_domain::rs_encode::<F, EF>(col.clone(), log_rs, c);
++                let mem = MerkleTree::new_with_cosets(&hasher, ColMajorMatrix::new_any_height(cw, 1), 1 << k, c).unwrap();
++                let st = stream_commit::<F, EF, _>(&hasher, vec![col], log_rs, c, 1 << k);
++                check_tree(&mem, &st, &mut rng);
++            }
++        }
++    }
++    std::env::remove_var("NEARPROOF_STREAM_DROP");
++    // the stacked-commit helper agrees with the per-column encoder used above
++    let m = ColMajorMatrix::new((0..64).map(F::from_u32).collect(), 2);
++    assert_eq!(rs_code_matrix_odd(2, 2, 3, &m).unwrap().values.len(), 2 * 3 * 128);
++    let _ = F::ONE.exp_powers_of_2();
++}
++
++fn prove_bytes(p: &SystemParams, fixture: usize, stream: bool) -> Vec<u8> {
++    set_stream_override(Some(stream));
++    let e = Engine::new(p.clone());
++    let (vk, pr) = if fixture == 0 {
++        FibFixture::new(0, 1, 1 << 9).keygen_and_prove(&e)
++    } else {
++        InteractionsFixture11.keygen_and_prove(&e)
++    };
++    e.verify(&vk, &pr).expect("proof verifies");
++    let mut b = vec![];
++    pr.encode(&mut b).unwrap();
++    set_stream_override(None);
++    b
++}
++
++/// Streamed and in-memory proofs are byte-identical at b = 2 (rate 1/4) on a small trace, for the
++/// upstream shape and for every WHIR lever together with the x15 domain (k1 = 1, keep-domain,
++/// multiproof), and for several dropped-level counts.
++#[test]
++fn stream_proof_byte_identical_b2() {
++    let all = WhirLevers {
++        k_first: 1,
++        keep_domain: true,
++        multiproof: true,
++        tight_heights: true,
++        whir_y: true,
++        ..Default::default()
++    };
++    let cases: Vec<(&str, WhirLevers, usize)> = vec![
++        ("default", WhirLevers::default(), 1),
++        ("x15", WhirLevers::default(), 15),
++        ("levers", all, 1),
++        ("levers+x15", all, 15),
++    ];
++    for (name, lv, x15) in cases {
++        let mut p = test_system_params_small(2, 10, 3);
++        p.max_constraint_degree = 4;
++        p.log_blowup = 2;
++        let p = with_levers(p, lv, x15, 40);
++        for fx in 0..2 {
++            let mem = prove_bytes(&p, fx, false);
++            let mem2 = prove_bytes(&p, fx, false);
++            println!("STREAM_DETERMINISTIC case={name} fixture={fx} {}", mem == mem2);
++            for drop in ["0", "3", "4"] {
++                std::env::set_var("NEARPROOF_STREAM_DROP", drop);
++                let st = prove_bytes(&p, fx, true);
++                if mem != st {
++                    let pos = mem.iter().zip(&st).position(|(a, b)| a != b);
++                    println!("STREAM_DIFF first={pos:?} lens {} {}", mem.len(), st.len());
++                }
++                println!("STREAM_IDENTITY case={name} fixture={fx} drop={drop} bytes={} identical={}", mem.len(), mem == st);
++                assert_eq!(mem, st, "streamed proof differs: {name} fixture {fx} drop {drop}");
++            }
++            std::env::remove_var("NEARPROOF_STREAM_DROP");
++        }
++    }
++}
