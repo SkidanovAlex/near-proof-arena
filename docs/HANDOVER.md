@@ -342,3 +342,4 @@ took 1,800 s); slowest: `Candidates.HorizontalAuxCheck` 140 s, `Candidates.Verti
 | ZK formalisation | `docs/zk-formal/` (DESIGN, V3-D0-DESIGN, STATUS-*) |
 | Lane status files | `STATUS-V3-AIR.md`, `STATUS-V3-D3.md` |
 | Raw log | `docs/logs/v3-progress-log-2026-10.md` |
+| Literature catalogue | `docs/research/literature/INDEX.md` (topic index, CATALOG, refs.bib); unexploited items ranked in `OPPORTUNITIES.md` |

@@ -28,6 +28,19 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Numbers:** Their tables: eps 0.25-0.35, m=16-32; smaller field, not smaller proofs.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`, `docs/research/NOVEL-FINDINGS.md`
 
+### [Polygero26]
+
+- **Citation:** M. Frigo, a. shelat. *Polygero: Proximity Testing From Polynomial Challenges*. ePrint 2026/2481, 2026. <https://eprint.iacr.org/2026/2481>
+- **Topics:** T1, T2 · **Relevance:** N — not-yet-evaluated
+- **Gives:** Batching with low-degree polynomial challenges; elementary Lean-checked soundness beyond unique decoding.
+
+### [Pus26]
+
+- **Citation:** M. Puškin (supervisor H. Lipmaa). *An Analysis of the WHIR Interactive Oracle Proof of Proximity*. MSc thesis, University of Tartu, Feb 2026, 2026. <https://hdl.handle.net/10062/119861>
+- **Topics:** T1, T2 · **Relevance:** N — not-yet-evaluated — needed for GAPS S-12 (O-2)
+- **Gives:** Re-proves WHIR completeness and rbr soundness and 'corrects technical inaccuracies' of the original (the 'Tartu corrections'; content not yet read).
+- **Where in repo:** `lane/pq-final-soundness:research/near-compression/final-soundness/GAPS.md`, `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`
+
 ### [ReedWeave26]
 
 - **Citation:** (ePrint 2026/2147). *ReedWeave (relaxed smoothness for RS IOPPs)*. ePrint 2026/2147, 2026. <https://eprint.iacr.org/2026/2147>
@@ -49,6 +62,31 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Topics:** T1, T3 · **Relevance:** C — cited (abstract only)
 - **Gives:** Survey of hash-based PCS / LDT soundness.
 - **Where in repo:** `lane/pq-weak-binding:research/near-compression/weak-binding/ANALYSIS.md`
+
+### [Ska26b]
+
+- **Citation:** C. Skatharoudis. *SoK on field choice for hash-based SNARKs (ePrint 2026/1371)*. ePrint 2026/1371, 2026. <https://eprint.iacr.org/2026/1371>
+- **Topics:** T1 · **Relevance:** C — cited
+- **Gives:** Survey (field choice).
+
+### [WHIR-audit26]
+
+- **Citation:** ocdbytes/whir contributors. *WHIR fork audit: claimed evaluations not absorbed before challenges (PR #5)*. GitHub ocdbytes/whir PR #5, 2026. <https://github.com/ocdbytes/whir/pull/5>
+- **Topics:** T1, T3 · **Relevance:** N — not-yet-evaluated (our PROOF.md §6.5 transcript audit found no missing absorption)
+- **Gives:** Implementation advisory: unabsorbed claimed evaluations allowed forged batched-WHIR openings.
+- **Where in repo:** `lane/pq-final-soundness:research/near-compression/final-soundness/PROOF.md`
+
+### [BMMS25]
+
+- **Citation:** Baweja, P. Mishra, Mopuri, Shtepel. *Query-Optimal IOPPs for Linear-Time Encodable Codes*. EUROCRYPT 2026; ePrint 2025/1588, 2025. <https://eprint.iacr.org/2025/1588>
+- **Topics:** T1 · **Relevance:** N — not-yet-evaluated
+- **Gives:** O(lambda) queries for constant rate; proof O(lambda^2 log n).
+
+### [Cayley25]
+
+- **Citation:** (arXiv 2508.10510). *Codes on any Cayley Graph have an IOPP*. arXiv 2508.10510, 2025. <https://arxiv.org/abs/2508.10510>
+- **Topics:** T1 · **Relevance:** N — not-yet-evaluated (NF-6 adjacent)
+- **Gives:** IOPPs for codes on arbitrary Cayley graphs (title only).
 
 ### [GMW25]
 
@@ -77,6 +115,12 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Commit to many tables of different heights as one dense multilinear.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`
 
+### [TensorSwitch]
+
+- **Citation:** B. Bünz, G. Fenzi, R. D. Rothblum, W. Wang. *TensorSwitch: Nearly Optimal Polynomial Commitments from Tensor Codes*. CRYPTO 2026; ePrint 2025/2065, 2025. <https://eprint.iacr.org/2025/2065>
+- **Topics:** T1 · **Relevance:** N — not-yet-evaluated
+- **Gives:** 19 lambda queries with RAA codes; prover-oriented.
+
 ### [WHIR-rs]
 
 - **Citation:** WizardOfMenlo / worldfnd. *whir (Rust reference implementation)*. GitHub, 2025. <https://github.com/worldfnd/whir>
@@ -84,6 +128,13 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Reference WHIR code incl. params/regime.rs (unique, Johnson, capacity regimes); commits 1d392aa (3-smooth NTT) and 2556d4e (exact non-power-of-two index sampler) are prior art for NF-6.
 - **Numbers:** Johnson agreement sqrt(rho)+eta, eta=sqrt(rho)/20; capacity cites STIR Conj. 5.6 (excluded).
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`, `research/novelty/PRIOR-ART.md`
+
+### [zip25]
+
+- **Citation:** G. Fenzi, Y. Zhang. *zip: Reducing Proof Sizes for Hash-Based SNARGs*. ePrint 2025/1446, 2025. <https://eprint.iacr.org/2025/1446>
+- **Topics:** T1, T3 · **Relevance:** N — not-yet-evaluated — potentially large (O-5)
+- **Gives:** Non-recursive black-box compression of hash-based SNARG proofs to ~60 % of size, standard assumptions (mechanism not yet read).
+- **Numbers:** Claims proofs down to 60 % of original size.
 
 ### [ACFY24]
 
@@ -97,7 +148,7 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 
 - **Citation:** G. Arnon, A. Chiesa, E. Yogev. *STIR: Reed-Solomon Proximity Testing with Fewer Queries*. CRYPTO 2024; ePrint 2024/390, 2024. <https://eprint.iacr.org/2024/390>
 - **Topics:** T1 · **Relevance:** R — evaluated-rejected (WHIR dominates for multilinear)
-- **Gives:** Rate-shifting folding IOPP; fewer queries than FRI.
+- **Gives:** Rate-shifting folding IOPP; fewer queries than FRI. v4 (2025-01) corrected App. B. Paper: 114 KiB vs FRI 211 KiB at 128-bit, degree 2^26 (conjectured).
 - **Where in repo:** `docs/zk-formal/V3-PERF-DESIGN.md`
 
 ### [ADK24]
@@ -115,6 +166,12 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Concrete non-interactive FRI bounds; proven-vs-conjectured gap.
 - **Where in repo:** `docs/research/recursive-compression.md`, `docs/zk-formal/V3-D3A-STUDY.md`, `docs/zk-formal/V3-PERF-DESIGN.md`
 
+### [Blaze24]
+
+- **Citation:** M. Brehm, B. Chen, B. Fisch, N. Resch, R. D. Rothblum, H. Zeilberger. *Blaze: Fast SNARKs from Interleaved RAA Codes*. EUROCRYPT 2025; ePrint 2024/1609, 2024. <https://eprint.iacr.org/2024/1609>
+- **Topics:** T1 · **Relevance:** N — not-yet-evaluated (prover-oriented)
+- **Gives:** Binary-field RAA-code PCS; fast prover, bigger proofs.
+
 ### [DP24-FRIBinius]
 
 - **Citation:** B. E. Diamond, J. Posen. *Polylogarithmic Proofs for Multilinears over Binary Towers (FRI-Binius)*. ePrint 2024/504, 2024. <https://eprint.iacr.org/2024/504>
@@ -122,11 +179,24 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Ring-switching and FRI-Binius small-field multilinear PCS.
 - **Where in repo:** `lane/pq-recursion-sha384:research/near-compression/results/swirl-security-review/pcs-field-compatibility/`
 
-### [Zei24-BFLD]
+### [DeepFold]
 
-- **Citation:** H. Zeilberger. *Basefold in the List Decoding Regime*. ResearchGate preprint, 2024. <https://www.researchgate.net/publication/387601318_Basefold_in_the_List_Decoding_Regime>
-- **Topics:** T1, T2 · **Relevance:** C — cited (background)
-- **Gives:** Basefold soundness up to Johnson.
+- **Citation:** Y. Guo, et al.. *DeepFold: Efficient Multilinear Polynomial Commitment from Reed-Solomon Code and Its Application to Zero-knowledge Proofs*. USENIX Security 2025; ePrint 2024/1595, 2024. <https://eprint.iacr.org/2024/1595>
+- **Topics:** T1 · **Relevance:** C — cited
+- **Gives:** Basefold in the list-decoding regime: ~34 vs >100 queries at rate 1/8.
+
+### [HLP24]
+
+- **Citation:** U. Haböck, D. Levit, S. Papini. *Circle STARKs*. ePrint 2024/278, 2024. <https://eprint.iacr.org/2024/278>
+- **Topics:** T1 · **Relevance:** C — cited (alternative to ×15 domains; NF-6 prior art)
+- **Gives:** FFT domains on the M31 circle curve.
+- **Where in repo:** `research/novelty/PRIOR-ART.md`
+
+### [Hab24]
+
+- **Citation:** U. Haböck. *Basefold in the List Decoding Regime*. ePrint 2024/1571, 2024. <https://eprint.iacr.org/2024/1571>
+- **Topics:** T1, T2 · **Relevance:** C — cited (alternative proof path for WHIR folding)
+- **Gives:** Subcode CA and non-linear variant covering WHIR/Basefold-like folding up to Johnson.
 - **Where in repo:** `lane/pq-native-hermetic:docs/logs/direct-wasm-pq-compression-2026-10.md`
 
 ### [DP23-Binius]
@@ -149,11 +219,24 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** FFT-friendly domains over any field via elliptic curves.
 - **Where in repo:** `lane/pq-x15-domains:research/near-compression/l4-study/C-invention.md`, `research/novelty/PRIOR-ART.md`
 
+### [BCKL21]
+
+- **Citation:** E. Ben-Sasson, D. Carmon, S. Kopparty, D. Levit. *Elliptic Curve Fast Fourier Transform (ECFFT) Part I*. SODA 2023; arXiv 2107.08473, 2021. <https://arxiv.org/abs/2107.08473>
+- **Topics:** T1 · **Relevance:** R — evaluated-rejected (L4-C)
+- **Gives:** FFT-friendly domains over any field.
+- **Where in repo:** `lane/pq-x15-domains:research/near-compression/l4-study/C-invention.md`
+
 ### [GLSTW21]
 
 - **Citation:** A. Golovnev, J. Lee, S. Setty, J. Thaler, R. S. Wahby. *Brakedown: Linear-time and field-agnostic SNARKs for R1CS*. CRYPTO 2023; ePrint 2021/1043, 2021. <https://eprint.iacr.org/2021/1043>
 - **Topics:** T1 · **Relevance:** N — not-yet-evaluated (sqrt-size proofs; too large for final layer)
 - **Gives:** Linear-time encodable-code (tensor) PCS; field-agnostic.
+
+### [BGKS19]
+
+- **Citation:** E. Ben-Sasson, L. Goldberg, S. Kopparty, S. Saraf. *DEEP-FRI: Sampling Outside the Box Improves Soundness*. ITCS 2020; ePrint 2019/336, 2019. <https://eprint.iacr.org/2019/336>
+- **Topics:** T1 · **Relevance:** C — cited (OOD sampling in WHIR)
+- **Gives:** Out-of-domain sampling for FRI.
 
 ### [BBHR18]
 
@@ -172,19 +255,43 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Gives:** Formalises the EF Proximity Prize grand challenges ($1M); MCA lower bound.
 - **Where in repo:** `docs/research/formal-ecosystem.md`
 
+### [BCPZZ26]
+
+- **Citation:** J. Brakensiek, Chen, N. Putterman, Zhang, Z. Zheng. *Algorithmic List Decoding of Reed-Solomon Codes up to Capacity*. ECCC TR26-164; arXiv 2609.08005, 2026. <https://arxiv.org/abs/2609.08005>
+- **Topics:** T2 · **Relevance:** N — not-yet-evaluated (capacity constants too lossy; DKT26 is the usable form)
+- **Gives:** Deterministic list decoding up to capacity over prime fields, any evaluation set (hidden-derivative method); foundation of DKT26.
+
+### [Cho26]
+
+- **Citation:** P. Chojecki. *Shortening Bounds for RS MCA / Conjectures and Barriers for RS-MCA*. ePrint 2026/1463, 2026/1479, 2026. <https://eprint.iacr.org/2026/1463>
+- **Topics:** T2 · **Relevance:** C — cited (not usable at our n)
+- **Gives:** Post-Johnson certificates for length-512 smooth domains.
+
 ### [DKT26]
 
 - **Citation:** Q. Dao, S. D. Kominers, J. Thaler. *Reed-Solomon Codes Beyond Johnson: Efficient Decoding and Smaller Cryptographic Proofs*. ePrint 2026/2056, 2026. <https://eprint.iacr.org/2026/2056>
 - **Topics:** T2 · **Relevance:** E — evaluated only as Plonky3 line-MCA citation — beyond-Johnson use NOT evaluated (see OPPORTUNITIES O-1)
-- **Gives:** PROVEN RS list-decoding and MCA bounds below Johnson up to capacity (derivative method), needing large field characteristic; parameter certificates formally verified in ArkLib.
-- **Numbers:** Reported savings at fixed security: ZisK final proof -13.2 KB (4.6 %), ProveKit -79.4 KB (11.1 %), LambdaVM subproofs -59.8 KB (4.9 %).
+- **Gives:** PROVEN, ArkLib-verified: (a) Johnson-regime line-MCA exceptional count O(n/eta^3) in every characteristic; (b) first-order hidden-derivative agreement threshold a1(rho) < sqrt(rho), list size O(n/eta^2), MCA error O(n^2/(q eta^4)), needs char p > max(k-1, B) — holds for BabyBear; any evaluation set; multilinear-fold and interleaving corollaries (7.5-7.8). Code/certificates: github.com/quangvdao/rs-beyond-johnson.
+- **Numbers:** Per-query bits -log2(a1): 1.093 / 1.648 / 2.197 / 2.740 at rho = 1/4, 1/8, 1/16, 1/32 (Johnson 1.0 / 1.5 / 2.0 / 2.5). Reported savings at fixed security: ZisK final proof -13.2 KB (4.6 %), ProveKit -79.4 KB (11.1 %), LambdaVM subproofs -59.8 KB (4.9 %).
 - **Where in repo:** `examples/stark-plonky3/README.md`
 
 ### [DKTZ26]
 
-- **Citation:** Q. Dao, S. D. Kominers, J. Thaler, (Zheng). *Counterexamples to Beyond-Johnson Proximity Gaps over Binary Fields*. ePrint 2026/2424, 2026. <https://eprint.iacr.org/2026/2424>
+- **Citation:** Q. Dao, S. D. Kominers, J. Thaler, (Zheng). *Counterexamples to Beyond-Johnson Proximity Gaps over Binary Fields*. ePrint 2026/2424; ECCC TR26-237, 2026. <https://eprint.iacr.org/2026/2424>
 - **Topics:** T2 · **Relevance:** N — not-yet-evaluated (confirms Johnson-only policy; affects binary-field Binius-type options)
 - **Gives:** Beyond-Johnson proximity gaps fail over binary fields.
+
+### [GGSW26]
+
+- **Citation:** R. Goyal, V. Guruswami, Sun, M. Wootters. *Locality of Curve-Decoding and Improved Proximity Gaps*. arXiv 2607.08516, 2026. <https://arxiv.org/abs/2607.08516>
+- **Topics:** T2 · **Relevance:** C — cited (theory)
+- **Gives:** Random-ensemble gaps matching subspace-design codes.
+
+### [GYXK26]
+
+- **Citation:** Y. Gao, Yang, Xu, H. Kan. *List-Decoding Counterexamples Yield Lower Bounds on MCA Error*. arXiv 2607.10572, 2026. <https://arxiv.org/abs/2607.10572>
+- **Topics:** T2 · **Relevance:** C — cited
+- **Gives:** Lower bounds on MCA error for constructed codes.
 
 ### [Gab26]
 
@@ -212,23 +319,41 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Topics:** T2 · **Relevance:** N — not-yet-evaluated (gain O(1/n) in radius: negligible for us)
 - **Gives:** Deterministic MCA h integer steps past Johnson, error O(K^6/q), any evaluation set; Grand MCA Challenge entry.
 
+### [Jo26a]
+
+- **Citation:** S. Jo. *Interleaving Stability for Mutual Correlated Agreement and Curve Decodability*. ePrint 2026/891, 2026. <https://eprint.iacr.org/2026/891>
+- **Topics:** T2 · **Relevance:** N — not-yet-evaluated (drop width factors in batching terms; O-3)
+- **Gives:** Affine-line MCA exactly invariant under interleaving (seed set <= q): no width factor.
+
 ### [KKH26]
 
 - **Citation:** Krachun, Kazanin, U. Haböck. *Failure of proximity gaps close to capacity*. ePrint 2026/782, 2026. <https://eprint.iacr.org/2026/782>
 - **Topics:** T2 · **Relevance:** N — not-yet-evaluated (confirms capacity exclusion)
 - **Gives:** Counterexample near capacity over multiplicative subgroups of prime fields (our setting).
 
+### [Kam26]
+
+- **Citation:** A. Kambiré. *Proximity Gaps Conjecture Fails Near Capacity over Prime Fields*. arXiv 2604.09724, 2026. <https://arxiv.org/abs/2604.09724>
+- **Topics:** T2 · **Relevance:** C — cited
+- **Gives:** Full write-up of KKH near-capacity counterexample.
+
+### [YZ26]
+
+- **Citation:** C. Yuan, R. Zhu. *A Syndrome-Space Approach to Proximity Gaps and Correlated Agreement for Random Linear Codes and Random RS Codes*. arXiv 2605.07595, 2026. <https://arxiv.org/abs/2605.07595>
+- **Topics:** T2 · **Relevance:** C — cited (not for fixed smooth domains)
+- **Gives:** CA up to 1-R-eps for random RS codes.
+
 ### [BCGM25]
 
 - **Citation:** S. Bordage, A. Chiesa, Z. Guan, I. Manzur. *All Polynomial Generators Preserve Distance with Mutual Correlated Agreement*. CCC 2026 (LIPIcs 383); ePrint 2025/2051, 2025. <https://eprint.iacr.org/2025/2051>
 - **Topics:** T2 · **Relevance:** U — used (Lemmas 4.2-4.3; ×15 domains)
-- **Gives:** MCA for every polynomial generator up to 1-(1+1/2m)sqrt(rho), m>=3; explicit constant (Def 9.1/Thm 9.2), any evaluation set.
+- **Gives:** MCA for every polynomial generator up to 1-(1+1/2m)sqrt(rho), m>=3; explicit constant (Def 9.1/Thm 9.2), any evaluation set. Five ePrint revisions (last 2026-05-19, major): re-pin theorem numbers.
 - **Numbers:** eps = sum_i (m+1/2)^7/(3 rho^1.5) d_i n^2/|F|: 2^-298 (m=3) at n=2^27, rho=2^-5, Ext12; 2^-279.7 at n=2^30.9 (×15).
 - **Where in repo:** `lane/pq-final-soundness:research/near-compression/final-soundness/PROOF.md`, `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`, `lane/pq-x15-domains:research/near-compression/x15-domains/SOUNDNESS.md`, `lane/pq-x15-domains:research/near-compression/l4-study/C-invention.md`
 
 ### [BCHKS25]
 
-- **Citation:** E. Ben-Sasson, D. Carmon, U. Haböck, S. Kopparty, S. Saraf. *On Proximity Gaps for Reed-Solomon Codes (improved Johnson-regime CA; negative results beyond Johnson)*. preprint Nov 2025 (math.toronto.edu/swastik); ePrint 2025/2055, 2025. <https://www.math.toronto.edu/swastik/rs-proximity-gaps-2025.pdf>
+- **Citation:** E. Ben-Sasson, D. Carmon, U. Haböck, S. Kopparty, S. Saraf. *On Proximity Gaps for Reed-Solomon Codes (improved Johnson-regime CA; negative results beyond Johnson)*. ePrint 2025/2055; ECCC TR25-169 (Nov 2025), 2025. <https://www.math.toronto.edu/swastik/rs-proximity-gaps-2025.pdf>
 - **Topics:** T2 · **Relevance:** U — used (WHIR-rs and our backend calculator cite Thm 1.5; x15 check)
 - **Gives:** Thm 1.5: CA up to Johnson with explicit (m+1/2)^5 constant for any evaluation set D; Thm 1.13: counterexamples on multiplicative subgroups beyond Johnson; Thm 4.6 exact-support form.
 - **Numbers:** Error bound a > (2(m+1/2)^5 + 3(m+1/2)gamma*rho)/(3 rho^1.5) n + (m+1/2)/sqrt(rho).
@@ -247,6 +372,18 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Topics:** T2, T9 · **Relevance:** C — cited (formal status)
 - **Gives:** Proximity-gap lemma (Diamond-Gruen) proven in ArkLib.
 - **Where in repo:** `docs/research/formal-ecosystem.md`, `docs/research/checker-recommendations.md`
+
+### [FS25]
+
+- **Citation:** G. Fenzi, A. Sanso. *Small-field hash-based SNARGs are less sound than conjectured*. ePrint 2025/2197, 2025. <https://eprint.iacr.org/2025/2197>
+- **Topics:** T2, T1 · **Relevance:** N — not-yet-evaluated (audit any Lambda/|F| term using extension-field heuristics)
+- **Gives:** Generic list-size-driven attack; for extension codes over small base fields the list term is governed by the base field (~8-11 bits at 31-bit fields, conjectured regime).
+
+### [GCXK25]
+
+- **Citation:** Y. Gao, Cai, Xu, H. Kan. *From List-Decodability to Proximity Gaps*. ePrint 2025/870, 2025. <https://eprint.iacr.org/2025/870>
+- **Topics:** T2 · **Relevance:** C — cited
+- **Gives:** Generic list-decodability -> MCA transfer.
 
 ### [GG25]
 
@@ -267,6 +404,19 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Citation:** zkSecurity. *The proximity conjecture (summary)*. blog.zksecurity.xyz, 2025-11-14, 2025. <https://blog.zksecurity.xyz/posts/proximity-conjecture/>
 - **Topics:** T2, T10 · **Relevance:** C — cited
 - **Gives:** Capacity conjecture disproved; proven region ~2x proof size vs conjectured.
+
+### [DG24]
+
+- **Citation:** B. E. Diamond, A. Gruen. *Proximity Gaps in Interleaved Codes*. IACR CiC 2025; ePrint 2024/1351, 2024. <https://eprint.iacr.org/2024/1351>
+- **Topics:** T2 · **Relevance:** C — cited (ArkLib status in formal-ecosystem)
+- **Gives:** Interleaving preserves unique-decoding gaps; proven in ArkLib.
+- **Where in repo:** `docs/research/formal-ecosystem.md`
+
+### [GKL24]
+
+- **Citation:** Y. Gao, H. Kan, Y. Li. *Linear Proximity Gap for Linear Codes within the 1.5 Johnson Bound*. ePrint 2024/1810, 2024. <https://eprint.iacr.org/2024/1810>
+- **Topics:** T2 · **Relevance:** C — cited
+- **Gives:** Linear-size gap for general linear codes.
 
 ### [BCIKS20]
 
@@ -716,6 +866,12 @@ Each item appears once, under its primary topic; INDEX.md lists it under every t
 - **Citation:** A. Kothapalli, S. Setty. *HyperNova: Recursive arguments for customizable constraint systems*. CRYPTO 2024; ePrint 2023/573, 2024. <https://eprint.iacr.org/2023/573>
 - **Topics:** T4 · **Relevance:** R — evaluated-rejected (not PQ)
 - **Gives:** CCS folding (curve-based).
+
+### [Mangrove]
+
+- **Citation:** W. Nguyen, T. Datta, B. Chen, N. Tyagi, D. Boneh. *Mangrove: A Scalable Framework for Folding-based SNARKs*. CRYPTO 2024; ePrint 2024/416, 2024. <https://eprint.iacr.org/2024/416>
+- **Topics:** T4 · **Relevance:** C — cited (not applicable)
+- **Gives:** Folding-based SNARK framework (not hash PCS).
 
 ### [Nebula24]
 
