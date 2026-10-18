@@ -37,7 +37,7 @@ Ratings:
 | S-20 | Recursive composition, one database, straight-line | Thm 7.4 | proven-with-new-lemma-here, **given A-IC** | Error is independent of d. |
 | S-21 | NV circuit arithmetises V′_{i−1} faithfully | Lemma 7.1 (F1–F6) | **relies-on-unreviewed** (circuit lane, in progress) | Exact required form stated. |
 | S-22 | Layer-0 AIRs encode chunk validation | Lemma 7.2 | **relies-on-unreviewed** | Out of scope here. |
-| S-23 | In-circuit SHA-384 ≡ random oracle (A-IC) | Assumption 7.3, §8 | **open** (assumption; U-2 not met on this point) | No published bound. BCG (TCC 2025) proves the general relativized version impossible in the ROM. A-IC is the exact form of the U-1/U-7 "random-oracle-in-circuit" assumption. |
+| S-23 | In-circuit SHA-384 ≡ random oracle (A-IC) | Assumption 7.3, §8 | **closed: unprovable in any query-only oracle model** (Thm O, `lane/pq-aic-research` LEMMA.md); adopted as A-IC(τ), U-11/U-12 | User decision 2026-10-18: the recursive claim is time-bounded (τ = 2¹²⁸) under A-IC(τ). U-2 not met on this point, by necessity. |
 | S-24 | Base-layer parameters (W, degree, interactions, commitments) | bound.py | **open** (not pinned) | A stress shape (W = 601, 2 commitments) passes at 2⁻²⁶⁸·⁵⁵. Re-run with the real app vk. |
 | S-25 | Efficient extraction | §7.3 | proven (GS list decoding) / not needed | The theorem only uses existential extraction. |
 
@@ -67,6 +67,6 @@ Ratings:
 3. The circuit lane's NV-faithful proof, in the form of Lemma 7.1 (S-21), and Base-faithful (S-22).
 4. The univariate-skip derivation of the tight-heights kernel (S-10′).
 5. Pin the app-layer parameters and re-run `calc/bound.py` (S-24).
-6. **A user decision on A-IC (S-23)**: accept it as the U-1/U-7 in-circuit-RO assumption, which
+6. ~~A user decision on A-IC (S-23)~~ Decided 2026-10-18 (U-11, U-12: A-IC(τ), τ = 2¹²⁸, final-layer prefix). Original text:: accept it as the U-1/U-7 in-circuit-RO assumption, which
    leaves U-2 unmet for the recursive step, or keep the final claim to non-recursive proofs. No
    known technique removes it for hash-only recursion.

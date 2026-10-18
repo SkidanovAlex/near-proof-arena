@@ -751,7 +751,7 @@ The native final verifier V_d checks:
 **Lemma 7.2 (Base-faithful) [A here].** For every T ∈ R_{vk_0}(x_0), the chunk-validation
 statement named by x_0 holds.
 
-**Assumption 7.3 (A-IC: in-circuit SHA-384 is the oracle).** Let D be the measured database
+**Assumption 7.3 (A-IC(τ): in-circuit SHA-384 is the oracle, for adversaries running in time ≤ τ = 2¹²⁸; U-12).** Without the time bound the assumption is false in the query-only model of Thm 6.4 (Thm O, `lane/pq-aic-research` LEMMA.md). Let D be the measured database
 of Theorem 6.4. For every i ≥ 1 and every T ∈ R_{vk_i}(x_i) such that T = unstack(c) for
 some c in the list Λ₀ of an accepting layer-i transcript in D, every pair (m, y) ∈ Q_i(T) is
 D-consistent: m ∈ dom(D) and D(m) = y, in the domain-separated oracle of Lemma 1.1.
