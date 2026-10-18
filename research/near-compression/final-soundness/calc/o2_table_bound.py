@@ -13,7 +13,7 @@ A layer passes when every non-query move is <= 2^-270 (bound_mca.BUDGET); query 
 The non-WHIR parameters (log_int, msg_len, constraints, airs, degree, cols, commits) are bound.py's
 for the NV final / inner / base shapes; the b7 h20 final and the b = 2 measured-chain shapes take
 the NV ones with their own (log_h, b, k1, k, lf) and W. W of the b = 2 shapes is not pinned here:
-141 is used (a degree-(W-1) curve certificate also covers any smaller W, see DKT-VERIFY.md 8.4).
+141 is used (a degree-(W-1) curve certificate also covers any smaller W, see DKT-VERIFY.md 8.3).
 
 Usage: python3 -I o2_table_bound.py
 """

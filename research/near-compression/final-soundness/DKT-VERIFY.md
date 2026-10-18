@@ -351,3 +351,156 @@ python3 -I calc/dkt_verify.py           # O-1 / O-2 re-derivation
 python3 -I calc/dkt_lean_certs.py eval > lean/DKTCertsEval.lean   # regenerate (after a shape change)
 python3 -I calc/dkt_lean_certs.py proof lean/DKTCertsEval.out > lean/DKTCerts.lean
 ```
+
+## 8. O-2 certificates for the implemented agreement table (`calc/dkt_certs_o2.json`)
+
+**What this section adds.** lane/pq-recursion-sha384 @ cf2262a24 implements O-2 as a canonical
+per-round agreement table that is bound into the vk (`AgreementTable::canonical`). Its check
+`dkt_cert_check.py` found no real shape covered by `dkt_certs.json`, for three reasons:
+* the grid's A was off by one at some sizes;
+* fold sub-codes s = 3, 4 were missing;
+* the domains 15·2²⁵ (inner NV) and 15·2²²/15·2²³ (b = 2 chain) had no certificates.
+
+This section certifies exactly the integers that the backend binds, for every real shape.
+**The NV lane consumes `research/near-compression/final-soundness/calc/dkt_certs_o2.json`**
+(top-level keys `"n,k,A,ell"`; metadata in `_meta`, the per-shape table in `_shapes`, and
+`_no_certificate`, which is empty).
+
+### 8.1 The agreed integer rule
+
+The rule is the backend's, unchanged (`stark-backend-unified.patch`, `AgreementTable::canonical`,
+margin_milli = 50, m = 64):
+
+    ratio = min(a1(ρ)/√ρ + margin_milli/1000, 1 + 1/(2m)),   ρ = k/n
+    A     = ceil(ratio · √((k−1)/n) · n)                      (IEEE f64)
+    fold sub-code s = 0..k_i:  (n >> s, k >> s, ceil(A / 2^s))  (exact integers)
+
+`dkt_certs.o2_agree` reproduces it operation for operation. Python floats are IEEE f64; `sqrt`, `+`,
+`*` and `/` are correctly rounded; `dkt_a1` uses the same bisection.
+
+**It is sound for certification; no change is needed.**
+* A certificate speaks about an integer A. The f64 arithmetic only selects which integer, and it
+  is deterministic.
+* Over all 28 rounds of the six shapes, the real-valued product `ratio·√((k−1)/n)·n` is at least
+  0.013 from an integer. The f64 error is about 10⁻⁸, so f64, 80-digit Decimal and
+  `bound_mca.agreement('F', ..)` give the same A. `o2_table_bound.py` asserts this.
+* Rounding up only raises the agreement, which makes certification easier.
+* The cap 1 + 1/(2m) = 1.0078 is never active here: the largest ratio is 0.877, at ρ = 2⁻⁵·⁹.
+* Each fold sub-code keeps ρ and has agreement fraction ceil(A/2^s)/(n/2^s) ≥ A/n.
+
+One remark outside the certificates: the query count `ceil(target / −log2(A/n))` uses libm
+`log2`, which is not guaranteed correctly rounded. Platforms could disagree only when the quotient
+is within about 1 ulp of an integer. That affects the canonical-table check's portability, not
+soundness.
+
+**Why the old grid was off by one.** The `--grid` mode built the s = 0 key as
+`dceil(Decimal(A)/n · n)`. Finite-precision division rounds A/n up in its last digit, so the
+product lands just above A and the ceiling gives A + 1. This happens for k = 2¹⁹, 2²⁰ and 2²¹ at
+both 28 and 80 digits. `bound_mca.py` was never affected (it uses `Fraction`). The `--grid` line now
+uses the exact `ceil(A/2^s)`. The stored `_grid` in `dkt_certs.json` is superseded and must not be
+consumed for O-2.
+
+### 8.2 Certified table per shape
+
+Produced by `dkt_certs.py --table 1`. Every code was found by the same search as §5: smallest m
+with E/|F| ≤ 2⁻²⁷⁵ and list ≤ 2⁴⁴, Taylor model tight-2D-minus-3-v3, squarefree transfer.
+Searches took 0–3 s per code, and no code failed. q is `ceil(236/−log2(A/n))`. The "codes"
+column counts the distinct (n, k, A) line codes over all rounds and sub-codes s = 0..k_i.
+
+| shape (n) | round: A_i (k_i, q_i) | codes | worst E/\|F\| | worst list |
+|---|---|---|---|---|
+| final b7 h20 k4 lf7 (15·2²⁷) | 0: 37,140,791 (1, 41) · 1: 26,000,207 (4, 38) · 2: 6,325,509 (4, 29) · 3: 1,559,051 (4, 23) | 17 | 2⁻²⁸¹·¹⁹ | 2⁴³·¹⁴ |
+| final bound.py b8 h19 k3 lf9 (15·2²⁷) | 0: 26,000,207 (1, 38) · 1: 18,228,420 (3, 35) · 2: 6,325,509 (3, 29) · 3: 2,210,990 (3, 25) | 14 | 2⁻²⁸³·⁶⁴ | 2⁴³·¹⁴ |
+| inner NV b6 h19 k4 lf6 (15·2²⁵) | 0: 13,286,583 (1, 46) · 1: 9,285,185 (4, 41) · 2: 2,248,088 (4, 31) · 3: 552,545 (4, 25) | 17 | 2⁻²⁸⁷·⁴⁶ | 2⁴¹·¹⁴ |
+| base stress b6 h21 k4 lf8 (15·2²⁷) | 0: 53,146,367 (1, 46) · 1: 37,140,791 (4, 41) · 2: 8,992,555 (4, 31) · 3: 2,210,990 (4, 25) | 17 | 2⁻²⁸³·⁴⁶ | 2⁴³·¹⁴ |
+| chain inner b2 h20 k4 lf3 (15·2²²) | 0: 7,124,062 (1, 76) · 1: 4,930,246 (4, 65) · 2: 1,160,633 (4, 41) · 3: 280,951 (4, 31) · 4: 68,832 (4, 24) | 22 | 2⁻²⁹¹·⁴⁰ | 2³⁸·¹¹ |
+| chain final b2 h21 k3 lf8 (15·2²³) | 0: 14,248,127 (1, 76) · 1: 9,860,497 (3, 65) · 2: 3,321,637 (3, 46) · 3: 1,139,244 (3, 35) · 4: 395,254 (3, 29) | 18 | 2⁻²⁸⁹·⁴⁰ | 2³⁸·⁶¹ |
+
+Together that is 93 distinct line certificates (ℓ = 1). `calc/dkt_cert_check.py` is the recursion
+lane's checker, copied with `_grid` made optional. Run on `dkt_certs_o2.json`
+(`calc/dkt_cert_check_o2.out`), it reports **every round of every shape OK, 0 missing**. The
+largest B∂ is 48 and the largest k − 1 is 2²¹ − 1, so the characteristic guard p > max(k−1, B∂)
+holds everywhere.
+
+### 8.3 μ-batching curve certificates (round 0)
+
+bound_mca.py's 'first-curve' batching needs a powers-curve certificate of degree ℓ = W − 1 on the
+round-0 code. `dkt_cert_check.py` does not test this; the table mode adds it.
+* For every shape there are certificates at ℓ = 52, 140 and 600 (W = 53 for the b7 h20 final,
+  141 for bound.py's NV shapes, 601 for the base). They exist both at the O-2 A₀ (18 certificates)
+  and at the Johnson agreement of ListDecoding(64), A_J = ceil((1 + 1/128)·√(k/n)·n), for a round 0
+  that falls back to O-1 (18 certificates, 3 of them reused from §5).
+* Worst E/|F| at the O-2 A₀: 2⁻²⁷⁶·⁸¹, at ℓ = 600 on (15·2²⁷, 2¹⁹). At the W of the b7 h20
+  final (ℓ = 52) it is 2⁻²⁸⁰·⁷⁶.
+* **A degree-ℓ certificate covers any W ≤ ℓ + 1.** Pad the W words with zero words. The batched
+  word is unchanged. In the exact power agreement that `mca_i` concludes, the polynomial attached
+  to a zero word agrees with 0 on at least A > k points, so it is 0. Restricting to the first W
+  words therefore gives the W-word statement. If the NV lane's W differs, use the next ℓ above
+  W − 1.
+
+All entries: 93 + 18 + 18 = **129** in `dkt_certs_o2.json`.
+
+### 8.4 Full bound with these certificates, and the one fallback
+
+`calc/o2_table_bound.py` (output `calc/o2_table_bound.out`) runs `bound_mca.layer` with the
+canonical A for every round, batching 'first-curve', reading only `dkt_certs_o2.json`. It checks
+three plans:
+* **O-2**: every round first order, which is what the backend binds today;
+* **r0=J64**: round 0 at the Johnson radius of m = 64, the other rounds first order;
+* **all J64**: O-1 alone.
+
+| shape | O-2: q (sum), worst non-query | verdict |
+|---|---|---|
+| final b7 h20 (W 53) | [41, 38, 29, 23] (131), 2⁻²⁷¹·⁶⁶ | **pass** |
+| final bound.py b8 h19 | [38, 35, 29, 25] (127), 2⁻²⁷¹·⁶⁶ | **pass** |
+| inner NV b6 h19 | [46, 41, 31, 25] (143), 2⁻²⁷⁴·²⁵ | **pass** |
+| base stress b6 h21 (2 commits) | [46, 41, 31, 25] (143), **2⁻²³¹·⁷⁷** (logup α,β, L3.1) | **fail**: round 0 → J64 |
+| chain inner b2 h20 | [76, 65, 41, 31, 24] (237), 2⁻²⁸¹·⁶¹ | pass |
+| chain final b2 h21 | [76, 65, 46, 35, 29] (251), 2⁻²⁷⁸·⁶¹ | pass |
+
+**The base fallback is a budget problem, not a missing certificate.** All 17 base certificates
+exist.
+* The pre-WHIR moves (L3.1–L3.7) are charged the round-0 list size to the power of the number of
+  commitments.
+* Under O-2, the round-0 first-order list is 2⁴¹·⁵⁶. With commits = 2 and logup over 2²⁶
+  interactions, the logup α,β move reaches 2⁻²³¹·⁷⁷, against the budget of 2⁻²⁷⁰.
+* With round 0 at J64 (list 2¹⁰·⁹¹), the layer passes at 2⁻²⁷¹·²⁷.
+* Cost: round-0 queries go from 46 to 48 (+2). Rounds 1–3 stay O-2.
+* For comparison, O-1 alone is [48, 44, 32, 25].
+
+The single-commit shapes do not have this problem. For the finals the logup move is below the OOD
+move.
+
+**Consequences for the NV lane.**
+* **The final proof is fully covered.** The b7 h20 final's table (A, q = [41, 38, 29, 23]) is
+  certified and its bound passes, so the 301,157 B O-2 number is backed. The same holds for the
+  inner NV layer and the bound.py final.
+* **The base app layer (stress) needs the round-0 fallback.** The vk-bound table then needs a
+  per-round regime, for example `regime: F | J(m)` per `AgreementRound` with round 0 = J(64)
+  when the layer has more than one commitment. The alternative is to accept the J64 query
+  count for round 0 only.
+  * This changes the backend rule (the NV lane's decision), so this lane did not do it.
+  * Byte impact: +2 round-0 queries in the base proof only. It does not enter the final proof's
+    bytes. It only slightly enlarges the layer-1 verifier circuit's base-proof part.
+
+### 8.5 Independent checks
+
+| check | result |
+|---|---|
+| `dkt_cert_check.py dkt_certs_o2.json` | 0 missing, 0 recorded as not certifiable (`calc/dkt_cert_check_o2.out`) |
+| `dkt_certs.py <engine> --check dkt_certs_o2.json`: authors' engine re-evaluation from the stored (m, B∂, B_jet), plus E/\|F\| ≤ 2⁻²⁷⁵, list ≤ 2⁴⁴, char guard | 129 / 129 ok (`calc/dkt_certs_o2_check.out`) |
+| Lean `#eval!` of ArkLib's checker (`lean/DKTCertsO2Eval.lean/.out`) | `CurveVerification` true 129 / 129; Lean E and list **exactly equal** to the JSON rationals, 129 / 129 |
+| Lean kernel proofs `lean/DKTCertsO2_{0..5}.lean` (§5 method, 6 interleaved slices) | pending (running at this commit) |
+
+### 8.6 Reproduce
+
+```
+cd <worktree>/research/near-compression/final-soundness/calc
+JOBS=12 nice -n 10 python3 -I dkt_certs.py <rs-beyond-johnson@60b7257> --table 1   # ~1 min
+python3 -I dkt_cert_check.py dkt_certs_o2.json
+python3 -I dkt_certs.py <rs-beyond-johnson> --check dkt_certs_o2.json
+python3 -I o2_table_bound.py
+DKT_JSON=calc/dkt_certs_o2.json python3 -I calc/dkt_lean_certs.py eval > lean/DKTCertsO2Eval.lean   # from ..
+DKT_JSON=calc/dkt_certs_o2.json DKT_CHUNK=i/6 python3 -I calc/dkt_lean_certs.py proof lean/DKTCertsO2Eval.out > lean/DKTCertsO2_i.lean
+(in ArkLib) HEAVY_MEM=24G heavy lake env lean <worktree>/.../lean/DKTCertsO2_i.lean
+```
