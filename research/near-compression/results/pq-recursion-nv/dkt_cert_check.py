@@ -8,7 +8,7 @@ from fractions import Fraction as Fr
 getcontext().prec = 60
 d = json.load(open(sys.argv[1]))
 certs = {k: v for k, v in d.items() if k != '_grid'}
-certs.update(d['_grid']['certs'])
+certs.update(d.get('_grid', {}).get('certs', {}))
 def a1(r):
     rc = 11 - 3 * math.sqrt(13)
     if r < rc:

@@ -1,0 +1,32 @@
+== final (extrapolation optimum) b7 h20 k1=1 k4 lf7: n = 15*2^27
+  round 0: k_i=1 kdim=2^20 A=37140791 q=41  certs: OK
+  round 1: k_i=4 kdim=2^19 A=26000207 q=38  certs: OK
+  round 2: k_i=4 kdim=2^15 A=6325509 q=29  certs: OK
+  round 3: k_i=4 kdim=2^11 A=1559051 q=23  certs: OK
+== final (bound.py) b8 h19 k1=1 k3 lf9: n = 15*2^27
+  round 0: k_i=1 kdim=2^19 A=26000207 q=38  certs: OK
+  round 1: k_i=3 kdim=2^18 A=18228420 q=35  certs: OK
+  round 2: k_i=3 kdim=2^15 A=6325509 q=29  certs: OK
+  round 3: k_i=3 kdim=2^12 A=2210990 q=25  certs: OK
+== inner NV b6 h19 k1=1 k4 lf6: n = 15*2^25
+  round 0: k_i=1 kdim=2^19 A=13286583 q=46  certs: OK
+  round 1: k_i=4 kdim=2^18 A=9285185 q=41  certs: OK
+  round 2: k_i=4 kdim=2^14 A=2248088 q=31  certs: OK
+  round 3: k_i=4 kdim=2^10 A=552545 q=25  certs: OK
+== base app stress b6 h21 k1=1 k4 lf8: n = 15*2^27
+  round 0: k_i=1 kdim=2^21 A=53146367 q=46  certs: OK
+  round 1: k_i=4 kdim=2^20 A=37140791 q=41  certs: OK
+  round 2: k_i=4 kdim=2^16 A=8992555 q=31  certs: OK
+  round 3: k_i=4 kdim=2^12 A=2210990 q=25  certs: OK
+== measured chain inner b2 h20 k1=1 k4 lf3: n = 15*2^22
+  round 0: k_i=1 kdim=2^20 A=7124062 q=76  certs: OK
+  round 1: k_i=4 kdim=2^19 A=4930246 q=65  certs: OK
+  round 2: k_i=4 kdim=2^15 A=1160633 q=41  certs: OK
+  round 3: k_i=4 kdim=2^11 A=280951 q=31  certs: OK
+  round 4: k_i=4 kdim=2^7 A=68832 q=24  certs: OK
+== measured chain final b2 h21 k1=1 k3 lf8: n = 15*2^23
+  round 0: k_i=1 kdim=2^21 A=14248127 q=76  certs: OK
+  round 1: k_i=3 kdim=2^20 A=9860497 q=65  certs: OK
+  round 2: k_i=3 kdim=2^17 A=3321637 q=46  certs: OK
+  round 3: k_i=3 kdim=2^14 A=1139244 q=35  certs: OK
+  round 4: k_i=3 kdim=2^11 A=395254 q=29  certs: OK
