@@ -1,0 +1,6 @@
+COMMIT W=16 h=16 b=3 k=1 c=15 digest=42 coset_leaf=1 threads=32 cells=1.258e8 rs=12.00s (95.38 ns/cell) merkle=1.15s (9.11 ns/cell, 2.28 ns/byte) stacked_commit_odd=13.46s (106.98 ns/cell)
+COMMIT W=32 h=18 b=3 k=1 c=15 digest=42 coset_leaf=1 threads=32 cells=1.007e9 rs=32.48s (32.27 ns/cell) merkle=4.17s (4.14 ns/cell, 1.03 ns/byte) stacked_commit_odd=20.46s (20.33 ns/cell)
+COMMIT W=32 h=18 b=3 k=3 c=15 digest=42 coset_leaf=1 threads=32 cells=1.007e9 rs=36.72s (36.48 ns/cell) merkle=3.83s (3.81 ns/cell, 0.95 ns/byte) stacked_commit_odd=42.21s (41.94 ns/cell)
+COMMIT W=32 h=18 b=3 k=1 c=15 digest=48 coset_leaf=0 threads=32 cells=1.007e9 rs=22.15s (22.00 ns/cell) merkle=5.06s (5.03 ns/cell, 1.26 ns/byte) stacked_commit_odd=40.27s (40.01 ns/cell)
+COMMIT W=32 h=21 b=3 k=1 c=1 digest=42 coset_leaf=1 threads=32 cells=5.369e8 rs=12.60s (23.47 ns/cell) merkle=2.60s (4.84 ns/cell, 1.21 ns/byte) stacked_commit_odd=26.39s (49.16 ns/cell)
+COMMIT W=16 h=16 b=3 k=1 c=15 digest=42 coset_leaf=1 threads=1 cells=1.258e8 rs=6.83s (54.24 ns/cell) merkle=9.12s (72.49 ns/cell, 18.12 ns/byte) stacked_commit_odd=15.49s (123.12 ns/cell)

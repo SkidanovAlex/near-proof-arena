@@ -1,0 +1,16 @@
+NTT_BB col=1 log=20 c=1 threads=32 0.160 s  152.89 ns/point  6.5 M points/s (662811864)
+NTT_BB col=16 log=20 c=1 threads=32 1.433 s  85.39 ns/(point*col)  11.7 M points/s
+NTT_BB col=1 log=22 c=1 threads=32 0.306 s  72.88 ns/point  13.7 M points/s (136734825)
+NTT_BB col=16 log=22 c=1 threads=32 1.461 s  21.77 ns/(point*col)  45.9 M points/s
+NTT_BB col=1 log=24 c=1 threads=32 0.486 s  28.99 ns/point  34.5 M points/s (818658429)
+NTT_BB col=16 log=24 c=1 threads=32 3.642 s  13.57 ns/(point*col)  73.7 M points/s
+NTT_BB col=1 log=20 c=15 threads=32 0.951 s  60.48 ns/point (15*2^20 points)
+NTT_EXT12 col=1 log=20 c=1 threads=32 0.846 s  806.96 ns/point
+NTT_BB col=1 log=20 c=1 threads=1 0.097 s  92.41 ns/point  10.8 M points/s (662811864)
+NTT_BB col=16 log=20 c=1 threads=1 0.759 s  45.27 ns/(point*col)  22.1 M points/s
+NTT_BB col=1 log=22 c=1 threads=1 0.228 s  54.30 ns/point  18.4 M points/s (136734825)
+NTT_BB col=16 log=22 c=1 threads=1 4.532 s  67.54 ns/(point*col)  14.8 M points/s
+NTT_BB col=1 log=24 c=1 threads=1 1.685 s  100.44 ns/point  10.0 M points/s (818658429)
+NTT_BB col=16 log=24 c=1 threads=1 24.606 s  91.66 ns/(point*col)  10.9 M points/s
+NTT_BB col=1 log=20 c=15 threads=1 0.767 s  48.75 ns/point (15*2^20 points)
+NTT_EXT12 col=1 log=20 c=1 threads=1 3.601 s  3434.24 ns/point
