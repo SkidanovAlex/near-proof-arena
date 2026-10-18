@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Known-answer tests: every program of programs/gen.py through (1) the Python reference
+# interpreter, (2) the Lean spec (`wasmbase-tool prep`: prepare + check + spec `step` run),
+# (3) the Rust trace generator + full constraint and bus pre-check (`check`).
+# Usage: run_kat.sh <scratch_dir> [hash_iters...]
+set -euo pipefail
+HERE=$(cd "$(dirname "$0")" && pwd)
+OUT=${1:?scratch dir}; shift
+TOOL=$HERE/../../wasm-base-lean/.lake/build/bin/wasmbase-tool
+BIN=${WASMBASE_BIN:-/data/illia/nearproof-deps/pq-wasm-base/target/release/nearproof-wasm-base}
+G0=1000000000000000
+python3 "$HERE/programs/gen.py" "$OUT/progs" "$@" >/dev/null
+pass=0; fail=0
+for w in "$OUT"/progs/*.wasm; do
+  n=$(basename "$w" .wasm)
+  "$TOOL" prep "$w" main $G0 > "$OUT/progs/$n.prep.json"
+  read -r nloc ncode <<<"$(python3 -c "import json;d=json.load(open('$OUT/progs/$n.prep.json'));print(len(d['localTags']),d['ncode'])")"
+  [ -f "$OUT/air-$nloc-$ncode.json" ] || "$TOOL" air "$nloc" "$ncode" > "$OUT/air-$nloc-$ncode.json"
+  # Python reference vs Lean spec (value and step count)
+  python3 - "$OUT/progs/$n.json" "$OUT/progs/$n.prep.json" <<'PY'
+import json, sys
+ref = json.load(open(sys.argv[1])); sp = json.load(open(sys.argv[2]))
+assert sp['status'] == 'fin', sp['status']
+assert sp['steps'] == ref['steps'], (sp['steps'], ref['steps'])
+l = sp['stack'][-1]['limbs']; v = l[0] | l[1] << 16 | l[2] << 32 | l[3] << 48
+assert v == ref['result'], (v, ref['result'])
+PY
+  if "$BIN" check "$OUT/air-$nloc-$ncode.json" "$OUT/progs/$n.prep.json" > "$OUT/progs/$n.check.log" 2>&1; then
+    pass=$((pass+1))
+  else
+    fail=$((fail+1)); echo "FAIL $n"; tail -3 "$OUT/progs/$n.check.log"
+  fi
+done
+echo "KAT: $pass passed, $fail failed (python ref = Lean spec = Rust trace + AIR pre-check)"
+[ "$fail" = 0 ]

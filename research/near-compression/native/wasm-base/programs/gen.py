@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+"""Generate the family-F1 test programs (`<out>/<name>.wasm` + `<out>/<name>.json` with the
+independent reference result from refinterp.py).  Usage: gen.py <out_dir> [hash_iters...]"""
+import json, os, random, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from wasmasm import assemble, NUM
+from refinterp import run
+
+BIN = ['add', 'sub', 'mul', 'and', 'or', 'xor', 'shl', 'shr_s', 'shr_u', 'rotl', 'rotr']
+REL = ['eq', 'ne', 'lt_s', 'lt_u', 'gt_s', 'gt_u', 'le_s', 'le_u', 'ge_s', 'ge_u']
+
+
+def edge(w, rng):
+    m = (1 << w) - 1
+    vals = [0, 1, 2, 3, 7, 8, (1 << (w - 1)) - 1, 1 << (w - 1), (1 << (w - 1)) + 1, m, m - 1,
+            0x8000, 0xFFFF, 0x10000, 0x7FFFFFFF, 0x80000000, w - 1, w, w + 1, 2 * w + 3]
+    vals += [rng.getrandbits(w) for _ in range(6)] + [rng.getrandbits(8) for _ in range(3)]
+    return [v & m for v in vals]
+
+
+def kat(t, op, rng, npairs=24):
+    w = 64 if t == 'i64' else 32
+    rel = op in REL or op == 'eqz'
+    acc_t = 'i32' if rel else t
+    body = []
+    vals = edge(w, rng)
+    pairs = [(rng.choice(vals), rng.choice(vals)) for _ in range(npairs)]
+    for a, b in pairs:
+        body += [('local.get', 0), (f'{acc_t}.const', 31), f'{acc_t}.mul', (f'{t}.const', a)]
+        if op != 'eqz':
+            body.append((f'{t}.const', b))
+        body += [f'{t}.{op}', f'{acc_t}.add', ('local.set', 0)]
+    body.append(('local.get', 0))
+    return {'name': f'kat_{t}_{op}', 'result': acc_t, 'locals': [acc_t], 'body': body}
+
+
+def ctrl():
+    """Nested blocks with results, br/br_if (taken and not), loop, select, drop, return."""
+    b = [
+        ('i32.const', 0), ('local.set', 0),
+        ('block', 'i32'),                      # result-carrying block, exited by br 0
+          ('i32.const', 5), ('i32.const', 6), 'i32.add',
+          ('block',),
+            ('local.get', 0), ('br_if', 0),    # not taken (0)
+            ('i32.const', 1), ('local.set', 0),
+          ('end',),
+          ('block',),
+            ('local.get', 0), ('br_if', 0),    # taken (1)
+            ('i32.const', 99), ('local.set', 0),
+          ('end',),
+          ('br', 0),
+        ('end',),
+        ('local.set', 1),                      # 11
+        ('loop',),                             # count local0 up to 20
+          ('local.get', 0), ('i32.const', 1), 'i32.add', ('local.tee', 0),
+          ('i32.const', 20), 'i32.lt_u', ('br_if', 0),
+        ('end',),
+        ('local.get', 1), ('i32.const', 1000), ('local.get', 0), ('i32.const', 20), 'i32.eq', 'select',
+        ('i32.const', 77), 'drop',
+        ('local.get', 1), 'i32.mul', ('local.set', 1),
+        ('block',), ('local.get', 0), ('i32.const', 20), 'i32.ne', ('br_if', 0),
+          ('local.get', 1), 'return', ('end',),
+        ('i32.const', 0),
+    ]
+    return {'name': 'ctrl', 'result': 'i32', 'locals': ['i32', 'i32'], 'body': b}
+
+
+def hashloop(n):
+    """A mixed i32/i64 hash loop: FNV-1a-style i64 step, rotations, shifts, compares, select,
+    a conditional block; n iterations (≈ 46 instructions each)."""
+    i, h, x = 0, 1, 2
+    b = [
+        ('i64.const', 0xcbf29ce484222325), ('local.set', h),
+        ('i32.const', 0x12345678), ('local.set', x),
+        ('loop',),
+          ('local.get', h), ('local.get', i), 'i64.xor', ('i64.const', 0x100000001b3), 'i64.mul',
+          ('i64.const', 13), 'i64.rotl', ('local.tee', h),
+          ('local.get', h), ('i64.const', 7), 'i64.shr_u', 'i64.xor', ('local.set', h),
+          ('local.get', x), ('i32.const', 3), 'i32.shl', ('local.get', x), ('i32.const', 2), 'i32.shr_s',
+          'i32.xor', ('i32.const', 0x9e3779b9), 'i32.add', ('local.set', x),
+          ('block',),
+            ('local.get', x), ('i32.const', 0), 'i32.ge_s', ('br_if', 0),
+            ('local.get', h), ('i64.const', 0xff00ff00ff00ff00), 'i64.and', ('local.set', h),
+          ('end',),
+          ('local.get', i), ('i64.const', 1), 'i64.add', ('local.tee', i),
+          ('i64.const', n), 'i64.lt_u', ('br_if', 0),
+        ('end',),
+        ('local.get', h), ('local.get', h), ('i64.const', 17), 'i64.rotr', ('local.get', x),
+        'i32.eqz', 'select',
+    ]
+    return {'name': f'hashloop{n}', 'result': 'i64', 'locals': ['i64', 'i64', 'i32'], 'body': b}
+
+
+def main():
+    out = sys.argv[1]
+    iters = [int(a) for a in sys.argv[2:]] or [8, 64]
+    os.makedirs(out, exist_ok=True)
+    rng = random.Random(20261018)
+    progs = [kat(t, op, rng) for t in ('i32', 'i64') for op in BIN + REL + ['eqz']]
+    progs += [ctrl()] + [hashloop(n) for n in iters]
+    for p in progs:
+        res, steps = run(p)
+        with open(os.path.join(out, p['name'] + '.wasm'), 'wb') as f:
+            f.write(assemble(p))
+        with open(os.path.join(out, p['name'] + '.json'), 'w') as f:
+            json.dump({'name': p['name'], 'result': res, 'type': p['result'], 'steps': steps}, f)
+    print(len(progs), 'programs')
+
+
+if __name__ == '__main__':
+    main()

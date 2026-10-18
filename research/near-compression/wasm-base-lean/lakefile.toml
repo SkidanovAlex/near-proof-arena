@@ -1,0 +1,24 @@
+# Direct-Wasm base-layer AIR model and base-faithful proofs (lane/pq-wasm-base).
+# Depends only on the NearSpecV3 Wasm semantics (no ZkFormal, no Mathlib).
+name = "WasmBase"
+version = "0.1.0"
+defaultTargets = ["WasmBase", "wasmbase-tool"]
+
+[leanOptions]
+autoImplicit = false
+
+[[lean_lib]]
+name = "WasmBase"
+
+[[lean_exe]]
+name = "wasmbase-tool"
+root = "Tool"
+
+[[require]]
+name = "NearSpecV3"
+path = "../../../spec/lean/v3"
+
+# Only `ZkFormal.Algebra.Fp` (BabyBear, primality certificate, field instance) is imported.
+[[require]]
+name = "ZkFormal"
+path = "../../../zk-formal"
