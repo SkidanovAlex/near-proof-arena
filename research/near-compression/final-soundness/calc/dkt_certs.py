@@ -33,6 +33,7 @@ E_MAX = BM.LOG_F - 275          # log2 of the largest admissible exceptional cou
 L_MAX = 44.0
 DKT_COMMIT = '60b7257'
 GRID_MARGIN = 0.05
+J_CURVES = set()
 
 
 def a1(r):
@@ -67,7 +68,7 @@ def codes_for(shape, plan):
         if reg != 'F':
             continue
         A = BM.agreement('F', r['n'], r['kdim'], ratio=par)
-        a = Decimal(A) / r['n']
+        a = F(A, r['n'])                       # exact, as bound_mca.layer
         for sub in range(1, r['k'] + 2):      # C^(i,0..k_i): lists for all, MCA for the fold codes
             n_s, k_s = r['n'] // 2 ** (sub - 1), r['kdim'] // 2 ** (sub - 1)
             out.append((n_s, k_s, BM.dceil(a * n_s)))
@@ -169,6 +170,14 @@ def main():
             c0 = codes_for(shapes[nm], pl['plan'][:1])[0]
             if f"{c0[0]},{c0[1]},{c0[2]},{shapes[nm]['W'] - 1}" not in data:
                 jobs.append(c0 + (shapes[nm]['W'] - 1,))
+    # O-1 alone: mu batching (powers, degree W-1) at the Johnson agreement of ListDecoding(64), via the
+    # first-order curve theorem (DKT26 Lemma 5.9 / Cor 7.3; any a > a1 is allowed).
+    for sh in (BM.SHAPES['final (layer d)'], BM.SHAPES['inner NV (layers 1..d-1)'], BM.SHAPES['base app (layer 0, stress)']):
+        r0 = BM.rounds_of(sh)[0]
+        cj = (r0['n'], r0['kdim'], BM.agreement('J', r0['n'], r0['kdim'], M=64), sh['W'] - 1)
+        J_CURVES.add(','.join(map(str, cj)))
+        if ','.join(map(str, cj)) not in data:
+            jobs.append(cj)
     jobs = sorted(set(jobs))
     print(f'{len(jobs)} codes to certify', flush=True)
     with Pool(int(os.environ.get('JOBS', '8')), initializer=_init, initargs=(path,)) as pool:
@@ -197,7 +206,7 @@ def main():
         if pl['batching'] == 'first-curve' and pl['plan'][0][0] == 'F':
             c0 = codes_for(shapes[nm], [tuple(pl['plan'][0])])[0]
             need.add(f"{c0[0]},{c0[1]},{c0[2]},{shapes[nm]['W'] - 1}")
-    data = {k: v for k, v in data.items() if k in need or k == '_grid'}     # drop certificates no plan uses
+    data = {k: v for k, v in data.items() if k in need or k in J_CURVES or k == '_grid'}     # drop certificates no plan uses
     data['_plans'] = plans
     data['_meta'] = dict(engine=f'rs-beyond-johnson@{DKT_COMMIT} scripts/tune_first_order_mca.py',
                          taylor_model='tight-2D-minus-3-v3', support='derivative-weighted',

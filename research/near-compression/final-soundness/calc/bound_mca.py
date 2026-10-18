@@ -19,7 +19,11 @@ Regimes (one per WHIR round; MCA-UPGRADE.md section 2 has the theorem statements
             'tensor'  backend change: batch with eq-weights of h = ceil(log2 W) challenges,
                       DKT26 Cor 7.8 (Lean) -> h * E_line / |F|,
             'affine'  backend change: W-1 independent challenges, BCGM Lemma 7.1 /
-                      DKT26 Cor 7.2 -> E_line / (|F|-1).
+                      DKT26 Cor 7.2 -> E_line / (|F|-1),
+            'first-curve' no backend change: DKT26 first-order powers-curve certificate
+                      (Lemma 5.9 / Cor 7.3, curve degree W-1; Lean:
+                      exists_exceptional_retainedSquarefreeCurveMCA_sharp_*) at the same
+                      agreement (valid for any a > a1(rho), so also at the Johnson radius).
   F      O-2, first-order beyond Johnson.  a = A/n below sqrt(rho).  DKT26 Thm 5.8 /
          Prop 5.10 / Lemma 5.9 / Lemma 5.11 with an explicit finite certificate
          (m, B_d, B_jet) per code, produced and checked with the authors' exact-arithmetic
@@ -58,6 +62,8 @@ def lg(x):
 
 
 def dceil(x):
+    if isinstance(x, Fraction):
+        return -(-x.numerator // x.denominator)
     return int(x.to_integral_value(rounding=ROUND_CEILING))
 
 
@@ -161,7 +167,7 @@ def agreement(regime, n, kdim, M=None, ratio=None):
 
 def code_terms(regime, n, kdim, a_frac, ell=1):
     """(log2 line-MCA error, list bound) for code (n, kdim) at agreement fraction a_frac."""
-    A = dceil(Decimal(a_frac) * n)
+    A = dceil(a_frac * n) if isinstance(a_frac, Fraction) else dceil(Decimal(a_frac) * n)
     if regime == 'bcgm':
         return bcgm_err(1, n, kdim), 3 * n / kdim
     if regime == 'J':
@@ -186,7 +192,7 @@ def layer(s, plan, batching='bchks46', verbose=False):
             A = agreement('J', r['n'], r['kdim'], M=par)
         else:
             A = agreement('F', r['n'], r['kdim'], ratio=par)
-        r.update(reg=reg, par=par, A=A, a=Decimal(A) / r['n'], log_a=LOG2(A / r['n']))
+        r.update(reg=reg, par=par, A=A, a=Fraction(A, r['n']), log_a=LOG2(A / r['n']))   # exact: sub-codes use ceil(a n_s)
         r['q'] = math.ceil(QBITS / -r['log_a'])
         # codes C^(i,s) = RS[L_i^(2^s), m_i - s], s = 0..k_i (Pus26 Thm 5.3 needs lists for all of
         # them and MCA for s >= 1).  The fold move s is charged the MCA of C^(i,s-1) (length
@@ -288,7 +294,7 @@ def main():
         print(f"==== O-1: Johnson radius, backend ListDecoding(m = {M}) ====")
         for nm, s in (('final', final), ('inner NV', inner), ('base stress', base)):
             plan = [('J', M)] * len(rounds_of(s))
-            for bt in ('bchks46', 'tensor'):
+            for bt in (('bchks46', 'tensor', 'first-curve') if M == 64 else ('bchks46', 'tensor')):
                 out[(nm, 'J', M, bt)] = show(nm, s, plan, bt, f'J m={M}, batching {bt}')
         print()
     print("==== today: BCGM m = 3 ====")

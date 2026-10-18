@@ -97,6 +97,20 @@
   "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
   "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
  },
+ "2013265920,2097152,65485518,600": {
+  "B_d": 2,
+  "B_jet": 118,
+  "E": "113336606498604725204383784945311099759589616/9159343278221497627",
+  "H": 517056,
+  "char_gt": 2097151,
+  "ell": 600,
+  "list": "3441661184063987642/63388367",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 4,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-curve",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
  "2013265920,262144,18792001,1": {
   "B_d": 24,
   "B_jet": 817,
@@ -111,14 +125,14 @@
   "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
   "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
  },
- "2013265920,32768,7139337,1": {
+ "2013265920,32768,7139336,1": {
   "B_d": 9,
   "B_jet": 1241,
-  "E": "31338571756251172562092204246994731142697/83942080734377320",
-  "H": 15325,
+  "E": "27066036637756385859100769110005391305731/72493330849446390",
+  "H": 15326,
   "char_gt": 32767,
   "ell": 1,
-  "list": "2853895947525264817/7106570",
+  "list": "2853895947525243801/7106569",
   "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
   "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
   "m": 6,
@@ -167,14 +181,28 @@
   "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-curve",
   "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
  },
- "251658240,131072,4646312,1": {
+ "2013265920,524288,32742759,140": {
+  "B_d": 2,
+  "B_jet": 237,
+  "E": "261434670964414350334256002271720160391365323/97844466626635134978",
+  "H": 226324,
+  "char_gt": 524287,
+  "ell": 140,
+  "list": "217513756649813232/4027309",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 4,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-curve",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "251658240,131072,4646311,1": {
   "B_d": 32,
   "B_jet": 538,
-  "E": "74286294809580857765980909272118594819674/212435354608685669",
-  "H": 15944,
+  "E": "29715317700510649295974795566106003431491/84971160813963060",
+  "H": 15945,
   "char_gt": 131071,
   "ell": 1,
-  "list": "2183968020580367742/4515241",
+  "list": "272996002572541859/564405",
   "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
   "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
   "m": 16,
@@ -209,14 +237,14 @@
   "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
   "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
  },
- "251658240,4096,892418,1": {
+ "251658240,4096,892417,1": {
   "B_d": 9,
   "B_jet": 1241,
-  "E": "90484196298673121704821705949306544289/15625707630436262",
-  "H": 15224,
+  "E": "36195112738476419127601492927773103201/6250125573821444",
+  "H": 15225,
   "char_gt": 4095,
   "ell": 1,
-  "list": "44568733028751113/888323",
+  "list": "44568733028730097/888322",
   "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
   "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
   "m": 6,
@@ -307,14 +335,14 @@
   "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
   "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
  },
- "503316480,1024,551088,1": {
+ "503316480,1024,551087,1": {
   "B_d": 52,
   "B_jet": 14692,
-  "E": "492438114026234012637459078493786847603/38883138286965",
-  "H": 780289,
+  "E": "5541367737969623067632862141390301679479/437285635801336",
+  "H": 780761,
   "char_gt": 1023,
   "ell": 1,
-  "list": "520273332316383452/183355",
+  "list": "195102499618454973/68758",
   "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
   "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
   "m": 26,
@@ -349,14 +377,14 @@
   "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-line",
   "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
  },
- "503316480,262144,9292623,1": {
+ "503316480,262144,9292622,1": {
   "B_d": 32,
   "B_jet": 538,
-  "E": "317017058748325125627730817409943859823361/226554420109877272",
+  "E": "19021023446297903863335953446865165949665920/13593262167202802329",
   "H": 15950,
   "char_gt": 262143,
   "ell": 1,
-  "list": "72799622362932015/75254",
+  "list": "8735954683551808930/9030479",
   "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
   "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
   "m": 16,
@@ -388,6 +416,20 @@
   "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
   "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
   "m": 16,
+  "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-curve",
+  "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
+ },
+ "503316480,524288,16371380,140": {
+  "B_d": 2,
+  "B_jet": 118,
+  "E": "306670841469212597080947124530959659173172/1699511302859962041",
+  "H": 120643,
+  "char_gt": 524287,
+  "ell": 140,
+  "list": "215103125581239342/15847093",
+  "list_method": "sharp-squarefree-taylor-tight-v3-interleaved",
+  "list_theorem": "squarefree one-chart/resultant list plus extension-field interleaving",
+  "m": 4,
   "transfer": "sharp-squarefree-free-tail-taylor-tight-v3-curve",
   "transfer_theorem": "squarefree one-chart/resultant transfer (R2+R3)"
  },
