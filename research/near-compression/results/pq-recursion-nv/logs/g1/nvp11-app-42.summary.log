@@ -1,0 +1,101 @@
+test nv::tests::nv_app_binding ... NV_PHASE before_dag 1414
+NV_DAG air=0 nodes=21 rows_so_far=1464
+NV_PHASE after_dag 1477
+NV_PHASE after_stacking 1785
+NV_QCOST round=0 queries=10 rows=2160 per_query=216 nbits=8 k=3 merkle_nodes=80
+NV_QCOST round=1 queries=4 rows=864 per_query=216 nbits=7 k=3 merkle_nodes=108
+NV_QCOST round=2 queries=2 rows=418 per_query=209 nbits=6 k=3 merkle_nodes=120
+NV_PHASE end 7754
+NV_APP table rows 7754
+NV_PHASE before_dag 24493
+NV_DAG air=0 nodes=4857 rows_so_far=31038
+NV_DAG air=1 nodes=5848 rows_so_far=38569
+NV_DAG air=3 nodes=32 rows_so_far=39114
+NV_DAG air=2 nodes=1234 rows_so_far=40428
+NV_PHASE after_dag 40510
+NV_PHASE after_stacking 43282
+NV_QCOST round=0 queries=29 rows=13593 per_query=469 nbits=19 k=3 merkle_nodes=551
+NV_QCOST round=1 queries=11 rows=3223 per_query=293 nbits=18 k=3 merkle_nodes=749
+NV_QCOST round=2 queries=7 rows=2002 per_query=286 nbits=17 k=3 merkle_nodes=868
+NV_QCOST round=3 queries=6 rows=1674 per_query=279 nbits=16 k=3 merkle_nodes=964
+NV_QCOST round=4 queries=4 rows=1088 per_query=272 nbits=15 k=3 merkle_nodes=1024
+NV_QCOST round=5 queries=4 rows=1060 per_query=265 nbits=14 k=3 merkle_nodes=1080
+NV_PHASE end 73089
+NV_APP level2 failures []
+NV_APP honest ok
+NV_PHASE before_dag 24493
+NV_DAG air=0 nodes=4857 rows_so_far=31038
+NV_DAG air=1 nodes=5848 rows_so_far=38569
+NV_DAG air=3 nodes=32 rows_so_far=39114
+NV_DAG air=2 nodes=1234 rows_so_far=40428
+NV_PHASE after_dag 40510
+NV_PHASE after_stacking 43282
+NV_QCOST round=0 queries=29 rows=13593 per_query=469 nbits=19 k=3 merkle_nodes=551
+NV_QCOST round=1 queries=11 rows=3223 per_query=293 nbits=18 k=3 merkle_nodes=749
+NV_QCOST round=2 queries=7 rows=2002 per_query=286 nbits=17 k=3 merkle_nodes=868
+NV_QCOST round=3 queries=6 rows=1674 per_query=279 nbits=16 k=3 merkle_nodes=964
+NV_QCOST round=4 queries=4 rows=1088 per_query=272 nbits=15 k=3 merkle_nodes=1024
+NV_QCOST round=5 queries=4 rows=1060 per_query=265 nbits=14 k=3 merkle_nodes=1080
+NV_PHASE end 73089
+NV_STATEMENT L1 = L2 = statement digest ok
+NV_PHASE before_dag 24493
+NV_DAG air=0 nodes=4857 rows_so_far=31038
+NV_DAG air=1 nodes=5848 rows_so_far=38569
+NV_DAG air=3 nodes=32 rows_so_far=39114
+NV_DAG air=2 nodes=1234 rows_so_far=40428
+NV_PHASE after_dag 40510
+NV_PHASE after_stacking 43282
+NV_QCOST round=0 queries=29 rows=13593 per_query=469 nbits=19 k=3 merkle_nodes=551
+NV_QCOST round=1 queries=11 rows=3223 per_query=293 nbits=18 k=3 merkle_nodes=749
+NV_QCOST round=2 queries=7 rows=2002 per_query=286 nbits=17 k=3 merkle_nodes=868
+NV_QCOST round=3 queries=6 rows=1674 per_query=279 nbits=16 k=3 merkle_nodes=964
+NV_QCOST round=4 queries=4 rows=1088 per_query=272 nbits=15 k=3 merkle_nodes=1024
+NV_QCOST round=5 queries=4 rows=1060 per_query=265 nbits=14 k=3 merkle_nodes=1080
+NV_PHASE end 73089
+NV_TAMPER_REJECTED level-2 re-exposes a different statement digest
+NV_PHASE before_dag 24493
+NV_DAG air=0 nodes=4857 rows_so_far=31038
+NV_DAG air=1 nodes=5848 rows_so_far=38569
+NV_DAG air=3 nodes=32 rows_so_far=39114
+NV_DAG air=2 nodes=1234 rows_so_far=40428
+NV_PHASE after_dag 40510
+NV_PHASE after_stacking 43282
+NV_QCOST round=0 queries=29 rows=13593 per_query=469 nbits=19 k=3 merkle_nodes=551
+NV_QCOST round=1 queries=11 rows=3223 per_query=293 nbits=18 k=3 merkle_nodes=749
+NV_QCOST round=2 queries=7 rows=2002 per_query=286 nbits=17 k=3 merkle_nodes=868
+NV_QCOST round=3 queries=6 rows=1674 per_query=279 nbits=16 k=3 merkle_nodes=964
+NV_QCOST round=4 queries=4 rows=1088 per_query=272 nbits=15 k=3 merkle_nodes=1024
+NV_QCOST round=5 queries=4 rows=1060 per_query=265 nbits=14 k=3 merkle_nodes=1080
+NV_PHASE end 73089
+NV_APP level2 failures ["program binding"]
+NV_TAMPER_REJECTED app table word
+test nv::tests::nv_opening_formula ... NV_PHASE before_dag 1190
+NV_DAG air=0 nodes=21 rows_so_far=1240
+NV_PHASE after_dag 1253
+NV_PHASE after_stacking 1561
+NV_QCOST round=0 queries=10 rows=2160 per_query=216 nbits=8 k=3 merkle_nodes=80
+NV_QCOST round=1 queries=4 rows=864 per_query=216 nbits=7 k=3 merkle_nodes=108
+NV_QCOST round=2 queries=2 rows=418 per_query=209 nbits=6 k=3 merkle_nodes=120
+NV_PHASE end 7530
+NV_L1_PROVE_S 137.6
+NV_PHASE before_dag 13770
+NV_DAG air=0 nodes=4857 rows_so_far=20306
+NV_DAG air=1 nodes=5848 rows_so_far=27837
+NV_DAG air=3 nodes=32 rows_so_far=28382
+NV_DAG air=2 nodes=1234 rows_so_far=29696
+NV_PHASE after_dag 29778
+NV_PHASE after_stacking 32123
+NV_QCOST round=0 queries=10 rows=4328 per_query=433 nbits=16 k=3 merkle_nodes=160
+NV_QCOST round=1 queries=4 rows=1088 per_query=272 nbits=15 k=3 merkle_nodes=220
+NV_QCOST round=2 queries=2 rows=530 per_query=265 nbits=14 k=3 merkle_nodes=248
+NV_QCOST round=3 queries=2 rows=516 per_query=258 nbits=13 k=3 merkle_nodes=274
+NV_QCOST round=4 queries=1 rows=251 per_query=251 nbits=12 k=3 merkle_nodes=286
+NV_QCOST round=5 queries=1 rows=244 per_query=244 nbits=11 k=3 merkle_nodes=297
+NV_PHASE end 44263
+NV_L2_PROGRAM_ROWS 44263
+NV_OPENING P0: formula == opening: true
+NV_OPENING P1: formula == opening: true
+NV_OPENING P2: formula == opening: true
+NV_OPENING P3: formula == opening: true
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 72 filtered out; finished in 758.54s
+	Maximum resident set size (kbytes): 17362776

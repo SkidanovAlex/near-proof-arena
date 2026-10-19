@@ -10,7 +10,7 @@ def best():
         for ns in (15, 16, 17, 18):
             for k in (3, 4):
                 for k1 in (1, 2):
-                    if ns + 2 + b > e.MAX_DOM:
+                    if ns + 2 + b > e.MAX_DOM or ns + 2 < e.MIN_PEN_LOG_H:
                         continue
                     for lf in range(1, 12):
                         if (ns + 2 - k1 - lf) % k:

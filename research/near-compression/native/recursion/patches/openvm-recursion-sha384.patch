@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..b25408a
+index 0000000..97a491e
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,896 @@
+@@ -0,0 +1,883 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1671,19 +1671,10 @@ index 0000000..b25408a
 +    }
 +    /// T*: blocks B_j (j >= 2) of a PoW run created by the last sample: push the PoW witness as
 +    /// their units 16.. (the hash-chain row adds the counter).
-+    fn tr_pow_blocks(&mut self, ctr_before: u32) {
-+        use crate::sha384::config::SqueezeSrc;
-+        let pow = matches!(self.transcript.inner.src, SqueezeSrc::Pow(..));
-+        for _ in ctr_before..self.transcript.inner.ctr {
-+            // squeeze and PoW-run blocks share the numbering TJOB_SQUEEZE_BASE + block index
-+            let job = super::transcript2::TJOB_SQUEEZE_BASE + self.tr_blocks;
-+            self.tr_blocks += 1;
-+            if pow {
-+                for (i, v) in self.pow_wit.clone().into_iter().enumerate() {
-+                    self.push(Op::Unit1, v.addr, 0, job, 16 + i as u32, v.val, F::ZERO);
-+                }
-+            }
-+        }
++    fn tr_pow_blocks(&mut self, _ctr_before: u32) {
++        // gap G1: squeeze / PoW-run blocks are proof-shaped (their number depends on sampling
++        // rejections), so the program never refers to them; the hash-chain rows carry the PoW
++        // witness units themselves
 +    }
 +    /// The open flush job (allocated at the first observe of a run): (job, unit index).
 +    fn tr_obs_slot(&mut self, n: u32) -> (u32, u32) {
@@ -1731,12 +1722,8 @@ index 0000000..b25408a
 +        if !ok {
 +            self.failures.push(format!("pow ({bits} bits)"));
 +        }
-+        self.pow_wit.clear();
-+        for (i, &w) in witness.iter().enumerate() {
-+            let v = self.load_f(w);
-+            self.push(Op::Unit1, v.addr, 0, job, 16 + i as u32, v.val, F::ZERO);
-+            self.pow_wit.push(v);
-+        }
++        // the witness units are sent by the hash-chain row of this PoW block (not the program)
++        let _ = &self.pow_wit;
 +        self.push(Op::Anchor, t, witness.len() as u32, job, crate::sha384::config::TAG_POW as u32, EF::ZERO, F::ZERO);
 +        // output word 0 as limbs (l0, l1, l2) from the hash chain
 +        let state = self.transcript.inner.state;
@@ -6334,10 +6321,10 @@ index 0000000..9823e17
 +mod faithful_tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..1d520bb
+index 0000000..4a1457e
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,1180 @@
+@@ -0,0 +1,1226 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -6348,6 +6335,11 @@ index 0000000..1d520bb
 +use crate::sha384::{config::*, e2e_tests::child_params_small};
 +
 +fn build(fx: &impl TestFixture<Sha384Config>) -> (Builder, Builder) {
++    build2(fx, fx)
++}
++
++/// Programs for two children of the same shape (`fx2` should carry a different witness).
++fn build2(fx: &impl TestFixture<Sha384Config>, fx2: &impl TestFixture<Sha384Config>) -> (Builder, Builder) {
 +    let engine = Sha384CpuEngine::new(child_params_small());
 +    let (vk, proof) = fx.keygen_and_prove(&engine);
 +    engine.verify(&vk, &proof).unwrap();
@@ -6358,7 +6350,7 @@ index 0000000..1d520bb
 +    openvm_stark_backend::verifier::verify(engine.config(), &vk, &proof, &mut t).unwrap();
 +    assert_eq!(t.state, b.transcript.inner.state, "transcript diverged from native");
 +    // a second proof of the same shape gives the identical program
-+    let (vk2, proof2) = fx.keygen_and_prove(&engine);
++    let (vk2, proof2) = fx2.keygen_and_prove(&engine);
 +    let mut b2 = Builder::new(17, 0);
 +    build_verifier(&mut b2, &vk2, &proof2);
 +    (b, b2)
@@ -6366,7 +6358,8 @@ index 0000000..1d520bb
 +
 +#[test]
 +fn nv_program_fib() {
-+    let (b, b2) = build(&FibFixture::new(0, 1, 1 << 5));
++    // two different witnesses (the prover is deterministic: the same witness proves identically)
++    let (b, b2) = build2(&FibFixture::new(0, 1, 1 << 5), &FibFixture::new(2, 3, 1 << 5));
 +    assert!(b.failures.is_empty(), "{:?}", b.failures);
 +    println!("NV_PROGRAM_ROWS {} jobs={} merkle_nodes={}", b.instrs.len(), b.job_units.len(), b.merkle_nodes);
 +    assert_eq!(b.instrs, b2.instrs, "program depends on proof values");
@@ -7151,6 +7144,13 @@ index 0000000..1d520bb
 +            edit(&mut mats[0], r, &|x| x.job += F::ONE);
 +        })
 +    });
++    // G1: a PoW-run block's witness units must equal B_1's (chain bus), not a free choice
++    must_fail("tstar PoW-run block witness differs from B_1's", || {
++        nv_debug_mats(&vk, &proof, 16, |mats, _| {
++            let r = hash_row(&mut mats[0], &|x| x.op_q == F::ONE);
++            edit(&mut mats[0], r, &|x| x.w[0] += F::ONE);
++        })
++    });
 +    // challenges from B_1's PoW word: claim word 0 of a PoW block as read
 +    must_fail("tstar challenges from the PoW bits of B_1", || {
 +        nv_debug_mats(&vk, &proof, 16, |mats, _| {
@@ -7518,12 +7518,45 @@ index 0000000..1d520bb
 +    e1.verify(&vkf, &prf).expect("1-commitment proof with first-order round 0");
 +    println!("O2_MULTI ok");
 +}
++
++/// Gap G1: the NV program is a function of the child vk / shape only. Children with proof-of-work
++/// (logup and WHIR query PoW) and different witnesses give different transcripts (different
++/// sampling rejections, so different numbers of squeeze / PoW-run blocks) but byte-identical
++/// programs, and each one's trace passes the debug check.
++#[test]
++fn nv_program_pow_identity() {
++    use super::transcript2::{replay2, Op2};
++    let p = child_params_small();
++    assert!(p.logup.pow_bits > 0 || p.whir.query_phase_pow_bits > 0, "fixture must use PoW");
++    let engine = Sha384CpuEngine::new(p);
++    let circ = |vk: &openvm_stark_backend::keygen::types::MultiStarkVerifyingKey<Sha384Config>| super::circuit::NvCircuit::new(vk.inner.params.k_whir(), 16, 1);
++    let mut progs = vec![];
++    let mut census = vec![];
++    for (a, b0) in [(0u64, 1u64), (2, 3), (5, 8), (7, 1)] {
++        let (vk, proof) = FibFixture::new(a, b0, 1 << 5).keygen_and_prove(&engine);
++        let (_, bld) = circ(&vk).generate(&vk, &proof);
++        assert!(bld.failures.is_empty(), "{:?}", bld.failures);
++        let jobs = replay2(&bld.transcript.clone().into_log());
++        let n = |op: Op2| jobs.iter().filter(|j| j.op == op).count();
++        census.push((n(Op2::Squeeze), n(Op2::Pow), n(Op2::PowQ)));
++        progs.push(bld.instrs.clone());
++        if a == 0 {
++            nv_debug_mats(&vk, &proof, 16, |_, _| {});
++        }
++    }
++    println!("NV_POW_IDENTITY transcript blocks (squeeze, pow, pow-run) per child: {census:?}");
++    assert!(census.iter().any(|c| c != &census[0]), "children must differ in their block counts for the test to bite");
++    for p in &progs[1..] {
++        assert_eq!(p, &progs[0], "NV program depends on the child proof");
++    }
++    println!("NV_POW_IDENTITY {} programs byte-identical ({} rows)", progs.len(), progs[0].len());
++}
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
 new file mode 100644
-index 0000000..81bad57
+index 0000000..36b0e7c
 --- /dev/null
 +++ b/crates/recursion/src/nv/transcript2.rs
-@@ -0,0 +1,769 @@
+@@ -0,0 +1,796 @@
 +//! NV in-circuit SHA-384 transcript, word format v2 (see transcript/sha_transcript.rs for
 +//! the protocol).  Differences: the state and commit digests are 18 air2 limbs and are
 +//! framed as word units; commit events are 18 limb events; samples are extracted per
@@ -7860,6 +7893,11 @@ index 0000000..81bad57
 +    pub rd: T,
 +    /// the next row is a squeeze / PoW-run block (= next.op_s + next.op_q)
 +    pub nsq: T,
++    /// the next row is a PoW-run block (= next.op_q)
++    pub nq: T,
++    /// PoW witness felts (op_p / op_q: units 16, 17 of the block, sent by this row; zero
++    /// elsewhere): the PoW blocks are proof-shaped, so nothing of them is in the ALU program
++    pub w: [T; 2],
 +    /// input state units (key kappa for op_s, sigma for op_p / op_q, previous state otherwise)
 +    pub state_in: [T; NV_DIGEST],
 +    pub state_out: [T; NV_DIGEST],
@@ -7945,6 +7983,7 @@ index 0000000..81bad57
 +        tr.assert_zero(both.clone() * n.op_q * (n.ctr - l.ctr - one.clone()));
 +        tr.assert_zero(both.clone() * n.op_q * (n.nwit - l.nwit));
 +        tr.assert_zero(both.clone() * (l.nsq - n.op_s - n.op_q));
++        tr.assert_zero(both.clone() * (l.nq - n.op_q));
 +    }
 +    builder.assert_zero(g(l.nsq * (one.clone() - l.hn)));
 +    builder.when_last_row().assert_zero(g(l.op_f.into()));
@@ -7975,6 +8014,19 @@ index 0000000..81bad57
 +    h.send_felt(builder, l.job, c(15), c(0), kh.clone());
 +    // the block counter: unit 16 (squeeze) or 16 + nwit (after the PoW witness units)
 +    h.send_felt(builder, l.job, c(16) + pw.clone() * l.nwit, l.ctr, g(l.op_s + pw.clone()));
++    // the PoW witness: units 16 (and 17 when nwit = 2) of every PoW block, sent here (gap G1:
++    // the number of PoW-run blocks depends on the proof, so their units cannot come from the
++    // program). B_1's witness is free (any w with leading-zero B_1 is valid); the run's later
++    // blocks carry the same w (chain bus below).
++    builder.assert_zero(g(pw.clone() * (l.nwit - one.clone()) * (l.nwit - c(2))));
++    builder.assert_zero(g(pw.clone() * (c(2) - l.nwit) * l.w[1]));
++    for t in 0..2 {
++        builder.assert_zero(g((one.clone() - pw.clone()) * l.w[t]));
++    }
++    h.send_felt(builder, l.job, c(16), l.w[0], g(pw.clone()));
++    h.send_felt(builder, l.job, c(17), l.w[1], g(pw.clone() * (l.nwit - one.clone())));
++    builder.assert_zero(g(l.nq * (l.nq - one.clone())));
++    builder.assert_zero(g(l.nq * (one.clone() - l.hn)));
 +    // PoW jobs: B_1's word 0 (limbs) goes to the ALU's leading-zero check
 +    PermutationCheckBus::new(h.slot).send(
 +        builder,
@@ -7999,12 +8051,16 @@ index 0000000..81bad57
 +        builder,
 +        core::iter::once(l.nxt.into())
 +            .chain((0..NV_DIGEST).map(|i| l.state_out[i] + keep.clone() * (l.state_in[i] - l.state_out[i])))
++            .chain((0..2).map(|t| l.nq * l.w[t]))
 +            .collect::<Vec<AB::Expr>>(),
 +        g(l.hn.into()),
 +    );
 +    chain.receive(
 +        builder,
-+        core::iter::once(l.job.into()).chain(l.state_in.iter().map(|&x| x.into())).collect::<Vec<AB::Expr>>(),
++        core::iter::once(l.job.into())
++            .chain(l.state_in.iter().map(|&x| x.into()))
++            .chain((0..2).map(|t| l.op_q * l.w[t]))
++            .collect::<Vec<AB::Expr>>(),
 +        g(one.clone() - l.is_first),
 +    );
 +    // flush / commit / PoW jobs are anchored by the ALU: (2, job, 0, 0, t_start, cnt, tag); the tag
@@ -8211,6 +8267,9 @@ index 0000000..81bad57
 +        r.scnt = fu(j.scnt);
 +        r.ctr = F::from_u32(j.ctr);
 +        r.nwit = fu(j.wit.len());
++        for (t, &x) in j.wit.iter().enumerate() {
++            r.w[t] = x;
++        }
 +        r.ns = fu(ns);
 +        if matches!(j.op, Op2::Squeeze | Op2::PowQ) {
 +            assert_eq!(j.id, TJOB_SQUEEZE_BASE + ns as u32, "squeeze / PoW-run blocks numbered in chain order");
@@ -8220,6 +8279,7 @@ index 0000000..81bad57
 +            r.hn = F::ONE;
 +            r.nxt = F::from_u32(jobs[k + 1].id);
 +            r.nsq = F::from_bool(matches!(jobs[k + 1].op, Op2::Squeeze | Op2::PowQ));
++            r.nq = F::from_bool(jobs[k + 1].op == Op2::PowQ);
 +        }
 +        let si = state_limbs(&j.state_in);
 +        let so = state_limbs(&j.state_out);
@@ -9153,10 +9213,10 @@ index 0000000..2ee07dd
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..f7b2f34
+index 0000000..ad639b0
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1619 @@
+@@ -0,0 +1,1627 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -10382,15 +10442,23 @@ index 0000000..f7b2f34
 +    };
 +    let m1 = E1_BITS - l_skip;
 +    let t1 = eq_table(b, &rs[1..=m1]);
++    // ALU rows are [0, prog_len): only E2 entries with every index bit above prog_log zero are
++    // used, so E2 is the table over the prog_log - E1_BITS middle variables and the factor
++    // prod (1 - r) of the top variables is folded into the 2^l_skip Lagrange values
++    let m2u = b.prog_log - E1_BITS;
++    let mut top = b.c(F::ONE);
++    for &r in &rs[m1 + 1 + m2u..=n] {
++        let om = b.one_minus(r);
++        top = b.mul(top, om);
++    }
++    let lv: Vec<V> = lv.iter().map(|&v| b.mul(v, top)).collect();
 +    for x in 0..E1_SIZE {
 +        let (lo, hi) = (x & ((1 << l_skip) - 1), x >> l_skip);
 +        b.set_reserved_mul(x, lv[lo], t1[hi]);
 +    }
-+    let m2 = n - m1;
-+    let t2 = eq_table(b, &rs[m1 + 1..=n]);
++    let t2 = eq_table(b, &rs[m1 + 1..m1 + 1 + m2u]);
 +    let one = b.c(F::ONE);
-+    // ALU rows are [0, prog_len): E2 = the entries with all higher index bits zero
-+    let _ = m2;
++    debug_assert_eq!(b.prog_len() / E1_SIZE, t2.len());
 +    for x in 0..b.prog_len() / E1_SIZE {
 +        b.set_reserved_mul(E1_SIZE + x, t2[x], one);
 +    }

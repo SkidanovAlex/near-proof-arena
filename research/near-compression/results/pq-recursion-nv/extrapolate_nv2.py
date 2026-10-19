@@ -79,6 +79,7 @@ CERT_SHAPES = {(7, 20, 1, 4, 7), (8, 19, 1, 3, 9), (6, 19, 1, 4, 6), (6, 21, 1, 
                # runs on J64: +1 query, modelled as certified)
                (7, 20, 2, 4, 6), (8, 19, 2, 4, 9)}
 MAX_DOM = 27   # BabyBear 2-adicity: the x15 domain 15 * 2^(log_h + b) needs log_h + b <= 27
+MIN_PEN_LOG_H = 20   # the v4 SHA trace has 2^20 rows: the stacked height must be >= 2^20 (stream lane, b8 h19 fails)
 _REGIME = [None]
 
 
@@ -107,12 +108,13 @@ if SHA == 'v4':
     SHA_COLS, SHA_ROT, SHA_DEG, SHA_IPR_, SHA_ROWS_, TAB_ROWS, TAB_COLS, TAB_ROT = 83, 73, 9, 17, 128, 128, 9, 7
 else:
     SHA_COLS, SHA_ROT, SHA_DEG, SHA_IPR_, SHA_ROWS_, TAB_ROWS, TAB_COLS, TAB_ROT = 171, 144, 21, 14, 43, 64, 13, 11
-COLS, ROT = 74 + SHA_COLS + TAB_COLS + 5, 37 + SHA_ROT + TAB_ROT + 2   # NvAir 74 columns, 37 rotated (measured)
+NV_COLS = 77   # NvAir columns after the G1 fix (PoW witness on the hash-chain rows)
+COLS, ROT = NV_COLS + SHA_COLS + TAB_COLS + 5, 37 + SHA_ROT + TAB_ROT + 2   # NvAir 37 rotated (measured)
 D = max(8, SHA_DEG)
 AIRS = 4
-NV_IPR, SHA_IPR, SHA_ROWS = 49, SHA_IPR_, SHA_ROWS_   # NvAir 49 interactions/row (sampled words from GLUE)
+NV_IPR, SHA_IPR, SHA_ROWS = 51, SHA_IPR_, SHA_ROWS_   # NvAir 51 interactions/row (G1 fix: +2 witness units)
 # measured program costs (A2 of nvp2-T102: child = the NV level itself)
-P_FIXED = 72_278          # preamble + app table (10,9k) + GKR + DAG + stacking
+P_FIXED = 72_278 + 1_300  # preamble + app table (10,9k) + GKR + DAG + stacking (A2, binding off) + in-circuit child program binding (bind_child_program, ~1.3k rows)
 APP_ROWS = 10_988          # level-1 table (data rows)
 Q0_COST = 451              # round 0 (k1 = 1), depth 20 + 4 (x15)
 QR_COST = 530              # rounds >= 1 (k = 4), depth 17 + 4
@@ -184,7 +186,7 @@ def nv_circuit(rounds_q, depth0, depthr, child_W, lf=3, k1=1):
     nv_rows = prog + prog // 2 + APP_ROWS // 2 + glue + TR_ROWS
     sha_rows = SHA_ROWS * comps
     return dict(prog=prog, prog_log=prog_log, comps=comps, nv_rows=nv_rows, sha_rows=sha_rows,
-                cells=nv_rows * 74 + sha_rows * SHA_COLS + TAB_ROWS * TAB_COLS + 65536 * 5,
+                cells=nv_rows * NV_COLS + sha_rows * SHA_COLS + TAB_ROWS * TAB_COLS + 65536 * 5,
                 # GKR runs over the full (power-of-two) trace heights; tight heights only shrink
                 # the commitment (measured: A2 at 268 bits, L = 25 from 2^19 NvAir / SHA rows)
                 inter=p2(nv_rows) * NV_IPR + p2(sha_rows) * SHA_IPR + TAB_ROWS * 2 + 65536)
@@ -243,6 +245,7 @@ def schedule(cells, b, k1, k, log_h, lf, target):
 def fixed_point(pen_target, fin_target, digest, b, n_stack, k1=1, k=4, fin_bmax=None, lf=None):
     log_h = L_SKIP + n_stack
     assert log_h + b <= MAX_DOM, f"penultimate domain 15*2^{log_h + b} is not a BabyBear subgroup"
+    assert log_h >= MIN_PEN_LOG_H, f"penultimate stacked height 2^{log_h} below the SHA trace height"
     if lf is None:
         # penultimate log_final: the cheapest valid one (smaller -> cheaper final check, more rounds)
         best = None

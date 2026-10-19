@@ -1171,3 +1171,168 @@ a builder and test change only; the circuit is unchanged.
 * **Backed final (O-2, certified, model): 287,037 B.** That breaks down as L = 24, program
   130,476, NvAir 255,976 rows (2^17.97), and interactions 2^24.87 (`size_cut3.out`).
 * O-1 alone on the same penultimate would be 301,743 B, at L = 25 (NvAir 2^18.009).
+
+## Gap G1 fixed: the NV program depends only on the child vk / shape [measured: tests]
+
+Source: lane/pq-e2e-slice @ 480bf27f4, README G1.
+
+**The bug.** With proof-of-work in the child, the program contained T\* PoW-run blocks:
+* one `Unit1` row per witness felt, for each such block;
+* job ids `TJOB_SQUEEZE_BASE + n`, where n counts all earlier squeeze and PoW-run blocks.
+
+Both depend on the sampling rejections, so the program varied from proof to proof.
+
+**The fix.** The hash-chain row of every PoW block (B_1 and the PoW-run blocks) now carries the
+witness in new columns `w[2]` and sends it as felt units 16 and 17 itself. The program no longer
+refers to squeeze or PoW-run blocks at all: the `Unit1` pushes and their load rows are gone.
+* **B_1's witness is free.** Any w whose B_1 has the required leading zeros is a valid PoW.
+  PowChk still checks B_1's word 0, and the static anchor `(t_start, nwit, TAG_POW)` still pins
+  the job and the transcript positions.
+* **A PoW-run block carries B_1's witness.** The chain-bus message gains `(nq·w0, nq·w1)` on the
+  sender and `(op_q·w0, op_q·w1)` on the receiver. `nq` is a new column meaning "the next row is
+  a PoW-run block", with `nq − n.op_q = 0` at the transition, and nq = 0 on the last row.
+* **Unused witness cells are zero.** w = 0 on non-PoW rows, `nwit ∈ {1, 2}`, and `w[1] = 0`
+  when nwit = 1.
+* **GLUE range-checks the units as canonical felts**, as before.
+
+**Cost.**
+* NvAir grows from 74 to 77 columns, because the hash role is now the widest pool view.
+* Interactions per row go from 49 to 51 (2 more felt sends on the slot bus).
+* Rotations stay at 37 and the degree stays at 9.
+* Program rows drop by a few dozen (the `Unit1` and load rows).
+* With NvAir under 2^18, interactions are 2^24.90 < 2^25, so L stays 24.
+* Bytes (model): +3 opened columns (about 144 B), plus the cells.
+
+**Tests:**
+* `nv_program_fib` now builds its second program from a different witness (Fib(2,3) against
+  Fib(0,1)).
+* New test `nv_program_pow_identity`: four PoW-enabled children with different witnesses have
+  different transcripts, with squeeze block counts 31, 25, 25 and 27, and their programs are
+  byte-identical (8,684 rows).
+* `nv_tstar_tamper` adds: a PoW-run block whose witness differs from B_1's is rejected.
+
+**Also cheaper: the child-program binding.** `bind_child_program`'s E2 eq table now runs over the
+prog_log − E1_BITS variables that the ALU region actually uses. The top variables' `Π(1 − r)`
+factor is folded into the 2^l_skip Lagrange values. That is about 1k fewer rows.
+
+## Question 3: is in-circuit program binding in the 287 KB model and in the A3 chain?
+
+Two separate questions:
+* **Is the binding machinery counted at every fixed-point level?** Mostly yes, with one small
+  gap: the child-check rows were missing (below). This is what the extrapolation measures.
+* **Is the app table sized for a real base?** No. The model uses a toy table, and a real-base
+  table is much larger (below).
+
+**What the model counts.**
+1. **The BIND role rows** (prog/2) and the reserved E-table region. These bind the level's own
+   program. They are generated at every level whether or not the child check runs, so the model
+   counts them: NvAir rows = prog + prog/2 + …
+2. **The app table.** The level-1 program as data, as `Data` rows, BIND rows over it, and
+   app-bind rows: 10,988 rows, the size of an L1 that verifies the toy Fib app. All levels of
+   the fixed point carry it, because the program must be uniform.
+3. **The in-circuit child check `bind_child_program` was missing.** The model was calibrated on
+   A2 of the T102 chain, which ran with `bind = false`, as did phase A and FINAL of the measured
+   416 KB chain and the A3 run. It costs about 1.3k rows after the E2 cut above (2.4k before).
+   It is now included: `P_FIXED += 1,300`.
+
+**Corrected model figure.** With the G1 fix (77 columns, 51 interactions) and binding:
+* **287,557 B** (was 287,037);
+* L = 24, NvAir 257,926 rows (2^17.98), interactions 2^24.90;
+* adopted penultimate b7 h20 k1 2 lf6.
+
+This holds only with a toy-sized L1. With a real base, the app table is the real L1 program:
+
+| app table rows | final | L | NvAir rows |
+|---|---|---|---|
+| 400,000 | 315,677 B | 26 | 1.05M (2^20.0) |
+| 624,000 | 321,445 B | 26 | 1.50M (2^20.5) |
+
+So the 287–288 KB figure needs G2 solved.
+
+**Where the 47 % comes from.** The e2e agent's "+47 % program rows from binding at L2" is the app
+table, the L1 program carried as data, not the child-check rows. In the slice, the L1 program was
+roughly half the size of L2's own verifier.
+
+**The A3 chain the stream lane is running** (from 3c4324e8c) uses `nv_chain` phase A, which sets
+`bind = false`. It carries the app table (toy L1) but not the child check, and it predates the G1
+fix. Its bytes are representative to within the about 0.5 KB above. It does not demonstrate a
+pinned program.
+
+## Gap G2: binding whose cost does not grow with the child program [design note, not built]
+
+**The problem.** L2 must check that its child L1's committed program columns equal the fixed L1
+program P_L1, at the random point r. Today it evaluates Σ_x eq(r, x)·pw(P_L1[x]) over a data copy
+of P_L1, which is O(|P_L1|) rows at every level.
+
+The fixed-point levels avoid this with BIND: child program = own program, so the eq-sum runs over
+the level's own program. That trick does not apply to L1, whose program differs.
+
+**Proposal: program commitment for the level-1 child.** The NV levels stay uniform.
+1. **Every NV-family proof gets a second, preprocessed commitment** holding its program columns.
+   This includes L1, which is the NV circuit with its own app-verifier program.
+2. **The uniform NV program verifies a 2-commitment child.** The child's program commitment root
+   is selected by the level flag:
+   * **child level 1:** `C_L1`, a 42/48-byte constant of the NV program, the commitment of P_L1
+     made at setup. There is no circularity: the NV program contains C_L1, not its own
+     commitment.
+   * **child level ≥ 2:** the root comes from the proof as a witness. The existing BIND check
+     binds it: the child's program opening at r must equal the eq-sum over the level's own
+     program, which forces the committed polynomial to be the own program at a random point.
+     This keeps the fixed point free of self-reference.
+3. **The final layer stays single-commitment.** V_d checks the final layer's program natively
+   (O(program) native work, or a pinned preprocessed vk), so the final proof's bytes are
+   unaffected.
+4. **The app table and the app-bind role go away.** Every level loses about
+   1.5 × |P_L1| + |P_L1|/2 NvAir rows.
+
+**Cost estimate (model, to be measured):**
+* **Rows.** Verifying the second commitment means one more round-0 leaf (the 4 program words of
+  2^k1 rows) and Merkle path per query: about 41 × (26 levels × 5 + 10) ≈ 5.7k program rows,
+  8.6k NvAir rows. That is independent of |P_L1|. Against today's toy table (−11k program rows)
+  it is about a wash.
+* **Bytes.** Inner proofs gain a commitment, so their round 0 runs on Johnson (the
+  multi-commitment rule, +2 queries). The final proof has one commitment, so its bytes do not
+  change.
+* **Threshold.** NvAir moves by about −11k + 8.6k rows, so it stays near 2^18. With a real base it
+  avoids the +300 to +600k rows above.
+
+**Soundness points to settle:**
+* The binding of a witness root by BIND needs the WHIR opening of the child's preprocessed
+  commitment at the same r as the BIND point. It is batched into the child's stacked opening;
+  the stacking already batches several commitments.
+* C_L1 is the commitment of a fixed column, so the setup is deterministic and anyone can
+  recompute it.
+* V_d pins the final program, so the chain of constants is: V_d pins final → final pins NV via
+  BIND → NV pins L1 via C_L1 → L1 pins the base vk.
+
+**Alternatives considered:**
+* *A uniform program containing the base verifier,* so that L1 = NV and BIND covers it: the base
+  verifier's rows land in every level, so the cost still grows with the base.
+* *In-circuit WHIR opening of P_L1 at r:* a full extra opening proof at every level, about 60–80k
+  rows.
+* *Keeping the data table:* O(|P_L1|).
+
+**Status after G1 (this commit):**
+* The fast suite passes 58/58 in both digest modes. `nv_app_binding` and `nv_opening_formula`
+  pass in both modes (`logs/g1/`).
+* The backend soundness calculator now uses the O-2 table (−q·log2(A_i/n_i) per round), so its
+  print matches the bound vk.
+* The model now requires penultimate log_h ≥ 20: the v4 SHA trace has 2^20 rows (stream lane:
+  b8 h19 fails at A2).
+
+**Bind on at every level: does NvAir stay under 2^18?**
+* At the fixed-point levels, yes. The stream lane measured FINAL (bind off) at 252,636 rows. The
+  child check adds about 1.3k program rows, so about 2k NvAir rows: 254.6k < 262,144, a margin
+  of about 7.5k. The model gives 257.9k.
+* **The FINAL layer cannot use BIND.** Its parameters differ from the NV fixed point, so its
+  program differs from its child's, and today FINAL does not bind its child's program at all.
+  That is a soundness gap, the same kind of gap as G2. The options:
+  * **(a) Make FINAL a fixed-point level** (FINAL params = NV params, bind on, V_d pins the one
+    uniform program):
+    * shape (7,20,2,4,6): 300,191 B (L 24);
+    * shape (7,20,1,4,7): 290,477 B (L 25, NvAir 270k). About 8k NvAir rows of further cuts
+      would bring it back to L 24, about 287.9 KB.
+  * **(b) Give FINAL the G2 program commitment C_NV of its child.** FINAL's program grows by
+    about 6k rows; FINAL NvAir is then about 267k, so L 25. That is about 290.4 KB.
+  * **Next:** implement (a) as the default (uniform levels, bind on everywhere), then cut the
+    ~8k rows for the k1 = 1 shape.
