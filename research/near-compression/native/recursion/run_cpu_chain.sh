@@ -36,5 +36,5 @@ env HEAVY_MEM=${HEAVY_MEM:-90G} taskset -c 0-31 /data/illia/nearproof-deps/bin/h
   NV_LEVELS=${NV_LEVELS_:-0} NV_PHASE_A=${NV_PHASE_A:-4} ${NV_FIXED_OVERRIDE:+NV_FIXED_OVERRIDE=$NV_FIXED_OVERRIDE} NV_LOG_ROWS=${NV_LOG_ROWS:-18} NV_PROG_LOG=${NV_PROG_LOG:-18} NV_SAVE_DIR="$OUT" $RES \
   $P PARENT_LOG_BLOWUP=${PB:-7} PARENT_N_STACK=${PNS:-18} PARENT_K=${PK:-4} PARENT_K1=${PK1:-2} PARENT_LOG_FINAL=${PLF:-6} \
   $FIN \
-  /usr/bin/time -v "$BIN" nv::tests::nv_chain --ignored --exact --nocapture --test-threads 1 >> "$OUT/run.log" 2>&1
+  /usr/bin/time -v timeout ${CHAIN_TIMEOUT:-3600} "$BIN" nv::tests::nv_chain --ignored --exact --nocapture --test-threads 1 >> "$OUT/run.log" 2>&1
 echo "EXIT $?" >> "$OUT/run.log"
