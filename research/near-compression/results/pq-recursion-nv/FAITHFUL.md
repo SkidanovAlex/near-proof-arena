@@ -2053,3 +2053,182 @@ device with the tight lever on.
 
 **§Y verdict: P1–P8 arithmetise native multi-commitment verification faithfully. R5 is a native
 completeness defect with a test and a recommended fix.**
+
+## Z. Re-audit: G2 (cached program commitment, anchors, tight-height floor), app table removed, 24-bit addresses, 4-row Merkle level (lane/pq-recursion-sha384 @ 9159123be)
+
+Merged into this branch as a36576f93. **Verdict: no soundness bug.**
+* The anchored binding theorem holds (Z.1).
+* The cached program commitment binds the executed program columns (Z.2).
+* The prover-side floor changes no verifier rule and cannot be abused (Z.3).
+* R5 is handled: the program part is committed non-tight (Z.4).
+
+§2(b), §R.2 and §X.3 are superseded by Z.1–Z.2 for levels with a program part.
+
+### Z.1 Top-level binding with anchors
+
+**Setup** (deterministic, `NvCircuit::select_anchor`): it produces level programs P_1 (the
+app verifier, `bind` off), then P_2, …, P_M, and the converged program P* used from level
+M + 1 on, by FINAL included. Each P_ℓ (ℓ ≥ 2):
+* either anchors at its child: it embeds (ℓ − 1, C_{ℓ−1}), with C_{ℓ−1} =
+  `program_commitment` of level ℓ − 1's program part, computed natively from that level's trace;
+* or keeps the current anchor (M′, C_{M′}), only when its words equal its child's (then
+  P_ℓ = P_{ℓ−1}).
+
+P* embeds (M, C_M) with M < d. There is no circularity: P_ℓ embeds a commitment of a different
+level's program, never its own. V_d pins (vk_final, P*, d).
+
+**Circuit** (`build_verifier`, bind on):
+* own level = child level + 1 (`Pv`);
+* `flag = [child level ≠ M]` (inverse witness as before);
+* if flag = 0: `(root − C_M)·(1 − flag) = 0` on both digest cells, where root is the child's
+  cached program-part root — the same loaded and observed cells that authenticate that tree's
+  round-0 openings (§Y.3);
+* if flag = 1: BIND, `flag·(ACC − p̂) = 0` with p̂ = Σ τ^j·open(P_j)(r) taken from the child's
+  **cached-part** openings.
+
+**Theorem (anchored chain).** Suppose V_d accepts π_d: native verification under vk_final, the
+pinned level d, `check_final_program` against P*, and `check_statement`. Then, outside the
+protocol-proof error and Σ ε_LogUp per layer, there are traces T_d, …, T_1 and an app proof π_0
+such that:
+* T_ℓ runs **P_ℓ^\*** at level ℓ, where P^\*_ℓ = P* for ℓ > M and P^\*_ℓ = P_ℓ for ℓ ≤ M;
+* each π_{ℓ−1} = dec_ℓ(T_ℓ) is accepted by V′_{ℓ−1};
+* π_0 is accepted under vk_app;
+* the statement digest equals the claim.
+
+*Proof*, by descending induction on ℓ:
+1. **ℓ = d.** V_d's program check plus SZ and the PCS binding give that FINAL's committed common-main
+   program columns are P*. FINAL has no program part and one commitment (Y.4: round 0 under the
+   first-order certificate).
+2. **Step ℓ → ℓ − 1, with T_ℓ running P^\*_ℓ ∈ {P*, P_2, …, P_M}.** NV-faithful(ℓ) holds for every
+   one of these programs: they are outputs of the same generator, and §2 is program-agnostic
+   given `bind`. It gives level(x_{ℓ−1}) = ℓ − 1, so the binding branch is fixed by the level
+   alone:
+   * **child level ≠ anchor level of P^\*_ℓ** (the "keep" case, or P* with ℓ − 1 > M): BIND forces
+     the child's committed program columns to equal P^\*_ℓ, and P^\*_{ℓ−1} = P^\*_ℓ by
+     construction;
+   * **child level = anchor level** (P* at ℓ = M + 1, or P_ℓ anchored at ℓ − 1): the child's
+     program-part root equals the constant C_{ℓ−1}, so (Z.2) its committed program columns are
+     P_{ℓ−1}.
+3. Levels drop by exactly 1, so the anchor level is met exactly once per anchor, and the descent
+   reaches level 1, where P_1 is the app verifier with vk_app's constants (§X.3 step 4). The
+   statement digest passes through every level (R.4).
+
+The case d ≤ M cannot arise from setup. If it did, P* at a level ≤ M would bind its child by BIND
+down to level 1, where `Pv` of P* (child + 1) would require a level-0 child — a contradiction with
+P_1 being the only program exposing level 1. In any case V_d pins d > M.
+
+**Tests:**
+* `nv_l1_commit_binding` (M = 1: C_1 equals L1's cached root; a wrong C_1 and a re-exposed
+  different digest are rejected);
+* `nv_vd_pinned_program` (G2 rewrite; the forged final is rejected by the program check);
+* `nv_chain` with tight heights (the lane's run: anchors at L2–L4, BIND at L5 and FINAL; V_d
+  accepts at level 6; `logs/g2/nvflr-chain.summary.log`).
+
+### Z.2 The cached program commitment binds the executed program
+
+* With `program_part`, NvAir is a partitioned AIR: cached part = P0..P3 (width 4), common main =
+  the rest. Its constraints read the full row view `[common[..U_P], P, common[U_P..]]`, so the
+  ALU / BIND rules of §2(a) / §2(b) apply to the **cached** columns.
+* The native verifier checks the child's constraints on the committed parts (zerocheck over the
+  partitioned main), and the child's P openings at r are that cached part's openings (`part_cells`;
+  Y.1: partitioned main = cached parts, then common main).
+* For an anchor-level child, WHIR round 0 authenticates the cached tree's rows against `root`
+  (Y.3), and `root = C_M`. C_M is the commitment of the 4-column matrix (P_M zero-extended to the
+  NvAir height) under the child's parameters, which are program constants. By Merkle binding (the
+  same A-IC / collision terms as every commitment), the opened rows, and hence the committed
+  columns, are P_M's.
+* For a BIND child, p̂ comes from the same cached openings, and §2(b) B-4 applies unchanged.
+* In both cases the program the child **executes** is the program that is **bound**. There is no
+  second copy of P: common main no longer holds P0..P3 at a program-part level.
+* The child's own BIND rows bind its own executed P to its own MLE at the parent's point, as
+  before.
+
+### Z.3 Prover-side tight-height floor
+
+* `set_tight_floor` (prover, `stacked_pcs`) only raises a trace's committed tight height to
+  `max(natural, floor)`, capped at the trace height and rounded to 2^l_skip. The extra rows are
+  explicit zeros. **The verifier is unchanged:** the diff against 717eb518e touches only
+  `prover/stacked_pcs.rs` and test utilities. The verifier already accepts any declared tight
+  height that is a multiple of 2^l_skip and at most 2^log_h, and evaluates rows past it as zero.
+* *Can the floor be abused?*
+  * Inside one proof, a declared height is an ordinary native choice: the zero rows are inert
+    (F5) and the relation is unchanged.
+  * Across levels, a child's declared heights are **observed constants of the parent's program**
+    (`cu(h)` + `obs1`) and fix the parent's stacking and round-0 work. Any other declared height
+    makes the in-circuit transcript diverge from the child's, so the child's proof fails, or
+    needs a different parent program, which BIND, the C_M check or V_d rejects.
+  * A smaller declared height would truncate non-zero rows. Natively that is a different
+    (zero-tailed) trace, which must itself satisfy the constraints.
+* So the floor fixes shapes for convergence and grants no freedom.
+
+### Z.4 R5 handled
+
+`commit_program_part` calls `stacked_commit_odd(…, tight = false)`, matching the verifier's
+non-tight layout for cached parts. This holds even when the level's own common main uses the
+tight lever. `native_r5_cached_tight_commit` passes on the new head. The `nv_chain` run uses
+tight heights with a program part at every level.
+
+### Z.5 Other changes
+
+* **24-bit addresses.** P1 = B + op·2^24, with B = rx + 2^8·ry + 2^16·rz and rx, ry, rz bytes:
+  the pair lookups (rx, ry) and (rz, 0). So B ∈ [0, 2^24) exactly, and P1 < 40·2^24 < p.
+  §2(a) A-2 holds with 2^24 in place of 2^20: the integer decomposition is unique and op is bound.
+  The B1 attack (fractional rz) is gone by construction, since rz is looked up as a byte.
+  Regressions `nv_alu_relabel_zero_to_bit` / `_mul_to_nop` (forging B + 2^24) are rejected.
+* **App table removed.**
+  * The `kc` role, the bind2/acc2 buses and Data/Acc2 are gone; codes 26 and 27 are reserved
+    (c = 0, never emitted).
+  * The B-field range now covers every ALU row, which removes the only exemption.
+  * Nop → Rsv26 is rejected (`nv_alu_relabel_misc`).
+  * §R.2's APPB argument and §1.3's APPB rows no longer apply.
+  * NvAir: 76 columns, 48 interactions per row.
+* **Merkle level, 4 rows.** SibWS4 now also sends the node-job start `(P2, P0 = NODE_TAG, 1)` on
+  the job bus. Its P0 is a program word (bound), and each node job has exactly one SibWS4 row (the
+  generator). The level's semantics are as in W.1 (`nv_merkle_op_tamper`: SibWS4 P0 changed is
+  rejected).
+
+### Z.6 Tests and sweep on 9159123be (12 threads, 24 GB)
+
+**Tests:**
+* Every `nv_`, `o2_`, `final_layer` and `native_r5` test except `nv_chain`,
+  `nv_l1_commit_binding` and `nv_vd_pinned_program` passes:
+  * 62 / 62 in 48 B (`nv_program_probe` is ignored by design);
+  * 59 / 59 in 42 B + coset leaves.
+
+  These include B1–B6, `nv_alu_relabel_misc` (Nop → Rsv26), `nv_merkle_op_tamper` (SibWS4 P0),
+  `nv_bind_tamper`, `nv_program_identity_levers`, `nv_program_pow_identity`,
+  `native_r5_cached_tight_commit` and `nv_statement_passthrough`.
+* `nv_l1_commit_binding` (9 min 56, 17.8 GB): C_L1 is the setup commitment of L1's program part,
+  and level 2 is accepted at program and constraint level. Rejected: a wrong C_L1 constant, and a
+  level 2 re-exposing a different statement digest.
+* `nv_vd_pinned_program` (G2 version, `NV_PROG_LOG=17`): running, see Z.7.
+
+**Perturbation sweep, every cell.** NvAir is 76 columns. The harness evaluates the full row
+view, which is exactly what the AIR reassembles from (cached part, common main) when
+`program_part` is on: `[common[..U_P], P, common[U_P..]]`. So these sweeps cover the
+program-part constraint system too. The partition only changes which commitment holds P0..P3.
+
+| fixture | digests | cells | constraint | bus | undetected Sha512Air4 / TableAir4 | undetected total (all don't-care) | unexpected | mem-coupled accepted |
+|---|---|---:|---:|---:|---|---:|---:|---:|
+| Fib | 48 B | 10,749,056 | 9,566,308 | 930,149 | 0 / 0 | 252,599 | 0 | 0 / 20,016 |
+| interactions + levers | 48 B | 16,188,544 | 14,937,382 | 986,347 | 0 / 0 | 264,815 | 0 | 0 / 20,652 |
+| ×15 + WHIR levers | 48 B | 10,749,056 | 9,977,061 | 606,624 | 0 / 0 | 165,371 | 0 | 0 / 15,840 |
+| Fib, n_stack 3 (Horn2) | 48 B | 10,749,056 | 10,078,154 | 523,758 | 0 / 0 | 147,144 | 0 | 0 / 13,440 |
+| Fib | 42 B + coset leaf | 10,749,056 | 9,902,516 | 643,464 | 0 / 0 | 203,076 | 0 | 0 / 15,720 |
+| interactions + levers | 42 B + coset leaf | 10,749,056 | 9,834,811 | 698,805 | 0 / 0 | 215,440 | 0 | 0 / 16,356 |
+| ×15 + WHIR levers | 42 B + coset leaf | 10,749,056 | 10,050,836 | 544,320 | 0 / 0 | 153,900 | 0 | 0 / 14,304 |
+| Fib, n_stack 3 (Horn2) | 42 B + coset leaf | 6,669,440 | 6,217,679 | 335,970 | 0 / 0 | 115,791 | 0 | 0 / 9,744 |
+
+(The app-table fixture is gone with the APPB role.)
+
+**LogUp:** NvAir has 48 interactions per row, and the longest message has 22 fields.
+N = 48·2^18 + 17·2^20 + … ≈ 2^24.87 (2^25.36 with NvAir at 2^19), so ε_LogUp ≈ **2^−316.7**.
+
+### Z.7 `nv_vd_pinned_program` (G2)
+
+Re-run in progress on this branch (`NV_PROG_LOG=17`, 12 threads). The lane's runs passed:
+* G2 + 20-bit tree: 3 h 26, 19.8 GB;
+* the final tree: 3 h 08, 19.9 GB; 74,878 program rows; the forged 776-row final is rejected by
+  the program check.
+
+Logs: `logs/g2/nv-vd-g2.summary.log` and `nvg2b-vd.summary.log`.
