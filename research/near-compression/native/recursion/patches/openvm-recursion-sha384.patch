@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..b25408a
+index 0000000..97a491e
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,896 @@
+@@ -0,0 +1,883 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1671,19 +1671,10 @@ index 0000000..b25408a
 +    }
 +    /// T*: blocks B_j (j >= 2) of a PoW run created by the last sample: push the PoW witness as
 +    /// their units 16.. (the hash-chain row adds the counter).
-+    fn tr_pow_blocks(&mut self, ctr_before: u32) {
-+        use crate::sha384::config::SqueezeSrc;
-+        let pow = matches!(self.transcript.inner.src, SqueezeSrc::Pow(..));
-+        for _ in ctr_before..self.transcript.inner.ctr {
-+            // squeeze and PoW-run blocks share the numbering TJOB_SQUEEZE_BASE + block index
-+            let job = super::transcript2::TJOB_SQUEEZE_BASE + self.tr_blocks;
-+            self.tr_blocks += 1;
-+            if pow {
-+                for (i, v) in self.pow_wit.clone().into_iter().enumerate() {
-+                    self.push(Op::Unit1, v.addr, 0, job, 16 + i as u32, v.val, F::ZERO);
-+                }
-+            }
-+        }
++    fn tr_pow_blocks(&mut self, _ctr_before: u32) {
++        // gap G1: squeeze / PoW-run blocks are proof-shaped (their number depends on sampling
++        // rejections), so the program never refers to them; the hash-chain rows carry the PoW
++        // witness units themselves
 +    }
 +    /// The open flush job (allocated at the first observe of a run): (job, unit index).
 +    fn tr_obs_slot(&mut self, n: u32) -> (u32, u32) {
@@ -1731,12 +1722,8 @@ index 0000000..b25408a
 +        if !ok {
 +            self.failures.push(format!("pow ({bits} bits)"));
 +        }
-+        self.pow_wit.clear();
-+        for (i, &w) in witness.iter().enumerate() {
-+            let v = self.load_f(w);
-+            self.push(Op::Unit1, v.addr, 0, job, 16 + i as u32, v.val, F::ZERO);
-+            self.pow_wit.push(v);
-+        }
++        // the witness units are sent by the hash-chain row of this PoW block (not the program)
++        let _ = &self.pow_wit;
 +        self.push(Op::Anchor, t, witness.len() as u32, job, crate::sha384::config::TAG_POW as u32, EF::ZERO, F::ZERO);
 +        // output word 0 as limbs (l0, l1, l2) from the hash chain
 +        let state = self.transcript.inner.state;
@@ -2136,10 +2123,10 @@ index 0000000..b25408a
 +}
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..3a6e942
+index 0000000..f4ac463
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
-@@ -0,0 +1,251 @@
+@@ -0,0 +1,272 @@
 +//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
 +use std::{collections::HashMap, sync::Arc};
 +
@@ -2233,8 +2220,11 @@ index 0000000..3a6e942
 +    pub heights: Option<Vec<usize>>,
 +    /// app-verifier table (the level-1 program words, rows [0, n)), checked by level 2
 +    pub app: Option<Vec<[u32; 4]>>,
-+    /// the child is an NV proof: pass its statement digest through (implied by `bind`)
++    /// the child is an NV proof: pass its statement digest through and bind its program
 +    pub child_nv: bool,
++    /// TEST ONLY: passthrough without program binding (child of a different size)
++    #[cfg(test)]
++    pub test_no_bind: bool,
 +}
 +
 +impl NvCircuit {
@@ -2252,6 +2242,8 @@ index 0000000..3a6e942
 +            heights: None,
 +            app: None,
 +            child_nv: false,
++            #[cfg(test)]
++            test_no_bind: false,
 +        }
 +    }
 +
@@ -2295,15 +2287,31 @@ index 0000000..3a6e942
 +        vk: &MultiStarkVerifyingKey<Sha384Config>,
 +        proof: &Proof<Sha384Config>,
 +    ) -> (Vec<RowMajorMatrix<F>>, Builder) {
++        // program binding is on whenever the child is an NV proof (G1 / V_d: the program is
++        // pinned, so every NV child's program must be bound to this level's)
++        #[allow(unused_mut)]
++        let mut bind = self.bind || self.child_nv;
++        #[cfg(test)]
++        {
++            bind &= !self.test_no_bind;
++        }
++        let child_nv = self.child_nv;
++        self.generate_program(move |b| {
++            b.bind = bind;
++            b.child_nv = child_nv;
++            build_verifier(b, vk, proof);
++        })
++    }
++
++    /// Run an arbitrary program body (the verifier, or a test forgery) and generate every trace.
++    pub fn generate_program(&self, body: impl FnOnce(&mut Builder)) -> (Vec<RowMajorMatrix<F>>, Builder) {
 +        let mut b = Builder::new(self.log_rows, self.reserved());
 +        b.prog_log = self.prog_log;
 +        if let Some(app) = &self.app {
 +            b.emit_app(app.clone());
 +        }
 +        b.begin();
-+        b.bind = self.bind;
-+        b.child_nv = self.child_nv;
-+        build_verifier(&mut b, vk, proof);
++        body(&mut b);
 +        b.finish();
 +        let _ = self.k; // per-round folding factors come from the child vk
 +
@@ -3411,10 +3419,10 @@ index 0000000..e1db382
 +}
 diff --git a/crates/recursion/src/nv/faithful_tests.rs b/crates/recursion/src/nv/faithful_tests.rs
 new file mode 100644
-index 0000000..09423b9
+index 0000000..ca8bb26
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_tests.rs
-@@ -0,0 +1,768 @@
+@@ -0,0 +1,769 @@
 +//! NV-faithful: degree-of-freedom (single-cell perturbation) runs and tamper tests for the ALU,
 +//! BIND and app-binding roles (results/pq-recursion-nv/FAITHFUL.md).
 +//!
@@ -4125,6 +4133,7 @@ index 0000000..09423b9
 +    assert!(super::circuit::check_statement(&child_pv, &p0.public_values));
 +    let mut circ2 = NvCircuit::new(3, 19, 1);
 +    circ2.child_nv = true;
++    circ2.test_no_bind = true; // the child is smaller than this level: passthrough only
 +    let airs = circ2.airs::<Sha384Config>();
 +    let (mats, b2) = circ2.generate(&vk1, &p1);
 +    assert!(b2.failures.is_empty(), "{:?}", b2.failures);
@@ -6306,10 +6315,10 @@ index 0000000..7c70b86
 +}
 diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
 new file mode 100644
-index 0000000..9823e17
+index 0000000..3b36d05
 --- /dev/null
 +++ b/crates/recursion/src/nv/mod.rs
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,23 @@
 +//! NV: narrow fixed-point verifier circuit (see results/pq-recursion-nv/DESIGN.md).
 +pub mod builder;
 +pub mod circuit;
@@ -6320,6 +6329,7 @@ index 0000000..9823e17
 +pub mod transcript2;
 +pub mod uair;
 +pub mod verifier;
++pub mod vd;
 +#[cfg(test)]
 +mod faithful_sha_tests;
 +#[cfg(test)]
@@ -6334,10 +6344,10 @@ index 0000000..9823e17
 +mod faithful_tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..1d520bb
+index 0000000..2d4e4f8
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,1180 @@
+@@ -0,0 +1,1306 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -6348,6 +6358,11 @@ index 0000000..1d520bb
 +use crate::sha384::{config::*, e2e_tests::child_params_small};
 +
 +fn build(fx: &impl TestFixture<Sha384Config>) -> (Builder, Builder) {
++    build2(fx, fx)
++}
++
++/// Programs for two children of the same shape (`fx2` should carry a different witness).
++fn build2(fx: &impl TestFixture<Sha384Config>, fx2: &impl TestFixture<Sha384Config>) -> (Builder, Builder) {
 +    let engine = Sha384CpuEngine::new(child_params_small());
 +    let (vk, proof) = fx.keygen_and_prove(&engine);
 +    engine.verify(&vk, &proof).unwrap();
@@ -6358,7 +6373,7 @@ index 0000000..1d520bb
 +    openvm_stark_backend::verifier::verify(engine.config(), &vk, &proof, &mut t).unwrap();
 +    assert_eq!(t.state, b.transcript.inner.state, "transcript diverged from native");
 +    // a second proof of the same shape gives the identical program
-+    let (vk2, proof2) = fx.keygen_and_prove(&engine);
++    let (vk2, proof2) = fx2.keygen_and_prove(&engine);
 +    let mut b2 = Builder::new(17, 0);
 +    build_verifier(&mut b2, &vk2, &proof2);
 +    (b, b2)
@@ -6366,7 +6381,8 @@ index 0000000..1d520bb
 +
 +#[test]
 +fn nv_program_fib() {
-+    let (b, b2) = build(&FibFixture::new(0, 1, 1 << 5));
++    // two different witnesses (the prover is deterministic: the same witness proves identically)
++    let (b, b2) = build2(&FibFixture::new(0, 1, 1 << 5), &FibFixture::new(2, 3, 1 << 5));
 +    assert!(b.failures.is_empty(), "{:?}", b.failures);
 +    println!("NV_PROGRAM_ROWS {} jobs={} merkle_nodes={}", b.instrs.len(), b.job_units.len(), b.merkle_nodes);
 +    assert_eq!(b.instrs, b2.instrs, "program depends on proof values");
@@ -6641,7 +6657,12 @@ index 0000000..1d520bb
 +    use crate::sha384::e2e_tests::{describe, env_usize, params_from_env, proof_sizes, soundness};
 +    use openvm_stark_backend::keygen::types::MultiStarkVerifyingKey;
 +    use openvm_stark_backend::proof::Proof;
-+    let levels = env_usize("NV_LEVELS", 4);
++    let levels = env_usize("NV_LEVELS", 2);
++    // default: phase B with program binding at every level whose child is NV, then FINAL with the
++    // same (fixed-point) program under the final domain, checked by V_d against the pinned
++    // program.  NV_UNBOUND_FINAL=1 keeps the old measurement-only FINAL (FINAL_* params, child
++    // program NOT bound) after phase A.
++    let unbound_final = env_usize("NV_UNBOUND_FINAL", 0) == 1;
 +    let log_rows = env_usize("NV_LOG_ROWS", 19);
 +    let child_engine = Sha384CpuEngine::new(child_params_small());
 +    let (vk0, p0) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&child_engine);
@@ -6652,6 +6673,7 @@ index 0000000..1d520bb
 +    let k = openvm_stark_backend::StarkEngine::params(&engine).k_whir();
 +    let _ = k;
 +    // optional final layer with its own parameters (env FINAL_*), proving the last phase-A proof
++    assert!(unbound_final || std::env::var("FINAL_LOG_BLOWUP").is_err(), "FINAL must run the NV program (bound): FINAL_* params need NV_UNBOUND_FINAL=1 (measurement only)");
 +    let final_engine = std::env::var("FINAL_LOG_BLOWUP").ok().map(|_| {
 +        let mut fp = params_from_env("FINAL", [16, 3, 20, 64]);
 +        fp.max_constraint_degree = nv_debug_params().max_constraint_degree;
@@ -6741,9 +6763,10 @@ index 0000000..1d520bb
 +        fixed = vec![1];
 +    }
 +    for i in 1..=phase_a {
-+        circ.child_nv = i >= 2;
++        // phase A only finds the fixed heights: no binding / passthrough (child_nv would force the
++        // program binding, which needs equal programs, i.e. the fixed heights)
++        circ.child_nv = false;
 +        let (v, q, sh, app) = run(&circ, &vka, &pa, &format!("A{i}"));
-+        assert!(super::circuit::check_statement(&q.public_values[0], &p0.public_values), "A{i} statement");
 +        if let Some(d) = &save_dir {
 +            use openvm_stark_backend::codec::Encode;
 +            let mut bytes = vec![];
@@ -6766,15 +6789,14 @@ index 0000000..1d520bb
 +        prev = hs;
 +    }
 +    println!("NV_FIXED_HEIGHTS {fixed:?}");
-+    if let Some(fe) = &final_engine {
-+        // final layer: verifies the last phase-A proof (an NV level at the fixed point)
++    if let Some(fe) = final_engine.as_ref().filter(|_| unbound_final) {
++        // UNBOUND measurement-only final layer: verifies the last phase-A proof without binding
++        // its program (FINAL params differ from the NV fixed point)
++        println!("NV_FINAL_UNBOUND measurement only: the child's program is not bound");
 +        let mut fc = super::circuit::NvCircuit::new(k, log_rows, 1); // k = the child (parent-param) folding factor
 +        fc.app = circ.app.clone();
-+        fc.child_nv = true;
 +        fc.prog_log = circ.prog_log;
-+        let (_, fq, _, _) = run_with(fe, &fc, &vka, &pa, "FINAL");
-+        assert!(super::circuit::check_statement(&fq.public_values[0], &p0.public_values), "final statement");
-+        println!("NV_STATEMENT final proof binds the app statement");
++        let _ = run_with(fe, &fc, &vka, &pa, "FINAL");
 +        if levels == 0 {
 +            return;
 +        }
@@ -6783,17 +6805,29 @@ index 0000000..1d520bb
 +    let app_a = circ.app.clone();
 +    let mut circ = super::circuit::NvCircuit::new(k, log_rows, 1);
 +    circ.heights = Some(fixed);
-+    let (mut vk, mut p) = (vk0, p0);
++    let (mut vk, mut p) = (vk0, p0.clone());
++    let mut last_words: Vec<[u32; 4]> = vec![];
 +    for level in 1..=levels {
 +        circ.bind = level >= 2;
++        circ.child_nv = level >= 2;
 +        circ.app = if level >= 2 { app_a.clone() } else { None };
 +        let (v, q, _, app) = run(&circ, &vk, &p, &format!("L{level}"));
 +        if level == 1 {
-+            assert_eq!(Some(app), app_a, "level-1 program differs from the phase-A table");
++            assert_eq!(Some(app.clone()), app_a, "level-1 program differs from the phase-A table");
 +        }
++        assert!(super::circuit::check_statement(&q.public_values[0], &p0.public_values), "L{level} statement");
++        last_words = app;
 +        vk = v;
 +        p = q;
 +    }
++    // FINAL: the fixed-point program under the final domain, child program bound; V_d checks it
++    assert!(levels >= 2, "FINAL needs an NV child (NV_LEVELS >= 2)");
++    let fe = Sha384CpuEngine::new_final(openvm_stark_backend::StarkEngine::params(&engine).clone());
++    let (vkf, pf, _, words_f) = run_with(&fe, &circ, &vk, &p, "FINAL");
++    assert_eq!(words_f, last_words, "FINAL runs the same (fixed-point) program as its child");
++    let setup = super::vd::VdSetup { vk_final: vkf, program: words_f, level: levels as u32 + 1 };
++    super::vd::verify_final(&setup, &fe, &p0.public_values, &pf, false).expect("V_d (pinned program) accepts the final proof");
++    println!("NV_VD final accepted: level {}, pinned program {} rows", setup.level, setup.program.len());
 +}
 +
 +/// Keygen only: per-AIR constraint degree, width and interactions.
@@ -7149,6 +7183,13 @@ index 0000000..1d520bb
 +        nv_debug_mats(&vk, &proof, 16, |mats, _| {
 +            let r = hash_row(&mut mats[0], &|x| x.op_q == F::ONE);
 +            edit(&mut mats[0], r, &|x| x.job += F::ONE);
++        })
++    });
++    // G1: a PoW-run block's witness units must equal B_1's (chain bus), not a free choice
++    must_fail("tstar PoW-run block witness differs from B_1's", || {
++        nv_debug_mats(&vk, &proof, 16, |mats, _| {
++            let r = hash_row(&mut mats[0], &|x| x.op_q == F::ONE);
++            edit(&mut mats[0], r, &|x| x.w[0] += F::ONE);
 +        })
 +    });
 +    // challenges from B_1's PoW word: claim word 0 of a PoW block as read
@@ -7518,12 +7559,107 @@ index 0000000..1d520bb
 +    e1.verify(&vkf, &prf).expect("1-commitment proof with first-order round 0");
 +    println!("O2_MULTI ok");
 +}
++
++/// Gap G1: the NV program is a function of the child vk / shape only. Children with proof-of-work
++/// (logup and WHIR query PoW) and different witnesses give different transcripts (different
++/// sampling rejections, so different numbers of squeeze / PoW-run blocks) but byte-identical
++/// programs, and each one's trace passes the debug check.
++#[test]
++fn nv_program_pow_identity() {
++    use super::transcript2::{replay2, Op2};
++    let p = child_params_small();
++    assert!(p.logup.pow_bits > 0 || p.whir.query_phase_pow_bits > 0, "fixture must use PoW");
++    let engine = Sha384CpuEngine::new(p);
++    let circ = |vk: &openvm_stark_backend::keygen::types::MultiStarkVerifyingKey<Sha384Config>| super::circuit::NvCircuit::new(vk.inner.params.k_whir(), 16, 1);
++    let mut progs = vec![];
++    let mut census = vec![];
++    for (a, b0) in [(0u64, 1u64), (2, 3), (5, 8), (7, 1)] {
++        let (vk, proof) = FibFixture::new(a, b0, 1 << 5).keygen_and_prove(&engine);
++        let (_, bld) = circ(&vk).generate(&vk, &proof);
++        assert!(bld.failures.is_empty(), "{:?}", bld.failures);
++        let jobs = replay2(&bld.transcript.clone().into_log());
++        let n = |op: Op2| jobs.iter().filter(|j| j.op == op).count();
++        census.push((n(Op2::Squeeze), n(Op2::Pow), n(Op2::PowQ)));
++        progs.push(bld.instrs.clone());
++        if a == 0 {
++            nv_debug_mats(&vk, &proof, 16, |_, _| {});
++        }
++    }
++    println!("NV_POW_IDENTITY transcript blocks (squeeze, pow, pow-run) per child: {census:?}");
++    assert!(census.iter().any(|c| c != &census[0]), "children must differ in their block counts for the test to bite");
++    for p in &progs[1..] {
++        assert_eq!(p, &progs[0], "NV program depends on the child proof");
++    }
++    println!("NV_POW_IDENTITY {} programs byte-identical ({} rows)", progs.len(), progs[0].len());
++}
++
++/// V_d end to end (test size): base (Fib) -> L1 -> L2 (bound to L1 via the app table) -> FINAL
++/// (`new_final`, the same program as L2, bound to L2 at the fixed point) -> V_d. V_d pins the final
++/// vk, level 3 and the NV program; it accepts the honest chain; a forged FINAL (a verify-nothing
++/// program exposing the honest statement) passes every AIR and the final vk, and is accepted by
++/// a V_d without the program check but rejected with it; a wrong claim and a wrong pinned level
++/// are rejected. (Ignored: about 40 min, 17 GB.)
++#[test]
++#[ignore]
++fn nv_vd_pinned_program() {
++    use super::vd::{forge_statement_program, prove_traces, verify_final, VdSetup};
++    let child_engine = Sha384CpuEngine::new(child_params_small());
++    let (vk0, p0) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&child_engine);
++    let mut pp = openvm_stark_backend::test_utils::test_system_params_small(2, 18, 3);
++    pp.max_constraint_degree = nv_debug_params().max_constraint_degree;
++    pp.log_blowup = 1;
++    let pp = crate::sha384::e2e_tests::with_levers(pp, Default::default(), 1, 12);
++    let engine = Sha384CpuEngine::new(pp.clone());
++    let engine_final = Sha384CpuEngine::new_final(pp);
++    let k = openvm_stark_backend::StarkEngine::params(&engine).k_whir();
++    let log_rows = 18;
++    // natural L1, then L2's natural heights fix every level's heights
++    let circ1 = super::circuit::NvCircuit::new(k, log_rows, 1);
++    let (vk1n, p1n, b1n, _) = super::circuit::prove_level(&circ1, &engine, &vk0, &p0);
++    let app = super::circuit::NvCircuit::app_table(&b1n.instrs);
++    let mut circ2 = super::circuit::NvCircuit::new(k, log_rows, 1);
++    circ2.app = Some(app.clone());
++    circ2.child_nv = true;
++    let (m2n, _) = circ2.generate(&vk1n, &p1n);
++    use p3_matrix::Matrix;
++    let fixed: Vec<usize> = m2n.iter().map(|m| m.height()).collect();
++    println!("NV_VD fixed heights {fixed:?}");
++    let mut circ1f = circ1;
++    circ1f.heights = Some(fixed.clone());
++    let (vk1, p1, b1, _) = super::circuit::prove_level(&circ1f, &engine, &vk0, &p0);
++    assert_eq!(super::circuit::NvCircuit::app_table(&b1.instrs), app, "L1 program independent of its heights");
++    circ2.heights = Some(fixed.clone());
++    let (vk2, p2, b2, _) = super::circuit::prove_level(&circ2, &engine, &vk1, &p1);
++    assert_eq!(b2.level, 2);
++    let (vkf, pf, bf, _) = super::circuit::prove_level(&circ2, &engine_final, &vk2, &p2);
++    assert_eq!(bf.level, 3);
++    assert_eq!(bf.instrs, b2.instrs, "FINAL runs the uniform NV program (bound to L2's)");
++    let program: Vec<[u32; 4]> = bf.instrs.iter().map(|i| i.words()).collect();
++    let setup = VdSetup { vk_final: vkf.clone(), program, level: 3 };
++    verify_final(&setup, &engine_final, &p0.public_values, &pf, false).expect("V_d accepts the honest chain");
++    println!("NV_VD honest final accepted ({} program rows)", setup.program.len());
++    // wrong claim / wrong pinned level
++    let mut other = p0.public_values.clone();
++    let a = other.iter().position(|v| !v.is_empty()).unwrap();
++    other[a][0] += F::ONE;
++    assert!(verify_final(&setup, &engine_final, &other, &pf, false).is_err(), "wrong claim accepted");
++    let wrong_level = VdSetup { level: 2, ..setup.clone() };
++    assert!(verify_final(&wrong_level, &engine_final, &p0.public_values, &pf, false).is_err(), "wrong level accepted");
++    // the forgery: a verify-nothing program exposing level 3 and the honest statement digest
++    let d = crate::sha384::config::statement_digest(&p0.public_values);
++    let (mats, bforge) = circ2.generate_program(forge_statement_program(3, d));
++    let (vk_forge, p_forge) = prove_traces(&circ2, &engine_final, mats, bforge.public_values());
++    assert_eq!(vk_forge.pre_hash, vkf.pre_hash, "the forgery uses the pinned final vk");
++    verify_final(&setup, &engine_final, &p0.public_values, &p_forge, true).expect("without the program check V_d is fooled");
++    let err = verify_final(&setup, &engine_final, &p0.public_values, &p_forge, false).expect_err("forged final accepted with the program check");
++    println!("NV_VD forged final ({} rows) accepted without the program check, rejected with it: {err}", bforge.instrs.len());
++}
 diff --git a/crates/recursion/src/nv/transcript2.rs b/crates/recursion/src/nv/transcript2.rs
 new file mode 100644
-index 0000000..81bad57
+index 0000000..36b0e7c
 --- /dev/null
 +++ b/crates/recursion/src/nv/transcript2.rs
-@@ -0,0 +1,769 @@
+@@ -0,0 +1,796 @@
 +//! NV in-circuit SHA-384 transcript, word format v2 (see transcript/sha_transcript.rs for
 +//! the protocol).  Differences: the state and commit digests are 18 air2 limbs and are
 +//! framed as word units; commit events are 18 limb events; samples are extracted per
@@ -7860,6 +7996,11 @@ index 0000000..81bad57
 +    pub rd: T,
 +    /// the next row is a squeeze / PoW-run block (= next.op_s + next.op_q)
 +    pub nsq: T,
++    /// the next row is a PoW-run block (= next.op_q)
++    pub nq: T,
++    /// PoW witness felts (op_p / op_q: units 16, 17 of the block, sent by this row; zero
++    /// elsewhere): the PoW blocks are proof-shaped, so nothing of them is in the ALU program
++    pub w: [T; 2],
 +    /// input state units (key kappa for op_s, sigma for op_p / op_q, previous state otherwise)
 +    pub state_in: [T; NV_DIGEST],
 +    pub state_out: [T; NV_DIGEST],
@@ -7945,6 +8086,7 @@ index 0000000..81bad57
 +        tr.assert_zero(both.clone() * n.op_q * (n.ctr - l.ctr - one.clone()));
 +        tr.assert_zero(both.clone() * n.op_q * (n.nwit - l.nwit));
 +        tr.assert_zero(both.clone() * (l.nsq - n.op_s - n.op_q));
++        tr.assert_zero(both.clone() * (l.nq - n.op_q));
 +    }
 +    builder.assert_zero(g(l.nsq * (one.clone() - l.hn)));
 +    builder.when_last_row().assert_zero(g(l.op_f.into()));
@@ -7975,6 +8117,19 @@ index 0000000..81bad57
 +    h.send_felt(builder, l.job, c(15), c(0), kh.clone());
 +    // the block counter: unit 16 (squeeze) or 16 + nwit (after the PoW witness units)
 +    h.send_felt(builder, l.job, c(16) + pw.clone() * l.nwit, l.ctr, g(l.op_s + pw.clone()));
++    // the PoW witness: units 16 (and 17 when nwit = 2) of every PoW block, sent here (gap G1:
++    // the number of PoW-run blocks depends on the proof, so their units cannot come from the
++    // program). B_1's witness is free (any w with leading-zero B_1 is valid); the run's later
++    // blocks carry the same w (chain bus below).
++    builder.assert_zero(g(pw.clone() * (l.nwit - one.clone()) * (l.nwit - c(2))));
++    builder.assert_zero(g(pw.clone() * (c(2) - l.nwit) * l.w[1]));
++    for t in 0..2 {
++        builder.assert_zero(g((one.clone() - pw.clone()) * l.w[t]));
++    }
++    h.send_felt(builder, l.job, c(16), l.w[0], g(pw.clone()));
++    h.send_felt(builder, l.job, c(17), l.w[1], g(pw.clone() * (l.nwit - one.clone())));
++    builder.assert_zero(g(l.nq * (l.nq - one.clone())));
++    builder.assert_zero(g(l.nq * (one.clone() - l.hn)));
 +    // PoW jobs: B_1's word 0 (limbs) goes to the ALU's leading-zero check
 +    PermutationCheckBus::new(h.slot).send(
 +        builder,
@@ -7999,12 +8154,16 @@ index 0000000..81bad57
 +        builder,
 +        core::iter::once(l.nxt.into())
 +            .chain((0..NV_DIGEST).map(|i| l.state_out[i] + keep.clone() * (l.state_in[i] - l.state_out[i])))
++            .chain((0..2).map(|t| l.nq * l.w[t]))
 +            .collect::<Vec<AB::Expr>>(),
 +        g(l.hn.into()),
 +    );
 +    chain.receive(
 +        builder,
-+        core::iter::once(l.job.into()).chain(l.state_in.iter().map(|&x| x.into())).collect::<Vec<AB::Expr>>(),
++        core::iter::once(l.job.into())
++            .chain(l.state_in.iter().map(|&x| x.into()))
++            .chain((0..2).map(|t| l.op_q * l.w[t]))
++            .collect::<Vec<AB::Expr>>(),
 +        g(one.clone() - l.is_first),
 +    );
 +    // flush / commit / PoW jobs are anchored by the ALU: (2, job, 0, 0, t_start, cnt, tag); the tag
@@ -8211,6 +8370,9 @@ index 0000000..81bad57
 +        r.scnt = fu(j.scnt);
 +        r.ctr = F::from_u32(j.ctr);
 +        r.nwit = fu(j.wit.len());
++        for (t, &x) in j.wit.iter().enumerate() {
++            r.w[t] = x;
++        }
 +        r.ns = fu(ns);
 +        if matches!(j.op, Op2::Squeeze | Op2::PowQ) {
 +            assert_eq!(j.id, TJOB_SQUEEZE_BASE + ns as u32, "squeeze / PoW-run blocks numbered in chain order");
@@ -8220,6 +8382,7 @@ index 0000000..81bad57
 +            r.hn = F::ONE;
 +            r.nxt = F::from_u32(jobs[k + 1].id);
 +            r.nsq = F::from_bool(matches!(jobs[k + 1].op, Op2::Squeeze | Op2::PowQ));
++            r.nq = F::from_bool(jobs[k + 1].op == Op2::PowQ);
 +        }
 +        let si = state_limbs(&j.state_in);
 +        let so = state_limbs(&j.state_out);
@@ -9151,12 +9314,200 @@ index 0000000..2ee07dd
 +fn _w(m: &RowMajorMatrix<F>) -> usize {
 +    m.width()
 +}
+diff --git a/crates/recursion/src/nv/vd.rs b/crates/recursion/src/nv/vd.rs
+new file mode 100644
+index 0000000..bb0d7ab
+--- /dev/null
++++ b/crates/recursion/src/nv/vd.rs
+@@ -0,0 +1,182 @@
++//! Native final verifier V_d (ported from lane/pq-e2e-slice @ 480bf27f4, nv/e2e.rs): verifies
++//! the FINAL proof under the final domain, checks the pinned level and the statement digest, and
++//! checks the final proof's program columns against the pinned NV program
++//! (`check_final_program`) - the check that makes the chain sound (without it a final proof of a
++//! verify-nothing program exposing any statement is accepted).
++use openvm_stark_backend::{
++    keygen::types::MultiStarkVerifyingKey,
++    proof::Proof,
++    prover::{AirProvingContext, ProvingContext},
++    FiatShamirTranscript, StarkEngine,
++};
++use p3_field::{Field, PrimeCharacteristicRing, TwoAdicField};
++use p3_matrix::dense::RowMajorMatrix;
++
++use crate::sha384::config::{Digest, Sha384Config, Sha384CpuEngine, ShaTranscript, EF, F};
++
++pub type SC = Sha384Config;
++
++/// What V_d pins: the final vk (final domain), the NV program (its words) and the final level.
++#[derive(Clone)]
++pub struct VdSetup {
++    pub vk_final: MultiStarkVerifyingKey<SC>,
++    pub program: Vec<[u32; 4]>,
++    pub level: u32,
++}
++
++fn eq_uni(l_skip: usize, x: EF, y: EF) -> EF {
++    let (mut xp, mut yp) = (x, y);
++    let mut res = EF::ONE;
++    for _ in 0..l_skip {
++        res = (xp + yp) * res + (xp - EF::ONE) * (yp - EF::ONE);
++        xp = xp.square();
++        yp = yp.square();
++    }
++    res * F::ONE.halve().exp_u64(l_skip as u64)
++}
++
++/// The final proof's batch point r and its NvAir openings, re-derived natively under the final
++/// domain (the preamble of `verifier::verify`, then `verify_zerocheck_and_logup`).
++fn final_point_and_openings(vk: &MultiStarkVerifyingKey<SC>, proof: &Proof<SC>) -> Result<(Vec<EF>, usize, Vec<(EF, EF)>), String> {
++    use std::cmp::Reverse;
++    let mvk = &vk.inner;
++    let l_skip = mvk.params.l_skip;
++    let num_airs = mvk.per_air.len();
++    let mut t = ShaTranscript::new_layer(true);
++    t.observe_commit(vk.pre_hash);
++    t.observe_commit(proof.common_main_commit);
++    for ((td, avk), pvs) in proof.trace_vdata.iter().zip(&mvk.per_air).zip(&proof.public_values) {
++        if avk.preprocessed_data.is_some() || !avk.params.width.cached_mains.is_empty() {
++            return Err("final vk has preprocessed/cached traces".into());
++        }
++        if !avk.is_required {
++            t.observe(F::from_bool(td.is_some()));
++        }
++        let td = td.as_ref().ok_or("final proof: AIR absent")?;
++        t.observe(F::from_usize(td.log_height));
++        if let Some(h) = td.tight_height {
++            t.observe(F::from_usize(h));
++        }
++        for &pv in pvs {
++            t.observe(pv);
++        }
++    }
++    let mut tid: Vec<usize> = (0..num_airs).collect();
++    tid.sort_by_key(|&a| (Reverse(proof.trace_vdata[a].as_ref().unwrap().log_height), a));
++    let n_per_trace: Vec<isize> = tid
++        .iter()
++        .map(|&a| proof.trace_vdata[a].as_ref().unwrap().log_height as isize - l_skip as isize)
++        .collect();
++    let omega_skip_pows: Vec<F> = F::two_adic_generator(l_skip).powers().take(1 << l_skip).collect();
++    let r = openvm_stark_backend::verifier::batch_constraints::verify_zerocheck_and_logup::<SC, _>(
++        &mut t,
++        mvk,
++        &proof.public_values,
++        &proof.gkr_proof,
++        &proof.batch_constraint_proof,
++        &tid,
++        &n_per_trace,
++        &omega_skip_pows,
++    )
++    .map_err(|e| format!("zerocheck: {e:?}"))?;
++    let ti = tid.iter().position(|&a| a == 0).unwrap();
++    let mask = mvk.per_air[0].params.opening_masks()[0].clone();
++    let open = openvm_stark_backend::proof::column_openings_by_mask(&proof.batch_constraint_proof.column_openings[ti][0], &mask);
++    Ok((r, n_per_trace[ti] as usize, open))
++}
++
++/// The multilinear evaluation of the program words (P0..P3 combined by tau) at r, natively.
++pub fn program_eval(program: &[[u32; 4]], r: &[EF], n: usize, l_skip: usize) -> EF {
++    let tp = super::uair::tau_pows();
++    let omega = F::two_adic_generator(l_skip);
++    let lv: Vec<EF> = (0..1usize << l_skip).map(|i| eq_uni(l_skip, r[0], EF::from(omega.exp_u64(i as u64)))).collect();
++    let mut eq = vec![EF::ONE];
++    for &ri in &r[1..=n] {
++        let mut next = Vec::with_capacity(2 * eq.len());
++        next.extend(eq.iter().map(|&e| e * (EF::ONE - ri)));
++        next.extend(eq.iter().map(|&e| e * ri));
++        eq = next;
++    }
++    let mut acc = EF::ZERO;
++    for (y, w) in program.iter().enumerate() {
++        let p: EF = (0..4).map(|j| tp[j] * F::from_u32(w[j])).sum();
++        acc += lv[y & ((1 << l_skip) - 1)] * eq[y >> l_skip] * p;
++    }
++    acc
++}
++
++/// Native check that the final proof's NvAir program columns open to the pinned program.
++pub fn check_final_program(setup: &VdSetup, proof: &Proof<SC>) -> Result<(), String> {
++    let (r, n, open) = final_point_and_openings(&setup.vk_final, proof)?;
++    let l_skip = setup.vk_final.inner.params.l_skip;
++    if setup.program.len() > 1usize << (l_skip + n) {
++        return Err("program longer than the NvAir trace".into());
++    }
++    let tp = super::uair::tau_pows();
++    let phat: EF = (0..4).map(|j| tp[j] * open[super::uair::U_P + j].0).sum();
++    if phat != program_eval(&setup.program, &r, n, l_skip) {
++        return Err("final program openings differ from the pinned program".into());
++    }
++    Ok(())
++}
++
++/// V_d: accept iff the final proof verifies under the pinned final vk (final domain), exposes
++/// the pinned level, runs the pinned program (unless `skip_program`, the unsound variant kept
++/// only to show the forgery), and exposes the statement digest of the claimed app public values.
++pub fn verify_final(setup: &VdSetup, engine_final: &Sha384CpuEngine, app_public_values: &[Vec<F>], proof: &Proof<SC>, skip_program: bool) -> Result<(), String> {
++    engine_final.verify(&setup.vk_final, proof).map_err(|e| format!("final proof: {e:?}"))?;
++    let pvs = &proof.public_values[0];
++    if pvs.len() != super::uair::NV_NUM_PVS {
++        return Err("final public values".into());
++    }
++    if pvs[0] != F::from_u32(setup.level) {
++        return Err(format!("level {} != pinned {}", pvs[0], setup.level));
++    }
++    if !skip_program {
++        check_final_program(setup, proof)?;
++    }
++    if !super::circuit::check_statement(pvs, app_public_values) {
++        return Err("statement digest differs from the claim".into());
++    }
++    Ok(())
++}
++
++/// The forger's program: verifies nothing, exposes `level` and the statement digest `d`.
++pub fn forge_statement_program(level: u32, d: Digest) -> impl FnOnce(&mut super::builder::Builder) {
++    move |b| {
++        use super::builder::{digest_cells, ef_from, DigestCells};
++        let l = b.c(F::from_u32(level));
++        b.pv_level(l);
++        let (lo, hi) = digest_cells(d);
++        let lo = b.load(ef_from(lo));
++        let hi = b.load(ef_from(hi));
++        b.pv_digest(&DigestCells { lo, hi, digest: d });
++    }
++}
++
++/// Prove pre-generated NV traces (AIR 0 carries the given public values).
++pub fn prove_traces(
++    circ: &super::circuit::NvCircuit,
++    engine: &Sha384CpuEngine,
++    mats: Vec<RowMajorMatrix<F>>,
++    pvs: Vec<F>,
++) -> (MultiStarkVerifyingKey<SC>, Proof<SC>) {
++    use openvm_cpu_backend::CpuBackend;
++    use openvm_stark_backend::prover::DeviceDataTransporter;
++    let airs = circ.airs::<SC>();
++    let (pk, vk) = engine.keygen(&airs);
++    let ctxs: Vec<(usize, AirProvingContext<CpuBackend<SC>>)> = mats
++        .into_iter()
++        .enumerate()
++        .map(|(i, m)| (i, if i == 0 { AirProvingContext::simple(m, pvs.clone()) } else { AirProvingContext::simple_no_pis(m) }))
++        .collect();
++    let d_pk = engine.device().transport_pk_to_device(&pk);
++    let proof = engine.prove(&d_pk, ProvingContext::new(ctxs)).unwrap();
++    engine.verify(&vk, &proof).unwrap();
++    (vk, proof)
++}
++
++#[allow(dead_code)]
++fn _unused(x: F) -> bool {
++    Field::is_zero(&x)
++}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..f7b2f34
+index 0000000..ad639b0
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1619 @@
+@@ -0,0 +1,1627 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -10382,15 +10733,23 @@ index 0000000..f7b2f34
 +    };
 +    let m1 = E1_BITS - l_skip;
 +    let t1 = eq_table(b, &rs[1..=m1]);
++    // ALU rows are [0, prog_len): only E2 entries with every index bit above prog_log zero are
++    // used, so E2 is the table over the prog_log - E1_BITS middle variables and the factor
++    // prod (1 - r) of the top variables is folded into the 2^l_skip Lagrange values
++    let m2u = b.prog_log - E1_BITS;
++    let mut top = b.c(F::ONE);
++    for &r in &rs[m1 + 1 + m2u..=n] {
++        let om = b.one_minus(r);
++        top = b.mul(top, om);
++    }
++    let lv: Vec<V> = lv.iter().map(|&v| b.mul(v, top)).collect();
 +    for x in 0..E1_SIZE {
 +        let (lo, hi) = (x & ((1 << l_skip) - 1), x >> l_skip);
 +        b.set_reserved_mul(x, lv[lo], t1[hi]);
 +    }
-+    let m2 = n - m1;
-+    let t2 = eq_table(b, &rs[m1 + 1..=n]);
++    let t2 = eq_table(b, &rs[m1 + 1..m1 + 1 + m2u]);
 +    let one = b.c(F::ONE);
-+    // ALU rows are [0, prog_len): E2 = the entries with all higher index bits zero
-+    let _ = m2;
++    debug_assert_eq!(b.prog_len() / E1_SIZE, t2.len());
 +    for x in 0..b.prog_len() / E1_SIZE {
 +        b.set_reserved_mul(E1_SIZE + x, t2[x], one);
 +    }

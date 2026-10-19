@@ -1,0 +1,8 @@
+test nv::tests::nv_vd_pinned_program has been running for over 60 seconds
+NV_VD fixed heights [262144, 524288, 128, 65536]
+NV_VD honest final accepted (76014 program rows)
+NV_VD forged final (9684 rows) accepted without the program check, rejected with it: final program openings differ from the pinned program
+test nv::tests::nv_vd_pinned_program ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 74 filtered out; finished in 3753.50s
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:02:33
+	Maximum resident set size (kbytes): 17906224

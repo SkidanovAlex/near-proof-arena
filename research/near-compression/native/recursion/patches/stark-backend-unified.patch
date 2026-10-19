@@ -3068,7 +3068,7 @@ index 6bdbaa8..d693db1 100644
  }
  
 diff --git a/crates/stark-backend/src/soundness/calculator.rs b/crates/stark-backend/src/soundness/calculator.rs
-index 7ba58fb..dc4492c 100644
+index 7ba58fb..a994776 100644
 --- a/crates/stark-backend/src/soundness/calculator.rs
 +++ b/crates/stark-backend/src/soundness/calculator.rs
 @@ -100,7 +100,8 @@ impl SoundnessCalculator {
@@ -3121,12 +3121,18 @@ index 7ba58fb..dc4492c 100644
                      proximity_regime,
                      challenge_field_bits,
                      current_log_degree,
-@@ -438,19 +443,35 @@ impl SoundnessCalculator {
+@@ -438,19 +443,41 @@ impl SoundnessCalculator {
              // `current_log_degree + log_inv_rate` here. `whir_query_security_biased` folds the
              // `sample_bits` bias into the agreement-set bound.
              let log_query_domain = current_log_degree + log_inv_rate;
 -            let query_bits =
-+            let query_bits = if odd == 1 {
++            let table_round = whir.agreement.as_ref().and_then(|t| t.rounds.get(round));
++            let query_bits = if let Some(tr) = table_round {
++                // O-2 / certificate-gated table (bound in the vk): each query costs
++                // -log2(A_i / n_i) bits at the round's agreement threshold A_i (first order or
++                // Johnson fallback); the domain is sampled exactly (rejection)
++                -(round_config.num_queries as f64) * ((tr.agree as f64) / (tr.n as f64)).log2()
++            } else if odd == 1 {
                  Self::whir_query_security_biased(
                      proximity_regime,
                      round_config.num_queries,
@@ -3160,7 +3166,7 @@ index 7ba58fb..dc4492c 100644
                  proximity.in_round(round + 1),
                  challenge_field_bits,
                  current_log_degree,
-@@ -524,6 +545,71 @@ impl SoundnessCalculator {
+@@ -524,6 +551,71 @@ impl SoundnessCalculator {
          (min_security, details)
      }
  
@@ -3232,7 +3238,7 @@ index 7ba58fb..dc4492c 100644
      /// Computes WHIR proximity gap security bits.
      ///
      /// Per WHIR paper: err*(C, ℓ, δ) = (ℓ - 1) · 2^m / (ρ · |F|)
-@@ -957,9 +1043,9 @@ pub fn print_soundness_report(
+@@ -957,9 +1049,9 @@ pub fn print_soundness_report(
      println!();
  
      println!("WHIR Round Breakdown:");
@@ -3243,7 +3249,7 @@ index 7ba58fb..dc4492c 100644
          let query_sec =
              proximity_regime.whir_query_security_bits(round_config.num_queries, log_inv_rate);
          println!(
-@@ -971,7 +1057,7 @@ pub fn print_soundness_report(
+@@ -971,7 +1063,7 @@ pub fn print_soundness_report(
              params.whir.query_phase_pow_bits,
              params.whir.folding_pow_bits
          );
@@ -3252,7 +3258,7 @@ index 7ba58fb..dc4492c 100644
      }
  }
  
-@@ -1002,6 +1088,7 @@ mod tests {
+@@ -1002,6 +1094,7 @@ mod tests {
              w_stack: 64,
              log_blowup: 1,
              whir: WhirConfig {
@@ -3260,7 +3266,7 @@ index 7ba58fb..dc4492c 100644
                  k: 4,
                  rounds: vec![
                      WhirRoundConfig { num_queries: 36 },
-@@ -1011,6 +1098,8 @@ mod tests {
+@@ -1011,6 +1104,8 @@ mod tests {
                  query_phase_pow_bits: 16,
                  folding_pow_bits: 10,
                  proximity: WhirProximityStrategy::UniqueDecoding,
