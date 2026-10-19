@@ -696,3 +696,16 @@ model 308.5 → 298.9 KB.
 * Checkpoint: preprocessed (or PREP-linked) code table REQUIRED before full ISA (code binding via
   PV interactions grows with program; vk per program) → NV must verify preprocessed children
   (also needed for G2 binding). Memory: stack/locals channel proven under D3 (no-discard).
+
+## 2026-10-19 — G1 fixed, binding on everywhere (lane/pq-recursion-sha384 @ 717eb518e)
+
+* G1: PoW witness carried in hash rows, run blocks reuse first block's witness via chain bus;
+  program = f(child vk/shape). `nv_program_pow_identity`: 4 PoW children, different transcripts,
+  byte-identical programs. NvAir 77 cols / 51 int; ≈ +150 B.
+* Binding on at every NV-child level; FINAL now runs the uniform fixed-point program under the
+  final domain with binding (old unbound FINAL was a soundness gap in all earlier 287 KB figures).
+  V_d (`nv/vd.rs`) test `nv_vd_pinned_program`: forged verify-nothing final rejected.
+* Model: final shares penultimate shape → (7,20,1,4,7) 290,477 B (L=25, NvAir ~270k) or
+  (7,20,2,4,6) 300,191 B (L=24); ~8k NvAir rows of cuts → ≈ 287.9 KB. Real base app table
+  (400–624k rows) → 315.7–321.4 KB → G2 (preprocessed program commitment) required.
+* Stream lane re-running non-provisional; auditor §X; preprocessed lane implements G2.
