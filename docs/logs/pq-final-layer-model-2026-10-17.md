@@ -734,3 +734,13 @@ model 308.5 → 298.9 KB.
   found pre-proof and fixed; `wasm_base_sound` extended to traps; KAT 63/63; difftest OK.
 * Cost: mixed loop 430 cell-eq/op (568 padded); div-only 1,226/row (2.2× model 546).
 * Next: shared Lean relation refactor (memory pages, globals, frames) → families 2–4.
+
+## 2026-10-19 — bound chain fails at L3 (lane/pq-stream-commit @ a12b65b77)
+
+* Real-settings chain on 717eb518e (b7 h20 k1=1, all O-2): L1 261,843 B; L2 289,493 B (binds L1
+  via app table; NvAir 257,212 rows, interactions 2^25.4 → L=25); L3 builder fails "program
+  binding": with tight heights the program depends on the child's committed heights (L1 tiny →
+  L2 program 133,154 rows vs L3 142,517). BIND needs equal programs → FINAL/V_d never reached.
+  Test nv_vd_pinned_program missed it (debug children with equal heights).
+* Assigned to recursion lane with G2 (options: heights as witnesses; per-level pinned program
+  constants until convergence; tight heights off). Converged program ≈ 271k NvAir rows (> 2^18).
