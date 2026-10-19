@@ -749,3 +749,11 @@ model 308.5 → 298.9 KB.
   chain to app proof under app vk with statement digest passthrough; ε_LogUp ≈ 2^-316.6 per level.
   Native R5 (cached trace + tight heights, device path) is a completeness bug → commit cached
   traces non-tight. Note: real-height chains are not buildable yet (L3 heights issue above).
+
+## 2026-10-19 — WASM base families 2–4 (lane/pq-wasm-base @ ce7a815ec)
+
+* Shared relation refactor done; family 2 linear memory (tamper 44/44), family 3 globals
+  (proved end to end, tamper 52/52), family 4 calls (CALL/RET/FUNC chips, step_call /
+  step_return proven, FUNC table bound through statement; budget hi-part range check added after
+  the Lean proof exposed it). KAT 73/73 (incl. recursion fib10, trap two calls deep); difftest OK.
+  Call tamper runs in progress. Next: DIV/SHIFT/CMP optimisation.
