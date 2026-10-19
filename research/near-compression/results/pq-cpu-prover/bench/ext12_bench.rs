@@ -98,5 +98,15 @@ fn main() {
         ok &= from_coeffs::<F, EF>(&sb) == r;
     }
     println!("EXT12_CHECK {}", if ok { "ok" } else { "MISMATCH" });
+    // streamed-commit query rebuild: Horner of a 2^15-coefficient Ext12 polynomial at 22272 points
+    {
+        use openvm_stark_backend::prover::stream_pcs::{PolyOracle, RowOracle};
+        let cf: Vec<EF> = (0..1u32 << 15).map(mk).collect();
+        let o = PolyOracle::<F, EF> { coeffs: vec![cf], log_domain: 21, zeta: F::ONE };
+        let idx: Vec<usize> = (0..22272usize).map(|i| (i * 7919) % (1 << 21)).collect();
+        let t = Instant::now();
+        let r = o.rows(&idx);
+        println!("STREAM_ROWS 22272 x 2^15 threads={} secs={:.3} ({:?})", p3_maybe_rayon::prelude::current_num_threads(), t.elapsed().as_secs_f64(), coeffs::<F, EF>(&r[5][0])[0]);
+    }
     let _ = <EF as BasedVectorSpace<F>>::DIMENSION;
 }
