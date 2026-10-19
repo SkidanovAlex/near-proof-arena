@@ -3332,11 +3332,11 @@ new file mode 100644
 +        *out = huge_zero_vec(n * width);
 +    }
 +    let xp = SyncPtr(out.as_mut_ptr());
-+    let y = &*y;
-+    (0..n2).into_par_iter().for_each_init(
-+        || F::zero_vec(n1 * width),
-+        |buf, k2| {
-+            buf.copy_from_slice(&y[k2 * n1 * width..(k2 + 1) * n1 * width]);
++    let yp2 = SyncPtr(y.as_mut_ptr());
++    (0..n2).into_par_iter().for_each(|k2| {
++        {
++            // SAFETY: block k2 of y is owned by this task alone; the DIF runs in place
++            let buf = unsafe { std::slice::from_raw_parts_mut(yp2.get().add(k2 * n1 * width), n1 * width) };
 +            dif_rows(buf, width, l1, &tw1);
 +            for p in 0..n1 {
 +                let k1 = reverse_bits_len(p, l1);
@@ -3349,8 +3349,8 @@ new file mode 100644
 +                    );
 +                }
 +            }
-+        },
-+    );
++        }
++    });
 +}
 +
 diff --git a/crates/stark-backend/src/prover/mod.rs b/crates/stark-backend/src/prover/mod.rs

@@ -1,7 +1,7 @@
 diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384/config.rs
 --- a/crates/recursion/src/sha384/config.rs
 +++ b/crates/recursion/src/sha384/config.rs
-@@ -242,6 +242,107 @@ impl MerkleHasher for ShaHasher {
+@@ -242,6 +242,109 @@ impl MerkleHasher for ShaHasher {
          let bytes: Vec<u8> = rows.iter().flat_map(|r| felt_bytes(r)).collect();
          digest_from_bytes(truncate_digest(hash_parts(TAG_COSET_LEAF, &[&bytes])))
      }
@@ -94,22 +94,24 @@ diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384
 +        if !crate::sha384::mb::mb_enabled() {
 +            return inputs.chunks_exact(2).map(|p| self.compress(p[0], p[1])).collect();
 +        }
++        // one arena of `prefix || wire(l) || wire(r)` messages (no per-pair vectors)
 +        let prefix = node_prefix_layer(self.final_layer);
-+        let msgs: Vec<Vec<u8>> = inputs
-+            .chunks_exact(2)
-+            .map(|p| {
-+                let mut m = node_message(p[0], p[1]);
-+                m[..8].copy_from_slice(&prefix);
-+                m
-+            })
-+            .collect();
-+        let refs: Vec<&[u8]> = msgs.iter().map(|m| m.as_slice()).collect();
++        let wb = sha_levers().digest_bytes;
++        let mlen = 8 + 2 * wb;
++        let np = inputs.len() / 2;
++        let mut arena = vec![0u8; np * mlen];
++        for (m, p) in arena.chunks_exact_mut(mlen).zip(inputs.chunks_exact(2)) {
++            m[..8].copy_from_slice(&prefix);
++            m[8..8 + wb].copy_from_slice(&digest_bytes(p[0])[..wb]);
++            m[8 + wb..].copy_from_slice(&digest_bytes(p[1])[..wb]);
++        }
++        let refs: Vec<&[u8]> = arena.chunks_exact(mlen).collect();
 +        crate::sha384::mb::sha384_many(&refs).into_iter().map(|h| digest_from_bytes(truncate_digest(h))).collect()
 +    }
  }
  
  #[derive(Clone, Debug)]
-@@ -378,6 +479,57 @@ pub fn pow_step(state: &[u8; 48], witness: &[u32], bits: usize) -> ([u8; 48], bo
+@@ -378,6 +481,57 @@ pub fn pow_step(state: &[u8; 48], witness: &[u32], bits: usize) -> ([u8; 48], bo
      };
      (s, leading_zero_bits(&s) >= bits)
  }
@@ -167,7 +169,7 @@ diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384
  impl ShaTranscript {
      /// Fresh transcript of the inner or the final layer (U-12).
      pub fn new_layer(final_layer: bool) -> Self {
-@@ -389,6 +541,9 @@ impl ShaTranscript {
+@@ -389,6 +543,9 @@ impl ShaTranscript {
          use p3_maybe_rayon::prelude::*;
          self.flush();
          let base = self.state;
