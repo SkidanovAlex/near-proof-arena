@@ -12,20 +12,20 @@ set_option linter.unusedSimpArgs false
 
 theorem step_eq_exec (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {ins : Instr} {fee : Nat}
-    (hins : X.pf.code[pc]? = some ins) (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee)
+    (hins : (X.pfOf E.k).code[pc]? = some ins) (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
     (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) :
-    step X.cfg X.p s = exec X.cfg X.p { s with gas := { s.gas with g := s.gas.g - X.R * fee } } f X.pf ins := by
+    step X.cfg X.p s = exec X.cfg X.p { s with gas := { s.gas with g := s.gas.g - X.R * fee } } f (X.pfOf E.k) ins := by
   have hgas := R.gas
-  have hpf : X.p.funcs[f.fn]? = some X.pf := by rw [R.fn]; exact X.hpf
-  have hcode : X.pf.code[f.pc]? = some ins := by rw [R.pcEq]; exact hins
-  cases hg' : X.pf.gas[pc]? with
+  have hpf : X.p.funcs[f.fn]? = some (X.pfOf E.k) := by rw [R.fn]; exact (X.factsOf R.kLt).func
+  have hcode : (X.pfOf E.k).code[f.pc]? = some ins := by rw [R.pcEq]; exact hins
+  cases hg' : (X.pfOf E.k).gas[pc]? with
   | none => simp [feeUnits, hg'] at hfee
   | some e =>
     cases e with
     | none =>
       simp only [feeUnits, hg', Option.some.injEq] at hfee
       subst hfee
-      have hge : X.pf.gas[f.pc]? = some none := by rw [R.pcEq]; exact hg'
+      have hge : (X.pfOf E.k).gas[f.pc]? = some none := by rw [R.pcEq]; exact hg'
       rw [Nat.mul_zero, Nat.sub_zero, show ({ s with gas := { s.gas with g := s.gas.g } } : St) = s from rfl]
       simp only [step, R.frames, hpf, hcode, hge]
     | some kf =>
@@ -37,7 +37,7 @@ theorem step_eq_exec (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat →
         simp only [Option.some.injEq] at hfee
         have hc : fe.c = X.R * fee := by
           rw [← hfee]; unfold Ctx.R; exact (Nat.mul_div_cancel' (Nat.dvd_of_mod_eq_zero hmod)).symm
-        have hge : X.pf.gas[f.pc]? = some (some (k, fe)) := by rw [R.pcEq]; exact hg'
+        have hge : (X.pfOf E.k).gas[f.pc]? = some (some (k, fe)) := by rw [R.pcEq]; exact hg'
         have hamt : ∀ n, n * fe.l + fe.c = X.R * fee := by intro n; rw [hl, hc]; simp
         have hlt : ¬ (X.R * fee ≥ u64Bound) := by
           unfold u64Bound; have := Nat.mul_le_mul_left X.R (Nat.le_add_left fee S); omega
@@ -119,9 +119,9 @@ theorem straight_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat →
     (lsz : locs'.size = f.locals.size) (lkeep : ∀ j, some j ≠ J → locs'[j]? = f.locals[j]?)
     (hJ : ∀ j, J = some j → j < f.locals.size)
     (lnum : ∀ j, j < locs'.size → isNum (locs'[j]?.getD default))
-    (hnext : pc + 1 < X.pf.code.size)
-    (hL : ∃ ls, X.ck.labels[pc + 1]? = some ls ∧ f.labels = shiftLabels E.sb ls)
-    (hsb : E.sb ≤ stk'.size) (hH : X.ck.heights[pc + 1]? = some (stk'.size - E.sb))
+    (hnext : pc + 1 < (X.pfOf E.k).code.size)
+    (hL : ∃ ls, (X.ckOf E.k).labels[pc + 1]? = some ls ∧ f.labels = shiftLabels E.sb ls)
+    (hsb : E.sb ≤ stk'.size) (hH : (X.ckOf E.k).heights[pc + 1]? = some (stk'.size - E.sb))
     (hgs : X.R * (S + fee) ≤ X.g0)
     (s' : St) (hs'stk : s'.stack = stk') (hs'fr : s'.frames = { f with pc := pc + 1, locals := locs' } :: E.rest)
     (hs'g : s'.gas.g = s.gas.g - X.R * fee) (hs'pg : s'.pages = s.pages)
@@ -137,6 +137,7 @@ theorem straight_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat →
             enc 0 (s.stack.size - k + d) (stk'[s.stack.size - k + d]?.getD default) t) ++
           J.toList.map (fun j => enc E.lsp j (locs'[j]?.getD default) t))) where
   frames := hs'fr
+  kLt := R.kLt
   fn := R.fn
   pcEq := rfl
   pcLt := hnext

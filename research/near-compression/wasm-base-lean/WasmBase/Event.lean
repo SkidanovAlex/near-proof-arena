@@ -145,18 +145,30 @@ theorem mem_localView {x : Msg} {sp : Nat} {locs : Array Val} {tpl : Nat → Nat
 def stepLive (live : Msg → Prop) (cons prod : List Msg) : Msg → Prop :=
   fun x => (live x ∧ x ∉ cons) ∨ x ∈ prod
 
-/-- The static context of one function call. -/
+/-- The static context of one run: the prepared module, the entry function and its module-level
+check (the checked functions, their code offsets and the global code records). -/
 structure Ctx where
   cfg : NearCfg
   p : Prepared
   fn : Nat
-  pf : PFunc
-  ck : CheckOut
+  M : ModOut
   g0 : Nat
-  hpf : p.funcs[fn]? = some pf
-  hck : check cfg p fn = some ck
+  hM : checkModule cfg p fn = some M
 
 def Ctx.R (X : Ctx) : Nat := X.cfg.regularOpCost
+/-- Number of checked functions. -/
+def Ctx.nf (X : Ctx) : Nat := X.M.fns.length
+/-- Defined-function index of checked function `k`. -/
+def Ctx.fnOf (X : Ctx) (k : Nat) : Nat := X.M.fns.getD k 0
+def Ctx.pfOf (X : Ctx) (k : Nat) : PFunc := (X.p.funcs[X.fnOf k]?).getD default
+def Ctx.ckOf (X : Ctx) (k : Nat) : CheckOut := X.M.cks.getD k default
+/-- Global pc of local pc 0 of checked function `k`. -/
+def Ctx.offOf (X : Ctx) (k : Nat) : Nat := X.M.offs.getD k 0
+/-- The entry function (checked function 0). -/
+def Ctx.pf (X : Ctx) : PFunc := X.pfOf 0
+def Ctx.ck (X : Ctx) : CheckOut := X.ckOf 0
+/-- Module-wide bound on the fee units of one instruction. -/
+def Ctx.maxFee (X : Ctx) : Nat := X.M.maxFee
 
 /-- The part of the machine a straight-line instruction does not touch: the current frame's stack
 base and activation id, the caller frames, and the live channel messages of everything except the
@@ -167,6 +179,8 @@ structure Env where
   cid : Nat
   rest : List Frame
   live : Msg → Prop
+  /-- the checked function (index into the module's function list) of the current frame -/
+  k : Nat
 
 /-- Channel space of the current activation's locals. -/
 def Env.lsp (E : Env) : Nat := 16 + E.cid
@@ -238,14 +252,15 @@ results/pq-wasm-base/README.md §10). -/
 structure RelW (X : Ctx) (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat)
     (live : Msg → Prop) : Prop where
   frames : s.frames = f :: E.rest
-  fn : f.fn = X.fn
+  kLt : E.k < X.nf
+  fn : f.fn = X.fnOf E.k
   pcEq : f.pc = pc
-  pcLt : pc < X.pf.code.size
-  labels : ∃ ls, X.ck.labels[pc]? = some ls ∧ f.labels = shiftLabels E.sb ls
+  pcLt : pc < (X.pfOf E.k).code.size
+  labels : ∃ ls, (X.ckOf E.k).labels[pc]? = some ls ∧ f.labels = shiftLabels E.sb ls
   base : f.base = E.sb
   sbLe : E.sb ≤ s.stack.size
-  height : X.ck.heights[pc]? = some (s.stack.size - E.sb)
-  nloc : f.locals.size = X.pf.locals.size
+  height : (X.ckOf E.k).heights[pc]? = some (s.stack.size - E.sb)
+  nloc : f.locals.size = (X.pfOf E.k).locals.size
   gas : X.R * S + s.gas.g = X.g0
   numS : ∀ i, i < s.stack.size → isNum (s.stack[i]?.getD default)
   numL : ∀ j, j < f.locals.size → isNum (f.locals[j]?.getD default)
@@ -261,9 +276,10 @@ structure RelW (X : Ctx) (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) 
   heap : HeapOK E s t
   live : ∀ x, live x ↔ x ∈ stackView s.stack tps ∨ x ∈ localView E.lsp f.locals tpl ∨ E.live x
 
-/-- The relation with the frame data existential; `sb`/`cid` are the AIR state's. -/
-def Rel (X : Ctx) (s : St) (t pc S sb cid : Nat) (live : Msg → Prop) : Prop :=
-  ∃ E f tps tpl, E.sb = sb ∧ E.cid = cid ∧ RelW X E s f tps tpl t pc S live
+/-- The relation with the frame data existential; `sb`/`cid` are the AIR state's, `k` the checked
+function and `pc` the local pc (the AIR's global pc is `X.offOf k + pc`). -/
+def Rel (X : Ctx) (s : St) (t k pc S sb cid : Nat) (live : Msg → Prop) : Prop :=
+  ∃ E f tps tpl, E.sb = sb ∧ E.cid = cid ∧ E.k = k ∧ RelW X E s f tps tpl t pc S live
 
 /-- A live stack message at slot `i` is the encoding of stack entry `i`. -/
 theorem RelW.stack_msg {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}

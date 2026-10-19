@@ -69,7 +69,8 @@ theorem const_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   -- gas facts need the record; get the pc first
   obtain ⟨pc0, hpc0, hm0⟩ := fetch_pc hpub L hfetch
   have hrec := fetch_rec hpub L hfetch hm0 hpc0
-  obtain ⟨ins, fee, rec, hins, hfee, hfl, hrc, hm⟩ := hrec
+  obtain ⟨q, l, ins, fee, rec, hq, hl, hoff, hins, hfee, hfl, hrc, hm⟩ := hrec
+  have CF := X.factsOf hq
   obtain ⟨op, x0, x1, x2, x3, hre, hcase⟩ := recordOf_spec hrc
   rw [hre] at hm
   simp only [List.cons_append, List.nil_append, List.map_cons, List.map_nil, limbsOf, List.range,
@@ -88,21 +89,23 @@ theorem const_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   intro E s f tps tpl t pc S live R hin _ ht1 hS hg64
   rw [hIn] at hin
   obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
-  have CF := X.facts
   have hpcl := R.pcLt
+  have hoffb := X.off_bound R.kLt
+  have htot := X.mf.total
   obtain ⟨ls0, hL0, hfl0⟩ := R.labels
-  have p0 : rowNat tr 6 r 0 = pc := natEq i0 (hcP _) (by have := CF.codeLt; omega)
+  have p0 : rowNat tr 6 r 0 = X.offOf E.k + pc := natEq i0 (hcP _) (by omega)
   have p1 : rowNat tr 6 r 1 = t := natEq i1 (hcP _) (by omega)
   have p2 : rowNat tr 6 r 2 = S := natEq i2 (hcP _) (by omega)
   have psb : rowNat tr 6 r 11 = E.sb := natEq i4 (hcP _) (by have := R.sbLt; omega)
   have pcid : rowNat tr 6 r 12 = E.cid := natEq i5 (hcP _) (by have := R.cidLt; omega)
   have hsbR := R.sbLe
-  have hpc : pc0 = pc := by
-    have := natEq (e0.symm.trans i0) (by have := CF.codeLt; omega) (by have := CF.codeLt; omega)
-    exact this
+  have hpc : pc0 = X.offOf E.k + pc := natEq (e0.symm.trans i0) (by omega) (by omega)
   subst hpc
+  obtain ⟨hqk, hlpc⟩ := X.loc_unique hq hl R.kLt hpcl hoff
+  subst q
+  subst l
   have hH := R.height
-  have hHb := CF.hBound pc0 hpcl
+  have hHb := CF.hBound pc hpcl
   rw [hH] at eh hHb
   simp only [Option.getD_some] at eh hHb
   have p3 : rowNat tr 6 r 3 = s.stack.size - E.sb := natEq eh (hcP _) (by omega)
@@ -113,11 +116,11 @@ theorem const_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     rw [hre] at hlt; simp only [List.getD_cons_succ, List.getD_cons_zero] at hlt
     rw [← Lean.Grind.Semiring.natCast_add] at eop
     exact (natEq eop (by omega) (by omega)).symm
-  have hout : rowOut Const.table tr pub 6 r = stMsg (pc0 + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
+  have hout : rowOut Const.table tr pub 6 r = stMsg (X.offOf E.k + pc + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
     rw [hOut, p0, p1, p2, efee', psb, pcid]
     simp only [stMsg, Lean.Grind.Semiring.natCast_add]
   rw [hCons, hProd]
-  refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
+  refine ⟨E.k, pc + 1, fee, 0, E.sb, E.cid, hfl, by omega, (by rw [hout, Nat.add_assoc]), fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
   have hx : ∀ x : Nat, x < 65536 → ∀ y, ((y : Nat) : F) = ((x : Nat) : F) → y < P → y = x :=
     fun x hx y hy hyP => natEq hy hyP (by omega)
   have q : ∀ (x0 x1 x2 x3 : Nat) (n : Nat), n < 2 ^ 64 → [x0, x1, x2, x3] = limbs4 n →

@@ -50,8 +50,8 @@ theorem row_occ {A : Air} {tr : Trace} {pub : List F} {t : Nat} (ht : t < A.tabl
 
 /-! ## Code records -/
 
-theorem recordOf_spec {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : List Nat}
-    (hr : recordOf ls h fee pc ins = some rec) :
+theorem recordOf_spec {cof : Nat} {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : List Nat}
+    (hr : recordOf cof ls h fee pc ins = some rec) :
     ∃ op x0 x1 x2 x3, rec = [pc, op, h, fee, x0, x1, x2, x3] ∧
       ((∃ v : UInt32, ins = .i32Const v ∧ op = 0x41 ∧ [x0, x1, x2, x3] = limbs4 v.toNat) ∨
        (∃ v : UInt64, ins = .i64Const v ∧ op = 0x42 ∧ [x0, x1, x2, x3] = limbs4 v.toNat) ∨
@@ -62,8 +62,8 @@ theorem recordOf_spec {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : Li
        (∃ x, ins = .localTee x ∧ op = 0x22 ∧ [x0, x1, x2, x3] = [x, 0, 0, 0]) ∨
        (ins = .num op ∧ isFamilyNum op = true ∧ [x0, x1, x2, x3] = [0, 0, 0, 0]) ∨
        (kindOf ls ins = some .next ∧ op = Ctrl.opNext ∧ [x0, x1, x2, x3] = [0, 0, 0, 0]) ∨
-       (∃ tg, kindOf ls ins = some (.jump tg) ∧ op = Ctrl.opJump ∧ [x0, x1, x2, x3] = [tg, 0, 0, 0]) ∨
-       (∃ tg, kindOf ls ins = some (.jumpIf tg) ∧ op = Ctrl.opJif ∧ [x0, x1, x2, x3] = [tg, 0, 0, 0]) ∨
+       (∃ tg, kindOf ls ins = some (.jump tg) ∧ op = Ctrl.opJump ∧ [x0, x1, x2, x3] = [tg + cof, 0, 0, 0]) ∨
+       (∃ tg, kindOf ls ins = some (.jumpIf tg) ∧ op = Ctrl.opJif ∧ [x0, x1, x2, x3] = [tg + cof, 0, 0, 0]) ∨
        (kindOf ls ins = some .halt ∧ op = Ctrl.opHalt ∧ [x0, x1, x2, x3] = [0, 0, 0, 0]) ∨
        (kindOf ls ins = some .haltIf ∧ op = Ctrl.opHif ∧ [x0, x1, x2, x3] = [0, 0, 0, 0]) ∨
        (∃ al off, ins = .load op al off ∧ (0x28 ≤ op ∧ op ≤ 0x35) ∧ isLoadOp op = true ∧ off < 2 ^ 32 ∧
@@ -134,25 +134,27 @@ theorem recordOf_spec {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : Li
 
 theorem fetch_rec {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (_hpub : PubOK X nloc ncode pub)
     (L : Looks X nloc ncode pub tr) {m : List F}
-    (ho : (busFetch, true, m, 1) ∈ occs (wasmBaseAir nloc ncode) tr pub) {pc : Nat}
-    (hpc : m.getD 0 0 = ((pc : Nat) : F)) (hpcl : pc < X.pf.code.size) :
-    ∃ ins fee rec, X.pf.code[pc]? = some ins ∧ feeUnits X.cfg X.pf.gas[pc]? = some fee ∧ fee ≤ X.ck.maxFee ∧
-      recordOf (X.ck.labels[pc]?.getD []) (X.ck.heights[pc]?.getD 0) fee pc ins = some rec ∧
+    (ho : (busFetch, true, m, 1) ∈ occs (wasmBaseAir nloc ncode) tr pub) {gpc : Nat}
+    (hpc : m.getD 0 0 = ((gpc : Nat) : F)) (hpcl : gpc < X.M.codeSize) :
+    ∃ q l ins fee rec, q < X.nf ∧ l < (X.pfOf q).code.size ∧ X.offOf q + l = gpc ∧
+      (X.pfOf q).code[l]? = some ins ∧ feeUnits X.cfg (X.pfOf q).gas[l]? = some fee ∧ fee ≤ X.maxFee ∧
+      recordOf (X.offOf q) ((X.ckOf q).labels[l]?.getD []) ((X.ckOf q).heights[l]?.getD 0) fee gpc ins = some rec ∧
       m = rec.map fun x => ((x : Nat) : F) := by
   have hP' := P_val
   obtain ⟨j, hjc, hm⟩ := L.fetch _ ho rfl rfl rfl
   simp only [codeRec] at hm
-  have CF := X.facts
-  obtain ⟨ins, fee, hins, hfee, hfl, hrec⟩ := CF.recs j hjc
-  have hsz : j < X.ck.records.size := by rw [CF.records]; exact hjc
-  rw [Array.getElem?_eq_getElem hsz] at hrec hm
-  simp only [Option.getD_some] at hm
+  obtain ⟨q, l, hq, hl, hoff, hrj⟩ := X.recG hjc
+  have CF := X.factsOf hq
+  obtain ⟨ins, fee, hins, hfee, hfl, hrec⟩ := CF.recs l hl
+  have hsz : l < (X.ckOf q).records.size := by rw [CF.records]; exact hl
+  rw [Array.getElem?_eq_getElem hsz] at hrec
+  simp only [hrj, Option.getD_some, Array.getElem?_eq_getElem hsz] at hm
   obtain ⟨op, x0, x1, x2, x3, hre, -⟩ := recordOf_spec hrec
-  have hj' : ((j : Nat) : F) = ((pc : Nat) : F) := by rw [← hpc, hm, hre]; rfl
-  have := CF.codeLt
-  have hjp : j = pc := natEq hj' (by omega) (by omega)
-  subst hjp
-  exact ⟨ins, fee, _, hins, hfee, hfl, hrec, hm⟩
+  have hj' : ((X.offOf q + l : Nat) : F) = ((gpc : Nat) : F) := by rw [← hpc, hm, hre]; rfl
+  have := X.off_bound hq
+  have := X.mf.total
+  have hjp : X.offOf q + l = gpc := natEq hj' (by omega) (by omega)
+  exact ⟨q, l, ins, fee, _, hq, hl, hjp, hins, hfee, Nat.le_trans hfl (X.maxFee_ge hq), by rw [← hjp]; exact hrec, hm⟩
 
 /-- A channel time check `[r16 (ts - tp - 1 - 2^16 hi), r16 (4 hi)]` with count 1 bounds the
 producer time: `tp + 1 + n = ts` with `n < 2^30 + 2^16`. -/
@@ -226,20 +228,21 @@ theorem feeUnits_lt {cfg : NearCfg} {g : Option (Option (IK × Fee))} {fee : Nat
     · simp at h
   · simp at h
 
-/-- The pc of any FETCH query is a code index. -/
+/-- The pc of any FETCH query is a global code index. -/
 theorem fetch_pc {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (_hpub : PubOK X nloc ncode pub)
     (L : Looks X nloc ncode pub tr) {m : List F}
     (ho : (busFetch, true, m, 1) ∈ occs (wasmBaseAir nloc ncode) tr pub) :
-    ∃ pc, pc < X.pf.code.size ∧ m.getD 0 0 = ((pc : Nat) : F) := by
+    ∃ pc, pc < X.M.codeSize ∧ m.getD 0 0 = ((pc : Nat) : F) := by
   obtain ⟨j, hjc, hm⟩ := L.fetch _ ho rfl rfl rfl
   simp only [codeRec] at hm
-  have CF := X.facts
-  obtain ⟨ins, fee, hins, hfee, hfl, hrec⟩ := CF.recs j hjc
-  have hsz : j < X.ck.records.size := by rw [CF.records]; exact hjc
-  rw [Array.getElem?_eq_getElem hsz] at hrec hm
-  simp only [Option.getD_some] at hm
+  obtain ⟨q, l, hq, hl, hoff, hrj⟩ := X.recG hjc
+  have CF := X.factsOf hq
+  obtain ⟨ins, fee, hins, hfee, hfl, hrec⟩ := CF.recs l hl
+  have hsz : l < (X.ckOf q).records.size := by rw [CF.records]; exact hl
+  rw [Array.getElem?_eq_getElem hsz] at hrec
+  simp only [hrj, Option.getD_some, Array.getElem?_eq_getElem hsz] at hm
   obtain ⟨op, x0, x1, x2, x3, hre, -⟩ := recordOf_spec hrec
-  exact ⟨j, hjc, by rw [hm, hre]; rfl⟩
+  exact ⟨j, hjc, by rw [hm, hre, ← hoff]; rfl⟩
 
 theorem stMsg_cons {a b c d e1 e2 : F} {pc t S h sb cid : Nat} (e : [a, b, c, d, e1, e2] = stMsg pc t S h sb cid) :
     a = ((pc : Nat) : F) ∧ b = ((t : Nat) : F) ∧ c = ((S : Nat) : F) ∧ d = ((h : Nat) : F) ∧
@@ -260,8 +263,8 @@ theorem isFamilyNum_le {op : Nat} (h : isFamilyNum op = true) : op ≤ 0x8A := b
   simp only [Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq, beq_iff_eq] at h
   omega
 
-theorem recordOf_op_lt {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : List Nat}
-    (hr : recordOf ls h fee pc ins = some rec) : rec.getD 1 0 < 512 := by
+theorem recordOf_op_lt {cof : Nat} {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : List Nat}
+    (hr : recordOf cof ls h fee pc ins = some rec) : rec.getD 1 0 < 512 := by
   obtain ⟨op, x0, x1, x2, x3, rfl, hc⟩ := recordOf_spec hr
   simp only [List.getD_cons_succ, List.getD_cons_zero]
   rcases hc with ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ |

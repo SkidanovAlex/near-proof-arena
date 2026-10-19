@@ -76,7 +76,7 @@ The memory conditions (`PagesOK`, `DataOK`, `pubMem`, `pubDataEnd`) bind the ini
 `GlobOK` binds the initial globals (`ncode` = the number of globals) to their public values. -/
 theorem wasm_base_sound (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub) (hcode : CodeOK X tr)
-    (hfeeN : (pub.getD Boundary.pubN 0).toNat * (X.ck.maxFee + 1) < P)
+    (hfeeN : (pub.getD Boundary.pubN 0).toNat * (X.maxFee + 1) < P)
     (hgas : X.R * (pub.getD Boundary.pubS 0).toNat ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     {s0 : St} {f0 : Frame} (hfr : s0.frames = [f0]) (hfn : f0.fn = X.fn) (hpc : f0.pc = 0)
     (hlab : f0.labels = [rootLabel X.pf]) (hbase : f0.base = 0) (hloc : f0.locals = X.pf.locals.map Val.default)

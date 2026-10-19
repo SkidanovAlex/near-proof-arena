@@ -514,8 +514,8 @@ theorem init_rel {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X nlo
     {s0 : St} {f0 : Frame} (hfr : s0.frames = [f0]) (hfn : f0.fn = X.fn) (hpc : f0.pc = 0)
     (hlab : f0.labels = [rootLabel X.pf]) (hbase : f0.base = 0) (hloc : f0.locals = X.pf.locals.map Val.default)
     (hstk : s0.stack = #[]) (hg : s0.gas.g = X.g0)
-    (M : List Msg) (hM3 : ∀ x ∈ M, x.space ≠ 0 ∧ x.space ≠ 16) (hheap : HeapOK ⟨0, 0, [], (· ∈ M)⟩ s0 1) :
-    RelW X ⟨0, 0, [], (· ∈ M)⟩ s0 f0 (fun _ => 0) (fun _ => 0) 1 0 0 (· ∈ (initRaw nloc pub).map decMsg ++ M) := by
+    (M : List Msg) (hM3 : ∀ x ∈ M, x.space ≠ 0 ∧ x.space ≠ 16) (hheap : HeapOK ⟨0, 0, [], (· ∈ M), 0⟩ s0 1) :
+    RelW X ⟨0, 0, [], (· ∈ M), 0⟩ s0 f0 (fun _ => 0) (fun _ => 0) 1 0 0 (· ∈ (initRaw nloc pub).map decMsg ++ M) := by
   have CF := X.facts
   have hP' := P_val
   have hcode : 0 < X.pf.code.size := by
@@ -528,7 +528,7 @@ theorem init_rel {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X nlo
     intro j hj
     have := CF.locTypes (X.pf.locals[j]'hj) (Array.getElem_mem_toList hj)
     rw [Array.getElem?_eq_getElem hj]; simpa using this
-  refine ⟨hfr, hfn, hpc, hcode, ⟨_, CF.l0, by rw [hlab]; exact (shiftLabels_zero _).symm⟩, hbase,
+  refine ⟨hfr, X.nf_pos, by rw [hfn, X.fnOf_zero], hpc, hcode, ⟨_, CF.l0, by rw [hlab]; exact (shiftLabels_zero _).symm⟩, hbase,
     Nat.zero_le _, by rw [hstk]; exact CF.h0, hnl, by simp [hg, Ctx.R], by simp [hstk], ?_, by simp [hstk],
     fun _ _ => by decide, fun x h => by have := hM3 x h; simp only [Env.lsp]; omega,
     fun _ => ⟨rfl, rfl⟩, by show 0 < 2 ^ 28; decide, by show 0 < 2 ^ 28; decide, hheap, ?_⟩
@@ -808,7 +808,7 @@ equal to the public result; with status 2 it traps. -/
 theorem wasm_base_exec (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub)
     (CF : ChipFacts X nloc ncode pub tr) (hcode : CodeOK X tr)
-    (hfeeN : (pub.getD Boundary.pubN 0).toNat * (X.ck.maxFee + 1) < P)
+    (hfeeN : (pub.getD Boundary.pubN 0).toNat * (X.maxFee + 1) < P)
     (hgas : X.R * (pub.getD Boundary.pubS 0).toNat ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     {s0 : St} {f0 : Frame} (hfr : s0.frames = [f0]) (hfn : f0.fn = X.fn) (hpc : f0.pc = 0)
     (hlab : f0.labels = [rootLabel X.pf]) (hbase : f0.base = 0) (hloc : f0.locals = X.pf.locals.map Val.default)
@@ -845,7 +845,7 @@ theorem wasm_base_exec (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have gsp : ∀ x ∈ (globRaw nloc ncode pub).map decMsg, x.space = 2 ∧ x.tp = 0 := by
     intro x hx; rw [hgv] at hx; obtain ⟨g, _, rfl⟩ := mem_globView.mp hx; exact ⟨rfl, rfl⟩
   have gnd : ((globRaw nloc ncode pub).map decMsg).Nodup := by rw [hgv]; exact globView_nodup _ _
-  have hheap : HeapOK ⟨0, 0, [], (· ∈ (globRaw nloc ncode pub).map decMsg ++ (memRaw tr pub).map decMsg)⟩ s0 1 := by
+  have hheap : HeapOK ⟨0, 0, [], (· ∈ (globRaw nloc ncode pub).map decMsg ++ (memRaw tr pub).map decMsg), 0⟩ s0 1 := by
     refine ⟨hpok, ⟨mT, mtpm, mTnd, mTlt, mTtp, fun x hx => ?_⟩,
       ⟨fun _ => 0, fun g hg => ⟨Nat.zero_lt_one, (hglob.2.2 g (by rw [← hglob.1]; exact hg)).1⟩, fun x hx => ?_⟩⟩
     · show x ∈ _ ++ _ ↔ _
@@ -909,11 +909,11 @@ theorem wasm_base_exec (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     rw [hs] at hstP
     have hN := chain_len (actList tr pub) (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
       (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ _ _ (fun ρ hρ => (hrows ρ hρ).tsOut) hstP hlen
-    have hfee : ((actList tr pub).length + 1) * (X.ck.maxFee + 1) < P := by rw [hN]; exact hfeeN
+    have hfee : ((actList tr pub).length + 1) * (X.maxFee + 1) < P := by rw [hN]; exact hfeeN
     obtain ⟨-, h1, -⟩ := exec_of_rows X (actList tr pub) (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
       (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) (fun ρ => rowCons (chipT ρ.1) tr pub ρ.1 ρ.2)
       (fun ρ => rowProd (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ _ 1 (Or.inl rfl) hrows _ _ hstP hchP' hnd htp hlen hfee
-      hgas hg64 (by exact ⟨rfl, rfl⟩) h0
+      hgas hg64 (by exact ⟨rfl, rfl, rfl⟩) h0
     obtain ⟨sN, tps, tpl, locs, hrun, hfrN, hgasN, G, hG, hfin⟩ := h1 rfl
     refine ⟨sN, run_eq _ hrun hN, hfrN, hgasN, ?_⟩
     have hdr := drain_space_of_status1 H hs
@@ -930,11 +930,11 @@ theorem wasm_base_exec (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     rw [hs] at hstP
     have hN := chain_len (actList tr pub) (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
       (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ _ _ (fun ρ hρ => (hrows ρ hρ).tsOut) hstP hlen
-    have hfee : ((actList tr pub).length + 1) * (X.ck.maxFee + 1) < P := by rw [hN]; exact hfeeN
+    have hfee : ((actList tr pub).length + 1) * (X.maxFee + 1) < P := by rw [hN]; exact hfeeN
     obtain ⟨-, -, h2⟩ := exec_of_rows X (actList tr pub) (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
       (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) (fun ρ => rowCons (chipT ρ.1) tr pub ρ.1 ρ.2)
       (fun ρ => rowProd (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ _ 2 (Or.inr rfl) hrows _ _ hstP hchP' hnd htp hlen hfee
-      hgas hg64 (by exact ⟨rfl, rfl⟩) h0
+      hgas hg64 (by exact ⟨rfl, rfl, rfl⟩) h0
     obtain ⟨sN, e, hrun, hgasN⟩ := h2 rfl
     exact ⟨sN, e, run_eq _ hrun hN, hgasN⟩
 

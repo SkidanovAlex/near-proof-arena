@@ -85,9 +85,10 @@ def prep (path exportName : String) (g0 : Nat) : IO Unit := do
     let some (_, _, fi) := p.m.exports.find? (fun (n, k, _) => n = exportName && k = 0)
       | throw (IO.userError "export not found")
     let fn := fi - nImp
-    match check cfg p fn with
+    match checkModule cfg p fn with
     | none => IO.println "{\"eligible\":false}"
-    | some ck =>
+    | some M =>
+      let ck := M.cks.getD 0 default
       let gas : Gas := { Gas.init g0 with g := g0 }
       match instantiate cfg p gas with
       | .error e => throw (IO.userError s!"instantiate: {e}")
@@ -103,11 +104,11 @@ def prep (path exportName : String) (g0 : Nat) : IO Unit := do
             | .unmodeled w => (s!"unmodeled {w}", [], 0)
             | .cont _ => ("cont", [], 0)
           let vals := stack.map valLimbs
-          let recs := ck.records.toList.map natList
+          let recs := M.records.toList.map natList
           let de := dataEnd s1
           let img := (List.range de).map fun a => (readByte s1 a).toNat
           let gls := s1.globals.toList.map valLimbs
-          IO.println s!"\{\"eligible\":true,\"fn\":{fn},\"ncode\":{ck.records.size},\"localTags\":{natList ck.localTags},\"arity\":{ck.arity},\"resTag\":{ck.resTag},\"maxFee\":{ck.maxFee},\"regularOpCost\":{cfg.regularOpCost},\"g0\":{g1},\"steps\":{n},\"status\":{jStr status},\"gFinal\":{gf},\"stack\":{jList (vals.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")},\"heights\":{natList ck.heights.toList},\"records\":{jList recs},\"mem\":{memBytes s1},\"dataEnd\":{de},\"data\":{natList img},\"ngl\":{gls.length},\"globals\":{jList (gls.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")}}"
+          IO.println s!"\{\"eligible\":true,\"fn\":{fn},\"ncode\":{M.records.size},\"nfns\":{M.fns.length},\"localTags\":{natList ck.localTags},\"arity\":{ck.arity},\"resTag\":{ck.resTag},\"maxFee\":{M.maxFee},\"regularOpCost\":{cfg.regularOpCost},\"g0\":{g1},\"steps\":{n},\"status\":{jStr status},\"gFinal\":{gf},\"stack\":{jList (vals.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")},\"heights\":{natList ck.heights.toList},\"records\":{jList recs},\"mem\":{memBytes s1},\"dataEnd\":{de},\"data\":{natList img},\"ngl\":{gls.length},\"globals\":{jList (gls.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")}}"
         | _ => throw (IO.userError "enter failed")
   | .prepErr v w => IO.println s!"\{\"eligible\":false,\"prepare\":{jStr v},\"why\":{jStr w}}"
   | .compileErr _ _ => IO.println "{\"eligible\":false,\"prepare\":\"compile\"}"

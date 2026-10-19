@@ -14,8 +14,8 @@ open ZkFormal.Algebra Chips Local
 set_option linter.unusedSimpArgs false
 set_option maxRecDepth 4000
 
-/-- Code record `j` of the checked function, as field elements. -/
-def codeRec (X : Ctx) (j : Nat) : List F := (X.ck.records[j]?.getD []).map fun x => ((x : Nat) : F)
+/-- Global code record `j` of the checked module, as field elements. -/
+def codeRec (X : Ctx) (j : Nat) : List F := (X.M.records[j]?.getD []).map fun x => ((x : Nat) : F)
 
 /-- **Statement binding of the cached CODE table.**  V_d recomputes `code_root` from the contract code
 (`code_hash`) as the commitment to the canonical CODE matrix (the records in pc order, padded by
@@ -23,7 +23,7 @@ repeating the last record) and checks it equals the cached commitment the proof 
 the binding of the commitment, every CODE row's record columns are a record of the checked code.
 This is the one hypothesis the commitment contributes. -/
 def CodeOK (X : Ctx) (tr : Trace) : Prop :=
-  ∀ r, r < tr.height 15 → ∃ j, j < X.pf.code.size ∧
+  ∀ r, r < tr.height 15 → ∃ j, j < X.M.codeSize ∧
     (List.range Boundary.recWidth).map (fun k => tr.cell 15 r k) = codeRec X j
 
 /-! ## Which tables receive on the lookup buses (decidable) -/
@@ -105,7 +105,7 @@ theorem occ_table {nloc ncode : Nat} {tr : Trace} {pub : List F} {o : Occ}
 
 structure Looks (X : Ctx) (nloc ncode : Nat) (pub : List F) (tr : Trace) : Prop where
   fetch : ∀ o ∈ occs (wasmBaseAir nloc ncode) tr pub, o.1 = busFetch → o.2.1 = true → o.2.2.2 = 1 →
-    ∃ j, j < X.pf.code.size ∧ o.2.2.1 = codeRec X j
+    ∃ j, j < X.M.codeSize ∧ o.2.2.1 = codeRec X j
   r16 : ∀ o ∈ occs (wasmBaseAir nloc ncode) tr pub, o.1 = busR16 → o.2.1 = true → o.2.2.2 = 1 →
     ∃ x : F, o.2.2.1 = [x] ∧ x.toNat < 65536
   byte : ∀ o ∈ occs (wasmBaseAir nloc ncode) tr pub, o.1 = busByte → o.2.1 = true → o.2.2.2 = 1 →
@@ -227,7 +227,7 @@ theorem looks_of {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : H
     Looks X nloc ncode pub tr := by
   have hP' := P_val
   refine ⟨fun o ho hb hs hc => ?_, fun o ho hb hs hc => ?_, fun o ho hb hs hc => ?_⟩
-  · refine lookup_sound H busFetch (fun m => ∃ j, j < X.pf.code.size ∧ m = codeRec X j) ?_
+  · refine lookup_sound H busFetch (fun m => ∃ j, j < X.M.codeSize ∧ m = codeRec X j) ?_
       (fun o' ho' _ hs' => hsend o' ho' hs') ho hb hs hc
     intro o' ho' hb' hs' _
     obtain ⟨t, ht, r, hr, i, hi, rfl⟩ := occ_table ho'

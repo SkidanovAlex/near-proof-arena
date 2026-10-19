@@ -66,7 +66,8 @@ theorem stack_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (by simp [Stack.inters, stdState])
   simp only [fetch, cntA] at hfetch
   obtain ⟨pc0, hpc0, hm0⟩ := fetch_pc hpub L hfetch
-  obtain ⟨ins, fee, rec, hins, hfee, hfl, hrc, hm⟩ := fetch_rec hpub L hfetch hm0 hpc0
+  obtain ⟨q, l, ins, fee, rec, hq, hl, hoff, hins, hfee, hfl, hrc, hm⟩ := fetch_rec hpub L hfetch hm0 hpc0
+  have CF := X.factsOf hq
   obtain ⟨op, x0, x1, x2, x3, hre, hcase⟩ := recordOf_spec hrc
   have hlt := recordOf_op_lt hrc
   rw [hre] at hm hlt
@@ -155,33 +156,37 @@ theorem stack_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     rw [rowProd, rawProd]; split <;> simp
   -- the spec step: shared prefix
   have spec_pre : ∀ (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat) (live : Msg → Prop),
-      RelW X E s f tps tpl t pc S live → rowIn Stack.table tr pub 7 r = stMsg pc t S 0 E.sb E.cid → t + 1 < P →
-      S + X.ck.maxFee < P → pc0 = pc ∧ rowNat tr 7 r 1 = t ∧
+      RelW X E s f tps tpl t pc S live → rowIn Stack.table tr pub 7 r = stMsg (X.offOf E.k + pc) t S 0 E.sb E.cid →
+      t + 1 < P → S + X.maxFee < P → q = E.k ∧ l = pc ∧ pc0 = X.offOf E.k + pc ∧ rowNat tr 7 r 1 = t ∧
         (∀ k, k ≤ s.stack.size - E.sb → (tr.cell 7 r 28 + tr.cell 7 r 3 - ((k : Nat) : F)).toNat = s.stack.size - k) ∧
-        rowOut Stack.table tr pub 7 r = stMsg (pc + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
+        rowOut Stack.table tr pub 7 r = stMsg (X.offOf E.k + (pc + 1)) (t + 1) (S + fee) 0 E.sb E.cid := by
     intro E s f tps tpl t pc S live R hin ht1 hS
     rw [hIn] at hin
     obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
-    have CF := X.facts
     have hpcl := R.pcLt
+    have hoffb := X.off_bound R.kLt
+    have htot := X.mf.total
     obtain ⟨ls0, hL0, hfl0⟩ := R.labels
-    have p0 : rowNat tr 7 r 0 = pc := natEq i0 (hcP _) (by have := CF.codeLt; omega)
+    have p0 : rowNat tr 7 r 0 = X.offOf E.k + pc := natEq i0 (hcP _) (by omega)
     have p1 : rowNat tr 7 r 1 = t := natEq i1 (hcP _) (by omega)
     have p2 : rowNat tr 7 r 2 = S := natEq i2 (hcP _) (by omega)
     have psb : rowNat tr 7 r 28 = E.sb := natEq i4 (hcP _) (by have := R.sbLt; omega)
     have pcid : rowNat tr 7 r 29 = E.cid := natEq i5 (hcP _) (by have := R.cidLt; omega)
     have hsbR := R.sbLe
-    have hpc : pc0 = pc := natEq (e0.symm.trans i0) (by have := CF.codeLt; omega) (by have := CF.codeLt; omega)
+    have hpc : pc0 = X.offOf E.k + pc := natEq (e0.symm.trans i0) (by omega) (by omega)
     subst hpc
+    obtain ⟨hqk, hlpc⟩ := X.loc_unique hq hl R.kLt hpcl hoff
+    subst q
+    subst l
     have hH := R.height
-    have hHb := CF.hBound pc0 hpcl
+    have hHb := CF.hBound pc hpcl
     have eh' := eh
     rw [hH] at eh' hHb
     simp only [Option.getD_some] at eh' hHb
     have p3 : rowNat tr 7 r 3 = s.stack.size - E.sb := natEq eh' (hcP _) (by omega)
     have hszP : s.stack.size < P := by have := R.sbLt; omega
-    refine ⟨rfl, p1, fun k hk => by rw [cell_cast, cell_cast]; exact slot_toNat psb p3 hsbR hk hszP, ?_⟩
-    rw [hOut, p0, p1, p2, efee', psb, pcid]
+    refine ⟨rfl, rfl, rfl, p1, fun k hk => by rw [cell_cast, cell_cast]; exact slot_toNat psb p3 hsbR hk hszP, ?_⟩
+    rw [hOut, p0, p1, p2, efee', psb, pcid, ← Nat.add_assoc]
     simp only [stMsg, Lean.Grind.Semiring.natCast_add]
   have z0 : (((0 : Nat) : F)).toNat = 0 := Fp.toNat_cast_of_lt (by omega)
   rcases (show (rowNat tr 7 r 5 = 1 ∧ rowNat tr 7 r 6 = 0) ∨ (rowNat tr 7 r 5 = 0 ∧ rowNat tr 7 r 6 = 1) by omega)
@@ -201,7 +206,9 @@ theorem stack_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       simp only [List.mem_cons, List.mem_nil_iff, or_false, forall_eq]
       exact tA
     intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
-    obtain ⟨hpc, p1, slot, hout⟩ := spec_pre E s f tps tpl t pc S live R hin ht1 hS
+    obtain ⟨hqk, hlpc, hpc, p1, slot, hout⟩ := spec_pre E s f tps tpl t pc S live R hin ht1 hS
+    subst q
+    subst l
     obtain ⟨ls0, hL0, -⟩ := R.labels
     subst hpc
     have hop' : op = 0x1A := by rw [hop, g5, g6]
@@ -215,11 +222,11 @@ theorem stack_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
         | (exfalso; simp only [Ctrl.opNext, Ctrl.opJump, Ctrl.opJif, Ctrl.opHalt, Ctrl.opHif] at h; omega)
         | (exfalso; rw [hop'] at hf; revert hf; decide)
     subst hdrop
-    obtain ⟨h1, -, -, -⟩ := verify_straight X R.pcLt hins hL0 R.height (pops := 1) (pushes := 0) rfl
+    obtain ⟨h1, -, -, -⟩ := verify_straight X R.kLt R.pcLt hins hL0 R.height (pops := 1) (pushes := 0) rfl
       (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp) (by intro l; simp)
     rw [hCons, hProd] at *
     have hma := hlive _ (List.mem_singleton_self _)
-    refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
+    refine ⟨E.k, pc + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
     exact step_drop X R hins hfee hg hg64 _ hma ⟨rfl, slot 1 h1⟩
   · -- select
     have hCons : rowCons Stack.table tr pub 7 r =
@@ -250,7 +257,9 @@ theorem stack_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       simp only [List.mem_cons, List.mem_nil_iff, or_false, forall_eq_or_imp, forall_eq]
       exact ⟨tA, t2, t1⟩
     intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
-    obtain ⟨hpc, p1, slot, hout⟩ := spec_pre E s f tps tpl t pc S live R hin ht1 hS
+    obtain ⟨hqk, hlpc, hpc, p1, slot, hout⟩ := spec_pre E s f tps tpl t pc S live R hin ht1 hS
+    subst q
+    subst l
     obtain ⟨ls0, hL0, -⟩ := R.labels
     subst hpc
     have hop' : op = 0x1B := by rw [hop, g5, g6]
@@ -264,13 +273,13 @@ theorem stack_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
         | (exfalso; simp only [Ctrl.opNext, Ctrl.opJump, Ctrl.opJif, Ctrl.opHalt, Ctrl.opHif] at h; omega)
         | (exfalso; rw [hop'] at hf; revert hf; decide)
     subst hsel
-    obtain ⟨h3, -, -, -⟩ := verify_straight X R.pcLt hins hL0 R.height (pops := 3) (pushes := 1)
+    obtain ⟨h3, -, -, -⟩ := verify_straight X R.kLt R.pcLt hins hL0 R.height (pops := 3) (pushes := 1)
       (by simp [kindOf]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp) (by intro l; simp)
     rw [hCons, hProd] at *
     have hmc := hlive _ (List.mem_cons_self)
     have hm2 := hlive _ (List.mem_cons_of_mem _ List.mem_cons_self)
     have hm1 := hlive _ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ List.mem_cons_self))
-    refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
+    refine ⟨E.k, pc + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
     refine step_select X R hins hfee hg hg64 _ _ _ _ hmc hm2 hm1 ⟨rfl, slot 1 (by omega)⟩
       ⟨rfl, slot 2 (by omega)⟩ ⟨rfl, slot 3 h3⟩ ?_
     intro okc ok1 ok2

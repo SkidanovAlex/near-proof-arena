@@ -32,7 +32,7 @@ theorem RelW.local_dec {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
 and the channel view update with the event's consumed/produced messages. -/
 theorem step_straight (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {ins : Instr} {fee : Nat}
-    (hins : X.pf.code[pc]? = some ins) (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee)
+    (hins : (X.pfOf E.k).code[pc]? = some ins) (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
     (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     (k : Nat) (hk : k ≤ s.stack.size) (stk' locs' : Array Val) (J : Option Nat)
     (keep : ∀ i, i < s.stack.size - k → stk'[i]? = s.stack[i]?) (hsz : s.stack.size - k ≤ stk'.size)
@@ -40,10 +40,10 @@ theorem step_straight (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
     (lsz : locs'.size = f.locals.size) (lkeep : ∀ j, some j ≠ J → locs'[j]? = f.locals[j]?)
     (hJ : ∀ j, J = some j → j < f.locals.size)
     (lnum : ∀ j, j < locs'.size → isNum (locs'[j]?.getD default))
-    (hnext : pc + 1 < X.pf.code.size)
-    (hL1 : ∃ ls, X.ck.labels[pc + 1]? = some ls ∧ f.labels = shiftLabels E.sb ls)
-    (hsb : E.sb ≤ stk'.size) (hH1 : X.ck.heights[pc + 1]? = some (stk'.size - E.sb))
-    (hexec : exec X.cfg X.p { s with gas := { s.gas with g := s.gas.g - X.R * fee } } f X.pf ins =
+    (hnext : pc + 1 < (X.pfOf E.k).code.size)
+    (hL1 : ∃ ls, (X.ckOf E.k).labels[pc + 1]? = some ls ∧ f.labels = shiftLabels E.sb ls)
+    (hsb : E.sb ≤ stk'.size) (hH1 : (X.ckOf E.k).heights[pc + 1]? = some (stk'.size - E.sb))
+    (hexec : exec X.cfg X.p { s with gas := { s.gas with g := s.gas.g - X.R * fee } } f (X.pfOf E.k) ins =
       .cont { s with gas := { s.gas with g := s.gas.g - X.R * fee }, stack := stk',
                      frames := { f with pc := pc + 1, locals := locs' } :: E.rest })
     (cons prod : List Msg)
@@ -53,7 +53,7 @@ theorem step_straight (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
     (hp : ∀ x, x ∈ ((List.range (stk'.size - (s.stack.size - k))).map fun d =>
             enc 0 (s.stack.size - k + d) (stk'[s.stack.size - k + d]?.getD default) t) ++
           J.toList.map (fun j => enc E.lsp j (locs'[j]?.getD default) t) ↔ x ∈ prod) :
-    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) (pc + 1) (S + fee) E.sb E.cid (stepLive live cons prod) := by
+    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live cons prod) := by
   refine ⟨_, by rw [step_eq_exec X R hins hfee hg hg64, hexec], ?_⟩
   have SR := straight_rel X R hk stk' locs' J keep hsz hnum lsz lkeep hJ lnum hnext hL1 hsb hH1 hg
     { s with gas := { s.gas with g := s.gas.g - X.R * fee }, stack := stk',
@@ -67,17 +67,17 @@ theorem setFrame_one {s : St} {f : Frame} {fs : List Frame} (h : s.frames = f ::
 
 /-! ## Verification facts for straight instructions -/
 
-theorem verify_straight (X : Ctx) {pc : Nat} {ins : Instr} {ls : List Label} {h pops pushes : Nat}
-    (hpc : pc < X.pf.code.size) (hins : X.pf.code[pc]? = some ins) (hL : X.ck.labels[pc]? = some ls)
-    (hH : X.ck.heights[pc]? = some h) (hk : kindOf ls ins = some (.straight pops pushes))
+theorem verify_straight (X : Ctx) {k : Nat} (hkn : k < X.nf) {pc : Nat} {ins : Instr} {ls : List Label} {h pops pushes : Nat}
+    (hpc : pc < (X.pfOf k).code.size) (hins : (X.pfOf k).code[pc]? = some ins) (hL : (X.ckOf k).labels[pc]? = some ls)
+    (hH : (X.ckOf k).heights[pc]? = some h) (hk : kindOf ls ins = some (.straight pops pushes))
     (hnc : ∀ bt, ins ≠ .block bt) (hnl : ins ≠ .loop none) (hne : ins ≠ .end_) (hnr : ins ≠ .ret)
     (hnb : ∀ l, ins ≠ .br l) (hnbi : ∀ l, ins ≠ .brIf l) :
-    pops ≤ h ∧ pc + 1 < X.pf.code.size ∧ X.ck.labels[pc + 1]? = some ls ∧
-      X.ck.heights[pc + 1]? = some (h - pops + pushes) := by
-  have hv := X.facts.verify pc hpc
-  have e : verifyAt X.pf X.ck.labels X.ck.heights pc =
-      (decide (pops ≤ h) && (decide (pc + 1 < X.pf.code.size) && decide (X.ck.labels[pc + 1]? = some ls) &&
-        decide (X.ck.heights[pc + 1]? = some (h - pops + pushes)))) := by
+    pops ≤ h ∧ pc + 1 < (X.pfOf k).code.size ∧ (X.ckOf k).labels[pc + 1]? = some ls ∧
+      (X.ckOf k).heights[pc + 1]? = some (h - pops + pushes) := by
+  have hv := (X.factsOf hkn).verify pc hpc
+  have e : verifyAt (X.pfOf k) (X.ckOf k).labels (X.ckOf k).heights pc =
+      (decide (pops ≤ h) && (decide (pc + 1 < (X.pfOf k).code.size) && decide ((X.ckOf k).labels[pc + 1]? = some ls) &&
+        decide ((X.ckOf k).heights[pc + 1]? = some (h - pops + pushes)))) := by
     unfold verifyAt
     rw [hins, hL, hH]
     cases ins with
@@ -105,15 +105,15 @@ theorem enc_eq_of_fields {m : Msg} {sp sl : Nat} {v : Val} {tp : Nat}
 theorem step_const (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {ins : Instr} {v : Val} {fee : Nat}
     (hiv : (∃ x, ins = .i32Const x ∧ v = .i32 x) ∨ (∃ x, ins = .i64Const x ∧ v = .i64 x))
-    (hins : X.pf.code[pc]? = some ins)
-    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (hins : (X.pfOf E.k).code[pc]? = some ins)
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     (mr : Msg) (hmr : mr = enc 0 s.stack.size v t) :
-    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) (pc + 1) (S + fee) E.sb E.cid (stepLive live [] [mr]) := by
+    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [] [mr]) := by
   obtain ⟨ls0, hL, hfl⟩ := R.labels; have hH := R.height; have hsbR := R.sbLe
   have hnum : isNum v := by rcases hiv with ⟨x, -, rfl⟩ | ⟨x, -, rfl⟩ <;> trivial
   have hk : kindOf ls0 ins = some (.straight 0 1) := by
     rcases hiv with ⟨x, rfl, -⟩ | ⟨x, rfl, -⟩ <;> rfl
-  obtain ⟨-, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH hk
+  obtain ⟨-, hnext, hL1, hH1⟩ := verify_straight X R.kLt R.pcLt hins hL hH hk
     (by intro bt; rcases hiv with ⟨x, rfl, -⟩ | ⟨x, rfl, -⟩ <;> simp)
     (by rcases hiv with ⟨x, rfl, -⟩ | ⟨x, rfl, -⟩ <;> simp) (by rcases hiv with ⟨x, rfl, -⟩ | ⟨x, rfl, -⟩ <;> simp)
     (by rcases hiv with ⟨x, rfl, -⟩ | ⟨x, rfl, -⟩ <;> simp)
@@ -141,12 +141,12 @@ theorem step_const (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
 
 theorem step_drop (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {fee : Nat}
-    (hins : X.pf.code[pc]? = some .drop)
-    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (hins : (X.pfOf E.k).code[pc]? = some .drop)
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     (ma : Msg) (hma : live ma) (sa : ma.space = 0 ∧ ma.slot = s.stack.size - 1) :
-    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) (pc + 1) (S + fee) E.sb E.cid (stepLive live [ma] []) := by
+    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [ma] []) := by
   obtain ⟨ls0, hL, hfl⟩ := R.labels; have hH := R.height; have hsbR := R.sbLe
-  obtain ⟨h1, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH (pops := 1) (pushes := 0) rfl
+  obtain ⟨h1, hnext, hL1, hH1⟩ := verify_straight X R.kLt R.pcLt hins hL hH (pops := 1) (pushes := 0) rfl
     (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp) (by intro l; simp)
   obtain ⟨ea, -, -, -⟩ := R.stack_dec hma sa.1 sa.2 (by omega)
   have hsz : s.stack.pop.size = s.stack.size - 1 + 0 := by simp
@@ -231,8 +231,8 @@ theorem prod_one (a : Array Val) (k : Nat) (hk : k ≤ a.size) (v : Val) (t : Na
 
 theorem step_relop (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
-    {op fee : Nat} (hins : X.pf.code[pc]? = some (.num op)) (hop : op ∈ relops)
-    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
+    {op fee : Nat} (hins : (X.pfOf E.k).code[pc]? = some (.num op)) (hop : op ∈ relops)
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
     (hg64 : X.g0 < 2 ^ 64)
     (ma mb mr : Msg) (hma : live ma) (hmb : live mb)
     (sa : ma.space = 0 ∧ ma.slot = s.stack.size - 2)
@@ -241,13 +241,13 @@ theorem step_relop (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
       mr = enc 0 (s.stack.size - 2) (.i32 (UInt32.ofNat r)) t)
     (sem : True) :
     ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) (pc + 1) (S + fee) E.sb E.cid (stepLive live [ma, mb] [mr]) := by
+      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [ma, mb] [mr]) := by
   have hfam : isFamilyNum op = true ∧ numPops op = 2 := by
     simp only [relops, List.mem_cons, List.mem_nil_iff, or_false] at hop
     rcases hop with h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h <;>
     subst h <;> decide
   obtain ⟨ls0, hL, hfl⟩ := R.labels; have hH := R.height; have hsbR := R.sbLe
-  obtain ⟨h2, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH (pops := 2) (pushes := 1)
+  obtain ⟨h2, hnext, hL1, hH1⟩ := verify_straight X R.kLt R.pcLt hins hL hH (pops := 2) (pushes := 1)
     (by simp [kindOf, hfam.1, hfam.2]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
     (by intro l; simp)
   obtain ⟨ea, oka, va, -⟩ := R.stack_dec hma sa.1 sa.2 (by omega)
@@ -277,16 +277,16 @@ theorem step_relop (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
 
 theorem step_eqz (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
-    {op fee : Nat} (hins : X.pf.code[pc]? = some (.num op)) (hop : op = 0x45 ∨ op = 0x50)
-    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
+    {op fee : Nat} (hins : (X.pfOf E.k).code[pc]? = some (.num op)) (hop : op = 0x45 ∨ op = 0x50)
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
     (hg64 : X.g0 < 2 ^ 64)
     (ma mr : Msg) (hma : live ma) (sa : ma.space = 0 ∧ ma.slot = s.stack.size - 1)
     (hmr : ∀ r, (ma.ok → r = Num.b2 (ma.val = 0)) → mr = enc 0 (s.stack.size - 1) (.i32 (UInt32.ofNat r)) t) :
     ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) (pc + 1) (S + fee) E.sb E.cid (stepLive live [ma] [mr]) := by
+      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [ma] [mr]) := by
   have hfam : isFamilyNum op = true ∧ numPops op = 1 := by rcases hop with rfl | rfl <;> decide
   obtain ⟨ls0, hL, hfl⟩ := R.labels; have hH := R.height; have hsbR := R.sbLe
-  obtain ⟨h1, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH (pops := 1) (pushes := 1)
+  obtain ⟨h1, hnext, hL1, hH1⟩ := verify_straight X R.kLt R.pcLt hins hL hH (pops := 1) (pushes := 1)
     (by simp [kindOf, hfam.1, hfam.2]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
     (by intro l; simp)
   obtain ⟨ea, oka, va, -⟩ := R.stack_dec hma sa.1 sa.2 (by omega)
@@ -315,17 +315,17 @@ theorem pop_get (a : Array Val) (i : Nat) (h : i + 1 < a.size) : a.pop[i]? = a[i
 
 theorem step_select (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {ty : Option VT} {fee : Nat}
-    (hins : X.pf.code[pc]? = some (.select ty))
-    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (hins : (X.pfOf E.k).code[pc]? = some (.select ty))
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     (mc m2 m1 mr : Msg) (hmc : live mc) (hm2 : live m2) (hm1 : live m1)
     (sc : mc.space = 0 ∧ mc.slot = s.stack.size - 1) (s2 : m2.space = 0 ∧ m2.slot = s.stack.size - 2)
     (s1 : m1.space = 0 ∧ m1.slot = s.stack.size - 3)
     (hmr : mc.ok → m1.ok → m2.ok →
       mr = enc 0 (s.stack.size - 3) (if mc.val = 0 then m2.toVal else m1.toVal) t) :
     ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) (pc + 1) (S + fee) E.sb E.cid (stepLive live [mc, m2, m1] [mr]) := by
+      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [mc, m2, m1] [mr]) := by
   obtain ⟨ls0, hL, hfl⟩ := R.labels; have hH := R.height; have hsbR := R.sbLe
-  obtain ⟨h3, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH (pops := 3) (pushes := 1)
+  obtain ⟨h3, hnext, hL1, hH1⟩ := verify_straight X R.kLt R.pcLt hins hL hH (pops := 3) (pushes := 1)
     (by simp [kindOf]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
     (by intro l; simp)
   obtain ⟨ec, okc, vc, -⟩ := R.stack_dec hmc sc.1 sc.2 (by omega)
@@ -371,14 +371,14 @@ theorem set_getElem? (a : Array Val) (x j : Nat) (v : Val) (hx : x < a.size) :
 
 theorem step_localGet (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {x fee : Nat}
-    (hins : X.pf.code[pc]? = some (.localGet x)) (hx : x < f.locals.size)
-    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (hins : (X.pfOf E.k).code[pc]? = some (.localGet x)) (hx : x < f.locals.size)
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     (ml : Msg) (hml : live ml) (sl : ml.space = E.lsp ∧ ml.slot = x)
     (mo ms : Msg) (hmo : ml.ok → mo = enc E.lsp x ml.toVal t) (hms : ml.ok → ms = enc 0 s.stack.size ml.toVal t) :
     ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) (pc + 1) (S + fee) E.sb E.cid (stepLive live [ml] [ms, mo]) := by
+      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [ml] [ms, mo]) := by
   obtain ⟨ls0, hL, hfl⟩ := R.labels; have hH := R.height; have hsbR := R.sbLe
-  obtain ⟨-, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH (pops := 0) (pushes := 1)
+  obtain ⟨-, hnext, hL1, hH1⟩ := verify_straight X R.kLt R.pcLt hins hL hH (pops := 0) (pushes := 1)
     (by simp [kindOf]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
     (by intro l; simp)
   obtain ⟨el, okl, -, tvl⟩ := R.local_dec hml sl.1 sl.2 hx
@@ -411,14 +411,14 @@ theorem step_localGet (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
 
 theorem step_localSet (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {x fee : Nat}
-    (hins : X.pf.code[pc]? = some (.localSet x)) (hx : x < f.locals.size)
-    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (hins : (X.pfOf E.k).code[pc]? = some (.localSet x)) (hx : x < f.locals.size)
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     (mv ml mo : Msg) (hmv : live mv) (hml : live ml) (sv : mv.space = 0 ∧ mv.slot = s.stack.size - 1)
     (sl : ml.space = E.lsp ∧ ml.slot = x) (hmo : mv.ok → mo = enc E.lsp x mv.toVal t) :
     ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) (pc + 1) (S + fee) E.sb E.cid (stepLive live [mv, ml] [mo]) := by
+      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [mv, ml] [mo]) := by
   obtain ⟨ls0, hL, hfl⟩ := R.labels; have hH := R.height; have hsbR := R.sbLe
-  obtain ⟨h1, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH (pops := 1) (pushes := 0)
+  obtain ⟨h1, hnext, hL1, hH1⟩ := verify_straight X R.kLt R.pcLt hins hL hH (pops := 1) (pushes := 0)
     (by simp [kindOf]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
     (by intro l; simp)
   obtain ⟨ev, okv, -, tvv⟩ := R.stack_dec hmv sv.1 sv.2 (by omega)
@@ -463,15 +463,15 @@ theorem step_localSet (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
 
 theorem step_localTee (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {x fee : Nat}
-    (hins : X.pf.code[pc]? = some (.localTee x)) (hx : x < f.locals.size)
-    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (hins : (X.pfOf E.k).code[pc]? = some (.localTee x)) (hx : x < f.locals.size)
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     (mv ml mo ms : Msg) (hmv : live mv) (hml : live ml) (sv : mv.space = 0 ∧ mv.slot = s.stack.size - 1)
     (sl : ml.space = E.lsp ∧ ml.slot = x) (hmo : mv.ok → mo = enc E.lsp x mv.toVal t)
     (hms : mv.ok → ms = enc 0 (s.stack.size - 1) mv.toVal t) :
     ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) (pc + 1) (S + fee) E.sb E.cid (stepLive live [mv, ml] [ms, mo]) := by
+      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [mv, ml] [ms, mo]) := by
   obtain ⟨ls0, hL, hfl⟩ := R.labels; have hH := R.height; have hsbR := R.sbLe
-  obtain ⟨h1, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH (pops := 1) (pushes := 1)
+  obtain ⟨h1, hnext, hL1, hH1⟩ := verify_straight X R.kLt R.pcLt hins hL hH (pops := 1) (pushes := 1)
     (by simp [kindOf]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
     (by intro l; simp)
   obtain ⟨ev, okv, -, tvv⟩ := R.stack_dec hmv sv.1 sv.2 (by omega)

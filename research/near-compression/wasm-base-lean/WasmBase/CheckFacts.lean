@@ -49,7 +49,7 @@ where
     | cons y l ih => intro a; simp only [List.foldl_cons]; have := ih (max a y); omega
 
 /-- Everything the base-faithful proof uses from `check`. -/
-structure CheckFacts (cfg : NearCfg) (p : Prepared) (fn : Nat) (pf : PFunc) (ck : CheckOut) : Prop where
+structure CheckFacts (cfg : NearCfg) (p : Prepared) (fn off : Nat) (pf : PFunc) (ck : CheckOut) : Prop where
   func : p.funcs[fn]? = some pf
   params : pf.type.params.size = 0
   nloc : pf.locals.size ≤ 64
@@ -67,15 +67,15 @@ structure CheckFacts (cfg : NearCfg) (p : Prepared) (fn : Nat) (pf : PFunc) (ck 
   records : ck.records.size = pf.code.size
   recs : ∀ pc, pc < pf.code.size → ∃ ins fee, pf.code[pc]? = some ins ∧
     feeUnits cfg pf.gas[pc]? = some fee ∧ fee ≤ ck.maxFee ∧
-    recordOf (ck.labels[pc]?.getD []) (ck.heights[pc]?.getD 0) fee pc ins = ck.records[pc]?
+    recordOf off (ck.labels[pc]?.getD []) (ck.heights[pc]?.getD 0) fee (off + pc) ins = ck.records[pc]?
   arity : ck.arity = pf.type.results.size
   resTag : ck.resTag = if pf.type.results[0]? == some .i64 then 1 else 0
   localTags : ck.localTags = pf.locals.toList.map fun t => if t == .i64 then 1 else 0
   locIdx : ∀ i ∈ pf.code.toList, ∀ x, (i = .localGet x ∨ i = .localSet x ∨ i = .localTee x) →
     x < pf.locals.size
 
-theorem recordOf_fee {ls : List Label} {h fee pc : Nat} {ins : Instr} {r : List Nat}
-    (hr : recordOf ls h fee pc ins = some r) : r.getD 3 0 = fee := by
+theorem recordOf_fee {off : Nat} {ls : List Label} {h fee pc : Nat} {ins : Instr} {r : List Nat}
+    (hr : recordOf off ls h fee pc ins = some r) : r.getD 3 0 = fee := by
   unfold recordOf at hr
   split at hr <;> (try split at hr) <;> (try split at hr) <;> simp_all <;>
     (try (obtain ⟨_, rfl⟩ := hr; rfl)) <;> (try (subst hr; rfl))
@@ -85,8 +85,8 @@ end WasmBase
 namespace WasmBase
 open NearSpecV3.Wasm
 
-theorem check_sound {cfg : NearCfg} {p : Prepared} {fn : Nat} {ck : CheckOut}
-    (h : check cfg p fn = some ck) : ∃ pf, CheckFacts cfg p fn pf ck := by
+theorem check_sound {cfg : NearCfg} {p : Prepared} {fn off : Nat} {ck : CheckOut}
+    (h : check cfg p fn off = some ck) : ∃ pf, CheckFacts cfg p fn off pf ck := by
   unfold check at h
   cases hpf : p.funcs[fn]? with
   | none => simp [hpf] at h
@@ -105,7 +105,7 @@ theorem check_sound {cfg : NearCfg} {p : Prepared} {fn : Nat} {ck : CheckOut}
         | false => simp [hs] at h
         | true =>
           simp only [hs, ite_true] at h
-          cases hm : (List.range pf.code.size).mapM (recordAt cfg pf L H) with
+          cases hm : (List.range pf.code.size).mapM (recordAt cfg pf L H off) with
           | none => simp [hm] at h
           | some recs =>
             simp only [hm, Option.some.injEq] at h
@@ -119,7 +119,7 @@ theorem check_sound {cfg : NearCfg} {p : Prepared} {fn : Nat} {ck : CheckOut}
             obtain ⟨⟨⟨⟨g6, g6a⟩, g6b⟩, g6c⟩, g7⟩ := hs
             have fee_of : ∀ pc (hpc : pc < pf.code.size), ∃ ins fee, pf.code[pc]? = some ins ∧
                 feeUnits cfg pf.gas[pc]? = some fee ∧
-                recordOf (L[pc]?.getD []) (H[pc]?.getD 0) fee pc ins = recs[pc]? := by
+                recordOf off (L[pc]?.getD []) (H[pc]?.getD 0) fee (off + pc) ins = recs[pc]? := by
               intro pc hpc
               have := hall pc (by simpa using hpc)
               simp only [List.getElem_range, recordAt] at this

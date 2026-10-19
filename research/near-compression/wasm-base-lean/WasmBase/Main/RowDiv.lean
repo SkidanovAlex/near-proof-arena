@@ -42,12 +42,12 @@ theorem div_binop_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Tra
           some (val4 (Rr 0) (Rr 1) (Rr 2) (Rr 3)))) :
     RowFacts2 X inS outS cons prod := by
   have hP' := P_val
-  have CF := X.facts
   have hopl : op ≤ 0x8A := by
     simp only [isBinop, binops, List.mem_cons, List.mem_nil_iff, or_false] at hop; omega
   -- the fee bound, independent of the spec state
   obtain ⟨pc0, hpc0, hm0⟩ := fetch_pc hpub L hfo
-  obtain ⟨ins, fee, rec, hins, hfee, hfl, hrc, hm⟩ := fetch_rec hpub L hfo hm0 hpc0
+  obtain ⟨q, l, ins, fee, rec, hq, hl, hoff, hins, hfee, hfl, hrc, hm⟩ := fetch_rec hpub L hfo hm0 hpc0
+  have CF := X.factsOf hq
   obtain ⟨op', x0, x1, x2, x3, hre, hcase⟩ := recordOf_spec hrc
   rw [hre] at hm
   simp only [List.map_cons, List.map_nil, List.cons.injEq, and_true] at hm
@@ -80,16 +80,21 @@ theorem div_binop_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Tra
   rw [hIn] at hin
   obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
   have hpcl := R.pcLt
-  have p0 : c 0 = pc := natEq i0 (hcP _) (by have := CF.codeLt; omega)
+  have hoffb := X.off_bound R.kLt
+  have htot := X.mf.total
+  have p0 : c 0 = X.offOf E.k + pc := natEq i0 (hcP _) (by omega)
   have p1 : c 1 = t := natEq i1 (hcP _) (by omega)
   have p2 : c 2 = S := natEq i2 (hcP _) (by omega)
   have psb : c ksb = E.sb := natEq i4 (hcP _) (by have := R.sbLt; omega)
   have pcid : c kcid = E.cid := natEq i5 (hcP _) (by have := R.cidLt; omega)
   have hsbR := R.sbLe
-  have hpc : pc0 = pc := natEq (e0.symm.trans i0) (by have := CF.codeLt; omega) (by have := CF.codeLt; omega)
+  have hpc : pc0 = X.offOf E.k + pc := natEq (e0.symm.trans i0) (by omega) (by omega)
   subst hpc
+  obtain ⟨hqk, hlpc⟩ := X.loc_unique hq hl R.kLt hpcl hoff
+  subst q
+  subst l
   have hH := R.height
-  have hHb := CF.hBound pc0 hpcl
+  have hHb := CF.hBound pc hpcl
   rw [hH] at eh hHb
   simp only [Option.getD_some] at eh hHb
   have p3 : c 3 = s.stack.size - E.sb := natEq eh (hcP _) (by omega)
@@ -107,7 +112,7 @@ theorem div_binop_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Tra
   subst hinsn
   -- two operands on the stack
   obtain ⟨hfam, hpops⟩ := isFamilyNum_of_binop hop
-  have hv := CF.verify pc0 hpcl
+  have hv := CF.verify pc hpcl
   obtain ⟨ls0, hL, -⟩ := R.labels
   simp only [verifyAt, hins, hL, hH, kindOf, hfam, ite_true, hpops, Bool.and_eq_true,
     decide_eq_true_eq] at hv
@@ -116,14 +121,14 @@ theorem div_binop_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Tra
     exact slot_toNat psb p3 hsbR h2 hszP
   have s1 : (((c ksb : Nat) : F) + ((c 3 : Nat) : F) - ((1 : Nat) : F)).toNat = s.stack.size - 1 := by
     exact slot_toNat psb p3 hsbR (by omega) hszP
-  have hout : outS = stMsg (pc0 + 1) (t + 1) (S + fee) (2 * trp) E.sb E.cid := by
+  have hout : outS = stMsg (X.offOf E.k + pc + 1) (t + 1) (S + fee) (2 * trp) E.sb E.cid := by
     rw [hOut, p0, p1, p2, efee', psb, pcid]
     simp only [stMsg, Lean.Grind.Semiring.natCast_add]
   rw [hcons] at hlive ⊢
   rw [hprod]
   rw [s2, s1] at hlive
   rcases (show trp = 0 ∨ trp = 1 by omega) with rfl | rfl
-  · refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide),
+  · refine ⟨E.k, pc + 1, fee, 0, E.sb, E.cid, hfl, by omega, (by rw [hout, Nat.add_assoc]), fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide),
       fun h => absurd h (by decide)⟩⟩
     simp only [ite_true]
     rw [s2, s1, p1]
@@ -132,7 +137,7 @@ theorem div_binop_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Tra
       (fun oka okb => by
         have := (sem (by simpa [Msg.ok] using oka) (by simpa [Msg.ok] using okb)).2 rfl
         exact ⟨by simpa [Msg.ok] using this.1, by simpa [Msg.val] using this.2⟩)
-  · refine ⟨pc0 + 1, fee, 2, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun h => absurd h (by decide),
+  · refine ⟨E.k, pc + 1, fee, 2, E.sb, E.cid, hfl, by omega, (by rw [hout, Nat.add_assoc]), fun hg => ⟨fun h => absurd h (by decide),
       fun h => absurd h (by decide), fun _ => ?_⟩⟩
     exact step_binop_trap X R hins hop hfee hg hg64
       ⟨0, s.stack.size - 2, tag, A 0, A 1, A 2, A 3, c ta⟩ ⟨0, s.stack.size - 1, tag, B 0, B 1, B 2, B 3, c tb⟩

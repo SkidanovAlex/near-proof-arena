@@ -137,8 +137,8 @@ theorem ctrl_view_pop (a : Array Val) (tps : Nat → Nat) (h : 1 ≤ a.size) (x 
 
 theorem ctrl_brIf_h {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {l : Nat}
-    (hins : X.pf.code[pc]? = some (.brIf l)) : 1 ≤ s.stack.size - E.sb := by
-  have hv := X.facts.verify pc R.pcLt
+    (hins : (X.pfOf E.k).code[pc]? = some (.brIf l)) : 1 ≤ s.stack.size - E.sb := by
+  have hv := (X.factsOf R.kLt).verify pc R.pcLt
   unfold verifyAt at hv
   obtain ⟨ls0, hL0, -⟩ := R.labels
   rw [hins, hL0, R.height] at hv
@@ -220,7 +220,8 @@ theorem ctrl_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (by simp [Ctrl.inters])
   simp only [fetch, cntA] at hfetch
   obtain ⟨pc0, hpc0, hm0⟩ := fetch_pc hpub L hfetch
-  obtain ⟨ins, fee, rec, hins, hfee, hfl, hrc, hm⟩ := fetch_rec hpub L hfetch hm0 hpc0
+  obtain ⟨q, l, ins, fee, rec, hq, hl, hoff, hins, hfee, hfl, hrc, hm⟩ := fetch_rec hpub L hfetch hm0 hpc0
+  have CF := X.factsOf hq
   obtain ⟨op, x0, x1, x2, x3, hre, hcase⟩ := recordOf_spec hrc
   have hoplt := recordOf_op_lt hrc
   rw [hre] at hm hoplt
@@ -263,18 +264,22 @@ theorem ctrl_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
   rw [hIn] at hin
   obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
-  have CF := X.facts
   have hpcl := R.pcLt
-  have p0 : rowNat tr 8 r 0 = pc := natEq i0 (hcP _) (by have := CF.codeLt; omega)
+  have hoffb := X.off_bound R.kLt
+  have htot := X.mf.total
+  have p0 : rowNat tr 8 r 0 = X.offOf E.k + pc := natEq i0 (hcP _) (by omega)
   have p1 : rowNat tr 8 r 1 = t := natEq i1 (hcP _) (by omega)
   have p2 : rowNat tr 8 r 2 = S := natEq i2 (hcP _) (by omega)
   have psb : rowNat tr 8 r 16 = E.sb := natEq i4 (hcP _) (by have := R.sbLt; omega)
   have pcid : rowNat tr 8 r 17 = E.cid := natEq i5 (hcP _) (by have := R.cidLt; omega)
   have hsbR := R.sbLe
-  have hpc : pc0 = pc := natEq (e0.symm.trans i0) (by have := CF.codeLt; omega) (by have := CF.codeLt; omega)
+  have hpc : pc0 = X.offOf E.k + pc := natEq (e0.symm.trans i0) (by omega) (by omega)
   subst hpc
+  obtain ⟨hqk, hlpc⟩ := X.loc_unique hq hl R.kLt hpcl hoff
+  subst q
+  subst l
   have hH := R.height
-  have hHb := CF.hBound pc0 hpcl
+  have hHb := CF.hBound pc hpcl
   rw [hH] at eh hHb
   simp only [Option.getD_some] at eh hHb
   have p3 : rowNat tr 8 r 3 = s.stack.size - E.sb := natEq eh (hcP _) (by omega)
@@ -284,7 +289,10 @@ theorem ctrl_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   -- HALT / HALTIF only in the entry frame
   have hent : rowNat tr 8 r 8 + rowNat tr 8 r 9 = 1 → E.rest = [] ∧ E.sb = 0 ∧ E.lsp = 16 := by
     intro h1
-    have hc : E.cid = 0 := by rw [← pcid]; omega
+    have hc : E.cid = 0 := by
+      rw [← pcid]; rcases hcid0 with h | h
+      · exact absurd h1 (by rw [h]; decide)
+      · exact h
     exact ⟨(R.entry hc).1, (R.entry hc).2, by simp [Env.lsp, hc]⟩
   rw [hL0] at hcase
   simp only [Option.getD_some] at hcase
@@ -301,9 +309,9 @@ theorem ctrl_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     rintro sN stk ⟨-, -, hgg⟩ hg
     have := R.gas
     rw [hgg]; rw [Nat.mul_add] at hg ⊢; omega
-  have c1F : cc 0 = ((pc0 : Nat) : F) := by simp only [cc, p0]
+  have c1F : cc 0 = ((X.offOf E.k + pc : Nat) : F) := by simp only [cc, p0]
   -- the condition (when consumed)
-  have hcnd : ∀ l, X.pf.code[pc0]? = some (.brIf l) → rowNat tr 8 r 7 + rowNat tr 8 r 9 = 1 →
+  have hcnd : ∀ l, (X.pfOf E.k).code[pc]? = some (.brIf l) → rowNat tr 8 r 7 + rowNat tr 8 r 9 = 1 →
       live mC ∧ (mC.space = 0 ∧ mC.slot = s.stack.size - 1) ∧ 1 ≤ s.stack.size - E.sb ∧
       mC = enc 0 (s.stack.size - 1) (s.stack[s.stack.size - 1]?.getD default) (tps (s.stack.size - 1)) ∧
       N = ((if rowNat tr 8 r 11 + rowNat tr 8 r 12 = 0 then 0 else 1 : Nat) : F) ∧
@@ -347,9 +355,9 @@ theorem ctrl_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   · -- NEXT: block / loop / nested end
     have i1 : (if rowNat tr 8 r 7 + rowNat tr 8 r 9 = 1 then [mC] else []) = [] := by simp [f7, f9]
     rw [i1]
-    have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((pc0 + 1 : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, c1F, Lean.Grind.Semiring.natCast_add, cast_one]; grind)
+    have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((X.offOf E.k + (pc + 1) : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, c1F]; simp only [Lean.Grind.Semiring.natCast_add, cast_one]; grind)
     have o2 : _ := (show cc 8 + cc 9 * N = ((0 : Nat) : F) by rw [k8, k9, cast_zero]; grind)
-    refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, mkOut _ _ o1 o2,
+    refine ⟨E.k, pc + 1, fee, 0, E.sb, E.cid, hfl, by omega, mkOut _ _ o1 o2,
       fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
     rcases ctrl_kind_next hk with ⟨bt, rfl⟩ | rfl | ⟨rfl, a, b, rest, hls⟩
     · exact step_block X R hins hfee hg hg64
@@ -360,42 +368,42 @@ theorem ctrl_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     rw [i1]
     obtain ⟨l, lab, rfl, hl', hlab, htg⟩ := ctrl_kind_jump hk
     simp only [List.cons.injEq, and_true] at hl
-    have e10 : cc 10 = ((lab.target : Nat) : F) := by rw [← htg, ← hl.1]; exact ex0
-    have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((lab.target : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, e10]; grind)
+    have e10 : cc 10 = ((X.offOf E.k + lab.target : Nat) : F) := by rw [← htg, Nat.add_comm, ← hl.1]; exact ex0
+    have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((X.offOf E.k + lab.target : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, e10]; grind)
     have o2 : _ := (show cc 8 + cc 9 * N = ((0 : Nat) : F) by rw [k8, k9, cast_zero]; grind)
-    refine ⟨lab.target, fee, 0, E.sb, E.cid, hfl, by omega, mkOut _ _ o1 o2, fun hg => ⟨fun _ =>
+    refine ⟨E.k, lab.target, fee, 0, E.sb, E.cid, hfl, by omega, mkOut _ _ o1 o2, fun hg => ⟨fun _ =>
       step_br X R (lab := { lab with height := lab.height + E.sb }) (by rw [hlen]; exact hl') (by rw [hfl0, shiftLabels_get, hlab]; rfl) hins hfee hg hg64,
       fun h => absurd h (by decide)⟩⟩
   · -- JUMPIF: br_if to an enclosing label
     obtain ⟨l, lab, rfl, hl', hlab, htg⟩ := ctrl_kind_jif hk
     simp only [List.cons.injEq, and_true] at hl
-    have e10 : cc 10 = ((lab.target : Nat) : F) := by rw [← htg, ← hl.1]; exact ex0
+    have e10 : cc 10 = ((X.offOf E.k + lab.target : Nat) : F) := by rw [← htg, Nat.add_comm, ← hl.1]; exact ex0
     have hw : rowNat tr 8 r 7 + rowNat tr 8 r 9 = 1 := by omega
     obtain ⟨hmC, sc, -, -, hN, hval⟩ := hcnd l hins hw
     have i1 : (if rowNat tr 8 r 7 + rowNat tr 8 r 9 = 1 then [mC] else []) = [mC] := by simp [hw]
     rw [i1]
     by_cases hz : rowNat tr 8 r 11 + rowNat tr 8 r 12 = 0
     · rw [ite_eq_left_of_eq_true _ _ (eq_true hz), cast_zero] at hN
-      have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((pc0 + 1 : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, hN, c1F, Lean.Grind.Semiring.natCast_add, cast_one]; grind)
+      have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((X.offOf E.k + (pc + 1) : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, hN, c1F]; simp only [Lean.Grind.Semiring.natCast_add, cast_one]; grind)
       have o2 : _ := (show cc 8 + cc 9 * N = ((0 : Nat) : F) by rw [k8, k9, cast_zero]; grind)
-      refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, mkOut _ _ o1 o2,
+      refine ⟨E.k, pc + 1, fee, 0, E.sb, E.cid, hfl, by omega, mkOut _ _ o1 o2,
         fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
       obtain ⟨s', hs', hrel⟩ := step_brIf X R (lab := { lab with height := lab.height + E.sb }) (by rw [hlen]; exact hl') (by rw [hfl0, shiftLabels_get, hlab]; rfl) hins hfee hg hg64 mC hmC sc
       rw [ite_eq_left_of_eq_true _ _ (eq_true (hval.mpr hz))] at hrel
       exact ⟨s', hs', hrel⟩
     · rw [ite_eq_right_of_eq_false _ _ (eq_false hz), cast_one] at hN
-      have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((lab.target : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, hN, e10]; grind)
+      have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((X.offOf E.k + lab.target : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, hN, e10]; grind)
       have o2 : _ := (show cc 8 + cc 9 * N = ((0 : Nat) : F) by rw [k8, k9, cast_zero]; grind)
-      refine ⟨lab.target, fee, 0, E.sb, E.cid, hfl, by omega, mkOut _ _ o1 o2, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
+      refine ⟨E.k, lab.target, fee, 0, E.sb, E.cid, hfl, by omega, mkOut _ _ o1 o2, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
       obtain ⟨s', hs', hrel⟩ := step_brIf X R (lab := { lab with height := lab.height + E.sb }) (by rw [hlen]; exact hl') (by rw [hfl0, shiftLabels_get, hlab]; rfl) hins hfee hg hg64 mC hmC sc
       rw [ite_eq_right_of_eq_false _ _ (eq_false (fun h => hz (hval.mp h)))] at hrel
       exact ⟨s', hs', hrel⟩
   · -- HALT: end of the body / return / br to the function label
     have i1 : (if rowNat tr 8 r 7 + rowNat tr 8 r 9 = 1 then [mC] else []) = [] := by simp [f7, f9]
     rw [i1]
-    have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((pc0 : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, c1F]; grind)
+    have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((X.offOf E.k + pc : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, c1F]; grind)
     have o2 : _ := (show cc 8 + cc 9 * N = ((1 : Nat) : F) by rw [k8, k9, cast_one]; grind)
-    refine ⟨pc0, fee, 1, E.sb, E.cid, hfl, Nat.le_refl _, mkOut _ _ o1 o2, fun hg => ⟨fun h => absurd h (by decide), fun _ => ?_⟩⟩
+    refine ⟨E.k, pc, fee, 1, E.sb, E.cid, hfl, Nat.le_refl _, mkOut _ _ o1 o2, fun hg => ⟨fun h => absurd h (by decide), fun _ => ?_⟩⟩
     obtain ⟨he1, he2, he3⟩ := hent (by omega)
     obtain ⟨sN, hsN, hHalt⟩ := step_halt X R hins (by rw [hlen]; exact ctrl_kind_halt hk) hfee hg hg64 ⟨he1, he2⟩
     refine ⟨sN, hsN, hHalt.1, hgN _ _ hHalt hg, E.live, fun x hx => he3 ▸ R.envSep x hx, fun x => ?_⟩
@@ -410,15 +418,15 @@ theorem ctrl_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     rw [i1]
     by_cases hz : rowNat tr 8 r 11 + rowNat tr 8 r 12 = 0
     · rw [ite_eq_left_of_eq_true _ _ (eq_true hz), cast_zero] at hN
-      have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((pc0 + 1 : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, hN, c1F, Lean.Grind.Semiring.natCast_add, cast_one]; grind)
+      have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((X.offOf E.k + (pc + 1) : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, hN, c1F]; simp only [Lean.Grind.Semiring.natCast_add, cast_one]; grind)
       have o2 : _ := (show cc 8 + cc 9 * N = ((0 : Nat) : F) by rw [k8, k9, hN, cast_zero]; grind)
-      refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, mkOut _ _ o1 o2,
+      refine ⟨E.k, pc + 1, fee, 0, E.sb, E.cid, hfl, by omega, mkOut _ _ o1 o2,
         fun hg => ⟨fun _ => (step_haltIf X R (by rw [hlen]; exact hl') hins hfee hg hg64 (by obtain ⟨a, b, -⟩ := hent (by omega); exact ⟨a, b⟩) mC hmC sc).2 (hval.mpr hz),
           fun h => absurd h (by decide)⟩⟩
     · rw [ite_eq_right_of_eq_false _ _ (eq_false hz), cast_one] at hN
-      have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((pc0 : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, hN, c1F]; grind)
+      have o1 : _ := (show cc 5 * (cc 0 + 1) + cc 6 * cc 10 + cc 7 * (N * cc 10 + (1 - N) * (cc 0 + 1)) + cc 8 * cc 0 + cc 9 * (N * cc 0 + (1 - N) * (cc 0 + 1)) = (((X.offOf E.k + pc : Nat) : Nat) : F) by rw [k5, k6, k7, k8, k9, hN, c1F]; grind)
       have o2 : _ := (show cc 8 + cc 9 * N = ((1 : Nat) : F) by rw [k8, k9, hN, cast_one]; grind)
-      refine ⟨pc0, fee, 1, E.sb, E.cid, hfl, Nat.le_refl _, mkOut _ _ o1 o2, fun hg => ⟨fun h => absurd h (by decide), fun _ => ?_⟩⟩
+      refine ⟨E.k, pc, fee, 1, E.sb, E.cid, hfl, Nat.le_refl _, mkOut _ _ o1 o2, fun hg => ⟨fun h => absurd h (by decide), fun _ => ?_⟩⟩
       obtain ⟨sN, hsN, hHalt⟩ := (step_haltIf X R (by rw [hlen]; exact hl') hins hfee hg hg64 (by obtain ⟨a, b, -⟩ := hent (by omega); exact ⟨a, b⟩) mC hmC sc).1 (fun h => hz (hval.mp h))
       obtain ⟨-, -, he3⟩ := hent (by omega)
       refine ⟨sN, hsN, hHalt.1, hgN _ _ hHalt hg, E.live, fun x hx => he3 ▸ R.envSep x hx, fun x => ?_⟩

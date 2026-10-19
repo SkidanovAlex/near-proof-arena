@@ -194,8 +194,9 @@ def verifyAt (pf : PFunc) (L : Array (List Label)) (H : Array Nat) (pc : Nat) : 
 /-- 16-bit limbs of a value. -/
 def limbs4 (x : Nat) : List Nat := [x % 65536, x / 65536 % 65536, x / 2 ^ 32 % 65536, x / 2 ^ 48 % 65536]
 
-/-- Code record `[pc, op, h, fee, x0, x1, x2, x3]` (bus FETCH). -/
-def recordOf (ls : List Label) (h fee pc : Nat) (ins : Instr) : Option (List Nat) :=
+/-- Code record `[pc, op, h, fee, x0, x1, x2, x3]` (bus FETCH) at global pc `pc`; jump targets are
+global (`off` = the function's code offset; the labels are local). -/
+def recordOf (off : Nat) (ls : List Label) (h fee pc : Nat) (ins : Instr) : Option (List Nat) :=
   let mk (op : Nat) (xs : List Nat) := some ([pc, op, h, fee] ++ xs)
   match ins with
   | .i32Const v => mk 0x41 (limbs4 v.toNat)
@@ -212,8 +213,8 @@ def recordOf (ls : List Label) (h fee pc : Nat) (ins : Instr) : Option (List Nat
   | .store op _ off => if isStoreOp op ∧ off < 2 ^ 32 then mk op [off % 65536, off / 65536, 0, 0] else none
   | i => match kindOf ls i with
     | some .next => mk Chips.Ctrl.opNext [0, 0, 0, 0]
-    | some (.jump t) => mk Chips.Ctrl.opJump [t, 0, 0, 0]
-    | some (.jumpIf t) => mk Chips.Ctrl.opJif [t, 0, 0, 0]
+    | some (.jump t) => mk Chips.Ctrl.opJump [t + off, 0, 0, 0]
+    | some (.jumpIf t) => mk Chips.Ctrl.opJif [t + off, 0, 0, 0]
     | some .halt => mk Chips.Ctrl.opHalt [0, 0, 0, 0]
     | some .haltIf => mk Chips.Ctrl.opHif [0, 0, 0, 0]
     | _ => none
@@ -234,14 +235,15 @@ def structOk (pf : PFunc) (L : Array (List Label)) (H : Array Nat) : Bool :=
   decide (L[0]? = some [rootLabel pf]) && decide (H[0]? = some 0) &&
   (List.range pf.code.size).all (fun pc => verifyAt pf L H pc && decide (H[pc]?.getD 0 < 2 ^ 16))
 
-def recordAt (cfg : NearCfg) (pf : PFunc) (L : Array (List Label)) (H : Array Nat) (pc : Nat) :
+def recordAt (cfg : NearCfg) (pf : PFunc) (L : Array (List Label)) (H : Array Nat) (off pc : Nat) :
     Option (List Nat) :=
   match pf.code[pc]?, feeUnits cfg pf.gas[pc]? with
-  | some ins, some fee => recordOf (L[pc]?.getD []) (H[pc]?.getD 0) fee pc ins
+  | some ins, some fee => recordOf off (L[pc]?.getD []) (H[pc]?.getD 0) fee (off + pc) ins
   | _, _ => none
 
-/-- Entry point: the eligibility check of defined function `fn` (domain D1–D5). -/
-def check (cfg : NearCfg) (p : Prepared) (fn : Nat) : Option CheckOut :=
+/-- The eligibility check of defined function `fn` (domain D1–D5), its code placed at global pc
+`off`. -/
+def check (cfg : NearCfg) (p : Prepared) (fn off : Nat) : Option CheckOut :=
   match p.funcs[fn]? with
   | none => none
   | some pf =>
@@ -250,7 +252,7 @@ def check (cfg : NearCfg) (p : Prepared) (fn : Nat) : Option CheckOut :=
       | none => none
       | some (L, H) =>
         if structOk pf L H then
-          match (List.range pf.code.size).mapM (recordAt cfg pf L H) with
+          match (List.range pf.code.size).mapM (recordAt cfg pf L H off) with
           | none => none
           | some recs =>
             some { fn, labels := L, heights := H, arity := pf.type.results.size,
@@ -259,6 +261,88 @@ def check (cfg : NearCfg) (p : Prepared) (fn : Nat) : Option CheckOut :=
                    records := recs.toArray,
                    maxFee := (recs.map fun r => r.getD 3 0).foldl max 0 }
         else none
+    else none
+
+/-! ## Module level: the checked functions, global pcs, global code records
+
+The code of the checked functions is concatenated: function `k` (defined-function index
+`fns[k]`) occupies global pcs `[offs[k], offs[k] + size_k)`.  Records are keyed by global pc and
+branch targets in them are global; the checker's labels stay local (as the spec's).  Every fact the
+proof uses about the layout is re-verified by a decidable check (`layoutOk`), not proven about the
+construction. -/
+
+/-- Defined-function call targets of a function's code. -/
+def calleesOf (p : Prepared) (pf : PFunc) : List Nat :=
+  pf.code.toList.filterMap fun i => match i with
+    | .call fi => if p.m.imports.size ≤ fi then some (fi - p.m.imports.size) else none
+    | _ => none
+
+/-- The entry function and every function reachable from it by `call` (breadth first). -/
+def closureFns (p : Prepared) (entry : Nat) : List Nat := Id.run do
+  let mut fns : List Nat := [entry]
+  let mut todo : List Nat := [entry]
+  for _ in [0:p.funcs.size + 1] do
+    match todo with
+    | [] => break
+    | fn :: rest =>
+      todo := rest
+      for c in (p.funcs[fn]?.map (calleesOf p)).getD [] do
+        if !(fns.contains c) then
+          fns := fns ++ [c]
+          todo := todo ++ [c]
+  return fns
+
+/-- Prefix sums: the code offsets of the functions. -/
+def prefixOffs : List Nat → Nat → List Nat
+  | [], _ => []
+  | n :: ns, o => o :: prefixOffs ns (o + n)
+
+/-- The function containing global pc `j` and the local pc. -/
+def locate (offs sizes : List Nat) (j : Nat) : Nat × Nat :=
+  let k := ((List.range offs.length).find? fun k => offs.getD k 0 ≤ j && j < offs.getD k 0 + sizes.getD k 0).getD 0
+  (k, j - offs.getD k 0)
+
+structure ModOut where
+  /-- checked defined-function indices; `fns[0]` is the entry function -/
+  fns : List Nat
+  cks : List CheckOut
+  offs : List Nat
+  sizes : List Nat
+  codeSize : Nat
+  /-- global code records -/
+  records : Array (List Nat)
+  maxFee : Nat
+  deriving Inhabited
+
+/-- The decidable layout facts the proof uses. -/
+def layoutOk (fns : List Nat) (offs sizes : List Nat) (total : Nat) : Bool :=
+  decide (offs.length = fns.length) && decide (sizes.length = fns.length) &&
+  (List.range total).all (fun j =>
+    let kl := locate offs sizes j
+    decide (kl.1 < fns.length) && decide (kl.2 < sizes.getD kl.1 0) && decide (offs.getD kl.1 0 + kl.2 = j)) &&
+  (List.range fns.length).all (fun k =>
+    decide (offs.getD k 0 + sizes.getD k 0 ≤ total) &&
+    (List.range (sizes.getD k 0)).all fun l => decide (locate offs sizes (offs.getD k 0 + l) = (k, l)))
+
+/-- Module-level eligibility check from entry function `entry`. -/
+def checkModule (cfg : NearCfg) (p : Prepared) (entry : Nat) : Option ModOut :=
+  let fns := closureFns p entry
+  match fns.mapM (fun fn => p.funcs[fn]?) with
+  | none => none
+  | some pfs =>
+  let sizes := pfs.map (·.code.size)
+  let offs := prefixOffs sizes 0
+  match (List.range fns.length).mapM (fun k => check cfg p (fns.getD k 0) (offs.getD k 0)) with
+  | none => none
+  | some cks =>
+    let total := sizes.foldl (· + ·) 0
+    let recs := (List.range total).map fun j =>
+      let kl := locate offs sizes j
+      ((cks.getD kl.1 default).records)[kl.2]?.getD []
+    if fns.head? = some entry ∧ total < 2 ^ 20 ∧ layoutOk fns offs sizes total = true ∧
+        fns.all (fun fn => ((p.funcs[fn]?.map (calleesOf p)).getD []).all (fns.contains ·)) then
+      some { fns, cks, offs, sizes, codeSize := total, records := recs.toArray,
+             maxFee := (cks.map (·.maxFee)).foldl max 0 }
     else none
 
 end WasmBase

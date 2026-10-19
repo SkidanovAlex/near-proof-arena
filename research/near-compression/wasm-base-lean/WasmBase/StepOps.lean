@@ -17,7 +17,7 @@ theorem stepLive_congr {live : Msg → Prop} {c1 c2 p1 p2 : List Msg}
 
 theorem Rel_of_RelW_congr {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live live' : Msg → Prop} (h : RelW X E s f tps tpl t pc S live) (e : live = live') :
-    Rel X s t pc S E.sb E.cid live' := ⟨E, f, tps, tpl, rfl, rfl, e ▸ h⟩
+    Rel X s t E.k pc S E.sb E.cid live' := ⟨E, f, tps, tpl, rfl, rfl, rfl, e ▸ h⟩
 
 theorem isFamilyNum_of_binop {op : Nat} (h : isBinop op) : isFamilyNum op = true ∧ numPops op = 2 := by
   simp only [isBinop, binops, List.mem_cons, List.mem_nil_iff, or_false] at h
@@ -26,8 +26,8 @@ theorem isFamilyNum_of_binop {op : Nat} (h : isBinop op) : isFamilyNum op = true
 
 theorem step_binop (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
-    {op fee : Nat} (hins : X.pf.code[pc]? = some (.num op)) (hop : isBinop op)
-    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
+    {op fee : Nat} (hins : (X.pfOf E.k).code[pc]? = some (.num op)) (hop : isBinop op)
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
     (hg64 : X.g0 < 2 ^ 64)
     (ma mb mr : Msg) (hma : live ma) (hmb : live mb)
     (sa : ma.space = 0 ∧ ma.slot = s.stack.size - 2)
@@ -36,8 +36,8 @@ theorem step_binop (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
       mr.tag = (if opW op = 64 then 1 else 0))
     (sem : ma.ok → mb.ok → mr.ok ∧ Num.binop (opW op) (opK op) ma.val mb.val = some mr.val) :
     ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) (pc + 1) (S + fee) E.sb E.cid (stepLive live [ma, mb] [mr]) := by
-  have F := X.facts
+      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [ma, mb] [mr]) := by
+  have F := (X.factsOf R.kLt)
   obtain ⟨hfam, hpops⟩ := isFamilyNum_of_binop hop
   have hv := F.verify pc R.pcLt
   obtain ⟨ls0, hL, hfl⟩ := R.labels
@@ -129,15 +129,15 @@ open NearSpecV3.Wasm
 the fee. -/
 theorem step_binop_trap (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
     {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
-    {op fee : Nat} (hins : X.pf.code[pc]? = some (.num op)) (hop : isBinop op)
-    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
+    {op fee : Nat} (hins : (X.pfOf E.k).code[pc]? = some (.num op)) (hop : isBinop op)
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
     (hg64 : X.g0 < 2 ^ 64)
     (ma mb : Msg) (hma : live ma) (hmb : live mb)
     (sa : ma.space = 0 ∧ ma.slot = s.stack.size - 2)
     (sb : mb.space = 0 ∧ mb.slot = s.stack.size - 1)
     (sem : ma.ok → mb.ok → Num.binop (opW op) (opK op) ma.val mb.val = none) :
     ∃ sN e, step X.cfg X.p s = .abort sN e ∧ X.R * (S + fee) + sN.gas.g = X.g0 := by
-  have F := X.facts
+  have F := (X.factsOf R.kLt)
   obtain ⟨hfam, hpops⟩ := isFamilyNum_of_binop hop
   have hv := F.verify pc R.pcLt
   obtain ⟨ls0, hL, hfl⟩ := R.labels

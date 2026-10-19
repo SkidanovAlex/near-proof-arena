@@ -27,10 +27,141 @@ theorem execNum_binop (s : St) (op : Nat) (hop : isBinop op) :
 end WasmBase
 
 namespace WasmBase
-theorem Ctx.facts (X : Ctx) : CheckFacts X.cfg X.p X.fn X.pf X.ck := by
-  obtain ⟨pf', h⟩ := check_sound X.hck
-  have : pf' = X.pf := by have := h.func; rw [X.hpf] at this; exact (Option.some.inj this).symm
+open NearSpecV3.Wasm
+
+/-- What a successful `checkModule` gives (all from decidable checks and `check`). -/
+structure ModFacts (cfg : NearCfg) (p : Prepared) (entry : Nat) (M : ModOut) : Prop where
+  head : M.fns.head? = some entry
+  cks : ∀ k, k < M.fns.length → check cfg p (M.fns.getD k 0) (M.offs.getD k 0) = some (M.cks.getD k default)
+  pfs : ∀ k, k < M.fns.length → ∃ pf, p.funcs[M.fns.getD k 0]? = some pf ∧ M.sizes.getD k 0 = pf.code.size
+  total : M.codeSize < 2 ^ 20
+  layout : layoutOk M.fns M.offs M.sizes M.codeSize = true
+  recSize : M.records.size = M.codeSize
+  recs : ∀ j, j < M.codeSize → M.records[j]? =
+      some (((M.cks.getD (locate M.offs M.sizes j).1 default).records)[(locate M.offs M.sizes j).2]?.getD [])
+  feeLe : ∀ k, k < M.fns.length → (M.cks.getD k default).maxFee ≤ M.maxFee
+  closed : M.fns.all (fun fn => ((p.funcs[fn]?.map (calleesOf p)).getD []).all (M.fns.contains ·)) = true
+  offs0 : M.offs.getD 0 0 = 0
+
+theorem checkModule_sound {cfg : NearCfg} {p : Prepared} {entry : Nat} {M : ModOut}
+    (h : checkModule cfg p entry = some M) : ModFacts cfg p entry M := by
+  unfold checkModule at h
+  dsimp only at h
+  split at h
+  · simp at h
+  · rename_i pfs hp
+    split at h
+    · simp at h
+    · rename_i cks hc
+      split at h
+      · rename_i hcond
+        simp only [Option.some.injEq] at h
+        subst h
+        obtain ⟨hhd, htot, hlay, hcl⟩ := hcond
+        obtain ⟨hcl1, hcl2⟩ := mapM_some _ _ _ hc
+        obtain ⟨hpl1, hpl2⟩ := mapM_some _ _ _ hp
+        simp only [List.length_range] at hcl1
+        refine ⟨hhd, ?_, ?_, htot, hlay, by simp, ?_, ?_, hcl, ?_⟩
+        · intro k hk
+          dsimp only at hk ⊢
+          have := hcl2 k (by simpa using hk)
+          simp only [List.getElem_range] at this
+          rw [this, List.getD_eq_getElem?_getD (l := cks), List.getElem?_eq_getElem (by omega), Option.getD_some]
+        · intro k hk
+          dsimp only at hk ⊢
+          have := hpl2 k hk
+          refine ⟨pfs[k]'(by omega), ?_, ?_⟩
+          · rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk, Option.getD_some, this,
+              List.getElem?_eq_getElem (by omega)]
+          · simp only [List.getD_eq_getElem?_getD, List.getElem?_map,
+              List.getElem?_eq_getElem (show k < pfs.length by omega), Option.map_some, Option.getD_some]
+        · intro j hj
+          dsimp only at hj ⊢
+          simp only [List.getElem?_toArray, List.getElem?_map, List.getElem?_range hj, Option.map_some]
+        · intro k hk
+          dsimp only at hk ⊢
+          apply foldl_max_ge
+          simp only [List.mem_map]
+          refine ⟨cks[k]'(by omega), List.getElem_mem _, ?_⟩
+          rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega), Option.getD_some]
+        · dsimp only
+          cases pfs with
+          | nil => rfl
+          | cons _ _ => rfl
+      · simp at h
+
+theorem Ctx.mf (X : Ctx) : ModFacts X.cfg X.p X.fn X.M := checkModule_sound X.hM
+
+theorem Ctx.layout (X : Ctx) :
+    X.M.offs.length = X.nf ∧ X.M.sizes.length = X.nf ∧
+    (∀ j, j < X.M.codeSize → (locate X.M.offs X.M.sizes j).1 < X.nf ∧
+      (locate X.M.offs X.M.sizes j).2 < X.M.sizes.getD (locate X.M.offs X.M.sizes j).1 0 ∧
+      X.M.offs.getD (locate X.M.offs X.M.sizes j).1 0 + (locate X.M.offs X.M.sizes j).2 = j) ∧
+    (∀ k, k < X.nf → X.M.offs.getD k 0 + X.M.sizes.getD k 0 ≤ X.M.codeSize ∧
+      ∀ l, l < X.M.sizes.getD k 0 → locate X.M.offs X.M.sizes (X.M.offs.getD k 0 + l) = (k, l)) := by
+  have h := X.mf.layout
+  simp only [layoutOk, Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true, List.mem_range] at h
+  obtain ⟨⟨⟨h1, h2⟩, h3⟩, h4⟩ := h
+  exact ⟨h1, h2, fun j hj => by have := h3 j hj; exact ⟨this.1.1, this.1.2, this.2⟩,
+    fun k hk => ⟨(h4 k hk).1, fun l hl => (h4 k hk).2 l hl⟩⟩
+
+theorem Ctx.sizeOf (X : Ctx) {k : Nat} (hk : k < X.nf) : X.M.sizes.getD k 0 = (X.pfOf k).code.size := by
+  obtain ⟨pf, h1, h2⟩ := X.mf.pfs k hk
+  simp only [Ctx.pfOf, Ctx.fnOf, h1, Option.getD_some, h2]
+
+/-- The facts of `check` for every checked function. -/
+theorem Ctx.factsOf (X : Ctx) {k : Nat} (hk : k < X.nf) :
+    CheckFacts X.cfg X.p (X.fnOf k) (X.offOf k) (X.pfOf k) (X.ckOf k) := by
+  obtain ⟨pf', h⟩ := check_sound (X.mf.cks k hk)
+  have : pf' = X.pfOf k := by
+    have := h.func; simp only [Ctx.pfOf, Ctx.fnOf, this, Option.getD_some]
   subst this; exact h
+
+theorem Ctx.nf_pos (X : Ctx) : 0 < X.nf := by
+  have := X.mf.head
+  unfold Ctx.nf; cases h : X.M.fns with
+  | nil => rw [h] at this; simp at this
+  | cons _ _ => simp
+
+theorem Ctx.fnOf_zero (X : Ctx) : X.fnOf 0 = X.fn := by
+  have := X.mf.head
+  unfold Ctx.fnOf; cases h : X.M.fns with
+  | nil => rw [h] at this; simp at this
+  | cons a _ => rw [h] at this; simp at this; simp [this]
+
+theorem Ctx.off_zero (X : Ctx) : X.offOf 0 = 0 := X.mf.offs0
+
+/-- The entry function's `check` facts. -/
+theorem Ctx.facts (X : Ctx) : CheckFacts X.cfg X.p X.fn 0 X.pf X.ck := by
+  have := X.factsOf X.nf_pos
+  rw [X.fnOf_zero, X.off_zero] at this; exact this
+
+theorem Ctx.maxFee_ge (X : Ctx) {k : Nat} (hk : k < X.nf) : (X.ckOf k).maxFee ≤ X.maxFee := X.mf.feeLe k hk
+
+/-- A global record is a shifted local record of the checked function containing it. -/
+theorem Ctx.recG (X : Ctx) {j : Nat} (hj : j < X.M.codeSize) :
+    ∃ k l, k < X.nf ∧ l < (X.pfOf k).code.size ∧ X.offOf k + l = j ∧
+      X.M.records[j]? = some ((X.ckOf k).records[l]?.getD []) := by
+  obtain ⟨-, -, h3, -⟩ := X.layout
+  obtain ⟨a, b, c⟩ := h3 j hj
+  refine ⟨_, _, a, by rw [← X.sizeOf a]; exact b, c, X.mf.recs j hj⟩
+
+/-- Global pcs determine the function and the local pc. -/
+theorem Ctx.loc_unique (X : Ctx) {k l k' l' : Nat} (hk : k < X.nf) (hl : l < (X.pfOf k).code.size)
+    (hk' : k' < X.nf) (hl' : l' < (X.pfOf k').code.size) (h : X.offOf k + l = X.offOf k' + l') :
+    k = k' ∧ l = l' := by
+  obtain ⟨-, -, -, h4⟩ := X.layout
+  have e1 := (h4 k hk).2 l (by rw [X.sizeOf hk]; exact hl)
+  have e2 := (h4 k' hk').2 l' (by rw [X.sizeOf hk']; exact hl')
+  unfold Ctx.offOf at h
+  rw [h, e2] at e1
+  simp only [Prod.mk.injEq] at e1
+  exact ⟨e1.1.symm, e1.2.symm⟩
+
+theorem Ctx.off_bound (X : Ctx) {k : Nat} (hk : k < X.nf) : X.offOf k + (X.pfOf k).code.size ≤ X.M.codeSize := by
+  obtain ⟨-, -, -, h4⟩ := X.layout
+  have := (h4 k hk).1; rw [X.sizeOf hk] at this; exact this
+
 end WasmBase
 
 namespace WasmBase

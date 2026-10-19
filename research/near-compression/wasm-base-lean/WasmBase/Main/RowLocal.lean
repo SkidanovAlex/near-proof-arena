@@ -177,7 +177,8 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have hfetch := hocc (fetch (v cPc) Local.op (v cH) (v cFee) [v Local.idx, 0, 0, 0] Local.act) (by simp [Local.inters, stdState])
   simp only [fetch, cntA] at hfetch
   obtain ⟨pc0, hpc0, hm0⟩ := fetch_pc hpub L hfetch
-  obtain ⟨ins, fee, rec, hins, hfee, hfl, hrc, hm⟩ := fetch_rec hpub L hfetch hm0 hpc0
+  obtain ⟨q, l, ins, fee, rec, hq, hl, hoff, hins, hfee, hfl, hrc, hm⟩ := fetch_rec hpub L hfetch hm0 hpc0
+  have CF := X.factsOf hq
   obtain ⟨op, x0, x1, x2, x3, hre, hcase⟩ := recordOf_spec hrc
   have hoplt := recordOf_op_lt hrc
   rw [hre] at hm hoplt
@@ -226,29 +227,33 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
   rw [hIn] at hin
   obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
-  have CF := X.facts
   have hpcl := R.pcLt
+  have hoffb := X.off_bound R.kLt
+  have htot := X.mf.total
   obtain ⟨ls0, hL0, hfl0⟩ := R.labels
-  have p0 : rowNat tr 9 r 0 = pc := natEq i0 (hcP _) (by have := CF.codeLt; omega)
+  have p0 : rowNat tr 9 r 0 = X.offOf E.k + pc := natEq i0 (hcP _) (by omega)
   have p1 : rowNat tr 9 r 1 = t := natEq i1 (hcP _) (by omega)
   have p2 : rowNat tr 9 r 2 = S := natEq i2 (hcP _) (by omega)
   have psb : rowNat tr 9 r 23 = E.sb := natEq i4 (hcP _) (by have := R.sbLt; omega)
   have pcid : rowNat tr 9 r 24 = E.cid := natEq i5 (hcP _) (by have := R.cidLt; omega)
   have hsbR := R.sbLe
-  have hpc : pc0 = pc := natEq (e0.symm.trans i0) (by have := CF.codeLt; omega) (by have := CF.codeLt; omega)
+  have hpc : pc0 = X.offOf E.k + pc := natEq (e0.symm.trans i0) (by omega) (by omega)
   subst hpc
+  obtain ⟨hqk, hlpc⟩ := X.loc_unique hq hl R.kLt hpcl hoff
+  subst q
+  subst l
   have hH := R.height
-  have hHb := CF.hBound pc0 hpcl
+  have hHb := CF.hBound pc hpcl
   rw [hH] at eh hHb
   simp only [Option.getD_some] at eh hHb
   have p3 : rowNat tr 9 r 3 = s.stack.size - E.sb := natEq eh (hcP _) (by omega)
   have hszP : s.stack.size < P := by have := R.sbLt; omega
-  have hout : rowOut Local.table tr pub 9 r = stMsg (pc0 + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
+  have hout : rowOut Local.table tr pub 9 r = stMsg (X.offOf E.k + pc + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
     rw [hOut, p0, p1, p2, efee', psb, pcid]
     simp only [stMsg, Lean.Grind.Semiring.natCast_add]
   rw [hCons] at hlive
   rw [hCons, hProd]
-  refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
+  refine ⟨E.k, pc + 1, fee, 0, E.sb, E.cid, hfl, by omega, (by rw [hout, Nat.add_assoc]), fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
   have hlL : live mL := hlive mL List.mem_cons_self
   have spU : Local.space.eval (tr.row pub 9 r) = (1 - (((rowNat tr 9 r 26 : Nat) : F) + ((rowNat tr 9 r 27 : Nat) : F))) *
       (((16 : Nat) : F) + ((rowNat tr 9 r 24 : Nat) : F)) +
@@ -267,11 +272,11 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       ((rowNat tr 9 r 24 : Nat) : F)) + ((2 : Nat) : F) * ((1 : Nat) : F) = ((2 : Nat) : F) by grind]
     exact Fp.toNat_cast_of_lt (by omega)
   -- the local index
-  have hxl : ∀ x, (X.pf.code[pc0]? = some (.localGet x) ∨ X.pf.code[pc0]? = some (.localSet x) ∨
-      X.pf.code[pc0]? = some (.localTee x)) → x < f.locals.size := by
+  have hxl : ∀ x, ((X.pfOf E.k).code[pc]? = some (.localGet x) ∨ (X.pfOf E.k).code[pc]? = some (.localSet x) ∨
+      (X.pfOf E.k).code[pc]? = some (.localTee x)) → x < f.locals.size := by
     intro x h
     rw [R.nloc]
-    have hmem : ∀ i, X.pf.code[pc0]? = some i → i ∈ X.pf.code.toList := fun i hi => by
+    have hmem : ∀ i, (X.pfOf E.k).code[pc]? = some i → i ∈ (X.pfOf E.k).code.toList := fun i hi => by
       rw [Array.mem_toList_iff]; exact Array.mem_of_getElem? hi
     rcases h with h | h | h
     · exact CF.locIdx _ (hmem _ h) x (Or.inl rfl)
@@ -312,7 +317,7 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     | skip
   · -- local.get
     simp only [List.cons.injEq, and_true] at hl
-    have hv' : X.pf.code[pc0]? = some (.localGet x) := hv ▸ hins
+    have hv' : (X.pfOf E.k).code[pc]? = some (.localGet x) := hv ▸ hins
     have hxv := hxl x (Or.inl hv')
     have e8 : rowNat tr 9 r 8 = x := hx0 x hl.1 (by omega)
     have sL := hsp g26 g27
@@ -329,11 +334,11 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     exact hrel
   · -- local.set
     simp only [List.cons.injEq, and_true] at hl
-    have hv' : X.pf.code[pc0]? = some (.localSet x) := hv ▸ hins
+    have hv' : (X.pfOf E.k).code[pc]? = some (.localSet x) := hv ▸ hins
     have hxv := hxl x (Or.inr (Or.inl hv'))
     have e8 : rowNat tr 9 r 8 = x := hx0 x hl.1 (by omega)
     have sL := hsp g26 g27
-    obtain ⟨h1, -⟩ := verify_straight X hpcl hv' hL0 R.height (pops := 1) (pushes := 0)
+    obtain ⟨h1, -⟩ := verify_straight X R.kLt hpcl hv' hL0 R.height (pops := 1) (pushes := 0)
       (by simp [kindOf]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp) (by intro l; simp)
     have hmV : live mV := hlive mV (by simp [c, g6, g7, g27])
     obtain ⟨s', hs', hrel⟩ := step_localSet X R hv' hxv hfee hg hg64 mV mL mo hmV hlL
@@ -347,11 +352,11 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     exact hrel
   · -- local.tee
     simp only [List.cons.injEq, and_true] at hl
-    have hv' : X.pf.code[pc0]? = some (.localTee x) := hv ▸ hins
+    have hv' : (X.pfOf E.k).code[pc]? = some (.localTee x) := hv ▸ hins
     have hxv := hxl x (Or.inr (Or.inr hv'))
     have e8 : rowNat tr 9 r 8 = x := hx0 x hl.1 (by omega)
     have sL := hsp g26 g27
-    obtain ⟨h1, -⟩ := verify_straight X hpcl hv' hL0 R.height (pops := 1) (pushes := 1)
+    obtain ⟨h1, -⟩ := verify_straight X R.kLt hpcl hv' hL0 R.height (pops := 1) (pushes := 1)
       (by simp [kindOf]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp) (by intro l; simp)
     have hmV : live mV := hlive mV (by simp [c, g6, g7, g27])
     obtain ⟨s', hs', hrel⟩ := step_localTee X R hv' hxv hfee hg hg64 mV mL mo ms hmV hlL
@@ -368,7 +373,7 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     exact hrel
   · -- global.get
     simp only [List.cons.injEq, and_true] at hl
-    have hv' : X.pf.code[pc0]? = some (.globalGet x) := hv ▸ hins
+    have hv' : (X.pfOf E.k).code[pc]? = some (.globalGet x) := hv ▸ hins
     have e8 : rowNat tr 9 r 8 = x := hx0 x hl.1 hx16
     have sG := hspG (by omega)
     obtain ⟨s', hs', hrel⟩ := step_globalGet X R hv' hx16 hfee hg hg64 mL hlL ⟨sG, e8⟩ mo ms
@@ -384,10 +389,10 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     exact hrel
   · -- global.set
     simp only [List.cons.injEq, and_true] at hl
-    have hv' : X.pf.code[pc0]? = some (.globalSet x) := hv ▸ hins
+    have hv' : (X.pfOf E.k).code[pc]? = some (.globalSet x) := hv ▸ hins
     have e8 : rowNat tr 9 r 8 = x := hx0 x hl.1 hx16
     have sG := hspG (by omega)
-    obtain ⟨h1, -⟩ := verify_straight X hpcl hv' hL0 R.height (pops := 1) (pushes := 0)
+    obtain ⟨h1, -⟩ := verify_straight X R.kLt hpcl hv' hL0 R.height (pops := 1) (pushes := 0)
       (by simp [kindOf, hx16]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp) (by intro l; simp)
     have hmV : live mV := hlive mV (by simp [c, g6, g7, g27])
     obtain ⟨s', hs', hrel⟩ := step_globalSet X R hv' hx16 hfee hg hg64 mV mL mo hmV hlL

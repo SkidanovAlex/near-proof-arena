@@ -340,7 +340,8 @@ theorem load_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   simp only [fetch] at hfetch
   rw [cA] at hfetch
   obtain ⟨pc0, hpc0, hm0⟩ := fetch_pc hpub L hfetch
-  obtain ⟨ins, fee, rec, hins, hfee, hfl, hrc, hm⟩ := fetch_rec hpub L hfetch hm0 hpc0
+  obtain ⟨q, l, ins, fee, rec, hq, hl, hoff, hins, hfee, hfl, hrc, hm⟩ := fetch_rec hpub L hfetch hm0 hpc0
+  have CF := X.factsOf hq
   obtain ⟨op, x0, x1, x2, x3, hre, hcase⟩ := recordOf_spec hrc
   have hoplt := recordOf_op_lt hrc
   rw [hre] at hm hoplt
@@ -389,28 +390,32 @@ theorem load_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
   rw [hIn] at hin
   obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
-  have CF := X.facts
   have hpcl := R.pcLt
-  have p0 : rowNat tr 11 r 0 = pc := natEq i0 (hcP _) (by have := CF.codeLt; omega)
+  have hoffb := X.off_bound R.kLt
+  have htot := X.mf.total
+  have p0 : rowNat tr 11 r 0 = X.offOf E.k + pc := natEq i0 (hcP _) (by omega)
   have p1 : rowNat tr 11 r 1 = t := natEq i1 (hcP _) (by omega)
   have p2 : rowNat tr 11 r 2 = S := natEq i2 (hcP _) (by omega)
   have psb : rowNat tr 11 r 56 = E.sb := natEq i4 (hcP _) (by have := R.sbLt; omega)
   have pcid : rowNat tr 11 r 57 = E.cid := natEq i5 (hcP _) (by have := R.cidLt; omega)
   have hsbR := R.sbLe
-  have hpc : pc0 = pc := natEq (e0.symm.trans i0) (by have := CF.codeLt; omega) (by have := CF.codeLt; omega)
+  have hpc : pc0 = X.offOf E.k + pc := natEq (e0.symm.trans i0) (by omega) (by omega)
   subst hpc
+  obtain ⟨hqk, hlpc⟩ := X.loc_unique hq hl R.kLt hpcl hoff
+  subst q
+  subst l
   have hH := R.height
-  have hHb := CF.hBound pc0 hpcl
+  have hHb := CF.hBound pc hpcl
   rw [hH] at eh hHb
   simp only [Option.getD_some] at eh hHb
   have p3 : rowNat tr 11 r 3 = s.stack.size - E.sb := natEq eh (hcP _) (by omega)
   have hszP : s.stack.size < P := by have := R.sbLt; omega
-  have hout : rowOut Load.table tr pub 11 r = stMsg (pc0 + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
+  have hout : rowOut Load.table tr pub 11 r = stMsg (X.offOf E.k + pc + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
     rw [hOut, p0, p1, p2, efee', psb, pcid]
     simp only [stMsg, Lean.Grind.Semiring.natCast_add]
   rw [hCons] at hlive ⊢
   rw [hProd]
-  refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
+  refine ⟨E.k, pc + 1, fee, 0, E.sb, E.cid, hfl, by omega, (by rw [hout, Nat.add_assoc]), fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
   -- the instruction is the load
   obtain ⟨al, off, hinsE, -, hisL, hoff, hxs⟩ : ∃ al off, ins = .load op al off ∧ (0x28 ≤ op ∧ op ≤ 0x35) ∧
       isLoadOp op = true ∧ off < 2 ^ 32 ∧ [x0, x1, x2, x3] = [off % 65536, off / 65536, 0, 0] := by
@@ -428,7 +433,7 @@ theorem load_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have c21 : rowNat tr 11 r 21 = off % 65536 := natEq ex0 (hcP _) (by omega)
   have c22 : rowNat tr 11 r 22 = off / 65536 := natEq ex1 (hcP _) (by omega)
   obtain ⟨ls0, hL0, -⟩ := R.labels
-  obtain ⟨h1, -⟩ := verify_straight X hpcl hins hL0 R.height (pops := 1) (pushes := 1)
+  obtain ⟨h1, -⟩ := verify_straight X R.kLt hpcl hins hL0 R.height (pops := 1) (pushes := 1)
     (by simp [kindOf, hisL, hoff]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
     (by intro l; simp)
   have hslot : ma.slot = s.stack.size - 1 := slot_toNat psb p3 hsbR h1 hszP
@@ -848,7 +853,8 @@ theorem store_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   simp only [fetch] at hfetch
   rw [cA] at hfetch
   obtain ⟨pc0, hpc0, hm0⟩ := fetch_pc hpub L hfetch
-  obtain ⟨ins, fee, rec, hins, hfee, hfl, hrc, hm⟩ := fetch_rec hpub L hfetch hm0 hpc0
+  obtain ⟨q, l, ins, fee, rec, hq, hl, hoff, hins, hfee, hfl, hrc, hm⟩ := fetch_rec hpub L hfetch hm0 hpc0
+  have CF := X.factsOf hq
   obtain ⟨op, x0, x1, x2, x3, hre, hcase⟩ := recordOf_spec hrc
   have hoplt := recordOf_op_lt hrc
   rw [hre] at hm hoplt
@@ -892,28 +898,32 @@ theorem store_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
   rw [hIn] at hin
   obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
-  have CF := X.facts
   have hpcl := R.pcLt
-  have p0 : rowNat tr 12 r 0 = pc := natEq i0 (hcP _) (by have := CF.codeLt; omega)
+  have hoffb := X.off_bound R.kLt
+  have htot := X.mf.total
+  have p0 : rowNat tr 12 r 0 = X.offOf E.k + pc := natEq i0 (hcP _) (by omega)
   have p1 : rowNat tr 12 r 1 = t := natEq i1 (hcP _) (by omega)
   have p2 : rowNat tr 12 r 2 = S := natEq i2 (hcP _) (by omega)
   have psb : rowNat tr 12 r 59 = E.sb := natEq i4 (hcP _) (by have := R.sbLt; omega)
   have pcid : rowNat tr 12 r 60 = E.cid := natEq i5 (hcP _) (by have := R.cidLt; omega)
   have hsbR := R.sbLe
-  have hpc : pc0 = pc := natEq (e0.symm.trans i0) (by have := CF.codeLt; omega) (by have := CF.codeLt; omega)
+  have hpc : pc0 = X.offOf E.k + pc := natEq (e0.symm.trans i0) (by omega) (by omega)
   subst hpc
+  obtain ⟨hqk, hlpc⟩ := X.loc_unique hq hl R.kLt hpcl hoff
+  subst q
+  subst l
   have hH := R.height
-  have hHb := CF.hBound pc0 hpcl
+  have hHb := CF.hBound pc hpcl
   rw [hH] at eh hHb
   simp only [Option.getD_some] at eh hHb
   have p3 : rowNat tr 12 r 3 = s.stack.size - E.sb := natEq eh (hcP _) (by omega)
   have hszP : s.stack.size < P := by have := R.sbLt; omega
-  have hout : rowOut Store.table tr pub 12 r = stMsg (pc0 + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
+  have hout : rowOut Store.table tr pub 12 r = stMsg (X.offOf E.k + pc + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
     rw [hOut, p0, p1, p2, efee', psb, pcid]
     simp only [stMsg, Lean.Grind.Semiring.natCast_add]
   rw [hCons] at hlive ⊢
   rw [hProd]
-  refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
+  refine ⟨E.k, pc + 1, fee, 0, E.sb, E.cid, hfl, by omega, (by rw [hout, Nat.add_assoc]), fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
   obtain ⟨al, off, hinsE, -, hisS, hoff, hxs⟩ : ∃ al off, ins = .store op al off ∧ (0x36 ≤ op ∧ op ≤ 0x3E) ∧
       isStoreOp op = true ∧ off < 2 ^ 32 ∧ [x0, x1, x2, x3] = [off % 65536, off / 65536, 0, 0] := by
     rcases hcase with ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ |
@@ -930,7 +940,7 @@ theorem store_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have c30 : rowNat tr 12 r 30 = off % 65536 := natEq ex0 (hcP _) (by omega)
   have c31 : rowNat tr 12 r 31 = off / 65536 := natEq ex1 (hcP _) (by omega)
   obtain ⟨ls0, hL0, -⟩ := R.labels
-  obtain ⟨h2, -⟩ := verify_straight X hpcl hins hL0 R.height (pops := 2) (pushes := 0)
+  obtain ⟨h2, -⟩ := verify_straight X R.kLt hpcl hins hL0 R.height (pops := 2) (pushes := 0)
     (by simp [kindOf, hisS, hoff]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
     (by intro l; simp)
   have hslotV : mv.slot = s.stack.size - 1 := slot_toNat psb p3 hsbR (by omega) hszP
