@@ -10,7 +10,9 @@
 //! * `TAPE`: the public-segment messages of `AirP.pubSegs` (verifier-computed in the classical
 //!   protocol), as a cached trace whose commitment V_d recomputes from the claim;
 //! * `EXT`: the net messages of the classical tables left out of the demo (stand-in only).
-use openvm_stark_backend::{PartitionedBaseAir, air_builders::PartitionedAirBuilder, interaction::InteractionBuilder};
+use openvm_stark_backend::{
+    PartitionedBaseAir, air_builders::PartitionedAirBuilder, interaction::InteractionBuilder,
+};
 use p3_air::{Air, AirBuilderWithPublicValues, BaseAir, BaseAirWithPublicValues};
 use p3_field::PrimeCharacteristicRing;
 use p3_matrix::Matrix;
@@ -47,7 +49,13 @@ impl E {
             t => panic!("bad expr tag {t}"),
         }
     }
-    pub fn eval_f<F: PrimeCharacteristicRing + Copy>(&self, cur: &[F], nxt: &[F], pubs: &[F], sel: [F; 3]) -> F {
+    pub fn eval_f<F: PrimeCharacteristicRing + Copy>(
+        &self,
+        cur: &[F],
+        nxt: &[F],
+        pubs: &[F],
+        sel: [F; 3],
+    ) -> F {
         match self {
             // `const c` is `c mod p` (Lean `Nat.cast`)
             E::C(n) => F::from_u64(*n),
@@ -115,7 +123,12 @@ impl ClassicalAir {
             .iter()
             .enumerate()
             .map(|(i, t)| {
-                let constraints: Vec<E> = t["constraints"].as_array().unwrap().iter().map(E::parse).collect();
+                let constraints: Vec<E> = t["constraints"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(E::parse)
+                    .collect();
                 let inters: Vec<Inter> = t["interactions"]
                     .as_array()
                     .unwrap()
@@ -129,7 +142,11 @@ impl ClassicalAir {
                     .collect();
                 let num_pub = constraints
                     .iter()
-                    .chain(inters.iter().flat_map(|i| i.mult.iter().chain(i.msg.iter())))
+                    .chain(
+                        inters
+                            .iter()
+                            .flat_map(|i| i.mult.iter().chain(i.msg.iter())),
+                    )
                     .map(|e| e.pub_bound())
                     .max()
                     .unwrap_or(0);
@@ -164,7 +181,11 @@ impl<F> BaseAir<F> for JsonAir {
 }
 impl<F> PartitionedBaseAir<F> for JsonAir {
     fn cached_main_widths(&self) -> Vec<usize> {
-        if self.spec.cached { vec![self.spec.width] } else { vec![] }
+        if self.spec.cached {
+            vec![self.spec.width]
+        } else {
+            vec![]
+        }
     }
     fn common_main_width(&self) -> usize {
         // SWIRL needs a non-empty common main: a cached AIR carries one unused zero column
@@ -177,7 +198,13 @@ impl<F> BaseAirWithPublicValues<F> for JsonAir {
     }
 }
 
-fn build<AB: AirBuilderWithPublicValues>(b: &AB, e: &E, l: &[AB::Expr], n: &[AB::Expr], p: &[AB::Expr]) -> AB::Expr {
+fn build<AB: AirBuilderWithPublicValues>(
+    b: &AB,
+    e: &E,
+    l: &[AB::Expr],
+    n: &[AB::Expr],
+    p: &[AB::Expr],
+) -> AB::Expr {
     match e {
         E::C(c) => AB::Expr::from_u64(*c),
         E::Col(i, false) => l[*i].clone(),
@@ -192,13 +219,27 @@ fn build<AB: AirBuilderWithPublicValues>(b: &AB, e: &E, l: &[AB::Expr], n: &[AB:
     }
 }
 
-impl<AB: AirBuilderWithPublicValues + InteractionBuilder + PartitionedAirBuilder> Air<AB> for JsonAir {
+impl<AB: AirBuilderWithPublicValues + InteractionBuilder + PartitionedAirBuilder> Air<AB>
+    for JsonAir
+{
     fn eval(&self, b: &mut AB) {
         let mut l: Vec<AB::Expr> = vec![];
         let mut n: Vec<AB::Expr> = vec![];
         if self.spec.cached {
-            l.extend(b.cached_mains()[0].row_slice(0).unwrap().iter().map(|&v| v.into()));
-            n.extend(b.cached_mains()[0].row_slice(1).unwrap().iter().map(|&v| v.into()));
+            l.extend(
+                b.cached_mains()[0]
+                    .row_slice(0)
+                    .unwrap()
+                    .iter()
+                    .map(|&v| v.into()),
+            );
+            n.extend(
+                b.cached_mains()[0]
+                    .row_slice(1)
+                    .unwrap()
+                    .iter()
+                    .map(|&v| v.into()),
+            );
         } else {
             let main = b.main();
             l.extend(main.row_slice(0).unwrap().iter().map(|&v| v.into()));

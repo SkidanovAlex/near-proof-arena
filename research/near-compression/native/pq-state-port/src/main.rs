@@ -22,9 +22,9 @@
 //!
 //! Bus-id offset for the later direct-Wasm join: `BUS_OFFSET` is applied to every classical bus
 //! id, leaving buses below it free for the Wasm family (`pq-wasm-base` uses 0-4).
+mod air;
 #[allow(dead_code, clippy::all)]
 mod config;
-mod air;
 
 use air::{ClassicalAir, E, JsonAir, TableSpec};
 use config::{F, Sha384Config, Sha384RefEngine};
@@ -32,7 +32,10 @@ use openvm_stark_backend::{
     AirRef, StarkEngine, SystemParams, WhirConfig, WhirLevers, WhirParams, WhirProximityStrategy,
     codec::Encode,
     interaction::LogUpSecurityParameters,
-    prover::{AirProvingContext, ColMajorMatrix, CommittedTraceData, CpuColMajorBackend, DeviceDataTransporter, ProvingContext, TraceCommitter},
+    prover::{
+        AirProvingContext, ColMajorMatrix, CommittedTraceData, CpuColMajorBackend,
+        DeviceDataTransporter, ProvingContext, TraceCommitter,
+    },
 };
 use p3_field::{PrimeCharacteristicRing, PrimeField32};
 use p3_matrix::dense::RowMajorMatrix;
@@ -70,14 +73,23 @@ fn seg_v1_params(n_stack: usize, w_stack: usize, max_degree: usize) -> SystemPar
     let (l_skip, log_blowup, k, k1, lf) = (2, 1, 4, 1, 7);
     let log_h = l_skip + n_stack;
     assert_eq!((log_h - k1 - lf) % k, 0, "n_stack must be 10, 14, 18 or 22");
-    let levers = WhirLevers { k_first: k1, multiproof: true, keep_domain: true, whir_y: true, ..Default::default() };
+    let levers = WhirLevers {
+        k_first: k1,
+        multiproof: true,
+        keep_domain: true,
+        whir_y: true,
+        ..Default::default()
+    };
     let whir = WhirConfig::new_full(
         log_blowup,
         log_h,
         WhirParams {
             k,
             log_final_poly_len: lf,
-            query_phase_pow_bits: std::env::var("PQD1_POW").ok().and_then(|v| v.parse().ok()).unwrap_or(24),
+            query_phase_pow_bits: std::env::var("PQD1_POW")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(24),
             proximity: WhirProximityStrategy::ListDecoding { m: 16 },
             folding_pow_bits: 0,
             mu_pow_bits: 0,
@@ -92,7 +104,11 @@ fn seg_v1_params(n_stack: usize, w_stack: usize, max_degree: usize) -> SystemPar
         w_stack,
         log_blowup,
         whir,
-        logup: LogUpSecurityParameters { max_interaction_count: 1 << 30, log_max_message_length: 6, pow_bits: 0 },
+        logup: LogUpSecurityParameters {
+            max_interaction_count: 1 << 30,
+            log_max_message_length: 6,
+            pow_bits: 0,
+        },
         max_constraint_degree: max_degree,
     }
 }
@@ -152,7 +168,11 @@ fn traffic(t: &TableSpec, m: &RowMajorMatrix<F>, pubs: &[F], map: &mut BTreeMap<
             if c == F::ZERO {
                 continue;
             }
-            let msg: Vec<u32> = i.msg.iter().map(|e| e.eval_f(cur, nxt, pubs, sel).as_canonical_u32()).collect();
+            let msg: Vec<u32> = i
+                .msg
+                .iter()
+                .map(|e| e.eval_f(cur, nxt, pubs, sel).as_canonical_u32())
+                .collect();
             let c = c.as_canonical_u32() as u64;
             add(map, (i.bus, msg), if i.send { c } else { (P - c) % P });
         }
@@ -182,7 +202,12 @@ fn check_constraints(t: &TableSpec, m: &RowMajorMatrix<F>, pubs: &[F]) -> Result
 
 /// A harness table: one row per (key, net count); columns msg[0..W), cnt, sel[k].
 fn harness(name: &str, map: &BTreeMap<Key, u64>, cached: bool) -> (TableSpec, RowMajorMatrix<F>) {
-    let keys: Vec<(u16, usize)> = map.keys().map(|(b, m)| (*b, m.len())).collect::<BTreeSet<_>>().into_iter().collect();
+    let keys: Vec<(u16, usize)> = map
+        .keys()
+        .map(|(b, m)| (*b, m.len()))
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect();
     let wmsg = keys.iter().map(|k| k.1).max().unwrap_or(1).max(1);
     let width = wmsg + 1 + keys.len().max(1);
     let rows = map.iter().filter(|(_, c)| **c != 0).count();
@@ -225,7 +250,10 @@ fn load(air_path: &str, dir: &str) -> Inst {
     offset_buses(&mut cl);
     let d = std::path::Path::new(dir);
     let pb = std::fs::read(d.join("pubs.bin")).unwrap();
-    let pubs: Vec<F> = pb.chunks(4).map(|c| F::new(u32::from_le_bytes(c.try_into().unwrap()))).collect();
+    let pubs: Vec<F> = pb
+        .chunks(4)
+        .map(|c| F::new(u32::from_le_bytes(c.try_into().unwrap())))
+        .collect();
     let (mut spec, mut mats) = (vec![], vec![]);
     let mut net: BTreeMap<Key, u64> = BTreeMap::new();
     // Every table of the AIR must be present: this lane has no stand-in table.
@@ -240,30 +268,58 @@ fn load(air_path: &str, dir: &str) -> Inst {
         assert_eq!(m.width, t.width, "{}: width", t.name);
         let h = m.values.len() / m.width;
         let log = h.trailing_zeros() as usize;
-        assert!(h.is_power_of_two() && h >= 4, "{}: height {h} is not 2^log >= 4", t.name);
-        assert!(log <= t.max_log, "{}: log {log} > maxLog {} (per-table height cap)", t.name, t.max_log);
+        assert!(
+            h.is_power_of_two() && h >= 4,
+            "{}: height {h} is not 2^log >= 4",
+            t.name
+        );
+        assert!(
+            log <= t.max_log,
+            "{}: log {log} > maxLog {} (per-table height cap)",
+            t.name,
+            t.max_log
+        );
         traffic(t, &m, &pubs, &mut net);
         spec.push(t.clone());
         mats.push(m);
     }
-    assert!(missing.is_empty(), "D0a port needs all 25 tables; missing {missing:?}");
+    assert!(
+        missing.is_empty(),
+        "D0a port needs all 25 tables; missing {missing:?}"
+    );
     // public segments (classical `pubMsgs`): the verifier's own bus messages
-    let pm: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(d.join("pubmsgs.json")).unwrap()).unwrap();
+    let pm: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(d.join("pubmsgs.json")).unwrap()).unwrap();
     let mut tape = BTreeMap::new();
     for x in pm.as_array().unwrap() {
         let bus = x[0].as_u64().unwrap() as u16 + BUS_OFFSET;
         let send = x[1].as_bool().unwrap();
-        let msg: Vec<u32> = x[2].as_array().unwrap().iter().map(|v| v.as_u64().unwrap() as u32).collect();
+        let msg: Vec<u32> = x[2]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_u64().unwrap() as u32)
+            .collect();
         add(&mut tape, (bus, msg.clone()), if send { 1 } else { P - 1 });
         add(&mut net, (bus, msg), if send { 1 } else { P - 1 });
     }
     // No stand-in: every bus must balance over the 25 tables plus the public tape.
     let bad: Vec<_> = net.iter().filter(|(_, c)| **c != 0).collect();
-    assert!(bad.is_empty(), "{} unbalanced bus messages (no stand-in table): {:?}", bad.len(), &bad[..bad.len().min(5)]);
+    assert!(
+        bad.is_empty(),
+        "{} unbalanced bus messages (no stand-in table): {:?}",
+        bad.len(),
+        &bad[..bad.len().min(5)]
+    );
     let (ts, tm) = harness("TAPE", &tape, true);
     spec.push(ts);
     mats.push(tm);
-    Inst { spec, mats, pubs, tape }
+    Inst {
+        spec,
+        mats,
+        pubs,
+        tape,
+    }
 }
 
 fn report(inst: &Inst) {
@@ -279,20 +335,34 @@ fn report(inst: &Inst) {
             h.trailing_zeros(),
             h * m.width,
             t.constraints.len(),
-            t.harness.as_ref().map(|h| h.1.len()).unwrap_or(t.inters.len()),
+            t.harness
+                .as_ref()
+                .map(|h| h.1.len())
+                .unwrap_or(t.inters.len()),
             d,
             t.num_pub,
             if t.cached { " (cached)" } else { "" }
         );
     }
-    println!("CELLS {cells}; all {} classical tables + TAPE; tape keys {}", inst.spec.len() - 1, inst.tape.len());
+    println!(
+        "CELLS {cells}; all {} classical tables + TAPE; tape keys {}",
+        inst.spec.len() - 1,
+        inst.tape.len()
+    );
 }
 
 fn pv_of(t: &TableSpec, pubs: &[F]) -> Vec<F> {
-    (0..t.num_pub).map(|i| pubs.get(i).copied().unwrap_or(F::ZERO)).collect()
+    (0..t.num_pub)
+        .map(|i| pubs.get(i).copied().unwrap_or(F::ZERO))
+        .collect()
 }
 
-fn ctx(eng: &Sha384RefEngine, inst: &Inst, mats: &[RowMajorMatrix<F>], pubs: &[F]) -> ProvingContext<CpuColMajorBackend<Sha384Config>> {
+fn ctx(
+    eng: &Sha384RefEngine,
+    inst: &Inst,
+    mats: &[RowMajorMatrix<F>],
+    pubs: &[F],
+) -> ProvingContext<CpuColMajorBackend<Sha384Config>> {
     ProvingContext::new(
         mats.iter()
             .enumerate()
@@ -300,14 +370,29 @@ fn ctx(eng: &Sha384RefEngine, inst: &Inst, mats: &[RowMajorMatrix<F>], pubs: &[F
                 let t = &inst.spec[i];
                 let pv = pv_of(t, pubs);
                 if !t.cached {
-                    (i, AirProvingContext::simple(ColMajorMatrix::from_row_major(m), pv))
+                    (
+                        i,
+                        AirProvingContext::simple(ColMajorMatrix::from_row_major(m), pv),
+                    )
                 } else {
                     let cm = ColMajorMatrix::from_row_major(m);
                     let (commitment, data) = eng.device().commit(&[&cm]).expect("commit cached");
-                    let cached = CommittedTraceData { commitment, trace: cm, data: Arc::new(data) };
+                    let cached = CommittedTraceData {
+                        commitment,
+                        trace: cm,
+                        data: Arc::new(data),
+                    };
                     let h = m.values.len() / m.width;
-                    let empty = ColMajorMatrix::from_row_major(&RowMajorMatrix::new(vec![F::ZERO; h], 1));
-                    (i, AirProvingContext { cached_mains: vec![cached], common_main: empty, public_values: pv })
+                    let empty =
+                        ColMajorMatrix::from_row_major(&RowMajorMatrix::new(vec![F::ZERO; h], 1));
+                    (
+                        i,
+                        AirProvingContext {
+                            cached_mains: vec![cached],
+                            common_main: empty,
+                            public_values: pv,
+                        },
+                    )
                 }
             })
             .collect(),
@@ -317,28 +402,57 @@ fn ctx(eng: &Sha384RefEngine, inst: &Inst, mats: &[RowMajorMatrix<F>], pubs: &[F
 /// V_d's statement check: the proof's cached TAPE commitment equals the one recomputed from the
 /// public messages (a function of the claim via the classical `prepV3`), and the header public
 /// values are the claim's.
-fn check_statement(eng: &Sha384RefEngine, inst: &Inst, proof: &openvm_stark_backend::proof::Proof<Sha384Config>) -> bool {
+fn check_statement(
+    eng: &Sha384RefEngine,
+    inst: &Inst,
+    proof: &openvm_stark_backend::proof::Proof<Sha384Config>,
+) -> bool {
     let ti = inst.spec.iter().position(|t| t.name == "TAPE").unwrap();
     let (_, tm) = harness("TAPE", &inst.tape, true);
-    let want = eng.device().commit(&[&ColMajorMatrix::from_row_major(&tm)]).expect("tape root").0;
+    let want = eng
+        .device()
+        .commit(&[&ColMajorMatrix::from_row_major(&tm)])
+        .expect("tape root")
+        .0;
     let tape_ok = matches!(&proof.trace_vdata[ti], Some(v) if v.cached_commitments.len() == 1 && v.cached_commitments[0] == want);
-    let pv_ok = inst.spec.iter().enumerate().all(|(i, t)| proof.public_values[i] == pv_of(t, &inst.pubs));
+    let pv_ok = inst
+        .spec
+        .iter()
+        .enumerate()
+        .all(|(i, t)| proof.public_values[i] == pv_of(t, &inst.pubs));
     tape_ok && pv_ok
 }
 
 fn airs(inst: &Inst) -> Vec<AirRef<Sha384Config>> {
-    inst.spec.iter().map(|t| Arc::new(JsonAir { spec: t.clone() }) as AirRef<Sha384Config>).collect()
+    inst.spec
+        .iter()
+        .map(|t| Arc::new(JsonAir { spec: t.clone() }) as AirRef<Sha384Config>)
+        .collect()
 }
 
 fn params_for(inst: &Inst, which: &str) -> SystemParams {
     let total: usize = inst.mats.iter().map(|m| m.values.len()).sum();
-    let maxh = inst.mats.iter().map(|m| m.values.len() / m.width.max(1)).max().unwrap();
+    let maxh = inst
+        .mats
+        .iter()
+        .map(|m| m.values.len() / m.width.max(1))
+        .max()
+        .unwrap();
     let n_stack = match which {
         "pinned" => 22,
-        _ => [14, 18, 22].into_iter().find(|&n| (1usize << (n + 2)) >= maxh && total.div_ceil(1 << (n + 2)) + 4 <= 24).unwrap_or(22),
+        _ => [14, 18, 22]
+            .into_iter()
+            .find(|&n| (1usize << (n + 2)) >= maxh && total.div_ceil(1 << (n + 2)) + 4 <= 24)
+            .unwrap_or(22),
     };
     let w_stack = total.div_ceil(1 << (n_stack + 2)) + 4;
-    let degree = inst.spec.iter().flat_map(|t| t.constraints.iter().map(deg)).max().unwrap_or(2).max(2);
+    let degree = inst
+        .spec
+        .iter()
+        .flat_map(|t| t.constraints.iter().map(deg))
+        .max()
+        .unwrap_or(2)
+        .max(2);
     seg_v1_params(n_stack, w_stack.max(8), degree)
 }
 
@@ -365,7 +479,11 @@ fn census(proof: &openvm_stark_backend::proof::Proof<Sha384Config>) -> String {
 fn peak_rss_kib() -> u64 {
     std::fs::read_to_string("/proc/self/status")
         .ok()
-        .and_then(|s| s.lines().find(|l| l.starts_with("VmHWM:")).map(|l| l.split_whitespace().nth(1).unwrap().parse().unwrap()))
+        .and_then(|s| {
+            s.lines()
+                .find(|l| l.starts_with("VmHWM:"))
+                .map(|l| l.split_whitespace().nth(1).unwrap().parse().unwrap())
+        })
         .unwrap_or(0)
 }
 
@@ -384,7 +502,14 @@ fn precheck(inst: &Inst) {
                 for (k, (bus, len)) in keys.iter().enumerate() {
                     let c = row[*w] * row[*w + 1 + k];
                     if c != F::ZERO {
-                        add(&mut net, (*bus, row[..*len].iter().map(|x| x.as_canonical_u32()).collect()), c.as_canonical_u32() as u64);
+                        add(
+                            &mut net,
+                            (
+                                *bus,
+                                row[..*len].iter().map(|x| x.as_canonical_u32()).collect(),
+                            ),
+                            c.as_canonical_u32() as u64,
+                        );
                     }
                 }
             }
@@ -394,7 +519,10 @@ fn precheck(inst: &Inst) {
     }
     let bad = net.values().filter(|c| **c != 0).count();
     assert_eq!(bad, 0, "{bad} unbalanced messages");
-    println!("PRECHECK OK: every constraint on every row; every bus balances ({} distinct messages)", net.len());
+    println!(
+        "PRECHECK OK: every constraint on every row; every bus balances ({} distinct messages)",
+        net.len()
+    );
 }
 
 fn cmd(air_path: &str, dir: &str, mode: &str, which: &str) {
@@ -414,7 +542,12 @@ fn cmd(air_path: &str, dir: &str, mode: &str, which: &str) {
         params.l_skip + params.n_stack,
         params.w_stack,
         params.max_constraint_degree,
-        params.whir.rounds.iter().map(|r| r.num_queries).collect::<Vec<_>>(),
+        params
+            .whir
+            .rounds
+            .iter()
+            .map(|r| r.num_queries)
+            .collect::<Vec<_>>(),
         params.whir.query_phase_pow_bits,
         params.logup.log_max_message_length
     );
@@ -447,14 +580,19 @@ fn cmd(air_path: &str, dir: &str, mode: &str, which: &str) {
     }
     let d_pk = eng.device().transport_pk_to_device(&pk);
     let t2 = Instant::now();
-    let proof = eng.prove(&d_pk, ctx(&eng, &inst, &inst.mats, &inst.pubs)).expect("prove");
+    let proof = eng
+        .prove(&d_pk, ctx(&eng, &inst, &inst.mats, &inst.pubs))
+        .expect("prove");
     let t_prove = t2.elapsed().as_secs_f64();
     let t3 = Instant::now();
     eng.verify(&vk, &proof).expect("verify");
     let t_verify = t3.elapsed().as_secs_f64();
     let st = check_statement(&eng, &inst, &proof);
     println!("PROOF {}", census(&proof));
-    println!("VERIFY OK (native SWIRL verifier); V_d statement check (TAPE root + header PVs): {}", if st { "OK" } else { "FAIL" });
+    println!(
+        "VERIFY OK (native SWIRL verifier); V_d statement check (TAPE root + header PVs): {}",
+        if st { "OK" } else { "FAIL" }
+    );
     assert!(st);
     println!(
         "TIME prove {t_prove:.2}s verify {t_verify:.4}s threads {} peak_rss_kib {}",
@@ -469,10 +607,25 @@ fn cmd(air_path: &str, dir: &str, mode: &str, which: &str) {
     let mut cases: Vec<(String, Vec<RowMajorMatrix<F>>, Vec<F>)> = vec![];
     // one mutated cell per D0a table family: trie (node/head/val/walk/uniq/ups), SHA-256,
     // scheduler (codec/proc/mem/cmp/scandist), receipts (rcpt), and the small statement tables.
-    for (name, row, col) in [("node", 0usize, 0usize), ("node", 5, 40), ("head", 1, 3), ("val", 2, 1),
-        ("walk", 3, 7), ("uniq", 1, 2), ("ups", 4, 10), ("sha_t", 7, 100), ("sha_r", 3, 17),
-        ("codec", 2, 9), ("proc", 1, 5), ("mem", 0, 3), ("cmp", 1, 8), ("scandist", 2, 12),
-        ("rcpt", 1, 9), ("size", 0, 0), ("srcp", 1, 1)] {
+    for (name, row, col) in [
+        ("node", 0usize, 0usize),
+        ("node", 5, 40),
+        ("head", 1, 3),
+        ("val", 2, 1),
+        ("walk", 3, 7),
+        ("uniq", 1, 2),
+        ("ups", 4, 10),
+        ("sha_t", 7, 100),
+        ("sha_r", 3, 17),
+        ("codec", 2, 9),
+        ("proc", 1, 5),
+        ("mem", 0, 3),
+        ("cmp", 1, 8),
+        ("scandist", 2, 12),
+        ("rcpt", 1, 9),
+        ("size", 0, 0),
+        ("srcp", 1, 1),
+    ] {
         if let Some(t) = idx(name) {
             let mut mats = inst.mats.clone();
             let w = mats[t].width;
@@ -487,14 +640,27 @@ fn cmd(air_path: &str, dir: &str, mode: &str, which: &str) {
         let t = idx("TAPE").unwrap();
         let mut mats = inst.mats.clone();
         mats[t].values[0] += F::ONE;
-        cases.push(("TAPE[0][0]+1 (forged public message)".into(), mats, inst.pubs.clone()));
+        cases.push((
+            "TAPE[0][0]+1 (forged public message)".into(),
+            mats,
+            inst.pubs.clone(),
+        ));
     }
     {
         // a header public value changed (the claim's prepared header)
         let mut pubs = inst.pubs.clone();
-        let reader = inst.spec.iter().find(|t| t.num_pub > 0).map(|t| t.num_pub).unwrap_or(1);
+        let reader = inst
+            .spec
+            .iter()
+            .find(|t| t.num_pub > 0)
+            .map(|t| t.num_pub)
+            .unwrap_or(1);
         pubs[reader - 1] += F::ONE;
-        cases.push((format!("pub[{}]+1 (header byte)", reader - 1), inst.mats.clone(), pubs));
+        cases.push((
+            format!("pub[{}]+1 (header byte)", reader - 1),
+            inst.mats.clone(),
+            pubs,
+        ));
     }
     let mut rejected = 0;
     for (name, mats, pubs) in &cases {
@@ -520,8 +686,16 @@ fn cmd(air_path: &str, dir: &str, mode: &str, which: &str) {
 fn main() {
     let a: Vec<String> = std::env::args().collect();
     if a.len() < 4 {
-        eprintln!("usage: {} <nearAirV3.json> <dump_dir> check|prove|tamper [small|pinned]", a[0]);
+        eprintln!(
+            "usage: {} <nearAirV3.json> <dump_dir> check|prove|tamper [small|pinned]",
+            a[0]
+        );
         std::process::exit(2);
     }
-    cmd(&a[1], &a[2], &a[3], a.get(4).map(|s| s.as_str()).unwrap_or("small"));
+    cmd(
+        &a[1],
+        &a[2],
+        &a[3],
+        a.get(4).map(|s| s.as_str()).unwrap_or("small"),
+    );
 }

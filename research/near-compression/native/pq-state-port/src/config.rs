@@ -14,15 +14,15 @@ use std::io::{self, Read, Write};
 
 use openvm_cpu_backend::{CpuBackend, CpuDevice};
 use openvm_stark_backend::{
+    FiatShamirTranscript, StarkEngine, StarkProtocolConfig, SystemParams, TranscriptHistory,
     codec::{
-        decode_extension_field32, decode_prime_field32, encode_extension_field32,
-        encode_prime_field32, DecodableConfig, EncodableConfig,
+        DecodableConfig, EncodableConfig, decode_extension_field32, decode_prime_field32,
+        encode_extension_field32, encode_prime_field32,
     },
     hasher::MerkleHasher,
     prover::{Coordinator, CpuColMajorBackend, ReferenceDevice},
-    FiatShamirTranscript, StarkEngine, StarkProtocolConfig, SystemParams, TranscriptHistory,
 };
-use p3_field::{extension::BinomialExtensionField, PrimeCharacteristicRing, PrimeField32};
+use p3_field::{PrimeCharacteristicRing, PrimeField32, extension::BinomialExtensionField};
 use sha2::{Digest as _, Sha384};
 
 pub type F = p3_baby_bear::BabyBear;
@@ -57,7 +57,10 @@ pub fn statement_values(pvs: &[Vec<F>]) -> Vec<F> {
 }
 /// Statement digest = SHA-384(prefix, tag 8, statement_values) (truncated like Merkle digests).
 pub fn statement_digest(pvs: &[Vec<F>]) -> Digest {
-    digest_from_bytes(truncate_digest(hash_parts(TAG_STATEMENT, &[&felt_bytes(&statement_values(pvs))])))
+    digest_from_bytes(truncate_digest(hash_parts(
+        TAG_STATEMENT,
+        &[&felt_bytes(&statement_values(pvs))],
+    )))
 }
 /// [agg] Segment-range statement digest (aggregation tree; results/pq-base-aggregation):
 /// D = SHA-384(prefix, tag 9, range_values(..)), truncated like Merkle digests (42 B under the
@@ -78,7 +81,10 @@ pub fn range_values(ctx: &[F], a: F, e: F, s_a: &[F], s_e: &[F]) -> Vec<F> {
 }
 /// [agg] Range statement digest (what V_d compares with the claimed chunk statement).
 pub fn range_digest(ctx: &[F], a: F, e: F, s_a: &[F], s_e: &[F]) -> Digest {
-    digest_from_bytes(truncate_digest(hash_parts(TAG_RANGE, &[&felt_bytes(&range_values(ctx, a, e, s_a, s_e))])))
+    digest_from_bytes(truncate_digest(hash_parts(
+        TAG_RANGE,
+        &[&felt_bytes(&range_values(ctx, a, e, s_a, s_e))],
+    )))
 }
 
 /// Hash-level levers (process-global; read once from the environment).
@@ -95,7 +101,11 @@ pub struct ShaLevers {
     pub tstar: bool,
 }
 impl ShaLevers {
-    pub const DEFAULT: ShaLevers = ShaLevers { digest_bytes: 48, coset_leaf: false, tstar: false };
+    pub const DEFAULT: ShaLevers = ShaLevers {
+        digest_bytes: 48,
+        coset_leaf: false,
+        tstar: false,
+    };
     pub fn is_default(&self) -> bool {
         *self == Self::DEFAULT
     }
@@ -104,7 +114,12 @@ impl ShaLevers {
         let s = if self.is_default() {
             "nearproof-native-sha384-ext12-v4".to_string()
         } else {
-            format!("nearproof-sha384-ext12-v{}-w{:02}-c{}", if self.tstar { 6 } else { 5 }, self.digest_bytes, self.coset_leaf as u8)
+            format!(
+                "nearproof-sha384-ext12-v{}-w{:02}-c{}",
+                if self.tstar { 6 } else { 5 },
+                self.digest_bytes,
+                self.coset_leaf as u8
+            )
         };
         s.as_bytes().try_into().expect("32-byte prefix")
     }
@@ -113,7 +128,16 @@ impl ShaLevers {
         if self.is_default() {
             *b"NPQ4NODE"
         } else {
-            [b'N', b'P', b'Q', b'5', self.digest_bytes as u8, self.coset_leaf as u8, b'N', b'D']
+            [
+                b'N',
+                b'P',
+                b'Q',
+                b'5',
+                self.digest_bytes as u8,
+                self.coset_leaf as u8,
+                b'N',
+                b'D',
+            ]
         }
     }
 }
@@ -123,13 +147,21 @@ impl ShaLevers {
 pub fn sha_levers() -> ShaLevers {
     static L: std::sync::OnceLock<ShaLevers> = std::sync::OnceLock::new();
     *L.get_or_init(|| {
-        let get = |k: &str, d: usize| std::env::var(k).ok().and_then(|v| v.parse().ok()).unwrap_or(d);
+        let get = |k: &str, d: usize| {
+            std::env::var(k)
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(d)
+        };
         let l = ShaLevers {
             digest_bytes: get("NEARPROOF_DIGEST_BYTES", 48),
             coset_leaf: get("NEARPROOF_COSET_LEAF", 0) == 1,
             tstar: get("NEARPROOF_TSTAR", 1) == 1,
         };
-        assert!(l.digest_bytes == 48 || l.digest_bytes == 42, "digest width must be 48 or 42 bytes");
+        assert!(
+            l.digest_bytes == 48 || l.digest_bytes == 42,
+            "digest width must be 48 or 42 bytes"
+        );
         l
     })
 }
@@ -225,10 +257,15 @@ impl MerkleHasher for ShaHasher {
     type F = F;
     type Digest = Digest;
     fn hash_slice(&self, values: &[F]) -> Digest {
-        digest_from_bytes(truncate_digest(hash_parts(TAG_LEAF, &[&felt_bytes(values)])))
+        digest_from_bytes(truncate_digest(hash_parts(
+            TAG_LEAF,
+            &[&felt_bytes(values)],
+        )))
     }
     fn compress(&self, left: Digest, right: Digest) -> Digest {
-        digest_from_bytes(truncate_digest(Sha384::digest(node_message(left, right)).into()))
+        digest_from_bytes(truncate_digest(
+            Sha384::digest(node_message(left, right)).into(),
+        ))
     }
     fn hash_coset(&self, rows: &[Vec<F>]) -> Digest {
         if !sha_levers().coset_leaf {
@@ -417,7 +454,8 @@ impl ShaTranscript {
         self.flush();
         let (s, ok) = pow_step(&self.state, w, bits);
         if sha_levers().tstar {
-            self.src = SqueezeSrc::Pow(self.state, w.iter().flat_map(|x| x.to_le_bytes()).collect());
+            self.src =
+                SqueezeSrc::Pow(self.state, w.iter().flat_map(|x| x.to_le_bytes()).collect());
             self.ctr = 1;
             self.state = s;
             self.next_word = pow_skip_words(bits);
@@ -567,7 +605,10 @@ pub struct ShaReadOnlyTranscript<'a> {
 }
 impl<'a> ShaReadOnlyTranscript<'a> {
     pub fn new(log: &'a ShaTranscriptLog, start: usize) -> Self {
-        Self { log, position: start }
+        Self {
+            log,
+            position: start,
+        }
     }
 }
 impl FiatShamirTranscript<Sha384Config> for ShaReadOnlyTranscript<'_> {
@@ -577,9 +618,11 @@ impl FiatShamirTranscript<Sha384Config> for ShaReadOnlyTranscript<'_> {
         self.position += 1;
     }
     fn observe_commit(&mut self, d: Digest) {
-        debug_assert!(self.log.kinds[self.position..self.position + DIGEST_SIZE]
-            .iter()
-            .all(|&k| k == KIND_COMMIT));
+        debug_assert!(
+            self.log.kinds[self.position..self.position + DIGEST_SIZE]
+                .iter()
+                .all(|&k| k == KIND_COMMIT)
+        );
         debug_assert_eq!(
             &self.log.values[self.position..self.position + DIGEST_SIZE],
             &digest_to_limbs(d)
@@ -666,4 +709,3 @@ impl StarkEngine for Sha384RefEngine {
         Coordinator::new(CpuColMajorBackend::new(), self.device.clone(), t)
     }
 }
-
