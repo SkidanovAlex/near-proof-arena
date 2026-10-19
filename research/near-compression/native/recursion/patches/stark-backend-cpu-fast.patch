@@ -2,7 +2,7 @@ diff --git a/crates/cpu-backend/src/fast/gkr.rs b/crates/cpu-backend/src/fast/gk
 new file mode 100644
 --- /dev/null
 +++ b/crates/cpu-backend/src/fast/gkr.rs
-@@ -0,0 +1,757 @@
+@@ -0,0 +1,841 @@
 +//! [pq-cpu-prover] Fractional-sum GKR (LogUp) prover, byte-identical to
 +//! `fractional_sumcheck_with`.
 +//!
@@ -440,6 +440,55 @@ new file mode 100644
 +    [[EF::ZERO; 2]; 3]
 +}
 +
++/// Largest stored tree level / materialised fold table, log2 entries (`NEARPROOF_GKR_CAP_LOG`,
++/// default 24): bigger levels are streamed from the input generator.
++fn cap_log() -> usize {
++    std::env::var("NEARPROOF_GKR_CAP_LOG").ok().and_then(|v| v.parse().ok()).unwrap_or(24)
++}
++
++/// Entries `[e0, e0 + out.len())` of tree level `level` (2^level entries; `total` = the input),
++/// generated from the input. `p`, `q` are scratch buffers of `out.len() << (total - level)`.
++fn gen_level_chunk<F: Field, EF: ExtensionField<F>, S: InputSource<F, EF>>(
++    src: &S,
++    total: usize,
++    level: usize,
++    e0: usize,
++    p: &mut [F],
++    q: &mut [EF],
++    w: F,
++) -> Vec<FracE<EF>> {
++    let sh = total - level;
++    debug_assert!(sh >= 1);
++    src.fill(e0 << sh, p, q);
++    let mut cur = vec![FracE::<EF>::default(); p.len() / 2];
++    level_from_input_chunk(p, q, &mut cur, w);
++    for _ in 1..sh {
++        cur = level_up(&cur, w);
++    }
++    cur
++}
++
++/// Folds of a chunk of x-entries by `rs` in order (the same arithmetic as the stored-table folds).
++fn fold_chunk<F: Field, EF: ExtensionField<F>>(tab: Tab<'_, F, EF>, rs: &[EF], w: F) -> Vec<[EF; 4]> {
++    let mut cur: Option<Vec<[EF; 4]>> = None;
++    for &r in rs {
++        let src = match &cur {
++            None => tab,
++            Some(v) => Tab::Folded(v),
++        };
++        let n = src.len() / 2;
++        let mut out = vec![[EF::ZERO; 4]; n];
++        if n == 1 {
++            pass(src, Some(r), Some(&mut out), &SplitEq::new(&[]), 0, &[], w);
++        } else {
++            // fold only: pairs of the output are not summed (no points)
++            pass(src, Some(r), Some(&mut out), &SplitEq::new(&[]), 0, &[], w);
++        }
++        cur = Some(out);
++    }
++    cur.expect("at least one fold")
++}
++
 +/// Byte-identical replacement of `fractional_sumcheck_with` for a LogUp input generator with at
 +/// least 8 positions.
 +#[tracing::instrument(level = "info", skip_all)]
@@ -454,13 +503,23 @@ new file mode 100644
 +    let n_in = src.n();
 +    let total_rounds = p3_util::log2_strict_usize(n_in);
 +    assert!(total_rounds >= 3, "tiny GKR handled by the original code");
-+    // layers[k]: 2^k entries for k <= total_rounds - 2; the level 2^(total-1) is regenerated
++    let cap = cap_log().max(2);
++    // stored levels: 2^k entries for k <= top_stored; bigger levels (and the input) are streamed
++    let top_stored = cap.min(total_rounds - 1);
 +    let mut layers: Vec<Vec<FracE<EF<SC>>>> = vec![vec![]; total_rounds];
 +    {
-+        let top = level_from_input(src, w);
-+        layers[total_rounds - 2] = level_up(&top, w);
++        // build level top_stored chunk-wise from the input
++        let sh = total_rounds - top_stored;
++        let ch_pos = CHUNK.min(n_in).max(1 << sh);
++        let mut p = vec![SC::F::ZERO; ch_pos];
++        let mut q = vec![EF::<SC>::ZERO; ch_pos];
++        let mut lev = Vec::with_capacity(1 << top_stored);
++        for start in (0..n_in).step_by(ch_pos) {
++            lev.extend(gen_level_chunk(src, total_rounds, top_stored, start >> sh, &mut p, &mut q, w));
++        }
++        layers[top_stored] = lev;
 +    }
-+    for k in (0..total_rounds - 2).rev() {
++    for k in (0..top_stored).rev() {
 +        layers[k] = level_up(&layers[k + 1], w);
 +    }
 +    openvm_stark_backend::prover::stream_pcs::memprof("gkr.layers_built");
@@ -469,7 +528,6 @@ new file mode 100644
 +            println!("GKR_FILL total_wall_s={:.2}", FILL_NS.load(std::sync::atomic::Ordering::Relaxed) as f64 * 1e-9);
 +        }
 +    };
-+    fill_report();
 +    let frac_sum = layers[0][0];
 +    if assert_zero {
 +        if frac_sum.p != EF::<SC>::ZERO {
@@ -533,87 +591,113 @@ new file mode 100644
 +            st.a *= eq1(xi, r);
 +            r
 +        };
-+        let folded: Vec<[EF<SC>; 4]>;
-+        if seg_layer == total_rounds {
-+            // input layer: streamed first round (sums), then streamed fold + second-round sums
-+            let ch = CHUNK.min(n_in);
-+            let mut p = vec![SC::F::ZERO; ch];
-+            let mut q = vec![EF::<SC>::ZERO; ch];
-+            let xi0 = xi_prev[0];
-+            let e0 = SplitEq::new(&xi_prev[1..]);
-+            let pts0 = st.points(xi0);
-+            let mut sums = zero_sums();
-+            for start in (0..n_in).step_by(ch) {
-+                src.fill(start, &mut p, &mut q);
-+                add_sums(&mut sums, &pass(Tab::Input(&p, &q), None, None, &e0, start / 4, pts0, w));
-+            }
-+            drop(e0);
-+            let r0 = emit(&mut st, &sums, xi0, transcript, &mut round_polys_eval);
-+            r_vec.push(r0);
-+            let mut cur = vec![[EF::<SC>::ZERO; 4]; n_in / 4];
-+            let (e1, pts1) = if n >= 2 {
-+                (SplitEq::new(&xi_prev[2..]), st.points(xi_prev[1]))
-+            } else {
++        // sums for sumcheck round `sr` (pairs of the table after sr folds) need E and points
++        let round_setup = |st: &Round<EF<SC>>, sr: usize| -> (SplitEq<EF<SC>>, &'static [usize]) {
++            if sr >= n {
 +                (SplitEq::new(&[]), &[][..])
++            } else {
++                (SplitEq::new(&xi_prev[sr + 1..]), st.points(xi_prev[sr]))
++            }
++        };
++        let mut cur: Vec<[EF<SC>; 4]>;
++        let mut next_sr: usize; // first round whose sums are not yet emitted; `cur` is folded next_sr times
++        if seg_layer <= top_stored {
++            let lay = std::mem::take(&mut layers[seg_layer]);
++            let (e, pts) = round_setup(&st, 0);
++            let sums = pass(Tab::Layer(&lay), None, None, &e, 0, pts, w);
++            let r0 = emit(&mut st, &sums, xi_prev[0], transcript, &mut round_polys_eval);
++            r_vec.push(r0);
++            let (e, pts) = round_setup(&st, 1);
++            cur = vec![[EF::<SC>::ZERO; 4]; lay.len() / 4];
++            let sums = pass(Tab::Layer(&lay), Some(r0), Some(&mut cur), &e, 0, pts, w);
++            drop(lay);
++            next_sr = 1;
++            if n > 1 {
++                let r = emit(&mut st, &sums, xi_prev[1], transcript, &mut round_polys_eval);
++                r_vec.push(r);
++            }
++        } else {
++            // streamed layer: x-entries of level seg_layer generated chunk by chunk
++            let xent_log = seg_layer - 1; // log2 of x-entries (= n)
++            // streamed rounds K: the table after K folds has 2^(n-K) entries <= 2^cap
++            let k_str = n.saturating_sub(cap).max(1).min(n);
++            let sh = total_rounds - seg_layer; // positions per level entry: 2^sh
++            let ch_x = (CHUNK.min(n_in) >> (sh + 1)).max(1 << (k_str + 1)).min(1 << xent_log);
++            let ch_pos = ch_x << (sh + 1);
++            let mut p = vec![SC::F::ZERO; ch_pos];
++            let mut q = vec![EF::<SC>::ZERO; ch_pos];
++            let gen = |p: &mut Vec<SC::F>, q: &mut Vec<EF<SC>>, x0: usize| -> Option<Vec<FracE<EF<SC>>>> {
++                if sh == 0 {
++                    src.fill(x0 * 2, p, q);
++                    None
++                } else {
++                    Some(gen_level_chunk(src, total_rounds, seg_layer, x0 * 2, p, q, w))
++                }
 +            };
++            // passes 0..k_str: sums of round j from chunks folded j times
++            for j in 0..k_str {
++                let (e, pts) = round_setup(&st, j);
++                let mut sums = zero_sums();
++                for x0 in (0..(1usize << xent_log)).step_by(ch_x) {
++                    let lv = gen(&mut p, &mut q, x0);
++                    let tab = match &lv {
++                        None => Tab::Input(&p, &q),
++                        Some(v) => Tab::Layer(v),
++                    };
++                    let s = if j == 0 {
++                        pass(tab, None, None, &e, x0 / 2, pts, w)
++                    } else {
++                        let f = fold_chunk(tab, &r_vec[..j], w);
++                        pass(Tab::Folded(&f), None, None, &e, (x0 >> j) / 2, pts, w)
++                    };
++                    add_sums(&mut sums, &s);
++                }
++                let r = emit(&mut st, &sums, xi_prev[j], transcript, &mut round_polys_eval);
++                r_vec.push(r);
++            }
++            // final pass: fold k_str times, store, and sum round k_str (fused)
++            let (e, pts) = round_setup(&st, k_str);
++            cur = vec![[EF::<SC>::ZERO; 4]; 1usize << (xent_log - k_str)];
 +            let mut sums = zero_sums();
-+            for start in (0..n_in).step_by(ch) {
-+                src.fill(start, &mut p, &mut q);
-+                let s = pass(Tab::Input(&p, &q), Some(r0), Some(&mut cur[start / 4..(start + ch) / 4]), &e1, start / 8, pts1, w);
++            for x0 in (0..(1usize << xent_log)).step_by(ch_x) {
++                let lv = gen(&mut p, &mut q, x0);
++                let tab = match &lv {
++                    None => Tab::Input(&p, &q),
++                    Some(v) => Tab::Layer(v),
++                };
++                let o0 = x0 >> k_str;
++                let olen = ch_x >> k_str;
++                let out = &mut cur[o0..o0 + olen];
++                let s = if k_str == 1 {
++                    pass(tab, Some(r_vec[0]), Some(out), &e, o0 / 2, pts, w)
++                } else {
++                    let f = fold_chunk(tab, &r_vec[..k_str - 1], w);
++                    pass(Tab::Folded(&f), Some(r_vec[k_str - 1]), Some(out), &e, o0 / 2, pts, w)
++                };
 +                add_sums(&mut sums, &s);
 +            }
-+            drop((p, q, e1));
-+            for sr in 1..n {
-+                let r = emit(&mut st, &sums, xi_prev[sr], transcript, &mut round_polys_eval);
-+                r_vec.push(r);
-+                let last = sr + 1 == n;
-+                let (e, pts) = if last {
-+                    (SplitEq::new(&[]), &[][..])
-+                } else {
-+                    (SplitEq::new(&xi_prev[sr + 2..]), st.points(xi_prev[sr + 1]))
-+                };
-+                let mut nf = vec![[EF::<SC>::ZERO; 4]; cur.len() / 2];
-+                sums = pass(Tab::Folded(&cur), Some(r), Some(&mut nf), &e, 0, pts, w);
-+                cur = nf;
-+            }
-+            folded = cur;
-+        } else {
-+            let lay: Vec<FracE<EF<SC>>> = if seg_layer == total_rounds - 1 {
-+                level_from_input(src, w)
-+            } else {
-+                std::mem::take(&mut layers[seg_layer])
-+            };
-+            let xi0 = xi_prev[0];
-+            let sums = pass(Tab::Layer(&lay), None, None, &SplitEq::new(&xi_prev[1..]), 0, st.points(xi0), w);
-+            let r0 = emit(&mut st, &sums, xi0, transcript, &mut round_polys_eval);
-+            r_vec.push(r0);
-+            // fold of round sr-1 fused with round sr's sums
-+            let mut cur: Option<Vec<[EF<SC>; 4]>> = None;
-+            for sr in 1..=n {
-+                let last = sr == n;
-+                let (e, pts) = if last {
-+                    (SplitEq::new(&[]), &[][..])
-+                } else {
-+                    (SplitEq::new(&xi_prev[sr + 1..]), st.points(xi_prev[sr]))
-+                };
-+                let src_tab = match &cur {
-+                    None => Tab::Layer(&lay),
-+                    Some(v) => Tab::Folded(v),
-+                };
-+                let mut nf = vec![[EF::<SC>::ZERO; 4]; src_tab.len() / 2];
-+                let sums = pass(src_tab, Some(r_vec[sr - 1]), Some(&mut nf), &e, 0, pts, w);
-+                cur = Some(nf);
-+                if last {
-+                    break;
-+                }
-+                let r = emit(&mut st, &sums, xi_prev[sr], transcript, &mut round_polys_eval);
++            drop((p, q));
++            next_sr = k_str;
++            if k_str < n {
++                let r = emit(&mut st, &sums, xi_prev[k_str], transcript, &mut round_polys_eval);
 +                r_vec.push(r);
 +            }
-+            drop(lay);
-+            folded = cur.unwrap();
 +        }
-+        debug_assert_eq!(folded.len(), 1);
-+        let c = folded[0];
++        // remaining rounds on the materialised table: fold by r_(sr) fused with round sr+1's sums
++        let mut sr = next_sr;
++        while cur.len() > 1 {
++            let (e, pts) = round_setup(&st, sr + 1);
++            let mut nf = vec![[EF::<SC>::ZERO; 4]; cur.len() / 2];
++            let sums = pass(Tab::Folded(&cur), Some(r_vec[sr]), Some(&mut nf), &e, 0, pts, w);
++            cur = nf;
++            sr += 1;
++            if sr < n {
++                let r = emit(&mut st, &sums, xi_prev[sr], transcript, &mut round_polys_eval);
++                r_vec.push(r);
++            }
++        }
++        debug_assert_eq!(r_vec.len(), n);
++        let c = cur[0];
 +        claims_per_layer.push(GkrLayerClaims::<SC> { p_xi_0: c[0], q_xi_0: c[1], p_xi_1: c[2], q_xi_1: c[3] });
 +        for v in [c[0], c[1], c[2], c[3]] {
 +            transcript.observe_ext(v);
