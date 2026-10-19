@@ -2,7 +2,7 @@ diff --git a/crates/cpu-backend/src/fast/gkr.rs b/crates/cpu-backend/src/fast/gk
 new file mode 100644
 --- /dev/null
 +++ b/crates/cpu-backend/src/fast/gkr.rs
-@@ -0,0 +1,841 @@
+@@ -0,0 +1,1045 @@
 +//! [pq-cpu-prover] Fractional-sum GKR (LogUp) prover, byte-identical to
 +//! `fractional_sumcheck_with`.
 +//!
@@ -36,6 +36,27 @@ new file mode 100644
 +pub trait InputSource<F, EF>: Sync {
 +    fn n(&self) -> usize;
 +    fn fill(&self, start: usize, p: &mut [F], q: &mut [EF]);
++    /// Visit `[0, n)` as disjoint runs `f(start, p, q)`, each of length >= `min_run` and aligned
++    /// to `min_run`, in any order and possibly in parallel; results are combined with `add`.
++    fn visit_runs<R: Send, Fv, Z, A>(&self, min_run: usize, f: Fv, zero: Z, add: A) -> R
++    where
++        F: Field,
++        EF: Field,
++        Fv: Fn(usize, &[F], &[EF]) -> R + Sync,
++        Z: Fn() -> R + Sync,
++        A: Fn(R, R) -> R + Sync,
++    {
++        let n = self.n();
++        let ch = CHUNK.min(n).max(min_run);
++        let mut p = vec![F::ZERO; ch];
++        let mut q = vec![EF::ZERO; ch];
++        let mut acc = zero();
++        for start in (0..n).step_by(ch) {
++            self.fill(start, &mut p, &mut q);
++            acc = add(acc, f(start, &p, &q));
++        }
++        acc
++    }
 +}
 +
 +/// Positions generated per chunk.
@@ -446,6 +467,7 @@ new file mode 100644
 +    std::env::var("NEARPROOF_GKR_CAP_LOG").ok().and_then(|v| v.parse().ok()).unwrap_or(24)
 +}
 +
++#[allow(dead_code)]
 +/// Entries `[e0, e0 + out.len())` of tree level `level` (2^level entries; `total` = the input),
 +/// generated from the input. `p`, `q` are scratch buffers of `out.len() << (total - level)`.
 +fn gen_level_chunk<F: Field, EF: ExtensionField<F>, S: InputSource<F, EF>>(
@@ -460,6 +482,16 @@ new file mode 100644
 +    let sh = total - level;
 +    debug_assert!(sh >= 1);
 +    src.fill(e0 << sh, p, q);
++    let mut cur = vec![FracE::<EF>::default(); p.len() / 2];
++    level_from_input_chunk(p, q, &mut cur, w);
++    for _ in 1..sh {
++        cur = level_up(&cur, w);
++    }
++    cur
++}
++
++/// Level entries of a run of input positions, combining `sh >= 1` times.
++fn level_of_run<F: Field, EF: ExtensionField<F>>(p: &[F], q: &[EF], sh: usize, w: F) -> Vec<FracE<EF>> {
 +    let mut cur = vec![FracE::<EF>::default(); p.len() / 2];
 +    level_from_input_chunk(p, q, &mut cur, w);
 +    for _ in 1..sh {
@@ -508,15 +540,20 @@ new file mode 100644
 +    let top_stored = cap.min(total_rounds - 1);
 +    let mut layers: Vec<Vec<FracE<EF<SC>>>> = vec![vec![]; total_rounds];
 +    {
-+        // build level top_stored chunk-wise from the input
++        // build level top_stored from runs of the input
 +        let sh = total_rounds - top_stored;
-+        let ch_pos = CHUNK.min(n_in).max(1 << sh);
-+        let mut p = vec![SC::F::ZERO; ch_pos];
-+        let mut q = vec![EF::<SC>::ZERO; ch_pos];
-+        let mut lev = Vec::with_capacity(1 << top_stored);
-+        for start in (0..n_in).step_by(ch_pos) {
-+            lev.extend(gen_level_chunk(src, total_rounds, top_stored, start >> sh, &mut p, &mut q, w));
-+        }
++        let mut lev = vec![FracE::<EF<SC>>::default(); 1 << top_stored];
++        let lp = SyncPtr(lev.as_mut_ptr());
++        src.visit_runs(
++            1 << sh,
++            |start, p, q| {
++                let v = level_of_run(p, q, sh, w);
++                // SAFETY: runs are disjoint, so their level entries are
++                unsafe { std::ptr::copy_nonoverlapping(v.as_ptr(), lp.get().add(start >> sh), v.len()) };
++            },
++            || (),
++            |_, _| (),
++        );
 +        layers[top_stored] = lev;
 +    }
 +    for k in (0..top_stored).rev() {
@@ -617,66 +654,75 @@ new file mode 100644
 +                r_vec.push(r);
 +            }
 +        } else {
-+            // streamed layer: x-entries of level seg_layer generated chunk by chunk
++            // streamed layer: x-entries of level seg_layer generated run by run from the input
 +            let xent_log = seg_layer - 1; // log2 of x-entries (= n)
 +            // streamed rounds K: the table after K folds has 2^(n-K) entries <= 2^cap
 +            let k_str = n.saturating_sub(cap).max(1).min(n);
 +            let sh = total_rounds - seg_layer; // positions per level entry: 2^sh
-+            let ch_x = (CHUNK.min(n_in) >> (sh + 1)).max(1 << (k_str + 1)).min(1 << xent_log);
-+            let ch_pos = ch_x << (sh + 1);
-+            let mut p = vec![SC::F::ZERO; ch_pos];
-+            let mut q = vec![EF::<SC>::ZERO; ch_pos];
-+            let gen = |p: &mut Vec<SC::F>, q: &mut Vec<EF<SC>>, x0: usize| -> Option<Vec<FracE<EF<SC>>>> {
-+                if sh == 0 {
-+                    src.fill(x0 * 2, p, q);
-+                    None
-+                } else {
-+                    Some(gen_level_chunk(src, total_rounds, seg_layer, x0 * 2, p, q, w))
-+                }
++            let min_run = 1usize << (sh + k_str + 2).min(total_rounds);
++            let tab_of = |p: &[SC::F], q: &[EF<SC>]| -> Option<Vec<FracE<EF<SC>>>> {
++                if sh == 0 { None } else { Some(level_of_run(p, q, sh, w)) }
 +            };
-+            // passes 0..k_str: sums of round j from chunks folded j times
++            // passes 0..k_str: sums of round j from runs folded j times
 +            for j in 0..k_str {
 +                let (e, pts) = round_setup(&st, j);
-+                let mut sums = zero_sums();
-+                for x0 in (0..(1usize << xent_log)).step_by(ch_x) {
-+                    let lv = gen(&mut p, &mut q, x0);
-+                    let tab = match &lv {
-+                        None => Tab::Input(&p, &q),
-+                        Some(v) => Tab::Layer(v),
-+                    };
-+                    let s = if j == 0 {
-+                        pass(tab, None, None, &e, x0 / 2, pts, w)
-+                    } else {
-+                        let f = fold_chunk(tab, &r_vec[..j], w);
-+                        pass(Tab::Folded(&f), None, None, &e, (x0 >> j) / 2, pts, w)
-+                    };
-+                    add_sums(&mut sums, &s);
-+                }
++                let rs = &r_vec[..j];
++                let sums = src.visit_runs(
++                    min_run,
++                    |start, p, q| {
++                        let lv = tab_of(p, q);
++                        let tab = match &lv {
++                            None => Tab::Input(p, q),
++                            Some(v) => Tab::Layer(v),
++                        };
++                        let x0 = (start >> sh) / 2;
++                        if j == 0 {
++                            pass(tab, None, None, &e, x0 / 2, pts, w)
++                        } else {
++                            let f = fold_chunk(tab, rs, w);
++                            pass(Tab::Folded(&f), None, None, &e, (x0 >> j) / 2, pts, w)
++                        }
++                    },
++                    zero_sums,
++                    |mut a, b| {
++                        add_sums(&mut a, &b);
++                        a
++                    },
++                );
 +                let r = emit(&mut st, &sums, xi_prev[j], transcript, &mut round_polys_eval);
 +                r_vec.push(r);
 +            }
 +            // final pass: fold k_str times, store, and sum round k_str (fused)
 +            let (e, pts) = round_setup(&st, k_str);
 +            cur = vec![[EF::<SC>::ZERO; 4]; 1usize << (xent_log - k_str)];
-+            let mut sums = zero_sums();
-+            for x0 in (0..(1usize << xent_log)).step_by(ch_x) {
-+                let lv = gen(&mut p, &mut q, x0);
-+                let tab = match &lv {
-+                    None => Tab::Input(&p, &q),
-+                    Some(v) => Tab::Layer(v),
-+                };
-+                let o0 = x0 >> k_str;
-+                let olen = ch_x >> k_str;
-+                let out = &mut cur[o0..o0 + olen];
-+                let s = if k_str == 1 {
-+                    pass(tab, Some(r_vec[0]), Some(out), &e, o0 / 2, pts, w)
-+                } else {
-+                    let f = fold_chunk(tab, &r_vec[..k_str - 1], w);
-+                    pass(Tab::Folded(&f), Some(r_vec[k_str - 1]), Some(out), &e, o0 / 2, pts, w)
-+                };
-+                add_sums(&mut sums, &s);
-+            }
-+            drop((p, q));
++            let cp = SyncPtr(cur.as_mut_ptr());
++            let rs = &r_vec[..k_str];
++            let sums = src.visit_runs(
++                min_run,
++                |start, p, q| {
++                    let lv = tab_of(p, q);
++                    let tab = match &lv {
++                        None => Tab::Input(p, q),
++                        Some(v) => Tab::Layer(v),
++                    };
++                    let x0 = (start >> sh) / 2;
++                    let o0 = x0 >> k_str;
++                    let olen = tab.len() >> k_str;
++                    // SAFETY: runs are disjoint, so their folded entries are
++                    let out = unsafe { std::slice::from_raw_parts_mut(cp.get().add(o0), olen) };
++                    if k_str == 1 {
++                        pass(tab, Some(rs[0]), Some(out), &e, o0 / 2, pts, w)
++                    } else {
++                        let f = fold_chunk(tab, &rs[..k_str - 1], w);
++                        pass(Tab::Folded(&f), Some(rs[k_str - 1]), Some(out), &e, o0 / 2, pts, w)
++                    }
++                },
++                zero_sums,
++                |mut a, b| {
++                    add_sums(&mut a, &b);
++                    a
++                },
++            );
 +            next_sr = k_str;
 +            if k_str < n {
 +                let r = emit(&mut st, &sums, xi_prev[k_str], transcript, &mut round_polys_eval);
@@ -725,6 +771,8 @@ new file mode 100644
 +/// One trace's contribution to the LogUp input: per-interaction programs (functionals
 +/// `[raw count, denom]`, see `gkr_input_specs_one`), the trace matrices and placements.
 +pub struct TraceInput<'a, F: Field, EF> {
++    /// all interactions at once: functionals `[count_i (raw), denom_i]` (see `gkr_input_specs_all`)
++    pub full: super::zc::Program<F, EF>,
 +    pub progs: Vec<super::zc::Program<F, EF>>,
 +    pub mats: Vec<(&'a p3_matrix::dense::RowMajorMatrix<F>, bool)>,
 +    pub height: usize,
@@ -746,6 +794,154 @@ new file mode 100644
 +        let t0 = std::time::Instant::now();
 +        self.fill_inner(start, p, q);
 +        FILL_NS.fetch_add(t0.elapsed().as_nanos() as u64, std::sync::atomic::Ordering::Relaxed);
++    }
++
++    /// Row-block order: each block of trace rows is evaluated once for all interactions (one
++    /// pass over the trace instead of one per interaction); placements smaller than the block
++    /// size form a tail that is generated by position.
++    fn visit_runs<R: Send, Fv, Z, A>(&self, min_run: usize, f: Fv, zero: Z, add: A) -> R
++    where
++        Fv: Fn(usize, &[F], &[EF]) -> R + Sync,
++        Z: Fn() -> R + Sync,
++        A: Fn(R, R) -> R + Sync,
++    {
++        type P<F> = <F as Field>::Packing;
++        let wl = <P<F> as PackedValue>::WIDTH;
++        let t0 = std::time::Instant::now();
++        let t_min = min_run.max(wl).max(1 << 12);
++        if self.n < t_min {
++            assert!(self.n >= min_run);
++            let mut p = vec![F::ZERO; self.n];
++            let mut q = vec![EF::ZERO; self.n];
++            self.fill(0, &mut p, &mut q);
++            return f(0, &p, &q);
++        }
++        // big traces: height >= t_min; their placements must form the prefix [0, big_end)
++        let mut big_end = 0usize;
++        let mut big_len = 0usize;
++        let mut small_start = usize::MAX;
++        for tr in &self.traces {
++            for pl in &tr.placements {
++                if tr.height >= t_min {
++                    big_end = big_end.max(pl.row_idx + pl.len);
++                    big_len += pl.len;
++                } else {
++                    small_start = small_start.min(pl.row_idx);
++                }
++            }
++        }
++        if big_len != big_end || (small_start != usize::MAX && small_start < big_end) || big_end % t_min != 0 {
++            // layout not as expected: generate by position
++            let ch = CHUNK.min(self.n).max(min_run);
++            let mut p = vec![F::ZERO; ch];
++            let mut q = vec![EF::ZERO; ch];
++            let mut acc = zero();
++            for start in (0..self.n).step_by(ch) {
++                self.fill(start, &mut p, &mut q);
++                acc = add(acc, f(start, &p, &q));
++            }
++            return acc;
++        }
++        // units: (trace, first row) with blocks of rb rows
++        let units: Vec<(usize, usize, usize)> = self
++            .traces
++            .iter()
++            .enumerate()
++            .filter(|(_, tr)| tr.height >= t_min)
++            .flat_map(|(ti, tr)| {
++                let rb = tr.height.min(t_min.max(1 << 12));
++                (0..tr.height).step_by(rb).map(move |r0| (ti, r0, rb))
++            })
++            .collect();
++        let alpha = self.alpha;
++        let big = units
++            .par_iter()
++            .map(|&(ti, r0, rb)| {
++                let tr = &self.traces[ti];
++                let prog = &tr.full;
++                let nint = prog.num_funcs() / 2;
++                let height = tr.height;
++                let mut slots = vec![P::<F>::ZERO; prog.n_slots()];
++                let mut fsum = vec![PE::<P<F>>::zero(); 2 * nint];
++                let mut raw = vec![P::<F>::ZERO; 2 * nint];
++                let konst: Vec<PE<P<F>>> = (0..2 * nint)
++                    .map(|fi| if fi % 2 == 1 { PE::broadcast(coeffs::<F, EF>(&(prog.konst[fi] + alpha))) } else { PE::zero() })
++                    .collect();
++                let mut ps = vec![F::ZERO; nint * rb];
++                let mut qs = vec![EF::ZERO; nint * rb];
++                for sb in (0..rb).step_by(wl) {
++                    let rr = r0 + sb;
++                    for (i, &(t, c)) in prog.inputs().iter().enumerate() {
++                        slots[i] = if t == 0 {
++                            P::<F>::from_fn(|l| {
++                                let row = rr + l;
++                                F::from_bool(match c {
++                                    0 => row == 0,
++                                    1 => row != height - 1,
++                                    _ => row == height - 1,
++                                })
++                            })
++                        } else {
++                            let (m, rot) = tr.mats[t - 1];
++                            let h = m.values.len() / m.width;
++                            let base = rr + usize::from(rot);
++                            if base + wl <= h {
++                                let w = m.width;
++                                P::<F>::from_fn(|l| m.values[(base + l) * w + c])
++                            } else {
++                                P::<F>::from_fn(|l| m.values[((base + l) % h) * m.width + c])
++                            }
++                        };
++                    }
++                    fsum.copy_from_slice(&konst);
++                    prog.run_base(&mut slots, &mut fsum, &mut raw);
++                    for &(fi, v) in &prog.raw_const {
++                        raw[fi] = P::<F>::from(v);
++                    }
++                    for ii in 0..nint {
++                        let pv = raw[2 * ii];
++                        let qv = &fsum[2 * ii + 1];
++                        for l in 0..wl {
++                            ps[ii * rb + sb + l] = pv.as_slice()[l];
++                            qs[ii * rb + sb + l] = from_coeffs::<F, EF>(&qv.lane(l));
++                        }
++                    }
++                }
++                let mut acc = zero();
++                let mut pscaled = vec![F::ZERO; rb];
++                for pl in &tr.placements {
++                    let ii = pl.interaction;
++                    let pr = &ps[ii * rb..(ii + 1) * rb];
++                    let qr = &qs[ii * rb..(ii + 1) * rb];
++                    let pr: &[F] = if pl.norm == F::ONE {
++                        pr
++                    } else {
++                        for (d, &x) in pscaled.iter_mut().zip(pr) {
++                            *d = x * pl.norm;
++                        }
++                        &pscaled
++                    };
++                    for k in 0..pl.len / height {
++                        let start = pl.row_idx + k * height + r0;
++                        acc = add(acc, f(start, pr, qr));
++                    }
++                }
++                acc
++            })
++            .reduce(&zero, &add);
++        // tail: positions [big_end, n) by position, chunks of t_min
++        let tail_chunks: Vec<usize> = (big_end..self.n).step_by(t_min).collect();
++        let tail = tail_chunks
++            .par_iter()
++            .map(|&start| {
++                let mut p = vec![F::ZERO; t_min];
++                let mut q = vec![EF::ZERO; t_min];
++                self.fill_inner(start, &mut p, &mut q);
++                f(start, &p, &q)
++            })
++            .reduce(&zero, &add);
++        FILL_NS.fetch_add(t0.elapsed().as_nanos() as u64, std::sync::atomic::Ordering::Relaxed);
++        add(big, tail)
 +    }
 +}
 +
@@ -843,6 +1039,14 @@ new file mode 100644
 +            raw: false,
 +        },
 +    ]
++}
++
++/// Functionals of all interactions of a trace: `[count_0 (raw), denom_0, count_1, denom_1, ..]`.
++pub fn gkr_input_specs_all<F: Field, EF: ExtensionField<F>>(
++    interactions: &[openvm_stark_backend::interaction::Interaction<usize>],
++    beta_pows: &[EF],
++) -> Vec<super::zc::FuncSpec<EF>> {
++    interactions.iter().flat_map(|int| gkr_input_specs_one::<F, EF>(int, beta_pows)).collect()
 +}
 diff --git a/crates/cpu-backend/src/fast/mod.rs b/crates/cpu-backend/src/fast/mod.rs
 new file mode 100644
@@ -2728,7 +2932,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
  
      let n_max = log2_strict_usize(MatrixDimensions::height(&ctx.per_trace[0].1.common_main))
          .saturating_sub(l_skip);
-@@ -1411,6 +1714,66 @@ where
+@@ -1411,6 +1714,75 @@ where
  
      // GKR: compute logup input layer using row-major access
      let has_interactions = !prover.interactions_layout.sorted_cols.is_empty();
@@ -2744,7 +2948,9 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +            })
 +    });
 +    if let Some(w) = fast_gkr {
-+        use crate::fast::gkr::{fractional_sumcheck_fast, gkr_input_specs_one, Placement, TraceInput, TraceInputSource};
++        use crate::fast::gkr::{
++            fractional_sumcheck_fast, gkr_input_specs_all, gkr_input_specs_one, Placement, TraceInput, TraceInputSource,
++        };
 +        use crate::fast::zc::{Layout, Program};
 +        let n_total = 1usize << (l_skip + n_logup);
 +        let traces: Vec<TraceInput<'_, SC::F, SC::EF>> = prover
@@ -2776,7 +2982,14 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +                        Program::compile_specs(helper.constraints_dag, &helper.public_values, &layout, &specs, w)
 +                    })
 +                    .collect();
-+                TraceInput { progs, mats: helper.view_mats_rowmaj(trace_ctx), height, placements }
++                let full = Program::compile_specs(
++                    helper.constraints_dag,
++                    &helper.public_values,
++                    &layout,
++                    &gkr_input_specs_all(helper.dag_interactions, &prover.beta_pows),
++                    w,
++                );
++                TraceInput { full, progs, mats: helper.view_mats_rowmaj(trace_ctx), height, placements }
 +            })
 +            .collect();
 +        let src = TraceInputSource { n: n_total, alpha: alpha_logup, traces };
@@ -2795,7 +3008,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      let gkr_input_evals = if !has_interactions {
          vec![]
      } else {
-@@ -1462,7 +1825,7 @@ where
+@@ -1462,7 +1834,7 @@ where
      };
  
      openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.gkr_input");
@@ -2804,7 +3017,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
          fractional_sumcheck_with::<SC, _>(
              transcript,
              &gkr_input_evals,
-@@ -1471,6 +1834,30 @@ where
+@@ -1471,6 +1843,30 @@ where
          )?;
  
      openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.after_gkr");
@@ -2835,7 +3048,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      let n_global = max(n_max, n_logup);
      debug!(%n_global);
      while xi.len() != l_skip + n_global {
-@@ -1486,6 +1873,7 @@ where
+@@ -1486,6 +1882,7 @@ where
      debug!(%lambda);
  
      let sp_0_polys = prover.sumcheck_uni_round0_polys(ctx, lambda);
@@ -2843,7 +3056,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      let sp_0_deg = sumcheck_round0_deg(l_skip, constraint_degree);
      let s_deg = constraint_degree + 1;
      let s_0_deg = sumcheck_round0_deg(l_skip, s_deg);
-@@ -1584,6 +1972,7 @@ where
+@@ -1584,6 +1981,7 @@ where
      debug!("s_0(r_0) = {}", prover.prev_s_eval);
  
      prover.fold_ple_evals(ctx, r_0);
@@ -2851,7 +3064,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
  
      // MLE rounds
      let _mle_rounds_span =
-@@ -1666,6 +2055,7 @@ where
+@@ -1666,6 +2064,7 @@ where
          prover.fold_mle_evals(round, r_round);
      }
      drop(_mle_rounds_span);
@@ -3101,7 +3314,49 @@ diff --git a/crates/stark-backend/src/prover/mod.rs b/crates/stark-backend/src/p
 diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backend/src/prover/stacked_pcs.rs
 --- a/crates/stark-backend/src/prover/stacked_pcs.rs
 +++ b/crates/stark-backend/src/prover/stacked_pcs.rs
-@@ -780,19 +780,36 @@ where
+@@ -619,6 +619,41 @@ pub fn rs_code_matrix_odd<F: TwoAdicField + Ord + p3_field::PrimeField64>(
+ ) -> Result<ColMajorMatrix<F>, StackedPcsError> {
+     let height = eval_matrix.height();
+     let log_rs = log2_strict_usize(height) + log_blowup;
++    if crate::prover::stream_pcs::fast_paths() && eval_matrix.width() > 0 {
++        // [pq-cpu-prover] all columns at once: row-major coefficients, one four-step coset DFT per
++        // coset (instead of one DFT, with fresh twiddles, per column and coset)
++        let w = eval_matrix.width();
++        let n = 1usize << log_rs;
++        let coeff_cols: Vec<Vec<F>> = eval_matrix
++            .values
++            .par_chunks_exact(height)
++            .map(|column_evals| eval_to_coeff_rs_message(l_skip, column_evals))
++            .collect();
++        let mut rm = F::zero_vec(n * w);
++        rm.par_chunks_mut(w).enumerate().for_each(|(i, row)| {
++            for (c, col) in coeff_cols.iter().enumerate() {
++                if let Some(&v) = col.get(i) {
++                    row[c] = v;
++                }
++            }
++        });
++        drop(coeff_cols);
++        let c = domain_odd_factor;
++        let zeta = if c == 1 { F::ONE } else { crate::odd_domain::odd_root::<F>(c) };
++        let total = c * n;
++        let mut out = F::zero_vec(total * w);
++        for a in 0..c {
++            let ev = crate::prover::fast_dft::coset_dft_rows(&rm, w, zeta.exp_u64(a as u64));
++            // column-major codewords: out[col * total + a * n + u] = ev[u * w + col]
++            out.par_chunks_mut(total).enumerate().for_each(|(col, dst)| {
++                let dst = &mut dst[a * n..(a + 1) * n];
++                for (u, d) in dst.iter_mut().enumerate() {
++                    *d = ev[u * w + col];
++                }
++            });
++        }
++        return Ok(ColMajorMatrix::new_any_height(out, w));
++    }
+     let codewords: Vec<_> = eval_matrix
+         .values
+         .par_chunks_exact(height)
+@@ -780,19 +815,36 @@ where
          let query_stride = num_leaves / rows_per_query;
          // One Merkle leaf per query index `y`: the coset rows { y + t * query_stride }. The
          // default `MerkleHasher::hash_coset` reproduces upstream (row hashes + binary subtree).
@@ -3151,7 +3406,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
  
          let mut digest_layers = vec![query_digest_layer];
          while digest_layers
-@@ -804,10 +821,7 @@ where
+@@ -804,10 +856,7 @@ where
              let prev_layer = digest_layers
                  .last()
                  .ok_or(StackedPcsError::MerkleTreeNoRoot)?;
@@ -3163,7 +3418,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
              digest_layers.push(layer);
          }
  
-@@ -847,20 +861,35 @@ where
+@@ -847,20 +896,35 @@ where
          // One leaf per fold coset of each block: rows { a * block + t * qs + y }, hashed with
          // `MerkleHasher::hash_coset` (the default reproduces row hashes + a binary subtree, the
          // levers' coset-leaf hook hashes the coset as one message).
@@ -3213,7 +3468,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
          let pad = hasher.hash_slice(&[]);
          let mut digest_layers = vec![joined];
          while digest_layers.last().unwrap().len() > 1 {
-@@ -868,10 +897,7 @@ where
+@@ -868,10 +932,7 @@ where
              if prev.len() % 2 == 1 {
                  prev.push(pad);
              }
@@ -3225,7 +3480,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
              digest_layers.push(layer);
          }
          Ok(Self {
-@@ -924,7 +950,7 @@ where
+@@ -924,7 +985,7 @@ where
          }
  
          if let Some(src) = &self.stream {
@@ -3234,7 +3489,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
          }
          let rows_per_query = self.rows_per_query;
          let width = self.backing_matrix.width();
-@@ -1029,3 +1055,70 @@ mod tests {
+@@ -1029,3 +1090,70 @@ mod tests {
          );
      }
  }
