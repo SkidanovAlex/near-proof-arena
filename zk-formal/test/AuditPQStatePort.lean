@@ -3,6 +3,7 @@ import ZkFormal.PQ.StatePort.Bounds
 import ZkFormal.PQ.StatePort.D0a
 import ZkFormal.PQ.StatePort.D1
 import ZkFormal.PQ.StatePort.TapeCollapse
+import ZkFormal.PQ.StatePort.Join
 
 /-!
 # Audit: the pq-state-port Lean bridge uses only the standard axioms
@@ -29,6 +30,9 @@ open ZkFormal.PQ.StatePort
 #check @pq_d1_rel
 #check @canonKeys_nodup
 #check @sel_fsum_eq
+#check @nearAirV3_buses_below_128
+#check @nearAirV3D1_buses_below_128
+#check @join_partition
 #check @tablesSum_eq_sides
 #check @balance_step
 #check @nearAirV3_multBoundP_lt
@@ -46,3 +50,5 @@ open ZkFormal.PQ.StatePort
 #print axioms ZkFormal.PQ.StatePort.pq_d1_rel
 #print axioms ZkFormal.PQ.StatePort.sel_fsum_eq
 #print axioms ZkFormal.PQ.StatePort.canonKeys_nodup
+#print axioms ZkFormal.PQ.StatePort.nearAirV3_buses_below_128
+#print axioms ZkFormal.PQ.StatePort.join_partition

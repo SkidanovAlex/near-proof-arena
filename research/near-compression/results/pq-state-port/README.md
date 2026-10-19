@@ -18,7 +18,7 @@ Labels: **[M]** measured here, **[K]** kernel-checked in Lean, **[E]** estimate.
 | 3 | D1: all 30 tables, no stand-in, prove + verify + tamper | **done** | §4 |
 | 3b | P4 TAPE commitment binding: Rust/statement side done, Lean `tapeNet_canon` in progress | **partly done** | §2.2 |
 | 4 | Ed25519 / hint design options | **written, not implemented** | §5 |
-| 5 | Wasm join | **not started** (out of scope here) | §6 |
+| 5 | Wasm join: bus partition proved, statement composition designed | **partly done** | §6 |
 
 ## 1. D0a port [M]
 
@@ -266,13 +266,46 @@ That is incompatible with a succinct final verifier.  Options, with cost:
 Recommendation: **A** if in-circuit signature verification is in scope for the next stage;
 otherwise **B**, with the same AIRs.  Do not pick C for the succinct target.
 
-## 5. Wasm join (not started)
+## 5. Wasm join [K partly]
 
-The envelope study's plan still applies: one base proof, statement `ctx ‖ enc S_0 ‖ enc S_S`;
-`rcptD1` (or a new `call` table) sends the CALL message that the Wasm boundary receives; Wasm
-storage host calls answer on the existing trie buses; `BUS_OFFSET = 128` in this lane is the
-reserved split.  The Lean side needs the D3α-style `runCall` fold over the D1 extraction and
-`wasm_base_sound`.  Cost [E] 15–25 agent-days.
+`Join.lean` proves the static half of the join — the bus partition — and records what the
+statement half requires.
+
+**Bus partition (proved).**  The two families already use disjoint ranges, so the join needs no
+renaming:
+
+| family | buses | source |
+|---|---|---|
+| direct-Wasm | 0–6 (`busState`…`busFunc`) | `WasmBase/Chips.lean:35-41` |
+| classical state tables | 0–71, shifted by the port to **128–199** | `nearAirV3_buses_below_128`, `nearAirV3D1_buses_below_128` (kernel facts) |
+
+`join_partition` states the disjointness: a Wasm bus `≤ 6` can never equal `128 + b` for a
+classical bus `b < 128`.  So `BUS_OFFSET = 128` in the driver (and `busOffset` in the Lean tool)
+is sound, and 7–127 stays free for join glue tables.
+
+This is a correction to the earlier note in this README: the Wasm family uses 0–**6**, not 0–4.
+The offset is unaffected, but the reservation is stated correctly now.
+
+**Statement composition (designed, not implemented).**  The remaining work is not a new AIR fact:
+
+* **AIR side**: the disjoint union of the two table sets, with the offset above.  Both families'
+  tables are unchanged.
+* **Statement**: one base proof with public values `ctx ‖ enc S_0 ‖ enc S_S` (the classical tape
+  header already carries the pre/post state roots and the outcome root; add the TAPE root and the
+  Wasm `code_root`).
+* **Call boundary**: `rcptD1` (or a new `call` table) sends a CALL message — receipt index,
+  receiver, method id, args digest, prepaid gas, deposit, code root — which the Wasm `BOUNDARY`
+  (`Chips.lean:568-610`, its `STATE` interactions and public values) receives as its entry state.
+  The code root binds to the account's `code_hash` read through the account/trie walk.
+* **Storage host calls**: `storage_read` / `storage_write` / `has_key` rows send
+  `(account, key, value, time)` on a STORAGE bus; a storage table answers on the existing trie
+  buses (`walk`/`val` for reads, `ups` for writes), the same pattern `tx` uses with `walk`.
+* **Time**: the classical MEM time is `r + 1 + T0` per receipt; the Wasm channel time is a global
+  row clock.  Use `(receipt index, step)` or one global clock.
+* **Lean**: a D3α-style `runCall` fold inside receipt application over the D1 extraction and
+  `wasm_base_sound`.
+
+Cost [E] 15–25 agent-days (envelope study §6).  Nothing in either AIR changes.
 
 ## 6. Files
 
@@ -280,7 +313,7 @@ reserved split.  The Lean side needs the D3α-style `runCall` fold over the D1 e
   `src/config.rs`), `setup.sh`, `run_demo.sh`.
 * `examples/np-udr-stark-v2/source/examples/statedump.rs` — the honest trace dump with the
   natural-height re-cut (a cargo example, so the shipped package is unchanged).
-* `zk-formal/ZkFormal/PQ/StatePort/{Swirl,Bridge,Bounds,D0a,D1,Tape,TapeCollapse,Tool}.lean`,
+* `zk-formal/ZkFormal/PQ/StatePort/{Swirl,Bridge,Bounds,D0a,D1,Tape,TapeCollapse,Join,Tool}.lean`,
   `zk-formal/test/AuditPQStatePort.lean`.
 * `logs/` — the prove and tamper logs and the per-table height maps.
 
