@@ -1,0 +1,5 @@
+'ZkFormal.NearV3.D3.nibbles_append' depends on axioms: [propext]
+'ZkFormal.NearV3.D3.nibbles_length' depends on axioms: [propext, Quot.sound]
+'ZkFormal.NearV3.D3.contractDataPath_length' depends on axioms: [propext, Quot.sound]
+'ZkFormal.NearV3.D3.contractDataPathSpec_holds' depends on axioms: [propext, Quot.sound]
+'ZkFormal.PQ.Join.host_bus_safe' does not depend on any axioms

@@ -351,3 +351,6 @@ import ZkFormal.Chacha.Spec
 import ZkFormal.Chacha.Statements
 import ZkFormal.Chacha.Table
 import ZkFormal.Chacha.ZEval
+-- lane pq-d3-join: the ContractData key prefix/walk tables and the joint Wasm×state statement
+import ZkFormal.NearV3.D3.ContractData
+import ZkFormal.PQ.Join.Statement
