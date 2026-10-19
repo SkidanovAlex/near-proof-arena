@@ -25,24 +25,24 @@ VK LOCAL     degree 2 constraints 10 interactions 11 dag_nodes 86
 VK RANGE16   degree 2 constraints 3 interactions 1 dag_nodes 15
 VK BYTE      degree 2 constraints 19 interactions 4 dag_nodes 242
 SOUNDNESS total=268.2 logup=333.3 proximity=316.2 query=268.2
-PROOF total=747562 gkr=28328 relations=29108 stacking=2176 whir=685974
-TIME tracegen 0.081s keygen 0.001s prove 29.134s verify 0.0216s threads 8 peak_rss_kib 822456
+PROOF total=745798 gkr=28328 relations=29108 stacking=2176 whir=684210
+TIME tracegen 0.057s keygen 0.001s prove 21.379s verify 0.0160s threads 8 peak_rss_kib 827728
 PROVE OK steps 9614 result Some((1, 1657328511909649664))
-	Command being timed: "nice -n 10 env HEAVY_MEM=20G taskset -c 8-15 /data/illia/nearproof-deps/bin/heavy /data/illia/nearproof-deps/pq-wasm-base/target/release/nearproof-wasm-base prove /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/meas/air-3-54.json /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/meas/progs/hashloop256.prep.json small"
-	User time (seconds): 119.03
-	System time (seconds): 1.10
-	Percent of CPU this job got: 408%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:29.38
+	Command being timed: "nice -n 10 env HEAVY_MEM=20G taskset -c 8-15 /data/illia/nearproof-deps/bin/heavy /data/illia/nearproof-deps/pq-wasm-base/target/release/nearproof-wasm-base prove /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/meas2/air-3-54.json /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/meas2/progs/hashloop256.prep.json small"
+	User time (seconds): 76.39
+	System time (seconds): 0.82
+	Percent of CPU this job got: 358%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:21.56
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 822456
+	Maximum resident set size (kbytes): 827728
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 346501
-	Voluntary context switches: 52954
-	Involuntary context switches: 590423
+	Minor (reclaiming a frame) page faults: 346152
+	Voluntary context switches: 39849
+	Involuntary context switches: 735864
 	Swaps: 0
 	File system inputs: 0
 	File system outputs: 16

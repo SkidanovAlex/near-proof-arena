@@ -25,6 +25,6 @@ VK LOCAL     degree 2 constraints 10 interactions 11 dag_nodes 86
 VK RANGE16   degree 2 constraints 3 interactions 1 dag_nodes 15
 VK BYTE      degree 2 constraints 19 interactions 4 dag_nodes 242
 SOUNDNESS total=268.2 logup=333.3 proximity=316.2 query=268.2
-PROOF total=747156 gkr=28328 relations=28676 stacking=2176 whir=686100
-TIME tracegen 0.088s keygen 0.001s prove 37.615s verify 0.0264s threads 8 peak_rss_kib 822300
+PROOF total=747366 gkr=28328 relations=28676 stacking=2176 whir=686310
+TIME tracegen 0.092s keygen 0.001s prove 25.780s verify 0.0279s threads 8 peak_rss_kib 790752
 PROVE OK steps 170 result Some((0, 121))

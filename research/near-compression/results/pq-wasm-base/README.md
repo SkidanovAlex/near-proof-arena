@@ -23,17 +23,22 @@ instruction set. Nothing here touches signed challenges, `oracle/v3` or pinned f
 * **Lean ↔ Rust**: generated, not hand-copied. The Lean value `WasmBase.wasmBaseAir` is exported as
   JSON and the Rust `Air::eval` replays it through the openvm `AirBuilder`/`InteractionBuilder`
   (`src/air.rs`). Independently, `difftest.py` evaluates the Lean expressions (in Lean) and the
-  verifying key's symbolic DAG (in Rust) at random points: 384 points, 7,296 constraint values and
-  6,784 interactions (bus, signed count, message) agree.
+  verifying key's symbolic DAG (in Rust) at random points. On the fixed AIR: 384 points, 7,296
+  constraint values and 6,336 interactions (bus, signed count, message) agree (`logs/difftest.log`).
 * **Tests**: 47 known-answer programs (Python reference = Lean spec = Rust trace generator + full
-  constraint/bus check), real proofs of 5 programs, 29/29 tamper cases rejected by the native verifier.
-* **Lean base-faithful**: see §5. Proved without `sorry`/new axioms: the AIR model and its relation
-  `Holds` (mod-p LogUp balance as the PIOP enforces it), the checker's soundness, local soundness of
-  ADD, BIT, MUL, CMP, CONST, STACK, CTRL, LOCAL, the shift/rotate semantics, the spec step of every
-  instruction class from the simulation relation, the bus layer (lookups and permutations from mod-p
-  balance), the chain lemma (STATE bus ⇒ one execution path) and the channel lemma (operand-stack and
-  locals channel soundness, the P-PERF-5 sketch). **Open**: the SHIFT chip-to-semantics assembly
-  (generated proof being checked), the per-table extraction glue and the final composition theorem.
+  constraint/bus check), real proofs of 5 programs, 29/29 tamper cases rejected by the native verifier. All re-run after the SHIFT fix
+  (`logs/kat.log`, `logs/tamper-hashloop8.log`).
+* **Lean base-faithful: proved end to end.** `WasmBase.wasm_base_sound` (`WasmBase/Main/Final.lean`):
+  `check` accepts the function ∧ `Holds (wasmBaseAir nloc ncode) pub tr` (the relation the SWIRL PIOP
+  enforces, mod-p LogUp balance) ∧ the public inputs are the checker's (`PubOK`) ∧ explicit,
+  decidable statement conditions ⇒ from function entry the spec `NearSpecV3.Wasm.run` finishes after
+  exactly `N − 1` steps, having charged `R · S` gas, with the operand stack equal to the public result.
+  No `sorry`, no new axioms (`#print axioms`: `propext`, `Classical.choice`, `Quot.sound`), §5.
+* **A soundness bug found by the proof, fixed.** v1 of SHIFT range-checked `w·q` instead of `q`. `q`
+  is a free column, so `w·q` can hit any small residue mod p and `b0 = k + w·q` stopped pinning
+  `k = b0 mod w`. Example: `b0 = 5`, claimed count `k = 3`, `q = 2·32⁻¹ = 1887436801`, and then
+  `w·q mod p = 2` passes the check. Fix: `r16(q)`. Column and interaction counts are unchanged, so
+  every cost figure below holds. All tests, proofs and the pinned run were redone after the fix.
 * **Cost** (§6): 28.5 committed cells and 12.6 LogUp fractions per executed op (active rows, mixed
   hash-loop workload, 38k steps) ⇒ **349 work cell-eq/op at E = 12** (529 with power-of-two padding).
   Per-op worst chips: SHIFT 886, MUL 799 cell-eq at E = 12, against the 546 model; univariate
@@ -151,32 +156,35 @@ proof; at 1 Pgas it is amortised away, but the per-op lookup traffic stays.
 
 ## 5. Lean: theorems and status
 
-All in `research/near-compression/wasm-base-lean/WasmBase/`; axioms are only `propext`,
-`Classical.choice`, `Quot.sound`; no `sorry` in committed modules except where marked open.
+All modules are in `research/near-compression/wasm-base-lean/WasmBase/`. The package builds with no
+`sorry` anywhere (139 jobs), and the axioms are only `propext`, `Classical.choice` and `Quot.sound`.
+The Lean AIR is the one the prover uses: it is generated (JSON export, replayed by `src/air.rs`) and
+also difftested (§1).
 
 | module | statement | status |
 |---|---|---|
-| `Air` | `Holds A pub tr`: heights 4 ≤ h ≤ 2^24, every constraint on every row, **mod-p** bus balance for every message, the verifier's per-bus height bound `busLoad < p` | definition (the PIOP relation, BF2 target) |
+| `Air` | `Holds A pub tr`: heights 4 ≤ h ≤ 2^24, every constraint on every row, **mod-p** bus balance for every message, the verifier's per-bus bound `busLoad < p` | definition (PIOP relation) |
 | `Chips` | the 12 AIRs | definition (exported, interpreted by Rust) |
-| `Check`, `CheckFacts.check_sound` | `check cfg p fn = some ck → CheckFacts …` (labels, heights, every `verifyAt`, records = `recordOf`, fees, types) | proved |
-| `Local.Add.add_sound`, `Bit.bit_sound`, `Mul.mul_sound`, `Cmp.cmp_sound`, `Simple.*` | one row satisfying its table's constraints + the range facts its lookups give ⇒ the produced value is `Num.binop`/`Num.relop`/… of the consumed values | proved |
-| `Local.ShiftSem.sem_*` | from `lo + 2^w hi = (A · 2^e) mod 2^(2w)`: `shl`, `shr_u`, `shr_s` (sign-extended A), `rotl`, `rotr` exactly as `Num.*` | proved |
-| `Local.Shift.shift_sound` | SHIFT row ⇒ `Num.binop w (10..14)` | generated (`gen/gen_shift.py`), being checked |
-| `Step.step_eq_exec`, `StepOps*.step_*`, `StepCtrl.step_*` | under the simulation relation `RelW` (spec frame/labels/stack/locals/gas ↔ live channel messages), each instruction class's `step` returns `.cont s'` with the relation at `t+1` for `stepLive live cons prod`, or `.fin` (return) with the same stack | proved for all classes |
-| `Bus.lookup_sound`, `Bus.msgs_perm` | bit counts on the query side ⇒ every count-1 query is a table message (any table multiplicities); bit counts on both sides ⇒ exact multiset equality, from the mod-p balance and `busLoad < p` | proved |
-| `Chain.chain` | `(init :: outs) ~ (final :: ins)`, `level out = level in + 1` in F_p, < p edges ⇒ the edges form one path init → final | proved |
-| `Channel.ChanOK.*` | produced/consumed channel messages, consumers' `tp < ts`, productions distinct ⇒ every consumed message is live, liveness evolves as `(live \ cons) ∪ prod`, final live set = boundary's final messages | proved |
-| `Extract.Row.range16_values` | RANGE16 rows are exactly `0 .. 65535` | proved |
-| extraction glue | per table: row ⇒ event (counts are bits, decoded messages, range facts from lookups); BYTE table content; FETCH lookup ⇒ code record | **open** |
-| main theorem | `check … = some ck`, `Holds (wasmBaseAir …) (statementPub …) tr`, domain bounds, entry state ⇒ `run cfg p (N-1) s0 = .fin sN ∧ sN.stack = result ∧ sN.gas.g = g0 − R·S` | **open** (all ingredients above) |
+| `CheckFacts.check_sound` | `check … = some ck →` labels, heights, every `verifyAt`, records = `recordOf`, fees, types | proved |
+| `Local.*_sound` (ADD, BIT, MUL, CMP, SHIFT, CONST/STACK/CTRL/LOCAL) | one row satisfying its constraints, plus the range facts its lookups give, ⇒ the produced value is the spec op (`Num.binop`/`relop`/…) of the consumed values | proved; SHIFT is hand-written and generic in the byte length (`ShiftBytes.chain_prod`, `byte_disjoint` for rotations) |
+| `Step*`, `StepCtrl` | under the simulation relation `RelW`, each instruction class's `step` gives `.cont s'` with the relation at `t+1`, or `.fin` | proved |
+| `Bus.lookup_sound`, `Bus.msgs_perm` | lookups and exact permutations from mod-p balance and bit counts | proved |
+| `Chain.chain`, `Channel.ChanOK.*` | STATE ⇒ one path; channel soundness (P-PERF-5) | proved |
+| `Main.Abstract.exec_of_rows` | per-row `RowFacts` + the two permutations ⇒ `run` finishes with the boundary's gas, stack and locals | proved |
+| `Main.Lookups.looks_of` | FETCH query = a public record, R16 < 2^16, BYTE = `byteF` on bytes (the RANGE16/BYTE tables are exactly their intended contents) | proved |
+| `Main.Row*` (9 chips) | an active row's constraints and lookups ⇒ `RowFacts` (spec step, timestamps, gas, channel times); count bits; inactive rows silent | proved |
+| `Main.Exec` | the trace's STATE/CH messages = boundary + active rows; `wasm_base_exec` | proved |
+| **`Main.Final.wasm_base_sound`** | the end-to-end theorem (§1) | **proved** |
 
-The relation is stated at `run` from the post-`enter` state (the call's first instruction). The glue
-to `runCall` (prepare/link/resolve/instantiate/enter) exists in `NearCompression.Prepared*` for the
-older literal families and is not repeated here.
+Explicit domain conditions in the theorem: `check` (D1–D5); the publics are those derived from the
+checker output (`PubOK`); `N · (maxFee + 1) < p`; `R · S ≤ g0`; `g0 < 2^64`; entry state with an
+empty operand stack, zeroed locals and gas `g0`. The theorem is stated for `run` from the
+post-`enter` state. The glue to `runCall` (prepare, link, instantiate, enter) exists for the older
+families in `NearCompression.Prepared*` and is not repeated here.
 
 ## 6. Measurements (CPU, current SWIRL backend)
 
-Host shared with other runs (load ≈ 40 on 32 cores); 8 threads pinned to CPUs 8–15, nice 10,
+The z = 24 rows were re-run after the SHIFT fix (2026-10-19), so the timings reflect current host load. The z = 0 rows are from the pre-fix AIR, which has identical shape and costs. Host shared with other runs; 8 threads pinned to CPUs 8–15, nice 10,
 `HEAVY_MEM=20G`. Prover: `Sha384RefEngine` (column-major CPU backend).
 
 **Workload**: `hashloop<n>` (FNV-1a-style i64 mul/xor, rotl/shr_u, i32 shl/shr_s/xor/add, compare,
@@ -184,11 +192,11 @@ conditional block, select; ≈ 37.5 ops per iteration).
 
 | run | steps | shape | proof bytes | prove (s) | verify (s) | peak RSS |
 |---|---:|---|---:|---:|---:|---:|
-| hashloop16, z = 24 | 619 | n_stack 18 (2^20) | 745,630 | 127.5 † | 0.026 | 0.83 GB |
-| hashloop64, z = 24 | 2,444 | n_stack 18 | 748,906 | 33.8 | 0.029 | 0.82 GB |
-| hashloop256, z = 24 | 9,614 | n_stack 18 | 747,562 | 29.1 | 0.022 | 0.82 GB |
-| hashloop64, z = 24 | 2,444 | **pinned n_stack 22 (2^24)** | 948,958 | 319.8 | 0.028 | 9.9 GB |
-| ctrl, z = 24 | 170 | n_stack 18 | 747,156 | 37.6 | 0.026 | 0.82 GB |
+| hashloop16, z = 24 | 619 | n_stack 18 (2^20) | 746,092 | 22.6 † | 0.016 | 0.80 GB |
+| hashloop64, z = 24 | 2,444 | n_stack 18 | 747,310 | 23.0 | 0.016 | 0.80 GB |
+| hashloop256, z = 24 | 9,614 | n_stack 18 | 745,798 | 21.4 | 0.016 | 0.83 GB |
+| hashloop64, z = 24 | 2,444 | **pinned n_stack 22 (2^24)** | 948,706 | 239.9 | 0.019 | 9.9 GB |
+| ctrl, z = 24 | 170 | n_stack 18 | 747,366 | 25.8 | 0.028 | 0.79 GB |
 | hashloop64, z = 0 (work only) | 2,444 | n_stack 18 | 803,340 | 25.6 / 25.6 | 0.023 | 0.83 GB |
 | hashloop256, z = 0 | 9,614 | n_stack 18 | 804,894 | 25.5 / 25.6 | 0.028 | 0.85 GB |
 | hashloop1024, z = 0 | 38,409 | n_stack 18 | 817,376 | 32.2 / 31.6 | 0.034 | 1.25 GB |
@@ -261,4 +269,6 @@ verifier circuit.
   local.
 * Register-form translation (PERF P-PERF-1: const/local/drop/br vanish) is not used; this slice
   executes one row per Wasm instruction, which is what the base-faithful proof follows directly.
-* Lean: finish the SHIFT assembly, the per-table extraction glue and the main theorem (§5).
+* Lean: the base-faithful theorem is complete for this family. Extending to the full instruction set
+  reuses `exec_of_rows`, `looks_of` and the `Main.Rows` infrastructure; each new chip needs a local
+  soundness lemma and a `*_rowfacts` lemma.
