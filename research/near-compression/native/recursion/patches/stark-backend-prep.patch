@@ -1,0 +1,33 @@
+diff --git a/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs b/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs
+--- a/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs
++++ b/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs
+@@ -216,7 +216,7 @@ impl<SC: StarkProtocolConfig> DummyInteractionChip<SC> {
+             params.l_skip,
+             params.n_stack,
+             params.log_blowup,
+-            params.k_whir(),
++            params.whir.k_first(), // [pq-nv-preprocessed] round-0 leaf size (k1 lever)
+             params.whir.domain_odd_factor,
+             &[&cached_trace],
+             false,
+diff --git a/crates/stark-backend/src/test_utils/mod.rs b/crates/stark-backend/src/test_utils/mod.rs
+--- a/crates/stark-backend/src/test_utils/mod.rs
++++ b/crates/stark-backend/src/test_utils/mod.rs
+@@ -90,7 +90,7 @@ fn commit_cached_trace<SC: StarkProtocolConfig>(
+         params.l_skip,
+         params.n_stack,
+         params.log_blowup,
+-        params.k_whir(),
++        params.whir.k_first(), // [pq-nv-preprocessed] round-0 leaf size (k1 lever)
+         params.whir.domain_odd_factor,
+         &[&trace],
+         false,
+@@ -309,7 +309,7 @@ impl<SC: StarkProtocolConfig> TestFixture<SC> for CachedFixture11<SC> {
+                     params.l_skip,
+                     params.n_stack,
+                     params.log_blowup,
+-                    params.k_whir(),
++                    params.whir.k_first(), // [pq-nv-preprocessed] round-0 leaf size (k1 lever)
+                     params.whir.domain_odd_factor,
+                     &[&cached],
+                     false,

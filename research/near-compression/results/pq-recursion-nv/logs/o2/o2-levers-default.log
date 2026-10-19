@@ -1,0 +1,17 @@
+NATIVE_SHA384_PROFILE n_stack=15 k=3 log_blowup=7 all_list=1 queries=[82, 63, 51, 43, 37]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE_GKR gruen=false derive=false next_mask=false gruen_zc=false max_degree=8
+LEVERS_PROFILE k1=3 log_final=2 multiproof=false keep_domain=false m=3 query_pow=0 folding_pow=0 mu_pow=0 digest_bytes=48 coset_leaf=false dummy=false
+NATIVE_SHA384_KEYGEN_SECONDS 0.000703084
+LEVERS_ROT_MASK air=0 widths=[157] need_rot=true rotated_per_part=[157]
+LEVERS_ROT_MASK air=1 widths=[114] need_rot=true rotated_per_part=[114]
+LEVERS_ROT_MASK air=2 widths=[24] need_rot=false rotated_per_part=[0]
+NATIVE_SHA384_EXT12 target=268 min=268.7638209393418 logup=331.57533223384377 proximity=320.9308746090779 query=268.7638209393418
+NATIVE_SHA384_PROVE_SECONDS 11.45048205
+NATIVE_SHA384_VERIFY_SECONDS 0.008718962
+NATIVE_SHA384_VERIFY_CALLS [2208, 7286, 1, 102, 6, 201, 0, 0]
+NATIVE_SHA384_VERIFY_BLOCKS [2208, 7286, 1, 519, 12, 201, 0, 0] total=10227
+NATIVE_SHA384_EXT12_BYTES total=378849 gkr_upstream_enc=8456 relations=31432 stacking=1840 whir=336260
+LEVERS_TIGHT heights=[(1, None), (3, None), (8, None)]
+LEVERS_CENSUS total=378849 auth=256992 auth_digests=5354 auth_per_tree=[1722, 1260, 969, 774, 629] initial=2624 codeword=74496 final_poly=192 whir_small=1956 whir=336260 relations=31432 column_openings_ef=566 gkr=8456 stacking=1840 stacking_openings_ef=1 other=861
+NATIVE_SHA384_EXT12_PASS public_mutations_rejected=6

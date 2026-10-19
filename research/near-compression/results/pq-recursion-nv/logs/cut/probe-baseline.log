@@ -1,0 +1,16 @@
+PROBE_PARAMS l_skip=2 n_stack=14 k=4 log_blowup=2 queries=[81, 69, 44, 32] pow(mu,fold,query,logup)=(0,0,32,0)
+PROBE_O2 target=236 margin_milli=50 m=64 rounds(n,k,A,q,first_order)=[(3932160, 65536, 511606, 81, false), (3932160, 32768, 361760, 69, false), (3932160, 2048, 90440, 44, false), (3932160, 128, 22610, 32, false)]
+NV_PHASE before_dag 2150
+NV_PHASE after_dag 2213
+NV_PHASE after_stacking 2629
+NV_QCOST round=0 queries=81 rows=31868 per_query=393 nbits=17 k=1 merkle_nodes=1701
+NV_QCOST round=1 queries=69 rows=34732 per_query=503 nbits=14 k=4 merkle_nodes=2943
+NV_QCOST round=2 queries=44 rows=22138 per_query=503 nbits=14 k=4 merkle_nodes=3735
+NV_QCOST round=3 queries=32 rows=16100 per_query=503 nbits=14 k=4 merkle_nodes=4311
+NV_PHASE end 125781
+PROBE_TR Flush jobs=44 blocks=194 small_flush(<=12 felts)=4
+PROBE_TR Commit jobs=5 blocks=10 small_flush(<=12 felts)=0
+PROBE_TR Squeeze jobs=72 blocks=72 small_flush(<=12 felts)=0
+PROBE_TR Pow jobs=4 blocks=4 small_flush(<=12 felts)=0
+PROBE_TR PowQ jobs=18 blocks=18 small_flush(<=12 felts)=0
+PROBE_ROWS program=125782 merkle_nodes=4311 leaf+node_blocks=5408 transcript_jobs=143

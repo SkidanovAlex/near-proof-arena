@@ -1,0 +1,16 @@
+test nv::tests::nv_app_binding ... NV_PHASE before_dag 1424
+NV_APP table rows 7804
+NV_APP level2 failures []
+NV_APP honest ok
+NV_STATEMENT L1 = L2 = statement digest ok
+NV_TAMPER_REJECTED level-2 re-exposes a different statement digest
+NV_APP level2 failures ["program binding"]
+NV_TAMPER_REJECTED app table word
+test nv::tests::nv_opening_formula ... NV_PHASE before_dag 1200
+NV_OPENING P0: formula == opening: true
+NV_OPENING P1: formula == opening: true
+NV_OPENING P2: formula == opening: true
+NV_OPENING P3: formula == opening: true
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 71 filtered out; finished in 1304.91s
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 21:45.01
+	Maximum resident set size (kbytes): 17440324

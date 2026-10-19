@@ -500,3 +500,876 @@ the NV circuit.
   Gruen, derive, next mask and WHIR-Y: 242,329 B, 21 plus 3 negatives rejected.
 * The proof size moves by a few hundred bytes against the pre-T\* runs, because the query
   positions change and so does multiproof dedup.
+
+## Audit fixes B1–B6, statement passthrough (G1), final-layer domain (U-12) [measured: tests]
+
+**Audit fixes B1–B6 merged.** Source: lane/pq-nv-circuit-soundness 2e36b0228, 09fead0bc,
+274fe5ccf; see `FAITHFUL.md`. I re-applied them on top of the unpadded program and T\*, and
+kept their tests (`faithful_tests`, `faithful_tr_tests`, `faithful_sha_tests`, DOF harness).
+* **B1:** the B-field range is integral.
+* **B2:** the child's trace-height limit is checked.
+* **B3:** base-field loads use `LoadF`.
+* **B4:** the 42-B commitment tail is written by `UnitWT`.
+* **B5:** squeeze job ids are pinned. Under T\* I extended this: squeeze blocks and PoW-run
+  blocks share the pinned numbering `TJOB_SQUEEZE_BASE + ns`, with
+  `ns' = ns + op_s + op_q`. New tamper: `tstar PoW-run job id`.
+* **B6:** anchors carry the job tag.
+
+**Statement passthrough (G1).**
+* **Level 1:** NV hashes the app proof's public values. The message is
+  `[num_airs, len_0.., pv_0.., pv_1..]`, hashed with SHA-384 under a new tag 8
+  (`TAG_STATEMENT`). It runs as a leaf job in the circuit and is truncated like Merkle
+  digests at 42 B.
+* **Exposure:** a new ALU op `PvD` (op 31; there are now 32 ops) exposes the digest as NvAir
+  public values 1..19, from the lo and hi cells. NvAir public values are now
+  `[level, 18 digest limbs]`.
+* **Level ≥ 2, or any NV child** (`bind` or `child_nv`): the child's public values 1..19 are
+  packed into cells and re-exposed unchanged.
+* **Native V_d:** `circuit::check_statement(final_pvs, app_public_values)`. `nv_chain` asserts
+  it for every level and for the final proof.
+* **Tests:**
+  * `nv_statement_digest`: the digest binds the app public values. Changed exposed limbs 1,
+    12, 13 and 18 are rejected, and an app proof with a changed public value is rejected.
+  * `nv_app_binding`: L1 = L2 = the statement digest, and a level-2 trace that re-exposes a
+    different digest is rejected.
+
+**Final-layer hash domain (U-12).**
+* `Sha384CpuEngine::new_final` and `Sha384Config::new_final` give a transcript init of
+  `H(2, ['F'])`, where inner layers use `H(2, [])`. Merkle nodes use node prefix byte 7 = `'F'`.
+* Leaves are unchanged.
+* It costs 0 bytes.
+* The NV circuit only ever verifies inner children, so its constants stay inner. `nv_chain`
+  proves the FINAL layer with `new_final`.
+* **Test `final_layer_domain`:** a final proof is rejected under the inner domain, and an inner
+  proof is rejected under the final domain. Each verifies in its own domain.
+
+**SHA-384 is never inside a GKR layer.** Every in-circuit SHA-384 evaluation in NV is a
+compression in committed `Sha512Air` rows of the common-main trace: leaf, coset leaf, node,
+transcript flush/commit/squeeze, PoW, PoW-run, and statement jobs alike. Each compression takes
+43 rows, and the GLUE, hash-chain and ALU roles reach it only through the job, iface and digest
+buses. The GKR layers are only LogUp's fractional-sum tree over interaction fractions. This is
+the mitigation for Khovratovich–Rothblum–Soukhanov-style attacks. Evidence:
+* the `A*_AIR Sha512Air h=…` lines of every chain level;
+* `hash_tests::nv_hash2_rejects_mutations`.
+
+## Size analysis: where the 324 KB goes and what moves it [MODEL from measured laws]
+
+These figures come from `extrapolate_nv2.py` (268 bits, z = 32, 42 B) and
+`size_sensitivity.py`. The baseline final layer is **323,955 B**:
+
+| part | bytes |
+|---|---|
+| WHIR | 242,562 |
+| GKR (L = 24) | 32,408 |
+| relations | 43,232 |
+| stacking | 5,680 |
+
+The penultimate layer uses b = 5, n_stack = 17. The program is 181,754 rows, NvAir has 341,773
+rows and SHA has 309,858 rows.
+
+* **Padding: already gone.** The program is not padded to 2^18. The unpadded layout (ACC2/ACC
+  at fixed early rows) puts it at its real even length, and tight heights commit only the used
+  NvAir/SHA rows. The model counts NvAir rows as prog + prog/2 + app/2 + glue + transcript, with
+  no power of two, so 2^17 is not a threshold any more. Program cuts move bytes only linearly
+  through the cells:
+
+  | cut | final | change |
+  |---|---|---|
+  | app table moved out of the program (−11k rows) | 323,637 B | −0.3 KB |
+  | program −28 %, every cost scaled | 320,565 B | −3.4 KB |
+  | NvAir removed entirely (lower bound: SHA rows only) | 305,397 B | −18.6 KB |
+
+  LoadBit query bits are about 22 rows per query, roughly 3 % of the program. T\* PoW-run blocks
+  add 1–2 ALU rows per block.
+* **Opened columns.** The relations term implies **455** opened values, not 258. The AIRs give
+  cols + rot: NvAir 73 + 36, Sha512Air 171 + 144, Table 13 + 11, Byte 5 + 2. Next-row openings
+  are already per column (the next-row mask: only columns read at the next row are rotated). The
+  excess is Sha512Air's 144 rotated columns.
+* **Relations is dominated by the SHA AIR's degree 21.** The parts are:
+
+  | part | bytes |
+  |---|---|
+  | 48(cols + rot) | 21,840 |
+  | 48((d+1)(2^l−1)+1) | 3,216 |
+  | 48((d+1)n − g) | 17,760 |
+  | 96·airs + 32 | 416 |
+
+  Lowering the degree and the rotations:
+
+  | SHA AIR change | final | change |
+  |---|---|---|
+  | degree 12 | 315,315 B | −8.6 KB |
+  | degree 8 | 311,475 B | −12.5 KB |
+  | 40 rotated columns instead of 144 | 318,963 B | −5.0 KB |
+
+  These belong to the SHA AIR, owned by the S lane, not to NV.
+* **GKR.** There are 2^24.85 interactions: 55 per NvAir row and 14 per SHA row. Cutting NvAir
+  to 30 interactions per row would give L = 23, worth −2.4 KB (321,507 B).
+* **In-circuit multiproof dedup is not possible with a bound program.** Which Merkle nodes
+  coincide depends on the sampled indices, so the program would change from proof to proof. As
+  a what-if it would be −3.4 KB, with 15 % fewer compressions (`DEDUP` flag, off).
+* **Combined:**
+
+  | levers | final |
+  |---|---|
+  | NV side: program −28 %, 30 interactions per row (dedup also on, though it is not possible) | 314,277 B |
+  | plus SHA AIR degree 8 with 40 rotated columns | **296,805 B** |
+
+  Getting under 300 KB needs the SHA AIR shape (S lane) or the MCA upgrade (lane/pq-mca-upgrade,
+  −15 to −45 KB on WHIR, not counted here). NV-side program cuts alone cannot do it.
+
+### MCA regimes (lane/pq-mca-upgrade @ 6841b5f56) and the program cut [MODEL]
+
+`extrapolate_nv2.py` now takes the env `NV_MCA` to pick how many bits each WHIR query buys:
+* `m3`: today's default, BCGM with `ListDecoding{m: 3}`.
+* `m64`: O-1, DKT26 Thm 5.12 with `ListDecoding{m: 64}`.
+* `O2`: O-1 plus O-2. Each round uses a first-order agreement
+  a_i = (a1(ρ_i)/√ρ_i + 0.05)√ρ_i, which is `agreement_table()`, the rule in that lane's
+  `dkt_certs.json` / `bound_mca.py`. The table is bound into the vk, and 48 B per later round
+  are reserved for a second OOD answer.
+
+Both upgrades are still pending verification. In the chain config, m is chosen with
+`PARENT_LIST_M` / `FINAL_LIST_M`, and the default stays m = 3. The hook reproduces the lane's
+numbers exactly: 323,955 / 313,759 / 300,733 B.
+
+`size_cut_mca.py` gives each regime with the program cut (best penultimate b and n_stack):
+
+| regime | baseline | program −28 % (< 2^17 rows) | plus 30 interactions per NvAir row |
+|---|---|---|---|
+| m = 3 | 323,955 (program 181,754) | 320,565 (126,690) | 318,117 |
+| m = 64 | 313,759 (177,222) | 311,745 (123,804) | 309,297 |
+| O-2 | 300,733 (165,884) | **299,229** (120,918) | **296,781** |
+
+The program has no power-of-two padding, so the cut pays linearly: 1.5–3.4 KB for 28 %. 2^17
+is no longer a threshold. Under O-2 the cut is what crosses 300,000 B.
+
+Where the rows go, from the measured A2 at 268 bits with b = 2 (234,533 rows):
+* preamble, including the app table: 38.4k;
+* DAG: 22.1k;
+* stacking: 12.5k;
+* queries plus the final check: 161.6k.
+
+Each Merkle level costs 10 rows: 2 sibling loads, 1 `one_minus`, `NodeJob`, 4 `UnitWS`, and 2
+`Dig`. That is about 58k rows over all paths. A "load-and-push" UnitWS op that takes the sibling
+as a free witness would remove the 2 load rows per level, about −12k rows (−0.8 KB). It needs a
+33rd op, which means a fifth op-selector half and one more NvAir column.
+
+**What a realistic program cut buys.** Take a sibling op that loads and pushes with the negated
+bit (saving 3 rows per Merkle level), plus a cheaper fold butterfly (5 rows instead of 7). Then
+the per-query cost drops from 451 to 379 rows in round 0 and from 530 to 437 in later rounds,
+and the program goes from 181,754 to 160,364 rows (−12 %). The final layer moves only
+**−0.3 KB** under m = 3 (323,637 B) and **−0.4 KB** under O-2 (300,357 B). The earlier
+"−28 % = −3.4 KB" is mostly a step: crossing a stacking and penultimate-shape boundary.
+
+NvAir cells are about 30 % of the total, WHIR bytes grow with the log of the cells, and the
+query counts do not depend on them. So program rows are a weak lever. The strong levers are:
+* the SHA AIR's degree and rotated columns;
+* the MCA regime;
+* WHIR queries.
+
+### Correction: GKR runs over power-of-two heights; the 2^18 NvAir threshold [measured + model]
+
+A2 at 268 bits measured GKR = 34,952 B, which is L = 25. GKR uses the full trace heights: tight
+heights shrink only the commitment, not the LogUp tree. The interaction count is
+2^19 × 55 (NvAir) + 2^19 × 14 (SHA) + tables = 2^25.1. `extrapolate_nv2.py` now counts
+interactions on power-of-two heights, and NvAir is 74 columns as measured.
+
+The corrected finals:
+
+| regime | baseline | program −28 % | plus 30 interactions per row |
+|---|---|---|---|
+| m = 3 | 326,547 | 320,997 | 318,549 |
+| m = 64 | 316,351 | 311,793 | 309,345 |
+| O-2 | 303,701 | **299,277** | **296,829** |
+
+So there is a real step after all. The interaction count drops below 2^25, giving L = 24 and
+−2.5 KB of GKR, in either of two ways:
+* NvAir gets under 2^18 used rows, so its height becomes 2^18;
+* NvAir drops to at most 49 interactions per row, from 55.
+
+That is why the program cut matters: 2^17 program rows is roughly 2^18 NvAir rows.
+
+Interactions per bus, as the maximum over roles (`NV_INT_DUMP=1`, total 55):
+* slot bus: 13 (hash role 13, ALU 12);
+* byte-pair bus: 17 (GLUE 17);
+* word bus: 6 (hash);
+* ctl: 3 (GLUE);
+* digest: 3;
+* memory: 3;
+* chain: 2;
+* the rest: 1–2 each.
+
+Cutting 6 means slimming GLUE's byte-pair lookups and the hash role's unit sends together.
+
+The NvAir row budget (O-2 baseline) is about 315k rows:
+* program 166k;
+* BIND 83k, at prog/2;
+* app 5.5k;
+* GLUE 55k, at 8 rows per compression;
+* transcript 6k.
+
+Getting under 262k needs −53k rows. For example, BIND rows that each cover 4 program rows
+would save 41k, and a further −8 % program would cover the rest. Either change touches the
+audited program-binding argument.
+
+## Phase 2, step 5: the real-settings chain at 268 bits [measured]
+
+Logs: `logs/r268/`. Binary: nv-g2, which is lane head 95c08894c plus the chain driver. It
+includes T\*, B1–B6, the statement passthrough and the final-layer domain.
+
+Settings:
+* 268 bits = 236 query bits + z = 32 wide PoW, 42-B digests, coset leaves, ×15 domains;
+* k1 = 1, k = 4, keep-domain, multiproof, Gruen GKR and zerocheck, derived claims, next-row
+  mask, WHIR-Y, tight heights, m = 3;
+* penultimate (inner) layers: b = 2, n_stack = 18, log_final = 3;
+* NvAir 2^19 rows, program limit 2^18.
+
+All runs used 32 threads on a shared machine; other lanes' VMs held about 25 GB.
+
+| level | what it verifies | wall | peak RSS | program rows | proof bytes | gkr | relations | stacking | whir |
+|---|---|---|---|---|---|---|---|---|---|
+| A1 | the Fib app proof | 48.1 min | 19.5 GB | 9,142 | 401,337 | 32,408 | 43,348 | 2,272 | 323,110 |
+| A2 | A1 | 58.1 min | 58.3 GB | 234,534 | 473,565 | 34,952 | 43,348 | 6,784 | 388,282 |
+| A3 (fixed point) | A2 | 48.8 min | 60.6 GB | 259,430 | 481,125 | 34,952 | 43,348 | 7,120 | 395,506 |
+| **FINAL** | A3 | 45.3 min | 64.9 GB (68.0 by `time`) | 261,688 | **416,171** | 34,952 | 43,348 | 4,720 | 332,952 |
+
+Notes on the run:
+* **Fixed point.** Heights repeat from A2 to A3: NvAir 2^19, SHA 2^19, Table 64, Byte 2^16.
+* **Statement.** `check_statement` passes for every level and for the final proof. The final
+  binds the Fib app's public values.
+* **Final layer** (`new_final` domain): b = 2, n_stack = 19, k1 = 1, k = 3, log_final = 8,
+  queries [87, 74, 50, 38, 31], soundness 268.6 bits.
+* **Larger final shapes OOM on this machine.** The model-preferred b = 3 shape (log_h 24)
+  reached 82 GB, and b = 2 at log_h 25 reached 90 GB. The machine's watchdog killed both at
+  MemAvailable < 10 GB, while other lanes' VMs were holding 25 GB. The A3 checkpoint
+  (`NV_RESUME_PROOF`) made it possible to re-run only the final layer.
+
+**Measured against the model, per component.** The model is `extrapolate_nv2.py`: laws plus
+ext.layer, fed each run's own shape and stacked width W.
+
+| level | WHIR model / measured | GKR (law L = 25) | relations law / measured | stacking law | total model / measured |
+|---|---|---|---|---|---|
+| A2 (W = 98) | 388,638 / 388,282 (−0.1 %) | 34,952 = 34,952 | 43,280 / 43,348 | 6,784 = 6,784 | — |
+| A3 (W = 105) | 393,510 / 395,506 (+0.5 %) | 34,952 = 34,952 | 43,280 / 43,348 | 7,120 = 7,120 | — |
+| FINAL (W = 53) | 333,828 / 332,952 (−0.3 %) | 34,952 = 34,952 | 43,280 / 43,348 | 4,720 = 4,720 | 416,853 / **416,171** (−0.2 %) |
+
+**Conclusion.**
+* **The measured final is 416,171 B,** at the largest final shape that fits this machine
+  (b = 2, about 65 GB).
+* **The size model is confirmed to within 0.5 %** on every component. GKR and stacking match
+  exactly, and relations is off by 68 B, one column.
+* **The model's optimum is not under 300 KB.** It needs b = 7–8, which means an x15 codeword
+  of about 1 TB, so several H200-class nodes. There it gives 326,547 B (m = 3), 316,351 B
+  (m = 64) and 303,701 B (O-2), with GKR corrected to power-of-two heights. With O-2 plus the
+  program cut (NvAir under 2^18 rows, so L = 24), it gives 299,277 B.
+
+**The final's WHIR bytes, broken down** [model for the measured shape; its WHIR total is
+within 0.3 % of the measured 332,952]:
+
+| part | bytes |
+|---|---|
+| Merkle authentication (42-B multiproof) | 208,824 |
+| initial-round opened rows (k1 = 1, W = 53) | 36,888 |
+| codeword values | 74,112 |
+| final polynomial (2^8 Ext12) | 12,288 |
+| small items | ~1.8 KB |
+
+The rest of the measured final is GKR 34,952, relations 43,348 and stacking 4,720.
+
+## O-2 implemented (U-13) and NvAir down to 49 interactions per row (L = 24) [measured: tests; model]
+
+**O-2: the per-round first-order agreement table** (`stark-backend-unified.patch`).
+* **Config.** `WhirConfig.agreement: Option<AgreementTable>` holds `target_bits`,
+  `margin_milli` (50), `m` (64), and per round `(n_i, k_i, A_i, q_i)`.
+  * `with_first_order(..)` builds the canonical table: `A_i = ceil(min(a1(ρ_i)/√ρ_i + 0.05,
+    1 + 1/(2m)) · √((k_i−1)/n_i) · n_i)` and `q_i = ceil(target / −log2(A_i/n_i))`. This is
+    lane/pq-mca-upgrade `bound_mca.py` regime 'F'.
+  * It sets each round's query count from the table.
+  * The table is serialized into the vk (skipped when absent), so it is bound into the vk
+    pre-hash. Default parameters are unchanged: gas-failure5 is still byte-identical,
+    `ba042e71…`.
+* **Native verifier.** `verify` first runs `check_agreement`: the table must be canonical for
+  the schedule, and the round query counts must equal the table's. Otherwise it returns
+  `VerifierError::AgreementTableMismatch`.
+* **NV circuit.** The program takes the child's query counts from the child vk, whose table
+  is a program constant via the pre-hash. The builder also re-checks the table and records a
+  failure if it is not canonical.
+* **The PQ default is now m = 64 + O-2.** `params_from_env` applies `{prefix}_O2` (default 1),
+  and the chain's default `LIST_M` is 64.
+* **Test `o2_agreement_table`:**
+  * query counts equal the table's, the proof verifies, and NV verifies the O-2 child;
+  * an altered A_0 is rejected, both by an engine holding the altered parameters and by the
+    honest engine;
+  * a weaker but self-consistent table is rejected by the honest verifier, and its vk
+    pre-hash differs.
+* **To check against the certificates:** the A_i for the real shapes should be checked against
+  the DKT certificate grid (lane/pq-dkt-verify).
+
+**NvAir: 55 → 49 interactions per row.** Before this change, 6 of the 55 were the hash role's
+word sends on a separate word bus.
+* **New source for sampled words.** The sample role now receives its 64-bit word directly from
+  GLUE's digest rows. The bus is the digest bus, the key is `8 + word`, and the message is
+  `(job, 8+w, 3 limbs, 0, 0, 0)`.
+* **GLUE side.** GLUE has new columns `dx[2]`: on the digest rows of untruncated (transcript)
+  jobs, each read word is sent once more.
+  * Constraints: `dx` is boolean, nonzero only on digest rows (`last·q2·(1−q0q1)`), and zero
+    on truncated jobs.
+  * The multiplicity is pinned by the bus balance.
+  * GLUE's interactions on the digest bus go from 1 to 3, which equals the hash role's 3, so
+    the bus maximum does not change.
+* **Sample role.** It has a new column `w0`, the run's first word (0 for squeeze or PoW-run
+  blocks, 1 for B_1).
+  * `is_first·(wi − w0) = 0`, and w0 stays constant within a run.
+  * w0 is carried in the t.sample message, and the hash row requires it to equal `op_p`.
+    Before, the start word was pinned by the multiset of the hash role's word sends.
+* **Hash role.** It no longer sends words. `rdw` stays, only for the last-word / full / count
+  constraints.
+* **Size.** The bus census is now 49, and NvAir stays at 74 columns. Interactions are
+  2^19·49 + 2^19·14 + tables = 2^24.98 < 2^25, so L = 24 (−2.5 KB GKR). The margin is thin:
+  NvAir must stay at 49 or below.
+* **Test `nv_sample_word_source_tamper`:** a squeeze run starting at word 1 is rejected, and so
+  are a dropped word send and an extra word send.
+* **Suites:** the NV suite passes in 48-B, 42-B + coset and all-child-levers modes (50 tests
+  each), and the backend has 230 tests passing.
+
+**For the re-audit:**
+1. GLUE `dx` word sends, which replace the hash role's `rdw`-weighted word bus.
+2. The sample run's start pinned by `w0` in the t.sample message, not by the word multiset.
+3. The O-2 table check, which is native and Rust-side in the NV builder. The table is a vk
+   constant.
+
+The program-binding argument is unchanged.
+
+**New extrapolation** (`extrapolate_nv2.py`: 49 interactions per row, GKR on power-of-two
+heights, default regime O-2):
+
+| regime | final |
+|---|---|
+| m = 3 | 324,003 B |
+| m = 64 | 313,807 B |
+| **O-2 (U-13)** | **301,157 B** |
+
+The O-2 breakdown is WHIR 219,908, GKR 32,408 (L = 24), relations 43,280 and stacking 5,344.
+The final shape is b = 7, k1 = 1, k = 4, log_h 20, log_final 7. The penultimate is b = 6,
+n_stack = 17. The remaining 1.2 KB, and more, is expected from SHA AIR v4
+(lane/pq-sha384-air3, about −17.5 KB).
+
+Milestone check of the O-2 + 49-interaction tree: `nv_app_binding` and `nv_opening_formula` pass in
+48-B and 42-B + coset modes (statement passthrough, app-table tamper and digest re-exposure tamper
+rejected; 17.4 / 17.0 GB peak). Logs: `logs/o2/`.
+
+### O-2 thresholds against the DKT certificates [checked: `dkt_cert_check.py`, output `dkt_cert_check.out`]
+
+The script recomputes A_i with the implemented rule (`AgreementTable::canonical`, the same in
+f64 and in 80-digit Decimal). For every round it then looks up the round code and the fold
+sub-codes C^(i,s), s = 0..k_i, which is what `bound_mca.py` `codes_for` needs, in
+lane/pq-dkt-verify `calc/dkt_certs.json`: 38 per-plan certificates plus the 51-entry grid at
+n = 15·2^27.
+
+**Result: no real shape is fully certified.** Three things are wrong, and every shape hits at
+least one of them:
+
+1. **Off-by-one on the grid.** The grid stores A one above the rule at some k: for example
+   (2^27·15, 2^20) has 37,140,792 where the rule gives 37,140,791, and (·, 2^19) has 26,000,208
+   where the rule gives 26,000,207. A certificate at A+1 does not cover A, so the grid and the
+   implementation must agree on one integer rule. (For k = 2^11, 2^15 and 2^16 they agree.)
+2. **Fold sub-codes s = 3, 4 are missing.** The grid covers s = 0..2 only, but k = 4 rounds need
+   s up to 4. This affects every k = 4 round of the final, the inner layer and the base, and
+   s = 3 of the k = 3 final in `bound.py`.
+3. **Domains other than 15·2^27 have no canonical certificates.**
+   * The inner NV layer (b = 6, h = 19, n = 15·2^25): the 503M grid entries are fold sub-codes of
+     the 2^27 codes, scaled, not this rule's A at n = 15·2^25.
+   * The measured-chain shapes (b = 2, n = 15·2^22 and 15·2^23) are entirely outside the grid.
+
+Flagged rounds, all of them uncovered as listed in `dkt_cert_check.out`:
+* final (b7 h20): rounds 0–3;
+* final (`bound.py`, b8 h19): rounds 0–3;
+* inner NV (b6 h19): rounds 0–3;
+* base stress (b6 h21): rounds 0–3;
+* both measured shapes: every round.
+
+What is needed, either option:
+* the certificate lane certifies the exact (n_i, k_i, A_i) of each shape and its fold
+  sub-codes s ≤ k_i under the implemented rule, at n = 15·2^25 and 15·2^27. The table could then
+  carry the certified triples directly.
+* or the table falls back to J (m = 64, DKT26 Thm 5.12, no certificate) for uncovered rounds,
+  at a few queries each.
+
+Until then, O-2 bytes are not covered by certificates for these shapes; only O-1 (m = 64) is.
+
+### O-2 is now certificate-gated (fallback to O-1) [measured: tests; model]
+
+The certificate check above showed no real shape fully covered. The coordinator adopted the
+fallback as the soundness fix:
+
+* **Backend.** `AgreementTable::canonical(codes, k_rounds, target, margin, m, certs)` decides
+  each round separately.
+  * A round uses its first-order threshold A^F only if its code and every fold sub-code
+    `(n >> s, k >> s, ceil(A^F / 2^s))`, s = 0..k_i, are in the certificate set.
+  * Otherwise it uses the Johnson fallback `A^J = ceil((1 + 1/(2m)) √(k/n) n)` with m = 64
+    (O-1, DKT26 Thm 5.12, no certificate needed).
+  * Each `AgreementRound` records its regime (`first_order`). The table is bound into the vk
+    as before.
+  * The verifier (`check_agreement`) re-derives every round from its declared regime and
+    checks the query counts.
+  * `all_first_order_certified(certs, k_rounds)` is the setup-side check: V_d or the tests run
+    it against the certificate file.
+* **Recursion crate.** `params_from_env` passes the set from env `{prefix}_DKT_CERTS` or
+  `NEARPROOF_DKT_CERTS`, a `dkt_certs.json` path read by `load_dkt_certs`, which takes every
+  `"n,k,A,1"` key, top level and `_grid`. Without a path, every round falls back.
+* **Test `o2_agreement_table`:**
+  * without certificates, all rounds are Johnson;
+  * a set covering only round 0 gives round 0 first-order and the rest Johnson, identical to
+    the no-certificate rounds;
+  * a set missing one fold sub-code makes round 0 fall back;
+  * the proof verifies, and NV verifies it;
+  * an altered A_0 is rejected, and so is a fallback round relabelled first-order (both engines);
+  * a weaker but consistent table is rejected, and its pre-hash differs.
+* **Test `dkt_cert_loader`** covers the loader.
+* **Suites:** the fast NV suite (51 tests) and the backend (230 tests) pass.
+
+**Bytes with every round on the fallback, until certificates for the exact shapes arrive.**
+This is O-1, m = 64, with 49 interactions per row, so L = 24: **313,807 B** (model). With the
+program cut it is 311,745 B. Once lane/pq-dkt-verify certifies the exact rule's codes, the
+certified rounds move toward the O-2 figure (301,157 B with every round certified).
+
+## SHA AIR v4 merged (lane/pq-sha384-air3 @ 34a427692) [measured: tests; model]
+
+**Merge.** I re-applied the v4 lane's NV source changes onto the current tree, which has O-2,
+certificate gating and 49 interactions per row: `compress4_{air,trace}.rs` generated by
+`native/sha384-air4/port_nv.py`, plus the NV call sites (circuit, GLUE, hash role, and the tests).
+The diff applied cleanly.
+
+v4 is 83 columns, 73 of them rotated, degree 9, 17 interactions per row, and 128 rows per
+compression (cid = 128 × index), with a new 128 × 9 table.
+
+**v2.1 is not selectable** in the circuit. It would need a dispatch layer through GLUE, the hash
+role and the v4-specific faithful/hash tests, which is not cheap. v2.1 stays at 59831ffb1.
+**The model does keep both:** set `NV_SHA=v21` or `v4` in `extrapolate_nv2.py`; v4 is the
+default.
+
+**Tests:** the fast NV suite passes in 48-B and in 42-B + coset, 51 tests each
+(`logs/v4/`). The census (`nv_degrees`) is NvAir 74 columns / 49 interactions / 37 rotated,
+Sha512Air4 83 / 17 / 73 at degree 9, TableAir4 9 / 2 / 7, and Byte 5 / 1 / 2.
+
+**Combined extrapolation** (`size_v4.py`, output `size_v4.out`; v4 + 49 interactions per row):
+
+| regime | program cut | final | GKR (L) | NvAir height | SHA height | interactions |
+|---|---|---|---|---|---|---|
+| O-1, all rounds on fallback (backed) | no | 304,943 | 34,952 (25) | 2^19 | 2^20 | 2^25.377 |
+| O-1, all rounds on fallback (backed) | −28 % | **300,399** | 32,408 (24) | 2^18 | 2^20 | 2^24.873 |
+| O-2, all rounds certified | no | 292,589 | 34,952 (25) | 2^19 | 2^20 | 2^25.377 |
+| O-2, all rounds certified | −28 % | **288,165** | 32,408 (24) | 2^18 | 2^20 | 2^24.873 |
+
+**v4 pushes GKR back to L = 25.** v4 has 128 rows per compression, so SHA is about 840–860k
+rows and its trace height is 2^20. SHA alone then contributes 2^20 × 17 = 17.8M interactions.
+Adding NvAir at 2^19 × 49 = 25.7M gives 2^25.38, above 2^25. L = 24 now needs one of:
+* NvAir under 2^18 rows, which is what the program cut gives (30.7M = 2^24.87);
+* NvAir at 29 interactions per row or fewer (30 gives 2^25.003, still over).
+
+L = 23 (2^24) is out of reach: SHA's 17.8M alone exceeds 16.8M.
+
+**Backed O-1 + v4 + cut is 399 B over 300,000.** The cheapest levers left:
+* **Certify any O-2 round** (lane/pq-dkt-verify, in progress). That needs no code change; the
+  certificate-gated table picks it up. O-2 against O-1 is −12.4 KB over the final's 4 rounds,
+  so roughly 3 KB per certified round, and one round is enough.
+* **Program cut.** −4.5 KB, already counted above. It is required for L = 24 under v4 (as is
+  the alternative, NvAir at 29 interactions per row or fewer).
+* **Fewer transcript compressions.** At 128 SHA rows per compression, every compression costs
+  rows. Halving the transcript blocks (1,600 → 800) is −3.6 KB (301,343 B without the cut). A
+  realistic step is about −0.45 KB per 100 compressions: for example, larger flush jobs with
+  fewer framing blocks.
+
+## Program cut, milestone 1: Merkle level 10 → 5 rows, fold butterfly 7 → 5, factorised eq in the final check [measured: tests]
+
+**What changed.** The changes are in `nv/isa.rs`, `nv/uair.rs`, `nv/builder.rs` and
+`nv/verifier.rs`:
+
+| change | rows before | rows after |
+|---|---|---|
+| Merkle level | 10 (2 loads, `one_minus`, `NodeJob`, 4 `UnitWS`, 2 `Dig`) | 5 (`NodeJob`, `DigWS4`, `DigWS2`, `SibWS4`, `SibWS2`) |
+| fold butterfly (WHIR rounds ≥ 1) | 7 | 5 |
+| eq in the final check, per variable | 6 | 2 |
+
+* **Merkle level, details.** The root still takes one `Dig` pair plus the assertion.
+* **Ops.** There are 36 ops now. `OP_HI` goes from 4 to 5. The ALU view is 54 columns, still
+  inside the pool, so NvAir stays at 74 columns, 49 interactions and 37 rotated columns.
+* **Fold butterfly, details.** The new value is `v_m + G_i (v_i − v_m)` with
+  `G_i = H_j ω^{−i} + 1/2` and `H_j = α_j x^{−2^j} / 2`, one product per j. This is the same
+  value as before: `(α − t)·ti = H_j ω^{−i} − 1/2`, because `t·ti = 1/2`.
+* **Factorised eq, details.** It uses `eq(α, y) = Π(1 − α_m) · Π(1 + y_m A_m)` with
+  `A_m = (2α_m − 1)/(1 − α_m)`. The per-α factors and suffix products are computed once, then
+  each query point costs 2 rows per variable: `mul`, then `MulAddA`.
+
+**Soundness implications, for the re-audit of §2(b), §R.2 and `nv_bind_tamper`:**
+1. **`SibWS4` / `SibWS2`** (op 32 / 33).
+   * c is a free witness, as `Load` was; B is the path bit cell, boolean by `LoadBit`.
+   * The units are word units of c at key `P3 + 2k + 12(1 − b)` (4 or 2 words) for job P2.
+   * The unit messages are exactly what `Load` + `one_minus` + `UnitWS*(nb)` produced.
+   * `SibWS2` constrains c[6..12] = 0, as Dig's high cell does.
+   * The GLUE range-checks every word unit (bytes), as before.
+2. **`DigWS4` / `DigWS2`** (op 34 / 35).
+   * c is free, determined by the digest bus.
+   * `DigWS4` receives pairs 0 and 1 of job P0 (the A field holds the child job id, and is not
+     read as an address). `DigWS2` receives pair 2, with c[6..12] = 0.
+   * The units are word units of c at `P3 + 2k + 12 b` for parent job P2, as `UnitWS*` with the
+     bit.
+   * Each child digest is still received exactly once: GLUE sends node and leaf digests with
+     multiplicity 1, and they were consumed by one `Dig` before. The root is consumed by the
+     final `Dig`.
+   * When the leaves are per-row jobs combined by `node()`, the first level reads the cells and
+     the later levels use `DigWS*`.
+   * The digest-bus receive field is now `s(Dig)·P2 + s(DigWS)·P0` with pair
+     `s(Dig)·(P3+h) + s(DigWS4)·h + 2·s(DigWS2)`: a degree-3 field, interaction count unchanged.
+3. **The new ops are bound to P1 by the B-field range.** Op codes up to 35 give
+   P1 < 36·2^20 < p, so `B + op·2^20` still decomposes uniquely.
+4. **The fold and eq changes are program-level only.** They are algebraic identities and add
+   no AIR change.
+   * The eq factorisation needs `1 − α_m ≠ 0`. Each inverse is a `Load`, checked by `mul = 1`.
+     α_m = 1 has negligible probability, and the builder records a failure if it happens
+     (completeness only).
+5. **The B-field range check itself is unchanged.** Only the op range grew.
+
+**Tests:**
+* The fast NV suite passes in 48-B (51 tests) and 42-B + coset (52), including the DOF
+  harness, which now knows `OP_HI = 5` and the new free ops.
+* New test `nv_merkle_op_tamper`: a changed `SibWS4` limb, a changed `DigWS4` and `DigWS2`
+  child-digest limb, and a nonzero `SibWS2` high coefficient are all rejected.
+* `nv_circuit_tamper`'s Merkle left/right swap is still rejected.
+
+## Program cut, milestone 2, and O-2 with the DKT certificates [measured: tests; model]
+
+**More program cuts:**
+* **Horner chain for the final polynomial.** Three new ops: `HornS` (op 36) sets the next
+  row's c to a; `HornR` (37) sets the next row's c to `c·b + a`, its own c having been set by
+  the previous row; `HornE` (38) ends the chain with a free c. A polynomial of n coefficients
+  takes n + 1 rows instead of 2n.
+  * The chain reads the next row's c. I moved the ALU result `c` to pool 36..48, the positions
+    of BIND's accumulator, which are already opened at the next row. NvAir rotated columns stay
+    at 37.
+* **Two-step leaf Horner** (`Horn2`, op 39): c = (a b + w1) b + w2. The second base witness is
+  the new column `wit2`. w2 and w1 are pushed as felt units P3 and P3 + 1, on unit slots 0 and 1,
+  so the interaction count is unchanged.
+  * Its degree is 3, so NvAir has degree 9, equal to SHA AIR v4's, and D does not change.
+  * A three-step version would have made NvAir degree 10, so I did not use it.
+  * Round-0 leaf Horner rows are halved.
+* **x15 query index.** `x = low + 2^m (15 q + a)`, with low, q and a as bits and a ≠ 15. That
+  takes about 2 rows per low or q bit. Before, all 31 bits of x were recomposed: about −44 rows
+  per query.
+* **Probe** (`scripts/probe.sh`: a Fib child at 268 bits, n_stack 14, b 2):
+  * The program went from 125,782 rows to 93,142 after milestone 1 (−26 %).
+  * Round 0 went from 393 to 287 rows per query, later rounds from 503 to 384, and the final
+    check from 81 to 51 per query.
+  * The model reproduces these per-query changes. The milestone-2 ops are tested but not yet
+    probed.
+
+**Soundness implications of milestone 2, for the re-audit (§2(b), §R.2):**
+1. **`HornS` / `HornR` / `HornE`.** These are transition constraints of the ALU:
+   `s(HornS)·(n.c − a) = 0` and `s(HornR)·(n.c − c⊗b − a) = 0`.
+   * `HornR` and `HornE` rows have a free c of their own.
+   * They are sound only as a chain: `HornS → HornR* → HornE`. The program is fixed and bound,
+     and the builder emits only complete chains, so a `HornR` or `HornE` row is always preceded
+     by `HornS` or `HornR`.
+   * The `AbCols` layout changed: c is now at pool 36..48, and the `const` assertion pins it to
+     BIND's accumulator. The test helpers now use `offset_of`.
+2. **`Horn2`.** `(ka − free)·(c − ((a⊗b + w1)⊗b + w2)) = 0`. w1 (`wit`) and w2 (`wit2`) are sent
+   as felt units P3 + 1 and P3. These are the same unit semantics as two `Horn` rows.
+3. **x15 index.** The new decomposition is unique for x < 15·2^27 = p − 1. x = p − 1 has no
+   decomposition and is rejected: the native sampler re-samples it (G-7), and the builder
+   records a failure.
+4. **Ops.** There are 40 now, filling OP_LO 8 × OP_HI 5. The B-field binding holds
+   (P1 < 40·2^20 < p).
+
+**Tests:**
+* The fast NV suite passes in 48-B and in 42-B + coset, 53 tests each.
+* `nv_merkle_op_tamper` now also rejects changed `HornR`, `HornE` and `HornS` values.
+* New test `nv_horn2_tamper` (a child with stacked width 2): a changed `Horn2` value and a
+  changed second witness are rejected.
+
+**O-2 with the certificates (lane/pq-dkt-verify @ 69e5df327, `dkt_certs_o2.json`).**
+* **Coverage.** With the implemented rule, every round code and fold sub-code is covered for the
+  final b7h20 and b8h19, inner b6h19, base b6h21, and both b2 chain shapes
+  (`dkt_cert_check_o2.out`). Point `NEARPROOF_DKT_CERTS` at the file.
+* **Bound fix for several commitments.** `with_first_order(.., certs, max_commits)` puts round 0
+  on Johnson when the layer can have more than one stacked commitment: the round-0 O-2 list is
+  squared by the commitment batching (base stress, 2^-231.8).
+  * The proof-shape verifier rejects a first-order round 0 whenever a proof has more than one
+    commitment.
+  * The regime stays bound in the vk.
+  * The env is `{prefix}_COMMITS`, default 1.
+* **NV and final layers have exactly one commitment** (common main only). `build_verifier`
+  asserts there are no preprocessed or cached traces, so this rule never touches them.
+* **Test `o2_round0_multi_commit`:** a table built for 2 commitments puts round 0 on Johnson and
+  verifies a preprocessed-trace proof; a first-order round 0 is rejected for that proof; a
+  1-commitment proof is accepted.
+
+**Backed figures** (`size_cut3.py`, output `size_cut3.out`, MODEL). O-2 is gated by shape
+(`CERT_SHAPES`); uncertified penultimate shapes use Johnson for their queries.
+
+| step | O-2 backed | O-1 backed | NvAir rows | L |
+|---|---|---|---|---|
+| before the cut | 291,837 | 302,943 | 334,910 | 25 |
+| milestone 1 | 290,709 | 301,743 | 295,725 | 25 |
+| + Horner chain + Horn2 | 289,957 | 300,943 | — | 25 |
+| + x15 index | 289,581 | 300,543 | — | 25 |
+| + v4 child DAG (model fix: 5,848 SHA DAG nodes instead of 12,718) | **287,037** | **297,999** | 255,702 (2^17.96) | 24 |
+
+* At the last step, interactions are 2^24.87.
+* The final is certified (b7h20); the best penultimate (b8, n_stack 18, k1 = 2) is uncertified,
+  so it runs on Johnson.
+* The NvAir margin under 2^18 is 6.4k rows (2.4 %). Measuring it needs an NV child at the real
+  penultimate shape.
+
+**Milestone 2, measured.** The probe (Fib child, 268 bits, n_stack 14, b 2) on the head tree,
+which includes the multi-commitment rule:
+
+| | baseline | milestone 1 | milestone 2 |
+|---|---|---|---|
+| program rows | 125,782 | 93,142 | **79,840** (−36.5 %) |
+| round 0, rows per query | 393 | 287 | 241 |
+| rounds ≥ 1, rows per query | 503 | 384 | 329 |
+| final check, rows per query | 81 | 51 | 44 |
+
+The model predicted 243 and 340 rows per query: it is slightly conservative. On the head tree,
+the backend passes 230 tests and the fast NV suite passes 54 tests in each digest mode
+(`logs/cut/`).
+
+## Re-audit hardening merged; kernel-only certificates; adopted penultimate [measured: tests; model]
+
+**Auditor's hardening** (lane/pq-nv-circuit-soundness @ 90d08fa4f, merged at 657eaf1f1). This is
+a builder and test change only; the circuit is unchanged.
+* `assert_horner_chains` in `Builder::finish` refuses a broken Horner chain, and refuses a chain
+  op as the last program row.
+* It adds the tests `nv_horner_chain_shape` and `nv_dof_horn2`.
+* My regenerated patch equals the auditor's.
+* **Milestone check:** the fast suite passes 57/57 in 48-B and in 42-B + coset. `nv_app_binding`
+  and `nv_opening_formula` pass in both modes, with statement passthrough, the app-table tamper,
+  digest re-exposure, and all 4 openings (17.4 GB peak).
+
+**Certificate gating accepts only kernel-proved entries** (soundness rule).
+* `load_dkt_certs` now reads only the top-level `"n,k,A,1"` keys. Before, it scanned every
+  string, which would have counted the code key inside `_no_certificate` and the `_shapes`
+  entries as certificates.
+* `{prefix}_DKT_EXCLUDE` / `NEARPROOF_DKT_EXCLUDE` names a list of entries that have no kernel
+  proof; they are removed. lane/pq-dkt-verify's `lean/DKTCertsO2_big.keys` holds the 9 round-3
+  codes of the h20 k1 = 2 shapes, which are checked only by the engine and `#eval!`.
+* `dkt_cert_check.py` takes the same exclusion list. With it
+  (`dkt_cert_check_o2.out`), every round of every listed shape is kernel-covered, except round 3
+  of the penultimate b7 h20 k1 = 2. That round falls back to J64 (q 22 → 23, about 0 B).
+* `dkt_cert_loader` now covers metadata keys and the exclusion list.
+* **Config interface:** the new env `*_DKT_EXCLUDE` is the only change. The stream lane should
+  pass both `NEARPROOF_DKT_CERTS=.../calc/dkt_certs_o2.json` and
+  `NEARPROOF_DKT_EXCLUDE=.../lean/DKTCertsO2_big.keys`.
+
+**Penultimate domain bound and adopted shape.**
+* The model now asserts log_h + b ≤ 27 for the penultimate (`MAX_DOM`), and the searches skip
+  shapes that break it. The earlier b8 h20 pick needs a domain of 15·2^28, which is not a
+  BabyBear subgroup.
+* `CERT_SHAPES` gains (7, 20, 2, 4, 6) and (8, 19, 2, 4, 9).
+* **Adopted penultimate: b7 h20, k1 = 2, k = 4, log_final 6, queries [41, 35, 27, 22].** It is
+  certified except round 3 (J64).
+* **Backed final (O-2, certified, model): 287,037 B.** That breaks down as L = 24, program
+  130,476, NvAir 255,976 rows (2^17.97), and interactions 2^24.87 (`size_cut3.out`).
+* O-1 alone on the same penultimate would be 301,743 B, at L = 25 (NvAir 2^18.009).
+
+## Gap G1 fixed: the NV program depends only on the child vk / shape [measured: tests]
+
+Source: lane/pq-e2e-slice @ 480bf27f4, README G1.
+
+**The bug.** With proof-of-work in the child, the program contained T\* PoW-run blocks:
+* one `Unit1` row per witness felt, for each such block;
+* job ids `TJOB_SQUEEZE_BASE + n`, where n counts all earlier squeeze and PoW-run blocks.
+
+Both depend on the sampling rejections, so the program varied from proof to proof.
+
+**The fix.** The hash-chain row of every PoW block (B_1 and the PoW-run blocks) now carries the
+witness in new columns `w[2]` and sends it as felt units 16 and 17 itself. The program no longer
+refers to squeeze or PoW-run blocks at all: the `Unit1` pushes and their load rows are gone.
+* **B_1's witness is free.** Any w whose B_1 has the required leading zeros is a valid PoW.
+  PowChk still checks B_1's word 0, and the static anchor `(t_start, nwit, TAG_POW)` still pins
+  the job and the transcript positions.
+* **A PoW-run block carries B_1's witness.** The chain-bus message gains `(nq·w0, nq·w1)` on the
+  sender and `(op_q·w0, op_q·w1)` on the receiver. `nq` is a new column meaning "the next row is
+  a PoW-run block", with `nq − n.op_q = 0` at the transition, and nq = 0 on the last row.
+* **Unused witness cells are zero.** w = 0 on non-PoW rows, `nwit ∈ {1, 2}`, and `w[1] = 0`
+  when nwit = 1.
+* **GLUE range-checks the units as canonical felts**, as before.
+
+**Cost.**
+* NvAir grows from 74 to 77 columns, because the hash role is now the widest pool view.
+* Interactions per row go from 49 to 51 (2 more felt sends on the slot bus).
+* Rotations stay at 37 and the degree stays at 9.
+* Program rows drop by a few dozen (the `Unit1` and load rows).
+* With NvAir under 2^18, interactions are 2^24.90 < 2^25, so L stays 24.
+* Bytes (model): +3 opened columns (about 144 B), plus the cells.
+
+**Tests:**
+* `nv_program_fib` now builds its second program from a different witness (Fib(2,3) against
+  Fib(0,1)).
+* New test `nv_program_pow_identity`: four PoW-enabled children with different witnesses have
+  different transcripts, with squeeze block counts 31, 25, 25 and 27, and their programs are
+  byte-identical (8,684 rows).
+* `nv_tstar_tamper` adds: a PoW-run block whose witness differs from B_1's is rejected.
+
+**Also cheaper: the child-program binding.** `bind_child_program`'s E2 eq table now runs over the
+prog_log − E1_BITS variables that the ALU region actually uses. The top variables' `Π(1 − r)`
+factor is folded into the 2^l_skip Lagrange values. That is about 1k fewer rows.
+
+## Question 3: is in-circuit program binding in the 287 KB model and in the A3 chain?
+
+Two separate questions:
+* **Is the binding machinery counted at every fixed-point level?** Mostly yes, with one small
+  gap: the child-check rows were missing (below). This is what the extrapolation measures.
+* **Is the app table sized for a real base?** No. The model uses a toy table, and a real-base
+  table is much larger (below).
+
+**What the model counts.**
+1. **The BIND role rows** (prog/2) and the reserved E-table region. These bind the level's own
+   program. They are generated at every level whether or not the child check runs, so the model
+   counts them: NvAir rows = prog + prog/2 + …
+2. **The app table.** The level-1 program as data, as `Data` rows, BIND rows over it, and
+   app-bind rows: 10,988 rows, the size of an L1 that verifies the toy Fib app. All levels of
+   the fixed point carry it, because the program must be uniform.
+3. **The in-circuit child check `bind_child_program` was missing.** The model was calibrated on
+   A2 of the T102 chain, which ran with `bind = false`, as did phase A and FINAL of the measured
+   416 KB chain and the A3 run. It costs about 1.3k rows after the E2 cut above (2.4k before).
+   It is now included: `P_FIXED += 1,300`.
+
+**Corrected model figure.** With the G1 fix (77 columns, 51 interactions) and binding:
+* **287,557 B** (was 287,037);
+* L = 24, NvAir 257,926 rows (2^17.98), interactions 2^24.90;
+* adopted penultimate b7 h20 k1 2 lf6.
+
+This holds only with a toy-sized L1. With a real base, the app table is the real L1 program:
+
+| app table rows | final | L | NvAir rows |
+|---|---|---|---|
+| 400,000 | 315,677 B | 26 | 1.05M (2^20.0) |
+| 624,000 | 321,445 B | 26 | 1.50M (2^20.5) |
+
+So the 287–288 KB figure needs G2 solved.
+
+**Where the 47 % comes from.** The e2e agent's "+47 % program rows from binding at L2" is the app
+table, the L1 program carried as data, not the child-check rows. In the slice, the L1 program was
+roughly half the size of L2's own verifier.
+
+**The A3 chain the stream lane is running** (from 3c4324e8c) uses `nv_chain` phase A, which sets
+`bind = false`. It carries the app table (toy L1) but not the child check, and it predates the G1
+fix. Its bytes are representative to within the about 0.5 KB above. It does not demonstrate a
+pinned program.
+
+## Gap G2: binding whose cost does not grow with the child program [design note, not built]
+
+**The problem.** L2 must check that its child L1's committed program columns equal the fixed L1
+program P_L1, at the random point r. Today it evaluates Σ_x eq(r, x)·pw(P_L1[x]) over a data copy
+of P_L1, which is O(|P_L1|) rows at every level.
+
+The fixed-point levels avoid this with BIND: child program = own program, so the eq-sum runs over
+the level's own program. That trick does not apply to L1, whose program differs.
+
+**Proposal: program commitment for the level-1 child.** The NV levels stay uniform.
+1. **Every NV-family proof gets a second, preprocessed commitment** holding its program columns.
+   This includes L1, which is the NV circuit with its own app-verifier program.
+2. **The uniform NV program verifies a 2-commitment child.** The child's program commitment root
+   is selected by the level flag:
+   * **child level 1:** `C_L1`, a 42/48-byte constant of the NV program, the commitment of P_L1
+     made at setup. There is no circularity: the NV program contains C_L1, not its own
+     commitment.
+   * **child level ≥ 2:** the root comes from the proof as a witness. The existing BIND check
+     binds it: the child's program opening at r must equal the eq-sum over the level's own
+     program, which forces the committed polynomial to be the own program at a random point.
+     This keeps the fixed point free of self-reference.
+3. **The final layer stays single-commitment.** V_d checks the final layer's program natively
+   (O(program) native work, or a pinned preprocessed vk), so the final proof's bytes are
+   unaffected.
+4. **The app table and the app-bind role go away.** Every level loses about
+   1.5 × |P_L1| + |P_L1|/2 NvAir rows.
+
+**Cost estimate (model, to be measured):**
+* **Rows.** Verifying the second commitment means one more round-0 leaf (the 4 program words of
+  2^k1 rows) and Merkle path per query: about 41 × (26 levels × 5 + 10) ≈ 5.7k program rows,
+  8.6k NvAir rows. That is independent of |P_L1|. Against today's toy table (−11k program rows)
+  it is about a wash.
+* **Bytes.** Inner proofs gain a commitment, so their round 0 runs on Johnson (the
+  multi-commitment rule, +2 queries). The final proof has one commitment, so its bytes do not
+  change.
+* **Threshold.** NvAir moves by about −11k + 8.6k rows, so it stays near 2^18. With a real base it
+  avoids the +300 to +600k rows above.
+
+**Soundness points to settle:**
+* The binding of a witness root by BIND needs the WHIR opening of the child's preprocessed
+  commitment at the same r as the BIND point. It is batched into the child's stacked opening;
+  the stacking already batches several commitments.
+* C_L1 is the commitment of a fixed column, so the setup is deterministic and anyone can
+  recompute it.
+* V_d pins the final program, so the chain of constants is: V_d pins final → final pins NV via
+  BIND → NV pins L1 via C_L1 → L1 pins the base vk.
+
+**Alternatives considered:**
+* *A uniform program containing the base verifier,* so that L1 = NV and BIND covers it: the base
+  verifier's rows land in every level, so the cost still grows with the base.
+* *In-circuit WHIR opening of P_L1 at r:* a full extra opening proof at every level, about 60–80k
+  rows.
+* *Keeping the data table:* O(|P_L1|).
+
+**Status after G1 (this commit):**
+* The fast suite passes 58/58 in both digest modes. `nv_app_binding` and `nv_opening_formula`
+  pass in both modes (`logs/g1/`).
+* The backend soundness calculator now uses the O-2 table (−q·log2(A_i/n_i) per round), so its
+  print matches the bound vk.
+* The model now requires penultimate log_h ≥ 20: the v4 SHA trace has 2^20 rows (stream lane:
+  b8 h19 fails at A2).
+
+**Bind on at every level: does NvAir stay under 2^18?**
+* At the fixed-point levels, yes. The stream lane measured FINAL (bind off) at 252,636 rows. The
+  child check adds about 1.3k program rows, so about 2k NvAir rows: 254.6k < 262,144, a margin
+  of about 7.5k. The model gives 257.9k.
+* **The FINAL layer cannot use BIND.** Its parameters differ from the NV fixed point, so its
+  program differs from its child's, and today FINAL does not bind its child's program at all.
+  That is a soundness gap, the same kind of gap as G2. The options:
+  * **(a) Make FINAL a fixed-point level** (FINAL params = NV params, bind on, V_d pins the one
+    uniform program):
+    * shape (7,20,2,4,6): 300,191 B (L 24);
+    * shape (7,20,1,4,7): 290,477 B (L 25, NvAir 270k). About 8k NvAir rows of further cuts
+      would bring it back to L 24, about 287.9 KB.
+  * **(b) Give FINAL the G2 program commitment C_NV of its child.** FINAL's program grows by
+    about 6k rows; FINAL NvAir is then about 267k, so L 25. That is about 290.4 KB.
+  * **Next:** implement (a) as the default (uniform levels, bind on everywhere), then cut the
+    ~8k rows for the k1 = 1 shape.
+
+## Binding on at every level, FINAL at the fixed point, and V_d with a pinned program [measured: tests]
+
+* **Binding is on by default.** `NvCircuit::generate` now sets `bind = bind || child_nv`, so
+  every level whose child is an NV proof binds the child's program. With a level-1 child, the
+  binding flag selects the app-table check; with a deeper child, the fixed-point BIND check.
+* **`nv_chain` default.** Phase A only finds the fixed heights; it runs with no binding and no
+  passthrough. Phase B then runs L1, L2, …, `NV_LEVELS` (default 2), with binding at every
+  level ≥ 2.
+* **FINAL runs the same program** as the last phase-B level, under the final domain
+  (`Sha384CpuEngine::new_final` with the NV parameters), with binding on. The chain then calls V_d
+  with the pinned program. The old measurement-only FINAL (different `FINAL_*` parameters, child
+  program not bound) runs only with `NV_UNBOUND_FINAL=1`.
+* **V_d** (`nv/vd.rs`) is ported from lane/pq-e2e-slice @ 480bf27f4: `check_final_program`,
+  `program_eval`, `final_point_and_openings`, `verify_final`, and the forgery helpers
+  (`forge_statement_program`, `prove_traces`). `NvCircuit::generate_program` runs any program
+  body through the trace pipeline.
+* **Test `nv_vd_pinned_program`** (ignored: 1 h 3 min, 17.9 GB):
+  * **Chain:** Fib base (with PoW) → L1 → L2, bound to L1 by the app table → FINAL (final domain),
+    bound to L2 at the fixed point. All levels are at fixed heights [2^18, 2^19, 128, 2^16].
+  * **Uniform program:** FINAL's program equals L2's (76,014 rows); the NV levels use PoW, so this
+    also exercises the G1 fix.
+  * **V_d** (pinned final vk, level 3, program) accepts the honest final. It rejects a wrong claim
+    and a wrong pinned level.
+  * **The forged FINAL** is a 9,684-row verify-nothing program that exposes level 3 and the honest
+    statement, proved under the pinned final vk. V_d accepts it without the program check and
+    rejects it with the check ("final program openings differ from the pinned program").
+
+**Bytes with FINAL at the fixed point** (MODEL; options in the G1 section above). The final now
+has the penultimate's shape. At (7, 20, 2, 4, 6) it is **300,191 B** (L 24). The uniform k1 = 1
+shape (7, 20, 1, 4, 7) gives 290,477 B at L 25. About 8k more NvAir rows of cuts would give
+L 24, about 287.9 KB. That uniform shape is the next size target.
+
+*Fast suite on the bind-default tree:* 57/58 at first. The auditor's `nv_statement_passthrough`
+uses an L1 smaller than L2, which binding cannot handle, because binding needs equal ALU heights.
+It now sets the test-only `NvCircuit::test_no_bind` (`#[cfg(test)]`, absent from the library) and
+passes. Everything else passes in both digest modes.
