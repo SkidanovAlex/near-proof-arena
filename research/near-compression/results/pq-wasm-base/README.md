@@ -358,3 +358,82 @@ model; the univariate estimate is 667. This is the costliest chip. The levers:
   per-chip row lemmas carry over.
 * SHIFT/CMP (and now DIV) optimisation.
 
+
+## 10. Design note: the simulation relation for families 2–4 (refactor R)
+
+This note was written before the refactor so that another agent can continue it. The current
+relation is `Event.RelW X s f tps tpl t pc S live`. It covers one frame (`s.frames = [f]`, base 0),
+the operand stack, and one frame's locals: `live ↔ stackView ∨ localView`. Families 2–4 need memory,
+globals and a call stack. The plan is to replace it once with **`RelV`**: same idea, more views. The
+per-chip row lemmas only use the relation through a small API (`stack_dec`, `local_msg`, the
+straight-line/control step lemmas), and that API keeps its shape.
+
+**State message.** `[pc, ts, S, halted, sb, cid]`.
+* `pc` is a *global* pc. All functions' code is concatenated, the CODE records are keyed by global pc,
+  and branch and call targets in the records are global.
+* `sb` is the current frame's stack base.
+* `cid` is the current activation id: the `ts` of the call row, or 0 for the entry frame.
+* Every chip's STATE in/out gets the two extra fields, with in = out except for calls and returns.
+
+**Channel spaces** (all on bus CH, message `[space, slot, tag, v0..v3, tp]`):
+
+| space | contents | slot | written by |
+|---|---|---|---|
+| 0 | operand stack | absolute index `sb + h − k` (`h` static, relative to the frame) | stack chips |
+| 2 | globals | global index | GLOBAL chip; initial values from the statement (BOUNDARY) |
+| 3 | linear memory, one message per touched aligned word (offline memory checking) | word address | LOAD/STORE; initial values by MEMINIT rows (one per touched word; uniqueness by a sorted-address range check; value = data segment, checked against a cached DATA table bound by `code_root`, or 0) |
+| 4 | call records | callee `cid` | CALL produces `[4, cid', 0, retpc, sb, cid, 0, ts]`; RETURN consumes it |
+| 16 + cid | locals of activation `cid` | local index | LOCAL; initialised by param moves and an LINIT row per declared local |
+
+Dead activations' locals and memory words stay live until the end. A generalised DRAIN consumes any
+message with `space ≠ 0` (`space·inv = act`) at the end; operand-stack messages are drained only after
+a trap (as now). This is sound because every produced message is consumed exactly once: draining a
+message that is still needed leaves its later consumer without a producer, so the bus is unbalanced.
+
+**`RelV X s fs tps tpl tpg tpm T t pc S sb cid live`:**
+* `s.frames = fs` (non-empty). Frame `k` has function, local pc, `base`, `cid_k`, labels and locals.
+  The top frame matches `pc/sb/cid`, and each frame's labels and relative height come from that
+  function's `check`.
+* `live x ↔` one of:
+  * `x ∈ stackView s.stack tps`: the whole stack, all frames, absolute slots;
+  * `x ∈ localView (16 + cid_k) locals_k tpl_k` for some frame `k`;
+  * `x ∈ callView fs`: one record per non-top frame, holding the return pc and the caller's `sb`/`cid`;
+  * `x ∈ globalsView s.globals tpg`;
+  * `x ∈ memView T s.pages tpm`: words in the touched set `T`, which is fixed for the whole run by the
+    MEMINIT rows;
+  * `x ∈ Dead`: messages of returned activations, whose space never equals a live `16 + cid`, since
+    `cid` is unique.
+* The invariants as now (`numS`, `numL`, times below `t`, gas), plus memory bounds
+  (`memBytes = pages · 64 KiB`), and `T` ⊆ addresses below `memBytes`.
+
+**What changes where.**
+* `Event` and `Step`:
+  * The straight-line step lemma `straight_rel` keeps its form; the frame stack, globals, memory and
+    `Dead` are carried unchanged.
+  * New lemmas for global get/set, load/store (consume and produce a word message), call (pushes a
+    frame, produces a call record, moves params, initialises locals) and return (pops a frame,
+    consumes the call record, adds the callee's locals to `Dead`).
+* `Check`:
+  * becomes per module: `check` of every function, global pcs, call targets, and the per-function
+    `nloc`/arity;
+  * domain conditions stay explicit: no `call_indirect` until the table is modelled, recursion depth
+    and `cid` bounded by `N < 2^28`, the memory bound on touched words, and D3 kept for branches
+    (calls only need a callee's height at return to equal its arity, which the checker already
+    verifies per function).
+* `Abstract` / `Exec`:
+  * RowSpec quantifies over `RelV`;
+  * `init` = boundary initial globals + entry frame's locals + MEMINIT words;
+  * `fin` = boundary finals + DRAIN;
+  * the end-of-run analysis (`final_stack`) uses the stack view only.
+* Row lemmas:
+  * mechanical edits: state messages get `sb, cid`, stack slots become `sb + h − k`, local spaces
+    become `16 + cid`;
+  * the proofs go through the unchanged API.
+
+**Order.**
+1. R1: the relation, the views and the step lemmas, with existing instructions re-proven.
+2. R2: AIR state width, slots and DRAIN in Lean and Rust, with the row lemmas updated.
+3. R3: `Exec`/`Final` (theorem re-proven, tests rerun). Commit.
+4. Family 2: LOAD/STORE/MEMINIT/DATA.
+5. Family 3: GLOBAL.
+6. Family 4: CALL/RETURN, module-level `check`.
