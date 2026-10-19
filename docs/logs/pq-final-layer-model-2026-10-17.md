@@ -723,3 +723,14 @@ model 308.5 → 298.9 KB.
 * Decisions: CODE cached + bound through statement; BYTE/RANGE committed; base stays SWIRL;
   WASM base fan-out approved (div/rem, memory, locals/globals, calls). L1 ISA ceiling fix
   assigned to recursion lane. CPU prover lane started (byte-identical rule).
+
+## 2026-10-19 — WASM base: cached CODE + div/rem (lane/pq-wasm-base @ 603710124)
+
+* CODE cached, `code_root` a statement component; V_d checks sha256(code) = code_hash and
+  recomputes code_root; base vk depends only on #locals. Lean hypothesis `CodeOK`. Tamper 30/30
+  (a forged unfetched CODE row passes AIR + native verifier, caught only by the code_root check).
+  Base proof 1,263 KB pinned (408 s, 12.8 GB) — not sent to V_d.
+* div/rem i32/i64 with traps: DIV AIR (95 cols, deg 6) + DRAIN; status 1/2; carry range-check hole
+  found pre-proof and fixed; `wasm_base_sound` extended to traps; KAT 63/63; difftest OK.
+* Cost: mixed loop 430 cell-eq/op (568 padded); div-only 1,226/row (2.2× model 546).
+* Next: shared Lean relation refactor (memory pages, globals, frames) → families 2–4.
