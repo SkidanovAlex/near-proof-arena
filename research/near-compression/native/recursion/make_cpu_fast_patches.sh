@@ -7,7 +7,7 @@
 #                                          (multi-buffer SHA-384; bench examples excluded)
 set -euo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
-DEPS=${NEARPROOF_PQ_DEPS:-/data/illia/nearproof-deps/pq-cpu}
+DEPS=${NEARPROOF_PQ_DEPS:-/data/illia/nearproof-deps/pq-cpu2}
 OUT=${CPU_FAST_PATCH_OUT:-$HERE/patches}
 T=$(mktemp -d "$DEPS/.mkpatch.XXXX")
 trap 'rm -rf "$T"' EXIT

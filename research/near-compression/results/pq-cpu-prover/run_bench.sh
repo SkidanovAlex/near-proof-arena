@@ -8,9 +8,9 @@
 #      BUILD_ONLY=1, NICE (default 10).
 set -euo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
-DEPS=${NEARPROOF_PQ_DEPS:-/data/illia/nearproof-deps/pq-cpu}
+DEPS=${NEARPROOF_PQ_DEPS:-/data/illia/nearproof-deps/pq-cpu2}
 FAST_RUSTFLAGS=${FAST_RUSTFLAGS--C target-cpu=native}
-if [ -n "$FAST_RUSTFLAGS" ]; then DT=/data/illia/nearproof-deps/pq-cpu-target; else DT=/data/illia/nearproof-deps/pq-cpu-target-generic; fi
+if [ -n "$FAST_RUSTFLAGS" ]; then DT=/data/illia/nearproof-deps/pq-cpu2-target; else DT=/data/illia/nearproof-deps/pq-cpu2-target-generic; fi
 export CARGO_TARGET_DIR=${CARGO_TARGET_DIR:-$DT}
 EX=$1; shift
 R=$DEPS/openvm-sha384/crates/recursion

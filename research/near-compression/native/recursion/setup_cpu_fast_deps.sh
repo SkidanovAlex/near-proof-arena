@@ -9,7 +9,7 @@
 # code at run time. Build with RUSTFLAGS="-C target-cpu=native" for the AVX-512 packing.
 set -euo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
-export NEARPROOF_PQ_DEPS=${NEARPROOF_PQ_DEPS:-/data/illia/nearproof-deps/pq-cpu}
+export NEARPROOF_PQ_DEPS=${NEARPROOF_PQ_DEPS:-/data/illia/nearproof-deps/pq-cpu2}
 DEPS=$NEARPROOF_PQ_DEPS
 case "$DEPS" in */pq-recursion|*/pq-native|*/pq-stream|*/openvm) echo "refusing shared tree" >&2; exit 1;; esac
 if [ ! -f "$DEPS/.cpu-fast-overlay" ]; then

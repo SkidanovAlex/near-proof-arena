@@ -13,7 +13,7 @@
 #      NV_LOG_ROWS (18), NV_PROG_LOG (18), BIN, CERTS, OUT, HEAVY_MEM (90G), NV_RESUME_PROOF (opt.)
 set -uo pipefail
 TAG=$1
-DEPS=${NEARPROOF_PQ_DEPS:-/data/illia/nearproof-deps/pq-cpu}
+DEPS=${NEARPROOF_PQ_DEPS:-/data/illia/nearproof-deps/pq-cpu2}
 BIN=${BIN:-$DEPS/bin/nv-cf}
 CERTS=${CERTS:-/data/illia/nearproof-wt/pq-dkt-verify/research/near-compression/final-soundness/calc/dkt_certs_o2.json}
 EXCL=${EXCL:-/data/illia/nearproof-wt/pq-dkt-verify/research/near-compression/final-soundness/lean/DKTCertsO2_big.keys}
