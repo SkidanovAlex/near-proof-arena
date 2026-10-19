@@ -641,3 +641,11 @@ model 308.5 → 298.9 KB.
   Horner-chain completeness argued + builder hardening `assert_horner_chains`, x15 index unique
   (p−1 rejected, completeness loss ≤ #q/p); tests 49/49 + 46/46; sweep 5 fixtures × 2 modes clean
   (new Horn2 fixture; harness `wit` allowlist gap fixed).
+
+## 2026-10-19 — penultimate certification (lane/pq-dkt-verify @ fb0efdb11)
+
+* The modelled penultimate b8 h20 k1=2 is infeasible (domain 15·2^28 > 15·2^27); size_cut3.py
+  lacked the log_h+b ≤ 27 bound. Buildable best b7 h20 k1=2 lf6: certified, final stays 287,037 B.
+* dkt_certs_o2.json: 173 entries, 164 Lean-kernel proved; 9 round-3 codes (k=2^10, h20 k1=2)
+  only engine/#eval checked (kernel OOM at 24 GB) → gated to J64 (+1 query, ≈0 B).
+  Decision (soundness rule): certificate gating uses kernel-proved entries only.
