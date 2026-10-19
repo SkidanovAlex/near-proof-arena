@@ -9,7 +9,7 @@ code side of e2e gaps G3/G4: which code did the base proof execute?
 | | v1 | v2 |
 |---|---|---|
 | code records | public values (8 per record) + one BOUNDARY interaction and one multiplicity column per record | AIR `CODE` (table 12): columns `pc, op, h, fee, x0..x3` are a **cached** main trace; `mult` is in the common main; one FETCH receive `[pc, op, h, fee, x0..x3]` with count `mult` |
-| public values | `8 + nloc + 8·ncode` | `8 + nloc` (`N, S, nres, rtag, r0..r3`, local tags) |
+| public values | `8 + nloc + 8·ncode` | `9 + nloc` (`N, S, nres, rtag, r0..r3, status`, local tags; `status` added with family 1) |
 | vk | changes with every program (BOUNDARY width and interactions grow with `ncode`) | depends only on `nloc ≤ 64`; the CODE height is a proof value (`log_height`), not a vk constant |
 | BOUNDARY | `3 + 2 nloc + ncode` interactions | `3 + 2 nloc` |
 
