@@ -361,6 +361,9 @@ model; the univariate estimate is 667. This is the costliest chip. The levers:
   per-chip row lemmas carry over.
 * SHIFT/CMP (and now DIV) optimisation.
 
+Update: refactor R is done (§10.1), family 2 (§11) and family 3 (§12) are done; family 4 (calls) is
+next.
+
 
 ## 10. Design note: the simulation relation for families 2–4 (refactor R)
 
@@ -554,3 +557,129 @@ proof of it does not exist. **D3 (no-discard branches) is not lifted yet**; see 
 * Lifting D3: discarding branches would need kill rows, or an orphan sink with the stale-slot argument.
 * `memory.size`/`memory.grow`.
 * Word-granular memory messages, to cut the ~32 interactions of an 8-byte access.
+
+## 12. Family 3: globals (2026-10-19)
+
+**Scope.** `global.get x` and `global.set x` on numeric (i32/i64) globals, `x < 2^16` (`Check`:
+straight-line, records `op = 0x23 / 0x24`, `[x, 0, 0, 0]`). Domain conditions (`GlobOK`, explicit):
+* the module has `ngl ≤ 2^16` globals, all numeric (reference-typed globals are out of the domain;
+  the trace generator refuses them);
+* the public values encode the initial globals.
+
+Mutability is the spec's business: an immutable `global.set` is rejected by validation before `check`.
+
+**Design** (`Chips.lean`):
+* Globals are CH space 2, one message `[2, g, tag, l0, l1, l2, l3, tp]` per global.
+* No new chip. LOCAL gets two flags, `f_gget` (col 26) and `f_gset` (col 27):
+  * channel space `(1 − isG)·(16 + cid) + 2·isG`, with `isG = f_gget + f_gset`;
+  * `rd = f_get + f_gget`, `wr = f_set + f_tee + f_gset`, stack push count `f_get + f_tee + f_gget`;
+  * `op = 0x20 + f_set + 2·f_tee + 3·f_gget + 4·f_gset`;
+  * the existing `space · inv_sp = 1` check now covers both spaces, so the produced variable message
+    and the produced stack message always differ.
+* BOUNDARY sends each initial global at time 0 from the public values `[tag, l0..l3]` at
+  `pubLoc + nloc + 5g`. `numPub = pubLoc + nloc + 5·ngl`.
+* The final globals are drained by DRAIN (space 2, so allowed after a normal return).
+* `wasmBaseAir nloc ngl`: the second parameter, formerly unused, is now the number of globals.
+
+**Lean:**
+* `HeapOK.glob`: the space-2 part of the outer live set is exactly `globView s.globals tpg`, with
+  every global numeric and produced before `t`. `straight_rel`/`ctrl_rel` carry `s'.globals = s.globals`.
+* `step_globalGet` and `step_globalSet` (`StepMem`); `heap_glob_read`, `heap_glob`.
+* `local_rowfacts` covers the five LOCAL ops; `local_sound` gives the five flag bits and
+  `act = 1 → space ≠ 0`.
+* `Exec`: `globRaw` (the boundary's global sends), `glob_view` (decoded, they are
+  `globView s0.globals 0`), and the initial outer live set = globals ++ MEMINIT bytes.
+  `meminit_init` now returns only the memory part.
+* `wasm_base_sound` gains the hypothesis `GlobOK nloc ncode pub s0`. No `sorry`; axioms
+  `[propext, Classical.choice, Quot.sound]`.
+
+**Evidence.**
+* KAT 68/68, including `globkat8` and `globkat64`. These cover i32 and i64 mutable globals updated in
+  a loop, an immutable global read on every iteration, and a swap of two globals through the stack.
+* difftest `wasmBaseAir 2 4`: 304 points, 6,160 constraint values and 4,912 interactions agree
+  (`logs/difftest-globals.log`).
+* Tamper suite on `globkat8`, including the global cases: `logs/tamper-globkat8.log`. The cases are:
+  * LOCAL global.get row: `L0`, `idx`, `inv_sp`, `tL`, and the row relabelled as `local.get`;
+  * LOCAL global.set row: `V0`, and the row relabelled as `local.set`;
+  * the public initial global's limb and tag;
+  * a DRAIN global row's value and its `act`.
+
+  The first run "accepted" `STACK.V1_0+1` on `globkat8`, where STACK row 0 is a `drop`. `V1` (the
+  select's first operand) is read only by `select` rows, so on a `drop` row it is a free witness that
+  does not change the statement, and this is not a soundness issue. The harness now targets a
+  `select` row for this case (in `hashloop8` and `memkat`, row 0 was already a `select`).
+* Tool: `prep` prints `ngl` and `globals`; `air <nloc> <ngl>`.
+
+## 13. Family 4: calls — design (in progress)
+
+Written before the implementation, as §10 was, so another agent can continue it.
+
+**Spec facts used** (`NearSpecV3.Wasm.Exec`):
+* `call fi` is `callFunc (advance s) fi`: the caller's pc is advanced first. Then `enter`:
+  * if `stackRem < stackCharge`, it aborts (MAV);
+  * it charges `prologueGas = k · regular_op_cost`;
+  * the new frame gets `locals = args ++ zeros` and `base = size − np`, with the root label at
+    height `base`.
+* Return (`end` of the body, `return`, `br` to the function label) is `doReturn`:
+  * `stack := stack[0, base) ++ results`;
+  * the frame is popped and `stackRem` is restored;
+  * the result is `.fin` only when no frame is left.
+* Under D3 the callee's height at every exit equals its arity, so `doReturn` leaves the operand stack
+  unchanged: the results already sit at slots `base ..`. A return therefore moves no stack values.
+
+**Domain** (explicit, decidable):
+* module-level `check`: the entry function and every function reachable by `call` pass the
+  per-function check;
+* `call` targets are defined functions (no host calls, no `call_indirect`);
+* each function has `np ≤ 8` params and `nl ≤ 64` locals (params included);
+* a call that would hit MAV (stack budget exhausted) cannot be proved, like an out-of-bounds access
+  (the trace generator refuses it).
+
+**Design.**
+* **Global pc.** The checked functions' code is concatenated (offset `off_F`). Records are keyed by
+  global pc, and branch and call targets in records are global. The checker's labels stay local, as
+  the spec's are.
+* **`call` is straight-line for the static analysis** (pops `np`, pushes the arity), so the caller's
+  height after the return is checked by the existing `verifyAt`.
+* **CALL chip** (one row per call). It consumes the STATE `(pc, ts, S, 0, sb, cid)` and produces
+  `(entry_F, ts+1, S + fee, 0, sb + h − np, ts)`, where `fee` = the call's fee units + the callee's
+  prologue units. The records give the callee's data:
+  * the call record: `[pc, OP_CALL, h, fee, entry_F, hdr_F, charge_F, 0]`;
+  * the function header record at `hdr_F` (a pseudo-record outside executable code; no instruction
+    chip fetches its op): `np`, `nl`, the declared locals' type mask (64 bits in 4 limbs), the arity.
+
+  It produces:
+  * a call record `[4, ts, 0, pc+1, sb, cid, charge_F, ts]`;
+  * the callee's locals in space `16 + ts`:
+    * slot `j < np`: the value consumed from stack slot `sb + h − np + j`;
+    * slot `np ≤ j < nl`: zero, with the declared type.
+
+  It consumes the stack-budget register (space 5, slot 0), checks that it is `≥ charge_F` by range
+  checks, and produces it with `charge_F` subtracted.
+* **RET chip.** It handles `opHalt`/`opHif` records at `cid ≠ 0` (`cid · inv = 1`); CTRL keeps
+  `cid = 0`. It consumes the call record `[4, cid, 0, retpc, sb_c, cid_c, charge, tp]` and the budget
+  register, and produces `(retpc, ts+1, S + fee, 0, sb_c, cid_c)` and the register plus `charge`.
+* **Dead activations.** The callee's locals stay live after its return and are drained at the end
+  (space `16 + c`, `c ≠ 0`, is allowed in DRAIN).
+* **BOUNDARY** sends the initial budget register from a public value. DRAIN consumes the final one.
+
+**Relation** (`Event`):
+* `E.rest` (the caller frames) gets a saved-context chain `CallerOK`. For each caller frame:
+  * its function is checked;
+  * its pc is the return pc;
+  * its labels are `shiftLabels sb_k (labels[retpc])`;
+  * `heights[retpc] = sb_{k+1} − sb_k + arity_{k+1}`;
+  * its locals view is in space `16 + cid_k`, with producer times `< t`;
+  * the matching call record is in space 4.
+* Of `E.live`, spaces 4 and `16 + c` (`c ≠ cid`) are exactly:
+  * the call records;
+  * the callers' local views;
+  * dead activations' messages (`c < t`, not an active activation).
+* All activation ids are `< t`, so the space `16 + t` of a new callee is empty.
+* The budget register is a `HeapOK`-style field: exactly one message `[5, 0, 0, s.stackRem, …]`.
+
+**Order.**
+1. Module-level `Ctx` / `check` with global pcs. Re-prove everything (the entry function only).
+2. The relation's caller chain, and `step_call` / `step_return`.
+3. CALL / RET chips and their row lemmas; `Exec`/`Final`.
+4. Rust, KAT (calls, recursion, params, locals, dead-activation drain), difftest, tamper.

@@ -62,7 +62,8 @@ theorem chipFacts (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
   · exact (load_rowfacts H L hpub hr ha).two
   · exact (store_rowfacts H L hpub hr ha).two
 
-/-- **Base-faithful soundness of `wasmBaseAir`** (family F1 + locals + div/rem with traps).
+/-- **Base-faithful soundness of `wasmBaseAir`** (family F1 + locals + div/rem with traps + linear memory
++ globals).
 
 If `check` accepts the function (domain D1–D5), the cached CODE table is the checked code (`CodeOK`:
 V_d's `code_root` check), the AIR relation enforced by the SWIRL PIOP holds for `wasmBaseAir` with the
@@ -70,7 +71,9 @@ public inputs the verifier derives from the checker output (`PubOK`, incl. `stat
 explicit statement-level conditions hold (`N · (maxFee + 1) < p`, `R · S ≤ g0`, `g0 < 2^64`), then
 from function entry (empty operand stack, zero-initialised locals, gas `g0`) the spec interpreter
 `NearSpecV3.Wasm.run` ends after exactly `N − 1` steps, having charged `R · S` gas: with status 1 it
-returns with the operand stack equal to the public result; with status 2 it traps (`.abort`). -/
+returns with the operand stack equal to the public result; with status 2 it traps (`.abort`).
+The memory conditions (`PagesOK`, `DataOK`, `pubMem`, `pubDataEnd`) bind the initial linear memory;
+`GlobOK` binds the initial globals (`ncode` = the number of globals) to their public values. -/
 theorem wasm_base_sound (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub) (hcode : CodeOK X tr)
     (hfeeN : (pub.getD Boundary.pubN 0).toNat * (X.ck.maxFee + 1) < P)
@@ -80,7 +83,8 @@ theorem wasm_base_sound (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (hstk : s0.stack = #[]) (hg : s0.gas.g = X.g0) (hpok : PagesOK s0)
     (hdata : DataOK s0 tr) (hM : pub.getD Boundary.pubMem 0 = ((memBytes s0 : Nat) : F))
     (hMle : memBytes s0 ≤ 2 ^ 27) (hDE : (pub.getD Boundary.pubDataEnd 0).toNat ≤ 2 ^ 27)
-    (hzero : ∀ a, (pub.getD Boundary.pubDataEnd 0).toNat ≤ a → readByte s0 a = 0) :
+    (hzero : ∀ a, (pub.getD Boundary.pubDataEnd 0).toNat ≤ a → readByte s0 a = 0)
+    (hglob : GlobOK nloc ncode pub s0) :
     (pub.getD Boundary.pubStatus 0 = ((1 : Nat) : F) →
       ∃ sN, run X.cfg X.p ((pub.getD Boundary.pubN 0).toNat - 1) s0 = .fin sN ∧ sN.frames = [] ∧
         X.R * (pub.getD Boundary.pubS 0).toNat + sN.gas.g = X.g0 ∧
@@ -91,6 +95,6 @@ theorem wasm_base_sound (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (pub.getD Boundary.pubStatus 0 = ((2 : Nat) : F) →
       ∃ sN e, run X.cfg X.p ((pub.getD Boundary.pubN 0).toNat - 1) s0 = .abort sN e ∧
         X.R * (pub.getD Boundary.pubS 0).toNat + sN.gas.g = X.g0) :=
-  wasm_base_exec X H hpub (chipFacts X H) hcode hfeeN hgas hg64 hfr hfn hpc hlab hbase hloc hstk hg hpok hdata hM hMle hDE hzero
+  wasm_base_exec X H hpub (chipFacts X H) hcode hfeeN hgas hg64 hfr hfn hpc hlab hbase hloc hstk hg hpok hdata hM hMle hDE hzero hglob
 
 end WasmBase

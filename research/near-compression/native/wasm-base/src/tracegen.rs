@@ -32,6 +32,8 @@ pub struct Prep {
     pub mem: u64,
     pub data_end: u64,
     pub data: Vec<u64>,
+    /// initial globals `(tag, limbs)` (numeric only: tag 0 = i32, 1 = i64); globals are channel space 2
+    pub globals: Vec<(u64, [u64; 4])>,
 }
 
 impl Prep {
@@ -64,6 +66,19 @@ impl Prep {
             mem: v["mem"].as_u64().unwrap_or(0),
             data_end: v["dataEnd"].as_u64().unwrap_or(0),
             data: v.get("data").map(|d| nums(d)).unwrap_or_default(),
+            globals: v
+                .get("globals")
+                .and_then(|g| g.as_array())
+                .map(|g| {
+                    g.iter()
+                        .map(|e| {
+                            let tag = e["tag"].as_u64().unwrap();
+                            assert!(tag <= 1, "reference-typed globals are outside the domain (GlobOK)");
+                            (tag, nums(&e["limbs"]).try_into().unwrap())
+                        })
+                        .collect()
+                })
+                .unwrap_or_default(),
         }
     }
 }
@@ -290,6 +305,11 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
 
     let mut stack: Vec<Ent> = vec![];
     let mut locals: Vec<Ent> = prep.local_tags.iter().map(|&tag| Ent { tag, val: 0, tp: 0 }).collect();
+    let mut globals: Vec<Ent> = prep
+        .globals
+        .iter()
+        .map(|&(tag, l)| Ent { tag, val: l[0] | (l[1] << 16) | (l[2] << 32) | (l[3] << 48), tp: 0 })
+        .collect();
     let (mut pc, mut ts, mut s) = (0u64, 1u64, 0u64);
     let halt_pc;
     loop {
@@ -572,24 +592,28 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                 r.s("inv", if cz == 0 { F::ZERO } else { fe(cz).inverse() });
                 stack.push(Ent { tag: out.tag, val: out.val, tp: ts });
             }
-            0x20..=0x22 => {
+            0x20..=0x24 => {
+                // local.get/set/tee (0x20..0x22) and global.get/set (0x23, 0x24): one LOCAL row
                 let x = rec[4] as usize;
-                let old = locals[x];
+                let is_g = op >= 0x23;
+                let vars = if is_g { &mut globals } else { &mut locals };
+                let old = vars[x];
                 let hl = st.tchk(ts, old.tp);
                 let mut r = loc.row();
                 hdr(&mut r);
                 r.u("f_get", (op == 0x20) as u64).u("f_set", (op == 0x21) as u64).u("f_tee", (op == 0x22) as u64);
+                r.u("f_gget", (op == 0x23) as u64).u("f_gset", (op == 0x24) as u64);
                 r.u("idx", x as u64).u("tagL", old.tag).limbs("L", limbs(old.val)).u("tL", old.tp).u("hL", hl);
-                // locals space `16 + cid`; the entry frame has cid = 0 (no calls yet)
-                r.s("inv_sp", fe(16).inverse());
-                if op == 0x20 {
-                    locals[x] = Ent { tag: old.tag, val: old.val, tp: ts };
+                // channel space: `16 + cid` for locals (the entry frame has cid = 0: no calls yet), 2 for globals
+                r.s("inv_sp", fe(if is_g { 2 } else { 16 }).inverse());
+                if op == 0x20 || op == 0x23 {
+                    vars[x] = Ent { tag: old.tag, val: old.val, tp: ts };
                     stack.push(Ent { tag: old.tag, val: old.val, tp: ts });
                 } else {
                     let v = stack.pop().unwrap();
                     let hv = st.tchk(ts, v.tp);
                     r.u("tagV", v.tag).limbs("V", limbs(v.val)).u("tV", v.tp).u("hV", hv);
-                    locals[x] = Ent { tag: v.tag, val: v.val, tp: ts };
+                    vars[x] = Ent { tag: v.tag, val: v.val, tp: ts };
                     if op == 0x22 {
                         stack.push(Ent { tag: v.tag, val: v.val, tp: ts });
                     }
@@ -852,6 +876,11 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
             drn.row().u("act", 1).u("space", 0).u("slot", i as u64).u("tag", e.tag).limbs("v", limbs(e.val)).u("tp", e.tp);
         }
     }
+    // every global is left over at the end (space 2)
+    for (g, e) in globals.iter().enumerate() {
+        drn.row().u("act", 1).u("space", 2).u("slot", g as u64).u("tag", e.tag).limbs("v", limbs(e.val)).u("tp", e.tp)
+            .s("inv", fe(2).inverse());
+    }
     // every touched memory byte is left over at the end (space 3)
     for (&a, &(b, tp)) in mem.cur.iter() {
         drn.row().u("act", 1).u("space", 3).u("slot", a).u("tag", 0).limbs("v", [b, 0, 0, 0]).u("tp", tp)
@@ -905,6 +934,10 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     pubs.push(fe(prep.mem));
     pubs.push(fe(prep.data_end));
     pubs.extend(prep.local_tags.iter().map(|&x| fe(x)));
+    for &(tag, l) in prep.globals.iter() {
+        pubs.push(fe(tag));
+        pubs.extend(l.map(fe));
+    }
     assert_eq!(pubs.len(), air.num_pub);
 
     // RANGE16 / BYTE

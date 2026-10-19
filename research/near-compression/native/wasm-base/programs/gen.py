@@ -206,6 +206,28 @@ def memloop(n):
     return {'name': f'memloop{n}', 'result': 'i64', 'locals': ['i32', 'i64', 'i64'], 'body': b, 'memory': True}
 
 
+def globkat(n):
+    """Globals: i32 / i64 mutable globals updated in a loop (get, set, mixed with locals), an
+    immutable i64 global read every iteration, and a global swap through the stack."""
+    i, t = 0, 1
+    b = [
+        ('loop',),
+          ('global.get', 0), ('i32.const', 0x9E3779B9), 'i32.mul', ('local.get', i), 'i32.xor', ('global.set', 0),
+          ('global.get', 1), ('i64.const', 0x100000001B3), 'i64.mul', ('global.get', 2), 'i64.add', ('i64.const', 23),
+          'i64.rotl', ('global.set', 1),
+          ('global.get', 3), ('global.get', 1), 'i64.xor', ('local.tee', t), ('global.set', 3),
+          ('local.get', i), ('i32.const', 1), 'i32.add', ('local.tee', i),
+          ('i32.const', n), 'i32.lt_u', ('br_if', 0),
+        ('end',),
+        # swap globals 1 and 3 through the stack
+        ('global.get', 1), ('global.get', 3), ('global.set', 1), ('global.set', 3),
+        ('global.get', 1), ('global.get', 3), 'i64.sub', ('global.get', 0), 'drop',
+        ('local.get', t), 'i64.add',
+    ]
+    return {'name': f'globkat{n}', 'result': 'i64', 'locals': ['i32', 'i64'], 'body': b,
+            'globals': [('i32', True, 0x80000001), ('i64', True, -3), ('i64', False, 0x123456789), ('i64', True, 7)]}
+
+
 def main():
     out = sys.argv[1]
     iters = [int(a) for a in sys.argv[2:]] or [8, 64]
@@ -215,6 +237,7 @@ def main():
     progs += [trap(t, k) for t in ('i32', 'i64') for k in ('zero_u', 'zero_rem', 'ovf')]
     progs += [ctrl()] + [hashloop(n) for n in iters] + [divloop(n) for n in iters]
     progs += [memkat()] + [memloop(n) for n in iters]
+    progs += [globkat(n) for n in iters]
     for p in progs:
         res, steps = run(p)
         with open(os.path.join(out, p['name'] + '.wasm'), 'wb') as f:

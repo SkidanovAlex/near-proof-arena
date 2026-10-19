@@ -26,7 +26,7 @@ theorem table_constr {A : Air} {pub : List F} {tr : Trace} (H : Holds A pub tr) 
 section
 variable (nloc ncode : Nat)
 theorem air_len : (wasmBaseAir nloc ncode).tables.length = 19 := rfl
-theorem air_t0 : (wasmBaseAir nloc ncode).tables[0]'(by simp [air_len]) = Boundary.table nloc := rfl
+theorem air_t0 : (wasmBaseAir nloc ncode).tables[0]'(by simp [air_len]) = Boundary.table nloc ncode := rfl
 theorem air_t1 : (wasmBaseAir nloc ncode).tables[1]'(by simp [air_len]) = Add.table := rfl
 theorem air_t2 : (wasmBaseAir nloc ncode).tables[2]'(by simp [air_len]) = Bit.table := rfl
 theorem air_t3 : (wasmBaseAir nloc ncode).tables[3]'(by simp [air_len]) = Mul.table := rfl

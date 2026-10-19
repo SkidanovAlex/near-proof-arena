@@ -485,8 +485,8 @@ def inters : List Inter :=
 def table : Table := ⟨"CTRL", cols, constraints, inters⟩
 end Ctrl
 
-/-! ## LOCAL: local.get, local.set, local.tee (locals are channel space `16 + cid`: every access
-consumes the current record and produces a fresh one) -/
+/-! ## LOCAL: local.get/set/tee and global.get/set (locals are channel space `16 + cid`, globals
+space 2: every access consumes the current record and produces a fresh one) -/
 namespace Local
 def kSb : Nat := 23
 def kCid : Nat := 24
@@ -495,34 +495,42 @@ def fSet : Nat := 6
 def fTee : Nat := 7
 def idx : Nat := 8
 def tagL : Nat := 9
-def L : Nat := 10    -- 10..13 (old local value)
+def L : Nat := 10    -- 10..13 (old local / global value)
 def tL : Nat := 14
 def hL : Nat := 15
 def tagV : Nat := 16
 def V : Nat := 17    -- 17..20 (stack value, set/tee)
 def tV : Nat := 21
 def hV : Nat := 22
-def cols : List String := headerCols ++ ["f_get", "f_set", "f_tee", "idx", "tagL", "L0", "L1", "L2", "L3",
-  "tL", "hL", "tagV", "V0", "V1", "V2", "V3", "tV", "hV"] ++ frameCols ++ ["inv_sp"]
-/-- inverse of the locals space `16 + cid` (it is non-zero, so the produced local and stack messages
-differ) -/
+/-- inverse of the channel space of the accessed variable (non-zero, so the produced variable and
+stack messages differ) -/
 def invSp : Nat := 25
-def act : Expr := v fGet + v fSet + v fTee
-def wr : Expr := v fSet + v fTee
-def op : Expr := 0x20 + v fSet + 2 * v fTee
-def newTag : Expr := v fGet * v tagL + wr * v tagV
-def newVal (i : Nat) : Expr := v fGet * v (L + i) + wr * v (V + i)
+def fGGet : Nat := 26
+def fGSet : Nat := 27
+def cols : List String := headerCols ++ ["f_get", "f_set", "f_tee", "idx", "tagL", "L0", "L1", "L2", "L3",
+  "tL", "hL", "tagV", "V0", "V1", "V2", "V3", "tV", "hV"] ++ frameCols ++ ["inv_sp", "f_gget", "f_gset"]
+def act : Expr := v fGet + v fSet + v fTee + v fGGet + v fGSet
+/-- reads the old value (local.get, global.get) -/
+def rd : Expr := v fGet + v fGGet
+/-- writes a stack value (local.set, local.tee, global.set) -/
+def wr : Expr := v fSet + v fTee + v fGSet
+def isG : Expr := v fGGet + v fGSet
+def op : Expr := 0x20 + v fSet + 2 * v fTee + 3 * v fGGet + 4 * v fGSet
+/-- channel space: `16 + cid` (locals of the current activation) or 2 (globals) -/
+def space : Expr := (1 - isG) * (16 + v kCid) + 2 * isG
+def newTag : Expr := rd * v tagL + wr * v tagV
+def newVal (i : Nat) : Expr := rd * v (L + i) + wr * v (V + i)
 def constraints : List Expr :=
   [bool (v fGet), bool (v fSet), bool (v fTee), bool act, bool (v tagL), bool (v tagV),
    (1 - v tagL) * v (L + 2), (1 - v tagL) * v (L + 3),
    (1 - v tagV) * v (V + 2), (1 - v tagV) * v (V + 3),
-   act * ((16 + v kCid) * v invSp - 1)]
+   act * (space * v invSp - 1), bool (v fGGet), bool (v fGSet)]
 def inters : List Inter :=
   stdState kSb kCid op [v idx, 0, 0, 0] act ++
-  [chRecv (16 + v kCid) (v idx) (v tagL) (limbsOf L) (v tL) act] ++ timeChk (v cTs) (v tL) (v hL) act ++
-  [chSend (16 + v kCid) (v idx) newTag ((List.range 4).map newVal) (v cTs) act,
+  [chRecv space (v idx) (v tagL) (limbsOf L) (v tL) act] ++ timeChk (v cTs) (v tL) (v hL) act ++
+  [chSend space (v idx) newTag ((List.range 4).map newVal) (v cTs) act,
    stkRecv (v kSb + v cH - 1) (v tagV) (limbsOf V) (v tV) wr] ++ timeChk (v cTs) (v tV) (v hV) wr ++
-  [stkSend (v kSb + v cH - 1 + v fGet) newTag ((List.range 4).map newVal) (v cTs) (v fGet + v fTee)]
+  [stkSend (v kSb + v cH - 1 + rd) newTag ((List.range 4).map newVal) (v cTs) (v fGet + v fTee + v fGGet)]
 def table : Table := ⟨"LOCAL", cols, constraints, inters⟩
 end Local
 
@@ -536,7 +544,8 @@ def sbf : Nat := 2
 def cidf : Nat := 3
 /-- per local `j`: final tag, value limbs, producer time (6 columns from `4 + 6 j`) -/
 def fin (j : Nat) : Nat := 4 + 6 * j
-/-- Public values: `[N, S_final, nres, rtag, r0, r1, r2, r3, status, mem, dataEnd]`, then one tag per local
+/-- Public values: `[N, S_final, nres, rtag, r0, r1, r2, r3, status, mem, dataEnd]`, then one tag per local,
+then per global `[tag, v0, v1, v2, v3]` (its initial value; globals are channel space 2)
 (`status` = 1: the function returned; 2: it trapped).  The code is not public: it is the cached CODE
 table, whose commitment is a statement component (`code_root`).  The first instruction row has
 `ts = 1`; initial locals are produced at time 0. -/
@@ -554,7 +563,7 @@ def pubLoc : Nat := 11
 def recWidth : Nat := 8
 def cols (nloc : Nat) : List String := ["pcf", "tpr", "sbf", "cidf"] ++
   ((List.range nloc).flatMap fun j => [s!"ftag{j}", s!"fv{j}_0", s!"fv{j}_1", s!"fv{j}_2", s!"fv{j}_3", s!"ftp{j}"])
-def inters (nloc : Nat) : List Inter :=
+def inters (nloc ngl : Nat) : List Inter :=
   [stateOut 0 1 0 0 0 0 .first,
    ⟨busState, false, .first, [v pcf, pv pubN, pv pubS, pv pubStatus, v sbf, v cidf]⟩,
    -- the result is returned only if the function did not trap
@@ -562,8 +571,11 @@ def inters (nloc : Nat) : List Inter :=
      (.first * pv pubNres * (2 - pv pubStatus))] ++
   ((List.range nloc).flatMap fun j =>
     [chSend 16 (Expr.c j) (pv (pubLoc + j)) zeros4 0 .first,
-     chRecv 16 (Expr.c j) (v (fin j)) ((List.range 4).map fun i => v (fin j + 1 + i)) (v (fin j + 5)) .first])
-def table (nloc : Nat) : Table := ⟨"BOUNDARY", cols nloc, [], inters nloc⟩
+     chRecv 16 (Expr.c j) (v (fin j)) ((List.range 4).map fun i => v (fin j + 1 + i)) (v (fin j + 5)) .first]) ++
+  ((List.range ngl).map fun g =>
+    chSend 2 (Expr.c g) (pv (pubLoc + nloc + 5 * g)) ((List.range 4).map fun i => pv (pubLoc + nloc + 5 * g + 1 + i))
+      0 .first)
+def table (nloc ngl : Nat) : Table := ⟨"BOUNDARY", cols nloc, [], inters nloc ngl⟩
 end Boundary
 
 /-! ## CODE: the code records `[pc, op, h, fee, x0..x3]` as a **cached** trace (columns 0..7; the
@@ -926,12 +938,12 @@ end Data
 end Chips
 
 open Chips in
-/-- The AIR set `wasm-base-v3` for a function with `nloc` locals (the code size only sets the CODE
-height). -/
-def wasmBaseAir (nloc _ncode : Nat) : Air where
-  tables := [Boundary.table nloc, Add.table, Bit.table, Mul.table, Shift.table, Cmp.table,
+/-- The AIR set `wasm-base-v3` for a function with `nloc` locals in a module with `ngl` globals (the
+code size only sets the CODE height). -/
+def wasmBaseAir (nloc ngl : Nat) : Air where
+  tables := [Boundary.table nloc ngl, Add.table, Bit.table, Mul.table, Shift.table, Cmp.table,
     Const.table, Stack.table, Ctrl.table, Local.table, Div.table, Load.table, Store.table, Range16.table,
     Byte.table, Code.table, Drain.table, MemInit.table, Data.table]
-  numPub := Boundary.pubLoc + nloc
+  numPub := Boundary.pubLoc + nloc + 5 * ngl
 
 end WasmBase

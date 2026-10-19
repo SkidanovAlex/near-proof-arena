@@ -68,6 +68,7 @@ def run(prog, fuel=10 ** 8):
             if stack:
                 end_of[stack.pop()] = pc
     loc = [0] * len(prog.get('locals', []))
+    glob = [v & (M32 if t == 'i32' else M64) for t, _, v in prog.get('globals', [])]
     mem = {}
     for off, bs in prog.get('data', []):
         for k, x in enumerate(bs):
@@ -113,6 +114,10 @@ def run(prog, fuel=10 ** 8):
             loc[i[1]] = st.pop(); pc += 1
         elif op == 'local.tee':
             loc[i[1]] = st[-1]; pc += 1
+        elif op == 'global.get':
+            st.append(glob[i[1]]); pc += 1
+        elif op == 'global.set':
+            glob[i[1]] = st.pop(); pc += 1
         elif op in LOADS:
             w, sgn, rw = LOADS[op]
             ea = st.pop() + (i[1] if len(i) > 1 else 0)

@@ -11,7 +11,8 @@ and decidable:
   result (i32/i64), and every instruction is in family F1: `i32/i64.const`, `drop`, `select`,
   `local.get/set/tee` (index in range), the numeric opcodes of `isFamilyNum`, `block`, `loop` (no
   result), `end`, `br`, `br_if`, `return`, and the integer loads/stores (`isLoadOp`, `isStoreOp`)
-  with a static offset `< 2^32`.  No `memory.grow` / `memory.size` / bulk memory: the memory size is
+  with a static offset `< 2^32`, and `global.get/set` (index `< 2^16`; the index is in range and the
+  global numeric by validation, and the proof only uses the live global message).  No `memory.grow` / `memory.size` / bulk memory: the memory size is
   the configuration's initial size for the whole run.
 * **D2 gas:** every gas entry is `none` or `some (k, fee)` with `fee.l = 0` and
   `fee.c = units · regular_op_cost`, `units < 2^16`.
@@ -91,6 +92,8 @@ def kindOf (ls : List Label) : Instr → Option Kind
   | .localGet _ => some (.straight 0 1)
   | .localSet _ => some (.straight 1 0)
   | .localTee _ => some (.straight 1 1)
+  | .globalGet x => if x < 2 ^ 16 then some (.straight 0 1) else none
+  | .globalSet x => if x < 2 ^ 16 then some (.straight 1 0) else none
   | .num op => if isFamilyNum op then some (.straight (numPops op) 1) else none
   | .load op _ off => if isLoadOp op ∧ off < 2 ^ 32 then some (.straight 1 1) else none
   | .store op _ off => if isStoreOp op ∧ off < 2 ^ 32 then some (.straight 2 0) else none
@@ -202,6 +205,8 @@ def recordOf (ls : List Label) (h fee pc : Nat) (ins : Instr) : Option (List Nat
   | .localGet x => mk 0x20 [x, 0, 0, 0]
   | .localSet x => mk 0x21 [x, 0, 0, 0]
   | .localTee x => mk 0x22 [x, 0, 0, 0]
+  | .globalGet x => if x < 2 ^ 16 then mk 0x23 [x, 0, 0, 0] else none
+  | .globalSet x => if x < 2 ^ 16 then mk 0x24 [x, 0, 0, 0] else none
   | .num op => if isFamilyNum op then mk op [0, 0, 0, 0] else none
   | .load op _ off => if isLoadOp op ∧ off < 2 ^ 32 then mk op [off % 65536, off / 65536, 0, 0] else none
   | .store op _ off => if isStoreOp op ∧ off < 2 ^ 32 then mk op [off % 65536, off / 65536, 0, 0] else none

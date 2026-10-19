@@ -179,13 +179,14 @@ theorem heap_read {E : Env} {s : St} {t a v tp : Nat} (H : HeapOK E s t) (hl : E
 /-- The heap after an access to the bytes `[ea, ea + w)`: the old byte messages are consumed, the
 new ones (current bytes of `s'`, time `t`) produced; all other bytes are unchanged. -/
 theorem heap_update {E : Env} {s s' : St} {t ea w : Nat} (H : HeapOK E s t) (hP' : PagesOK s')
-    (hmb : memBytes s' = memBytes s)
+    (hgl : s'.globals = s.globals) (hmb : memBytes s' = memBytes s)
     (hrd : ∀ a, ¬ (ea ≤ a ∧ a < ea + w) → readByte s' a = readByte s a)
     (bv tb nb : Nat → Nat) (hlive : ∀ i, i < w → E.live (encB (ea + i) (bv i) (tb i)))
     (hnew : ∀ i, i < w → (readByte s' (ea + i)).toNat = nb i) :
     HeapOK { E with live := (stepLive E.live ((List.range w).map fun i => encB (ea + i) (bv i) (tb i))
         ((List.range w).map fun i => encB (ea + i) (nb i) t)) } s' (t + 1) := by
   obtain ⟨T, tpm, hnd, hlt, htp, hv⟩ := H.mem
+  obtain ⟨tpg, hg, hgv⟩ := H.glob
   -- the consumed messages are the memView entries of their addresses
   have hold : ∀ i, i < w → ea + i ∈ T ∧ bv i = (readByte s (ea + i)).toNat ∧ tb i = tpm (ea + i) := by
     intro i hi
@@ -193,13 +194,23 @@ theorem heap_update {E : Env} {s s' : St} {t ea w : Nat} (H : HeapOK E s t) (hP'
     obtain ⟨e1, e2, e3⟩ := encB_inj he
     subst e1
     exact ⟨ha', e2, e3⟩
-  refine ⟨hP', T, fun a => if ea ≤ a ∧ a < ea + w then t else tpm a, hnd,
+  refine ⟨hP', ⟨T, fun a => if ea ≤ a ∧ a < ea + w then t else tpm a, hnd,
     fun a ha => by rw [hmb]; exact hlt a ha,
     fun a ha => by
       show (if ea ≤ a ∧ a < ea + w then t else tpm a) < t + 1
       split
       · omega
-      · have := htp a ha; omega, fun x hx => ?_⟩
+      · have := htp a ha; omega, fun x hx => ?_⟩, ⟨tpg, fun g h => ?_, fun x hx => ?_⟩⟩
+  rotate_left
+  · rw [hgl] at h ⊢; have := hg g h; exact ⟨by omega, this.2⟩
+  · rw [hgl, ← hgv x hx]
+    simp only [stepLive, List.mem_map, List.mem_range]
+    constructor
+    · rintro (⟨h, _⟩ | ⟨i, _, rfl⟩)
+      · exact h
+      · simp at hx
+    · intro h; refine Or.inl ⟨h, ?_⟩
+      rintro ⟨i, _, rfl⟩; simp at hx
   simp only [stepLive, List.mem_map, List.mem_range]
   constructor
   · rintro (⟨hl, hn⟩ | ⟨i, hi, rfl⟩)
@@ -339,7 +350,7 @@ theorem step_load (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Na
       (fun x hx => by
         obtain ⟨i, hi, rfl⟩ := List.mem_map.mp hx
         exact ⟨by simp, by simp [Env.lsp]; omega⟩)
-      (heap_update (s' := s2) R.heap R.heap.pages rfl (fun a _ => rfl) bv tb bv
+      (heap_update (s' := s2) R.heap R.heap.pages rfl rfl (fun a _ => rfl) bv tb bv
         (fun i hi => R.env_msg (hmb i hi) (by simp) (by simp [Env.lsp]; omega))
         (fun i hi => (hbyte i hi).1))
     have RR := Rel_of_RelW_congr SR (stepLive_congr
@@ -450,7 +461,7 @@ theorem step_store (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
         obtain ⟨i, hi, rfl⟩ := List.mem_map.mp hx
         exact ⟨by simp, by simp [Env.lsp]; omega⟩)
       (heap_update (s' := s2) R.heap
-        (fun i h => by have := hok i (by rw [← hpg2]; exact h); simpa only [hpg2] using this)
+        (fun i h => by have := hok i (by rw [← hpg2]; exact h); simpa only [hpg2] using this) rfl
         (by rw [memBytes_congr hpg2, ← hm1]; unfold memBytes; rw [hsz])
         (fun a ha => by rw [readByte_congr hpg2, hrdW a, if_neg ha]; rfl)
         bv tb nb
@@ -480,5 +491,187 @@ theorem step_store (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
     · intro x
       rw [show s.stack.pop.pop.size - (s.stack.size - 2) = 0 by rw [hsz']; omega]
       simp only [List.range_zero, List.map_nil, Option.toList_none, List.append_nil, List.nil_append]
+
+/-! ## Globals (space 2) -/
+
+/-- A live global message carries the current value of an existing global. -/
+theorem heap_glob_read {E : Env} {s : St} {t : Nat} (H : HeapOK E s t) {mg : Msg} (hl : E.live mg)
+    (hs : mg.space = 2) : ∃ tp, mg.slot < s.globals.size ∧
+      mg = enc 2 mg.slot (s.globals[mg.slot]?.getD default) tp ∧ isNum (s.globals[mg.slot]?.getD default) := by
+  obtain ⟨tpg, hg, hgv⟩ := H.glob
+  obtain ⟨g, hgs, rfl⟩ := mem_globView.mp ((hgv _ hs).mp hl)
+  exact ⟨tpg g, hgs, rfl, (hg g hgs).2⟩
+
+/-- The heap after a global access: the old message of global `x` is consumed, a new one (value
+`v'`, time `t`) produced; memory and the other globals unchanged. -/
+theorem heap_glob {E : Env} {s s' : St} {t x : Nat} (H : HeapOK E s t) (hpg : s'.pages = s.pages)
+    (hsz : s'.globals.size = s.globals.size)
+    (v' : Val) (hv' : isNum v')
+    (hget : ∀ g, g < s.globals.size → s'.globals[g]?.getD default = if g = x then v' else s.globals[g]?.getD default)
+    (mg : Msg) (hmg : E.live mg) (smg : mg.space = 2 ∧ mg.slot = x) :
+    HeapOK { E with live := stepLive E.live [mg] [enc 2 x v' t] } s' (t + 1) := by
+  obtain ⟨T, tpm, hnd, hlt, htp, hv⟩ := H.mem
+  obtain ⟨tpg, hg, hgv⟩ := H.glob
+  obtain ⟨g0, hg0, emg⟩ := mem_globView.mp ((hgv _ smg.1).mp hmg)
+  have hx : g0 = x := by rw [← smg.2, emg]; rfl
+  subst hx
+  refine ⟨fun i h => by have := H.pages i (by rw [← hpg]; exact h); simpa only [hpg] using this,
+    ⟨T, tpm, hnd, fun a ha => by rw [memBytes_congr hpg]; exact hlt a ha, fun a ha => by have := htp a ha; omega,
+      fun y hy => ?_⟩, ⟨fun g => if g = g0 then t else tpg g, fun g h => ?_, fun y hy => ?_⟩⟩
+  · simp only [stepLive, List.mem_singleton]
+    rw [show memView T s' tpm = memView T s tpm by simp only [memView, readByte_congr hpg], ← hv y hy]
+    constructor
+    · rintro (⟨h, _⟩ | rfl)
+      · exact h
+      · simp at hy
+    · intro h; refine Or.inl ⟨h, ?_⟩
+      rintro rfl; rw [smg.1] at hy; simp at hy
+  · rw [hsz] at h
+    by_cases e : g = g0
+    · subst e; simp only [ite_true, hget g h]; exact ⟨by omega, hv'⟩
+    · simp only [e, ite_false, hget g h]; have := hg g h; exact ⟨by omega, this.2⟩
+  · simp only [stepLive, List.mem_singleton]
+    constructor
+    · rintro (⟨h, hne⟩ | rfl)
+      · obtain ⟨g, hgs, rfl⟩ := mem_globView.mp ((hgv _ hy).mp h)
+        by_cases e : g = g0
+        · subst e; exact absurd emg.symm hne
+        · refine mem_globView.mpr ⟨g, by rw [hsz]; exact hgs, ?_⟩
+          rw [hget g hgs, if_neg e, if_neg e]
+      · exact mem_globView.mpr ⟨g0, by rw [hsz]; exact hg0, by rw [hget g0 hg0, if_pos rfl, if_pos rfl]⟩
+    · intro h
+      obtain ⟨g, hgs, rfl⟩ := mem_globView.mp h
+      rw [hsz] at hgs
+      by_cases e : g = g0
+      · subst e; right; rw [hget g hgs, if_pos rfl, if_pos rfl]
+      · left
+        rw [hget g hgs, if_neg e, if_neg e]
+        refine ⟨(hgv _ rfl).mpr (mem_globView.mpr ⟨g, hgs, rfl⟩), fun he => e ?_⟩
+        have := congrArg Msg.slot he; rw [emg] at this; simpa using this
+
+/-- **global.get**: the global's live message is consumed and produced again; its value is pushed. -/
+theorem step_globalGet (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {x fee : Nat}
+    (hins : X.pf.code[pc]? = some (.globalGet x)) (hx : x < 2 ^ 16)
+    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee)
+    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (mg : Msg) (hmg : live mg) (sg : mg.space = 2 ∧ mg.slot = x) (mo ms : Msg)
+    (hmo : mg.ok → mo = enc 2 x mg.toVal t) (hms : mg.ok → ms = enc 0 s.stack.size mg.toVal t) :
+    ∃ s', step X.cfg X.p s = .cont s' ∧
+      Rel X s' (t + 1) (pc + 1) (S + fee) E.sb E.cid (stepLive live [mg] [ms, mo]) := by
+  obtain ⟨ls0, hL, hfl⟩ := R.labels
+  have hsbR := R.sbLe
+  obtain ⟨-, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL R.height (pops := 0) (pushes := 1)
+    (by simp [kindOf, hx]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
+    (by intro l; simp)
+  have hE := R.env_msg hmg (by rw [sg.1]; decide) (by rw [sg.1]; simp only [Env.lsp]; omega)
+  obtain ⟨tp, hxs, emg, hnum⟩ := heap_glob_read R.heap hE sg.1
+  rw [sg.2] at hxs emg hnum
+  let val : Val := s.globals[x]?.getD default
+  have okg : mg.ok := by rw [emg]; exact enc_ok hnum _ _ _
+  have tv : mg.toVal = val := by rw [emg]; exact enc_toVal hnum _ _ _
+  have hmo' := hmo okg; have hms' := hms okg
+  rw [tv] at hmo' hms'
+  let s1 : St := { s with gas := { s.gas with g := s.gas.g - X.R * fee } }
+  let s2 : St := { s1 with stack := s.stack.push val, frames := { f with pc := pc + 1, locals := f.locals } :: E.rest }
+  have hfr1 : s1.frames = f :: E.rest := R.frames
+  refine ⟨s2, ?_, ?_⟩
+  · rw [step_eq_exec X R hins hfee hg hg64]
+    simp only [exec, pushV, setFrame, hfr1, R.pcEq, s2, s1, val]
+    rw [Array.getElem?_eq_getElem hxs]; rfl
+  · have hsz' : (s.stack.push val).size = s.stack.size + 1 := by simp
+    have SR := straight_rel_env X R (k := 0) (fee := fee) (Nat.zero_le _) (s.stack.push val) f.locals none
+      (by intro i hi; simp only [Array.getElem?_push]; rw [if_neg (by omega)])
+      (by simp)
+      (by intro i hi
+          simp only [Array.getElem?_push, Array.size_push] at hi ⊢
+          by_cases hi' : i = s.stack.size
+          · rw [if_pos hi']; exact hnum
+          · rw [if_neg hi']; exact R.numS i (by omega))
+      rfl (fun _ _ => rfl) (by simp) R.numL hnext ⟨ls0, hL1, hfl⟩ (by rw [hsz']; omega)
+      (by rw [hsz', hH1]; congr 1; omega) hg
+      s2 rfl rfl rfl [mg] [mo]
+      (fun y hy => by simp only [List.mem_singleton] at hy; subst hy; exact hE)
+      (fun y hy => by simp only [List.mem_singleton] at hy; subst hy; rw [hmo']; exact ⟨by simp, by simp only [enc_space, Env.lsp]; omega⟩)
+      (by
+        rw [hmo']
+        exact heap_glob (s' := s2) R.heap rfl rfl val hnum
+          (fun g _ => by
+            by_cases e : g = x
+            · rw [if_pos e, e]
+            · rw [if_neg e]) mg hE sg)
+    have RR := Rel_of_RelW_congr SR (stepLive_congr (c2 := [mg]) (p2 := [ms, mo]) ?_ ?_)
+    · exact RR
+    · intro y; simp
+    · intro y
+      have e1 : (s.stack.push val).size - (s.stack.size - 0) = 1 := by rw [hsz']; omega
+      rw [e1, show List.range 1 = [0] from rfl]
+      simp only [List.map_cons, List.map_nil, Option.toList_none, List.append_nil, List.cons_append,
+        List.nil_append, Nat.sub_zero, Nat.add_zero, Array.getElem?_push_size, Option.getD_some, hms', hmo']
+
+/-- **global.set**: the stack top and the global's live message are consumed; the global's new
+message carries the value. -/
+theorem step_globalSet (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {x fee : Nat}
+    (hins : X.pf.code[pc]? = some (.globalSet x)) (hx : x < 2 ^ 16)
+    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee)
+    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (mv mg mo : Msg) (hmv : live mv) (hmg : live mg)
+    (sv : mv.space = 0 ∧ mv.slot = s.stack.size - 1) (sg : mg.space = 2 ∧ mg.slot = x)
+    (hmo : mv.ok → mo = enc 2 x mv.toVal t) :
+    ∃ s', step X.cfg X.p s = .cont s' ∧
+      Rel X s' (t + 1) (pc + 1) (S + fee) E.sb E.cid (stepLive live [mv, mg] [mo]) := by
+  obtain ⟨ls0, hL, hfl⟩ := R.labels
+  have hsbR := R.sbLe
+  obtain ⟨h1, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL R.height (pops := 1) (pushes := 0)
+    (by simp [kindOf, hx]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
+    (by intro l; simp)
+  have hE := R.env_msg hmg (by rw [sg.1]; decide) (by rw [sg.1]; simp only [Env.lsp]; omega)
+  obtain ⟨tp, hxs, -, -⟩ := heap_glob_read R.heap hE sg.1
+  rw [sg.2] at hxs
+  obtain ⟨ev, okv, -, tvv⟩ := R.stack_dec hmv sv.1 sv.2 (by omega)
+  let top : Val := s.stack[s.stack.size - 1]?.getD default
+  have hnum : isNum top := R.numS _ (by omega)
+  have hmo' := hmo okv
+  rw [tvv] at hmo'
+  let s1 : St := { s with gas := { s.gas with g := s.gas.g - X.R * fee } }
+  let s2 : St := { s1 with
+    stack := s.stack.pop
+    globals := s.globals.set! x top
+    frames := { f with pc := pc + 1, locals := f.locals } :: E.rest }
+  have hfr1 : s1.frames = f :: E.rest := R.frames
+  refine ⟨s2, ?_, ?_⟩
+  · rw [step_eq_exec X R hins hfee hg hg64]
+    simp only [exec, popV_eq, setFrame, hfr1, R.pcEq, s2, s1, top]
+    rw [back_getD _ (by show 0 < s.stack.size; omega)]
+  · have hsz' : s.stack.pop.size = s.stack.size - 1 := by simp
+    have SR := straight_rel_env X R (k := 1) (fee := fee) (by omega) s.stack.pop f.locals none
+      (by intro i hi; simp only [Array.getElem?_pop, Array.size_pop]; rw [if_pos (by omega)])
+      (by simp)
+      (by intro i hi
+          simp only [Array.getElem?_pop, Array.size_pop] at hi ⊢
+          rw [if_pos (by omega)]; exact R.numS i (by omega))
+      rfl (fun _ _ => rfl) (by simp) R.numL hnext ⟨ls0, hL1, hfl⟩ (by rw [hsz']; omega)
+      (by rw [hsz', hH1]; congr 1; omega) hg
+      s2 rfl rfl rfl [mg] [mo]
+      (fun y hy => by simp only [List.mem_singleton] at hy; subst hy; exact hE)
+      (fun y hy => by simp only [List.mem_singleton] at hy; subst hy; rw [hmo']; exact ⟨by simp, by simp only [enc_space, Env.lsp]; omega⟩)
+      (by
+        rw [hmo']
+        exact heap_glob (s' := s2) R.heap rfl (by simp [s2, Array.set!_eq_setIfInBounds]) top hnum
+          (fun g hg' => by
+            simp only [s2, Array.set!_eq_setIfInBounds, Array.getElem?_setIfInBounds]
+            by_cases e : g = x
+            · subst e; simp [hxs]
+            · simp [Ne.symm e, e]) mg hE sg)
+    have RR := Rel_of_RelW_congr SR (stepLive_congr (c2 := [mv, mg]) (p2 := [mo]) ?_ ?_)
+    · exact RR
+    · intro y
+      rw [show List.range 1 = [0] from rfl]
+      simp only [List.map_cons, List.map_nil, Option.toList_none, List.append_nil, List.cons_append,
+        List.nil_append, Nat.add_zero, ← ev]
+    · intro y
+      rw [show s.stack.pop.size - (s.stack.size - 1) = 0 by rw [hsz']; omega]
+      simp
 
 end WasmBase

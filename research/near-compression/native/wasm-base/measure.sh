@@ -12,8 +12,8 @@ RUN="nice -n 10 env HEAVY_MEM=20G taskset -c 8-15 /data/illia/nearproof-deps/bin
 export RAYON_NUM_THREADS=8
 python3 "$HERE/programs/gen.py" "$S/progs" 16 64 256 >/dev/null
 prep() { "$TOOL" prep "$S/progs/$1.wasm" main 1000000000000000 > "$S/progs/$1.prep.json"
-  read -r nl nc <<<"$(python3 -c "import json;d=json.load(open('$S/progs/$1.prep.json'));print(len(d['localTags']),d['ncode'])")"
-  [ -f "$S/air-$nl-$nc.json" ] || "$TOOL" air "$nl" "$nc" > "$S/air-$nl-$nc.json"; echo "$S/air-$nl-$nc.json"; }
+  read -r nl nc <<<"$(python3 -c "import json;d=json.load(open('$S/progs/$1.prep.json'));print(len(d['localTags']),d.get('ngl',0))")"
+  [ -f "$S/air-$nl-g$nc.json" ] || "$TOOL" air "$nl" "$nc" > "$S/air-$nl-g$nc.json"; echo "$S/air-$nl-g$nc.json"; }
 for n in 16 64 256; do
   air=$(prep hashloop$n)
   /usr/bin/time -v $RUN "$BIN" prove "$air" "$S/progs/hashloop$n.prep.json" small > "$LOG/prove-hashloop$n-small.log" 2>&1

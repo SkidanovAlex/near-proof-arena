@@ -34,8 +34,7 @@ def rowAct (T : Table) (tr : Trace) (pub : List F) (t r : Nat) : Prop :=
 /-- The public inputs are the ones the verifier derives from the checker output. -/
 structure PubOK (X : Ctx) (nloc ncode : Nat) (pub : List F) : Prop where
   hnloc : nloc = X.pf.locals.size
-  hncode : ncode = X.pf.code.size
-  len : pub.length = Boundary.pubLoc + nloc
+  len : pub.length = Boundary.pubLoc + nloc + 5 * ncode
   locTags : ∀ j, j < nloc → pub.getD (Boundary.pubLoc + j) 0 = ((X.ck.localTags.getD j 0 : Nat) : F)
   nres : pub.getD Boundary.pubNres 0 = ((X.ck.arity : Nat) : F)
   status : pub.getD Boundary.pubStatus 0 = ((1 : Nat) : F) ∨ pub.getD Boundary.pubStatus 0 = ((2 : Nat) : F)
@@ -70,7 +69,9 @@ theorem recordOf_spec {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : Li
        (∃ al off, ins = .load op al off ∧ (0x28 ≤ op ∧ op ≤ 0x35) ∧ isLoadOp op = true ∧ off < 2 ^ 32 ∧
           [x0, x1, x2, x3] = [off % 65536, off / 65536, 0, 0]) ∨
        (∃ al off, ins = .store op al off ∧ (0x36 ≤ op ∧ op ≤ 0x3E) ∧ isStoreOp op = true ∧ off < 2 ^ 32 ∧
-          [x0, x1, x2, x3] = [off % 65536, off / 65536, 0, 0])) := by
+          [x0, x1, x2, x3] = [off % 65536, off / 65536, 0, 0]) ∨
+       (∃ x, ins = .globalGet x ∧ op = 0x23 ∧ [x0, x1, x2, x3] = [x, 0, 0, 0] ∧ x < 2 ^ 16) ∨
+       (∃ x, ins = .globalSet x ∧ op = 0x24 ∧ [x0, x1, x2, x3] = [x, 0, 0, 0] ∧ x < 2 ^ 16)) := by
   unfold recordOf at hr
   split at hr
   · simp only [Option.some.injEq] at hr; subst hr
@@ -87,6 +88,16 @@ theorem recordOf_spec {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : Li
     exact ⟨_, _, _, _, _, rfl, Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨_, rfl, rfl, rfl⟩)))))⟩
   · simp only [Option.some.injEq] at hr; subst hr
     exact ⟨_, _, _, _, _, rfl, Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨_, rfl, rfl, rfl⟩))))))⟩
+  · split at hr
+    · rename_i x hx
+      simp only [Option.some.injEq] at hr; subst hr
+      exact ⟨_, _, _, _, _, rfl, (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨_, rfl, rfl, rfl, hx⟩))))))))))))))))⟩
+    · simp at hr
+  · split at hr
+    · rename_i x hx
+      simp only [Option.some.injEq] at hr; subst hr
+      exact ⟨_, _, _, _, _, rfl, (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨_, rfl, rfl, rfl, hx⟩))))))))))))))))⟩
+    · simp at hr
   · split at hr
     · simp only [Option.some.injEq] at hr; subst hr
       exact ⟨_, _, _, _, _, rfl, Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨rfl, ‹_›, rfl⟩)))))))⟩
@@ -106,10 +117,9 @@ theorem recordOf_spec {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : Li
       have hr : 0x36 ≤ op' ∧ op' ≤ 0x3E := by
         have := hc.1; simp only [isStoreOp, Bool.or_eq_true, beq_iff_eq, Bool.and_eq_true, decide_eq_true_eq] at this
         omega
-      exact ⟨_, _, _, _, _, rfl, Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-        (Or.inr (Or.inr (Or.inr (Or.inr ⟨_, _, rfl, hr, hc.1, hc.2, rfl⟩)))))))))))))⟩
+      exact ⟨_, _, _, _, _, rfl, (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨_, _, rfl, hr, hc.1, hc.2, rfl⟩)))))))))))))))⟩
     · simp at hr
-  · rename_i hk1 hk2 hk3 hk4 hk5 hk6 hk7 hk8 hk9 hk10
+  · rename_i hk1 hk2 hk3 hk4 hk5 hk6 hk7 hk8 hk9 hk10 hk11 hk12
     split at hr <;> simp only [Option.some.injEq, reduceCtorEq] at hr <;> subst hr
     · exact ⟨_, _, _, _, _, rfl, Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
         (Or.inl ⟨‹_›, rfl, rfl⟩))))))))⟩
@@ -255,7 +265,7 @@ theorem recordOf_op_lt {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : L
   obtain ⟨op, x0, x1, x2, x3, rfl, hc⟩ := recordOf_spec hr
   simp only [List.getD_cons_succ, List.getD_cons_zero]
   rcases hc with ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ |
-    ⟨_, _, h, _⟩ | ⟨_, hf, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, _, hmem, _⟩ <;>
+    ⟨_, _, h, _⟩ | ⟨_, hf, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ <;>
   first | (subst h; decide) | (have := isFamilyNum_le hf; omega) | omega
 
 end WasmBase

@@ -100,26 +100,33 @@ theorem ctrl_sound (c : Nat → Nat) (rw : Row) (hP : ∀ i, c i < P)
 theorem local_sound (c : Nat → Nat) (rw : Row) (hP : ∀ i, c i < P)
     (hc : ∀ e ∈ Local.constraints, e.eval (natRow c rw) = 0) :
     (c Local.fGet = 0 ∨ c Local.fGet = 1) ∧ (c Local.fSet = 0 ∨ c Local.fSet = 1) ∧
-    (c Local.fTee = 0 ∨ c Local.fTee = 1) ∧ c Local.fGet + c Local.fSet + c Local.fTee ≤ 1 ∧
+    (c Local.fTee = 0 ∨ c Local.fTee = 1) ∧ (c Local.fGGet = 0 ∨ c Local.fGGet = 1) ∧
+    (c Local.fGSet = 0 ∨ c Local.fGSet = 1) ∧
+    c Local.fGet + c Local.fSet + c Local.fTee + c Local.fGGet + c Local.fGSet ≤ 1 ∧
     (c Local.tagL = 0 ∨ c Local.tagL = 1) ∧ (c Local.tagV = 0 ∨ c Local.tagV = 1) ∧
     (c Local.tagL = 0 → c (Local.L + 2) = 0 ∧ c (Local.L + 3) = 0) ∧
     (c Local.tagV = 0 → c (Local.V + 2) = 0 ∧ c (Local.V + 3) = 0) ∧
-    (c Local.fGet + c Local.fSet + c Local.fTee = 1 → ((16 : Nat) : F) + ((c Local.kCid : Nat) : F) ≠ 0) := by
-  simp only [Local.constraints, List.mem_cons, List.mem_nil_iff, or_false, forall_eq_or_imp, forall_eq,
-    Chips.bool, v, Local.act, Expr.eval_add', Expr.eval_sub', Expr.eval_mul', Expr.eval_ofNat',
-    Expr.eval_col, natRow] at hc
-  obtain ⟨bG, bS, bT, bAct, bL, bV, zL2, zL3, zV2, zV3, hInv⟩ := hc
+    (c Local.fGet + c Local.fSet + c Local.fTee + c Local.fGGet + c Local.fGSet = 1 →
+      Local.space.eval (natRow c rw) ≠ 0) := by
+  simp only [Local.constraints, List.mem_cons, List.mem_nil_iff, or_false, forall_eq_or_imp, forall_eq] at hc
+  obtain ⟨bG, bS, bT, bAct, bL, bV, zL2, zL3, zV2, zV3, hInv, bGG, bGS⟩ := hc
+  simp only [Chips.bool, v, Local.act, Expr.eval_add', Expr.eval_sub', Expr.eval_mul', Expr.eval_ofNat',
+    Expr.eval_col, natRow] at bG bS bT bAct bL bV zL2 zL3 zV2 zV3 bGG bGS
   have g := bool_nat (hP _) bG; have s := bool_nat (hP _) bS; have t := bool_nat (hP _) bT
-  refine ⟨g, s, t, ?_, bool_nat (hP _) bL, bool_nat (hP _) bV, fun h0 => ?_, fun h0 => ?_, fun h1 => ?_⟩
-  · have hs : c Local.fGet + c Local.fSet + c Local.fTee < P := by have := P_val; omega
+  have gg := bool_nat (hP _) bGG; have gs := bool_nat (hP _) bGS
+  refine ⟨g, s, t, gg, gs, ?_, bool_nat (hP _) bL, bool_nat (hP _) bV, fun h0 => ?_, fun h0 => ?_, fun h1 => ?_⟩
+  · have hs : c Local.fGet + c Local.fSet + c Local.fTee + c Local.fGGet + c Local.fGSet < P := by
+      have := P_val; omega
     have := bool_nat hs (by simpa only [Lean.Grind.Semiring.natCast_add] using bAct)
     omega
   · simp only [h0] at zL2 zL3; exact ⟨zero_of_sel0 (hP _) zL2, zero_of_sel0 (hP _) zL3⟩
   · simp only [h0] at zV2 zV3; exact ⟨zero_of_sel0 (hP _) zV2, zero_of_sel0 (hP _) zV3⟩
   · intro hz
-    have e1 : ((c Local.fGet : Nat) : F) + ((c Local.fSet : Nat) : F) + ((c Local.fTee : Nat) : F) = ((1 : Nat) : F) := by
-      rw [← Lean.Grind.Semiring.natCast_add, ← Lean.Grind.Semiring.natCast_add, h1]
-    have : ((16 : Nat) : F) + ((c Local.kCid : Nat) : F) = ((16 : Nat) : F) + ((c Local.kCid : Nat) : F) := rfl
+    have e1 : Local.act.eval (natRow c rw) = ((1 : Nat) : F) := by
+      simp only [Local.act, v, Expr.eval_add', Expr.eval_col, natRow]
+      rw [← Lean.Grind.Semiring.natCast_add, ← Lean.Grind.Semiring.natCast_add, ← Lean.Grind.Semiring.natCast_add,
+        ← Lean.Grind.Semiring.natCast_add, h1]
+    simp only [Expr.eval_mul', Expr.eval_sub', Expr.eval_ofNat'] at hInv
     rw [e1, hz] at hInv
     exact absurd (show ((1 : Nat) : F) = ((0 : Nat) : F) by grind) (by decide)
 

@@ -360,6 +360,10 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
     };
     let plus1: fn() -> Box<dyn Fn(F) -> F> = || Box::new(|v| v + F::ONE);
     let mut cases: Vec<(String, Mut)> = vec![];
+    let find = |t: usize, c: &str, v: u64| -> Option<usize> {
+        let (w, k) = (g.mats[t].width, col(t, c));
+        (0..g.rows_per_table[t].1).find(|&r| g.mats[t].values[r * w + k] == F::from_u64(v))
+    };
     for (name, c) in [("ADD", "r0"), ("ADD", "c0"), ("MUL", "rb0"), ("MUL", "cy0"), ("BIT", "rb0"), ("SHIFT", "P0"),
         ("SHIFT", "kb0"), ("CMP", "d0"), ("CMP", "br0"), ("CMP", "inv"), ("CONST", "imm0"), ("LOCAL", "L0"),
         ("CTRL", "tgt"), ("STACK", "V1_0"), ("STACK", "A0"), ("ADD", "ta"), ("ADD", "h"), ("ADD", "fee"), ("CMP", "S"),
@@ -370,6 +374,14 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
         ("STORE", "ob0"), ("STORE", "e1"), ("MEMINIT", "bv"), ("MEMINIT", "ad"), ("MEMINIT", "zd"), ("DRAIN", "space")] {
         let t = tb(name);
         if g.rows_per_table[t].1 == 0 {
+            continue;
+        }
+        // V1 (the select's first operand) is only read by `select` rows: on a `drop` row it is a free
+        // witness that does not change the statement, so target a select row
+        if name == "STACK" && c == "V1_0" {
+            if let Some(r) = find(t, "f_sel", 1) {
+                cases.push((format!("STACK[select row {r}].V1_0+1"), cell(t, r, col(t, c), plus1())));
+            }
             continue;
         }
         cases.push((format!("{name}.{c}+1"), cell(t, 0, col(t, c), plus1())));
@@ -410,6 +422,38 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
     let ncode = prep.records.len();
     if ncode < g.mats[tcode].values.len() / g.mats[tcode].width {
         cases.push((format!("CODE[pad row {ncode}].x0+1 (code_root)"), cell(tcode, ncode, col(tcode, "x0"), plus1())));
+    }
+    // globals (space 2): forged global values, indices, spaces, initial and final values
+    let tl = tb("LOCAL");
+    if let Some(r) = find(tl, "f_gget", 1) {
+        for c in ["L0", "idx", "inv_sp", "tL"] {
+            cases.push((format!("LOCAL[global.get row {r}].{c}+1"), cell(tl, r, col(tl, c), plus1())));
+        }
+        let (cg, cl) = (col(tl, "f_gget"), col(tl, "f_get"));
+        cases.push((format!("LOCAL[global.get row {r}] as local.get"), Box::new(move |g: &mut Gen| {
+            let w = g.mats[tl].width;
+            g.mats[tl].values[r * w + cg] = F::ZERO;
+            g.mats[tl].values[r * w + cl] = F::ONE;
+        })));
+    }
+    if let Some(r) = find(tl, "f_gset", 1) {
+        cases.push((format!("LOCAL[global.set row {r}].V0+1"), cell(tl, r, col(tl, "V0"), plus1())));
+        let (cg, cs) = (col(tl, "f_gset"), col(tl, "f_set"));
+        cases.push((format!("LOCAL[global.set row {r}] as local.set"), Box::new(move |g: &mut Gen| {
+            let w = g.mats[tl].width;
+            g.mats[tl].values[r * w + cg] = F::ZERO;
+            g.mats[tl].values[r * w + cs] = F::ONE;
+        })));
+    }
+    if !prep.globals.is_empty() {
+        let pg = 11 + prep.local_tags.len();
+        cases.push(("pub.global0.l0+1".into(), Box::new(move |g: &mut Gen| g.pubs[pg + 1] += F::ONE)));
+        cases.push(("pub.global0.tag flip".into(), Box::new(move |g: &mut Gen| g.pubs[pg] = F::ONE - g.pubs[pg])));
+        let td = tb("DRAIN");
+        if let Some(r) = find(td, "space", 2) {
+            cases.push((format!("DRAIN[global row {r}].v0+1"), cell(td, r, col(td, "v0"), plus1())));
+            cases.push((format!("DRAIN[global row {r}].act=0"), cell(td, r, col(td, "act"), Box::new(|_| F::ZERO))));
+        }
     }
     // swap two ADD rows' timestamps (reorders execution)
     let ta = tb("ADD");

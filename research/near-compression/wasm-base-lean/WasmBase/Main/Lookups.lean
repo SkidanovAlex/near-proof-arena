@@ -84,12 +84,12 @@ theorem recv_only_data :
     · exact absurd hb h
     · exact h
 
-theorem boundary_lookups (nloc : Nat) :
-    ∀ i ∈ Boundary.inters nloc, i.bus ≠ busR16 ∧ i.bus ≠ busByte ∧ i.bus ≠ busFetch ∧ i.bus ≠ busData := by
+theorem boundary_lookups (nloc ncode : Nat) :
+    ∀ i ∈ Boundary.inters nloc ncode, i.bus ≠ busR16 ∧ i.bus ≠ busByte ∧ i.bus ≠ busFetch ∧ i.bus ≠ busData := by
   intro i hi
   simp only [Boundary.inters, List.mem_append, List.mem_cons, List.mem_nil_iff, or_false, List.mem_flatMap,
     List.mem_map, List.mem_range] at hi
-  rcases hi with (rfl | rfl | rfl) | ⟨j, _, rfl | rfl⟩ <;>
+  rcases hi with ((rfl | rfl | rfl) | ⟨j, _, rfl | rfl⟩) | ⟨g, _, rfl⟩ <;>
     simp [stateOut, chSend, chRecv, stkRecv, busState, busStk, busR16, busByte, busFetch, busData]
 
 /-! ## Lookup consequences -/
@@ -180,7 +180,7 @@ def instrTables : List Table :=
     Div.table, Load.table, Store.table]
 
 theorem table_class (nloc ncode t : Nat) (ht : t < 19) :
-    (t = 0 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Boundary.table nloc) ∨
+    (t = 0 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Boundary.table nloc ncode) ∨
     (t = 15 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Code.table) ∨
     (t = 16 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Drain.table) ∨
     (t = 13 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Range16.table) ∨
@@ -234,7 +234,7 @@ theorem looks_of {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : H
     simp only at hb' hs' ⊢
     rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ |
       ⟨rfl, hT⟩ | ⟨_, _, hT⟩
-    · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc i hi).2.2.1
+    · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc ncode i hi).2.2.1
     · rw [hT] at hi
       simp only [Code.table, List.mem_cons, List.mem_nil_iff, or_false] at hi
       subst hi
@@ -255,7 +255,7 @@ theorem looks_of {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : H
     simp only at hb' hs' ⊢
     rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ |
       ⟨rfl, hT⟩ | ⟨_, _, hT⟩
-    · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc i hi).1
+    · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc ncode i hi).1
     · rw [hT] at hi; exact absurd (recv_only_range16 _ (by simp) i hi hb') (by simp [hs'])
     · rw [hT] at hi; exact absurd (recv_only_range16 _ (by simp) i hi hb') (by simp [hs'])
     · have hT' := hT
@@ -280,7 +280,7 @@ theorem looks_of {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : H
     simp only at hb' hs' ⊢
     rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ |
       ⟨rfl, hT⟩ | ⟨_, _, hT⟩
-    · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc i hi).2.1
+    · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc ncode i hi).2.1
     · rw [hT] at hi; exact absurd (recv_only_byte _ (by simp) i hi hb') (by simp [hs'])
     · rw [hT] at hi; exact absurd (recv_only_byte _ (by simp) i hi hb') (by simp [hs'])
     · rw [hT] at hi; exact absurd (recv_only_byte _ (by simp) i hi hb') (by simp [hs'])

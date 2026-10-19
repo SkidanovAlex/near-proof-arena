@@ -80,7 +80,7 @@ theorem data_lookup {nloc ncode : Nat} {pub : List F} {tr : Trace} {s0 : St}
   simp only at hb' hs' ⊢
   rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ |
       ⟨rfl, hT⟩ | ⟨_, _, hT⟩
-  · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc i hi).2.2.2
+  · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc ncode i hi).2.2.2
   · rw [hT] at hi; exact absurd (recv_only_data _ (by simp) i hi hb') (by simp [hs'])
   · rw [hT] at hi; exact absurd (recv_only_data _ (by simp) i hi hb') (by simp [hs'])
   · rw [hT] at hi; exact absurd (recv_only_data _ (by simp) i hi hb') (by simp [hs'])
@@ -303,9 +303,10 @@ theorem meminit_init {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} {s
     (hsend : ∀ o ∈ occs (wasmBaseAir nloc ncode) tr pub, o.2.1 = true → o.2.2.2 ≤ 1)
     (hM : pub.getD Boundary.pubMem 0 = ((memBytes s0 : Nat) : F)) (hMle : memBytes s0 ≤ 2 ^ 27)
     (hDE : (pub.getD Boundary.pubDataEnd 0).toNat ≤ 2 ^ 27)
-    (hzero : ∀ a, (pub.getD Boundary.pubDataEnd 0).toNat ≤ a → readByte s0 a = 0) (hpok : PagesOK s0) :
+    (hzero : ∀ a, (pub.getD Boundary.pubDataEnd 0).toNat ≤ a → readByte s0 a = 0) :
     ((memRaw tr pub).map decMsg).Nodup ∧ (∀ x ∈ (memRaw tr pub).map decMsg, x.tp = 0 ∧ x.space = 3) ∧
-      HeapOK ⟨0, 0, [], (· ∈ (memRaw tr pub).map decMsg)⟩ s0 1 := by
+      ∃ (T : List Nat) (tpm : Nat → Nat), T.Nodup ∧ (∀ a ∈ T, a < memBytes s0) ∧ (∀ a ∈ T, tpm a < 1) ∧
+        ∀ x, x.space = 3 → (x ∈ (memRaw tr pub).map decMsg ↔ x ∈ memView T s0 tpm) := by
   rw [memRaw_eq]
   let rows := (List.range (tr.height 17)).filter fun r => rowNat tr 17 r 0 = 1
   have hrow : ∀ r ∈ rows, r < tr.height 17 ∧ rowNat tr 17 r 0 = 1 := by
@@ -330,7 +331,7 @@ theorem meminit_init {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} {s
     simp only [memView, List.map_map]
     refine List.map_congr_left fun r hr => ?_
     simp only [Function.comp, (hfacts r hr).2.2]
-  refine ⟨?_, ?_, hpok, rows.map fun r => rowNat tr 17 r 1, fun _ => 0, hT, ?_, fun _ _ => by simp, ?_⟩
+  refine ⟨?_, ?_, rows.map fun r => rowNat tr 17 r 1, fun _ => 0, hT, ?_, fun _ _ => by simp, ?_⟩
   · refine List.pairwise_map.mpr (hpw.imp fun h e => ?_)
     have := congrArg Msg.slot e
     simp only [encB_slot] at this

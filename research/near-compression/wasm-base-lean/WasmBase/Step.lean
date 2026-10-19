@@ -124,7 +124,8 @@ theorem straight_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat →
     (hsb : E.sb ≤ stk'.size) (hH : X.ck.heights[pc + 1]? = some (stk'.size - E.sb))
     (hgs : X.R * (S + fee) ≤ X.g0)
     (s' : St) (hs'stk : s'.stack = stk') (hs'fr : s'.frames = { f with pc := pc + 1, locals := locs' } :: E.rest)
-    (hs'g : s'.gas.g = s.gas.g - X.R * fee) (hs'pg : s'.pages = s.pages) :
+    (hs'g : s'.gas.g = s.gas.g - X.R * fee) (hs'pg : s'.pages = s.pages)
+    (hs'gl : s'.globals = s.globals) :
     RelW X E s' { f with pc := pc + 1, locals := locs' }
       (fun i => if i < s.stack.size - k then tps i else t) (fun j => if some j = J then t else tpl j)
       (t + 1) (pc + 1) (S + fee)
@@ -166,7 +167,7 @@ theorem straight_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat →
   entry := R.entry
   sbLt := R.sbLt
   cidLt := R.cidLt
-  heap := R.heap.mono hs'pg (by omega)
+  heap := R.heap.mono hs'pg hs'gl (by omega)
   live := by
     intro x
     rw [hs'stk]

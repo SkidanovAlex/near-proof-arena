@@ -14,8 +14,8 @@ pass=0; fail=0
 for w in "$OUT"/progs/*.wasm; do
   n=$(basename "$w" .wasm)
   "$TOOL" prep "$w" main $G0 > "$OUT/progs/$n.prep.json"
-  read -r nloc ncode <<<"$(python3 -c "import json;d=json.load(open('$OUT/progs/$n.prep.json'));print(len(d['localTags']),d['ncode'])")"
-  [ -f "$OUT/air-$nloc-$ncode.json" ] || "$TOOL" air "$nloc" "$ncode" > "$OUT/air-$nloc-$ncode.json"
+  read -r nloc ngl <<<"$(python3 -c "import json;d=json.load(open('$OUT/progs/$n.prep.json'));print(len(d['localTags']),d.get('ngl',0))")"
+  [ -f "$OUT/air-$nloc-g$ngl.json" ] || "$TOOL" air "$nloc" "$ngl" > "$OUT/air-$nloc-g$ngl.json"
   # Python reference vs Lean spec (value and step count)
   python3 - "$OUT/progs/$n.json" "$OUT/progs/$n.prep.json" <<'PY'
 import json, sys
@@ -28,7 +28,7 @@ else:
     l = sp['stack'][-1]['limbs']; v = l[0] | l[1] << 16 | l[2] << 32 | l[3] << 48
     assert v == ref['result'], (v, ref['result'])
 PY
-  if "$BIN" check "$OUT/air-$nloc-$ncode.json" "$OUT/progs/$n.prep.json" > "$OUT/progs/$n.check.log" 2>&1; then
+  if "$BIN" check "$OUT/air-$nloc-g$ngl.json" "$OUT/progs/$n.prep.json" > "$OUT/progs/$n.check.log" 2>&1; then
     pass=$((pass+1))
   else
     fail=$((fail+1)); echo "FAIL $n"; tail -3 "$OUT/progs/$n.check.log"

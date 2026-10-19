@@ -6,7 +6,7 @@ public value and for the three selectors, i.e. far outside the trace domain), co
   * Lean: `wasmbase-tool eval` evaluates `WasmBase.wasmBaseAir` (the in-memory Lean value);
   * Rust: the SWIRL keygen's symbolic DAG in the verifying key (constraints in order, and every
     interaction's bus, signed count and message).
-Usage: difftest.py <nloc> <ncode> <scratch> [n]"""
+Usage: difftest.py <nloc> <ngl> <scratch> [n]"""
 import json, os, subprocess, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 P = 2013265921

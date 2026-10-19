@@ -193,6 +193,17 @@ theorem mem_memView {x : Msg} {T : List Nat} {s : St} {tpm : Nat → Nat} :
   · rintro ⟨a, ha, rfl⟩; exact ⟨a, ha, rfl⟩
   · rintro ⟨a, ha, rfl⟩; exact ⟨a, ha, rfl⟩
 
+/-- The globals as channel messages (space 2, slot = global index), producer times `tpg`. -/
+def globView (gs : Array Val) (tpg : Nat → Nat) : List Msg :=
+  (List.range gs.size).map fun g => enc 2 g (gs[g]?.getD default) (tpg g)
+
+theorem mem_globView {x : Msg} {gs : Array Val} {tpg : Nat → Nat} :
+    x ∈ globView gs tpg ↔ ∃ g, g < gs.size ∧ x = enc 2 g (gs[g]?.getD default) (tpg g) := by
+  simp only [globView, List.mem_map, List.mem_range]
+  constructor
+  · rintro ⟨g, hg, rfl⟩; exact ⟨g, hg, rfl⟩
+  · rintro ⟨g, hg, rfl⟩; exact ⟨g, hg, rfl⟩
+
 /-- The heap part of the outer live set: every page has `pageSize` bytes, and the space-3 messages
 of `E.live` are exactly one message per touched byte `a ∈ T` (in bounds), carrying the current
 byte, produced before `t`.  `T` is fixed for the whole run (the MEMINIT rows). -/
@@ -200,6 +211,9 @@ structure HeapOK (E : Env) (s : St) (t : Nat) : Prop where
   pages : PagesOK s
   mem : ∃ (T : List Nat) (tpm : Nat → Nat), T.Nodup ∧ (∀ a ∈ T, a < memBytes s) ∧ (∀ a ∈ T, tpm a < t) ∧
     ∀ x, x.space = 3 → (E.live x ↔ x ∈ memView T s tpm)
+  /-- The globals (space 2): numeric, one live message each, produced before `t`. -/
+  glob : ∃ (tpg : Nat → Nat), (∀ g, g < s.globals.size → tpg g < t ∧ isNum (s.globals[g]?.getD default)) ∧
+    ∀ x, x.space = 2 → (E.live x ↔ x ∈ globView s.globals tpg)
 
 theorem readByte_congr {s s' : St} (h : s'.pages = s.pages) (a : Nat) : readByte s' a = readByte s a := by
   simp only [readByte, h]
@@ -208,13 +222,16 @@ theorem memBytes_congr {s s' : St} (h : s'.pages = s.pages) : memBytes s' = memB
   simp only [memBytes, h]
 
 theorem HeapOK.mono {E : Env} {s s' : St} {t t' : Nat} (H : HeapOK E s t) (hpg : s'.pages = s.pages)
-    (ht : t ≤ t') : HeapOK E s' t' := by
+    (hgl : s'.globals = s.globals) (ht : t ≤ t') : HeapOK E s' t' := by
   obtain ⟨T, tpm, hnd, hlt, htp, hv⟩ := H.mem
+  obtain ⟨tpg, hg, hgv⟩ := H.glob
   refine ⟨fun i h => by have := H.pages i (by rw [← hpg]; exact h); simpa only [hpg] using this,
-    T, tpm, hnd, fun a ha => by rw [memBytes_congr hpg]; exact hlt a ha, fun a ha => by have := htp a ha; omega,
-    fun x hx => ?_⟩
-  rw [hv x hx]
-  simp only [memView, readByte_congr hpg]
+    ⟨T, tpm, hnd, fun a ha => by rw [memBytes_congr hpg]; exact hlt a ha, fun a ha => by have := htp a ha; omega,
+    fun x hx => ?_⟩, ⟨tpg, fun g h => ?_, fun x hx => ?_⟩⟩
+  · rw [hv x hx]
+    simp only [memView, readByte_congr hpg]
+  · rw [hgl] at h ⊢; have := hg g h; exact ⟨by omega, this.2⟩
+  · rw [hgv x hx, hgl]
 
 /-- **The simulation relation** between a spec state and the AIR view at time `t` (design note:
 results/pq-wasm-base/README.md §10). -/

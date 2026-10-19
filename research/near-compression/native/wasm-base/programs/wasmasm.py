@@ -5,7 +5,8 @@ instruction is a tuple ('i32.const', v), ('br', l), ('block', None|'i32'|'i64'),
 ('end',), ('local.get', i), or a bare mnemonic string ('i64.add').  The implicit final `end` of the
 body is appended.  Optional `data`: a list of `(offset, bytes)` active data segments (a memory
 section with one page is emitted when `memory` or `data` is present).  Memory instructions are
-`('i32.load', offset)` etc. (natural alignment).
+`('i32.load', offset)` etc. (natural alignment).  Optional `globals`: a list of `(type, mutable, init)`
+module globals with constant initialisers, accessed by `('global.get', g)` / `('global.set', g)`.
 """
 
 VT = {'i32': 0x7F, 'i64': 0x7E}
@@ -85,6 +86,8 @@ def instr(i):
         return bytes([code]) + uleb(align) + uleb(i[1] if len(i) > 1 else 0)
     if op in ('local.get', 'local.set', 'local.tee'):
         return bytes([{'local.get': 0x20, 'local.set': 0x21, 'local.tee': 0x22}[op]]) + uleb(i[1])
+    if op in ('global.get', 'global.set'):
+        return bytes([0x23 if op == 'global.get' else 0x24]) + uleb(i[1])
     raise ValueError(op)
 
 
@@ -113,9 +116,13 @@ def assemble(prog):
     mem = b''
     if prog.get('memory') or data:
         mem = section(5, vec([b'\x00' + uleb(1)]))
+    gsec = b''
+    if prog.get('globals'):
+        gsec = section(6, vec([bytes([VT[t], 1 if m else 0]) + instr((f'{t}.const', v)) + b'\x0B'
+                                for t, m, v in prog['globals']]))
     dsec = b''
     if data:
         dsec = section(11, vec([b'\x00\x41' + sleb(off) + b'\x0B' + uleb(len(bs)) + bytes(bs) for off, bs in data]))
-    return (b'\x00asm\x01\x00\x00\x00' + section(1, vec([ftype])) + section(3, vec([uleb(0)])) + mem +
+    return (b'\x00asm\x01\x00\x00\x00' + section(1, vec([ftype])) + section(3, vec([uleb(0)])) + mem + gsec +
             section(7, vec([uleb(len(name)) + name + b'\x00' + uleb(0)])) +
             section(10, vec([uleb(len(body)) + body])) + dsec)

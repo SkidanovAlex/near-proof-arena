@@ -2,12 +2,13 @@ import WasmBase.Check
 /-!
 `wasmbase-tool` — exporter and verifier-side preparation for the direct-Wasm base layer.
 
-* `wasmbase-tool air <ncode>`: the AIR `wasmBaseAir ncode` as JSON (the Rust crate interprets it).
+* `wasmbase-tool air <nloc> <ngl>`: the AIR `wasmBaseAir nloc ngl` as JSON (the Rust crate interprets it;
+  `ngl` is the number of globals).
 * `wasmbase-tool prep <file.wasm> <exportName> <g0>`: `prepare` (PV86), `check` of the exported function,
   and a reference execution with the spec's own `step` from the post-`enter` state with
   `gas.g = g0` (after the prologue charge), as JSON.
-* `wasmbase-tool eval <ncode> <points>`: evaluate every constraint, interaction count and message
-  of `wasmBaseAir ncode` at the given points (difftest; selectors are free field values).
+* `wasmbase-tool eval <nloc> <ngl> <points>`: evaluate every constraint, interaction count and message
+  of `wasmBaseAir nloc ngl` at the given points (difftest; selectors are free field values).
 -/
 open NearSpecV3.Wasm WasmBase ZkFormal.Algebra
 
@@ -105,7 +106,8 @@ def prep (path exportName : String) (g0 : Nat) : IO Unit := do
           let recs := ck.records.toList.map natList
           let de := dataEnd s1
           let img := (List.range de).map fun a => (readByte s1 a).toNat
-          IO.println s!"\{\"eligible\":true,\"fn\":{fn},\"ncode\":{ck.records.size},\"localTags\":{natList ck.localTags},\"arity\":{ck.arity},\"resTag\":{ck.resTag},\"maxFee\":{ck.maxFee},\"regularOpCost\":{cfg.regularOpCost},\"g0\":{g1},\"steps\":{n},\"status\":{jStr status},\"gFinal\":{gf},\"stack\":{jList (vals.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")},\"heights\":{natList ck.heights.toList},\"records\":{jList recs},\"mem\":{memBytes s1},\"dataEnd\":{de},\"data\":{natList img}}"
+          let gls := s1.globals.toList.map valLimbs
+          IO.println s!"\{\"eligible\":true,\"fn\":{fn},\"ncode\":{ck.records.size},\"localTags\":{natList ck.localTags},\"arity\":{ck.arity},\"resTag\":{ck.resTag},\"maxFee\":{ck.maxFee},\"regularOpCost\":{cfg.regularOpCost},\"g0\":{g1},\"steps\":{n},\"status\":{jStr status},\"gFinal\":{gf},\"stack\":{jList (vals.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")},\"heights\":{natList ck.heights.toList},\"records\":{jList recs},\"mem\":{memBytes s1},\"dataEnd\":{de},\"data\":{natList img},\"ngl\":{gls.length},\"globals\":{jList (gls.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")}}"
         | _ => throw (IO.userError "enter failed")
   | .prepErr v w => IO.println s!"\{\"eligible\":false,\"prepare\":{jStr v},\"why\":{jStr w}}"
   | .compileErr _ _ => IO.println "{\"eligible\":false,\"prepare\":\"compile\"}"
@@ -139,4 +141,4 @@ def main (args : List String) : IO Unit := do
   | ["air", l, n] => IO.println (airJson (wasmBaseAir l.toNat! n.toNat!))
   | ["prep", path, exportName, g0] => prep path exportName g0.toNat!
   | ["eval", l, n, path] => evalPoints l.toNat! n.toNat! path
-  | _ => IO.eprintln "usage: wasmbase-tool air <ncode> | prep <wasm> <exportName> <g0> | eval <ncode> <points>"
+  | _ => IO.eprintln "usage: wasmbase-tool air <nloc> <ngl> | prep <wasm> <exportName> <g0> | eval <nloc> <ngl> <points>"

@@ -21,6 +21,8 @@ theorem ctrl_kind_next {ls : List Label} {ins : Instr} (h : kindOf ls ins = some
   case num op => split at h <;> (try simp_all)
   case load => split at h <;> simp_all
   case store => split at h <;> simp_all
+  case globalGet => split at h <;> simp_all
+  case globalSet => split at h <;> simp_all
 
 theorem ctrl_kind_jump {ls : List Label} {ins : Instr} {tg : Nat} (h : kindOf ls ins = some (.jump tg)) :
     ∃ l lab, ins = .br l ∧ l + 1 < ls.length ∧ ls[l]? = some lab ∧ tg = lab.target := by
@@ -39,6 +41,8 @@ theorem ctrl_kind_jump {ls : List Label} {ins : Instr} {tg : Nat} (h : kindOf ls
   case num op => split at h <;> (try simp_all)
   case load => split at h <;> simp_all
   case store => split at h <;> simp_all
+  case globalGet => split at h <;> simp_all
+  case globalSet => split at h <;> simp_all
 
 theorem ctrl_kind_jif {ls : List Label} {ins : Instr} {tg : Nat} (h : kindOf ls ins = some (.jumpIf tg)) :
     ∃ l lab, ins = .brIf l ∧ l + 1 < ls.length ∧ ls[l]? = some lab ∧ tg = lab.target := by
@@ -57,6 +61,8 @@ theorem ctrl_kind_jif {ls : List Label} {ins : Instr} {tg : Nat} (h : kindOf ls 
   case num op => split at h <;> (try simp_all)
   case load => split at h <;> simp_all
   case store => split at h <;> simp_all
+  case globalGet => split at h <;> simp_all
+  case globalSet => split at h <;> simp_all
 
 theorem ctrl_kind_halt {ls : List Label} {ins : Instr} (h : kindOf ls ins = some .halt) :
     (ins = .end_ ∧ ls.length = 1) ∨ ins = .ret ∨ (∃ l, ins = .br l ∧ l + 1 ≥ ls.length) := by
@@ -68,6 +74,8 @@ theorem ctrl_kind_halt {ls : List Label} {ins : Instr} (h : kindOf ls ins = some
   case num op => split at h <;> (try simp_all)
   case load => split at h <;> simp_all
   case store => split at h <;> simp_all
+  case globalGet => split at h <;> simp_all
+  case globalSet => split at h <;> simp_all
 
 theorem ctrl_kind_hif {ls : List Label} {ins : Instr} (h : kindOf ls ins = some .haltIf) :
     ∃ l, ins = .brIf l ∧ l + 1 ≥ ls.length := by
@@ -82,6 +90,8 @@ theorem ctrl_kind_hif {ls : List Label} {ins : Instr} (h : kindOf ls ins = some 
   case num op => split at h <;> simp_all
   case load => split at h <;> simp_all
   case store => split at h <;> simp_all
+  case globalGet => split at h <;> simp_all
+  case globalSet => split at h <;> simp_all
 
 theorem ctrl_facts (c : Nat → Nat) (rw : Row) (hP : ∀ i, c i < P)
     (hc : ∀ e ∈ Ctrl.constraints, e.eval (natRow c rw) = 0) :
@@ -319,7 +329,7 @@ theorem ctrl_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   rw [f5, f6, f7, f8, f9] at hop <;>
   simp only [Ctrl.opNext, Ctrl.opJump, Ctrl.opJif, Ctrl.opHalt, Ctrl.opHif] at hop <;>
   rcases hcase with ⟨v, hv, h, hl⟩ | ⟨v, hv, h, hl⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨x, hv, h, hl⟩ | ⟨x, hv, h, hl⟩ |
-    ⟨x, hv, h, hl⟩ | ⟨_, hf, _⟩ | ⟨hk, h, hl⟩ | ⟨tg, hk, h, hl⟩ | ⟨tg, hk, h, hl⟩ | ⟨hk, h, hl⟩ | ⟨hk, h, hl⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, _, hmem, _⟩
+    ⟨x, hv, h, hl⟩ | ⟨_, hf, _⟩ | ⟨hk, h, hl⟩ | ⟨tg, hk, h, hl⟩ | ⟨tg, hk, h, hl⟩ | ⟨hk, h, hl⟩ | ⟨hk, h, hl⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, hgl, _⟩ | ⟨_, _, hgl, _⟩
   all_goals first
     | (exfalso; simp only [isBinop, binops, List.mem_cons, List.mem_nil_iff, or_false] at hop; omega)
     | (exfalso; omega)
