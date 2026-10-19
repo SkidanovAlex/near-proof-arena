@@ -1,6 +1,7 @@
 # NV verifies children with preprocessed (and cached) traces
 
-Lane `lane/pq-nv-preprocessed`, branched from `lane/pq-recursion-sha384` @ 07822685a, 2026-10-19.
+Lane `lane/pq-nv-preprocessed`, branched from `lane/pq-recursion-sha384` @ 07822685a, 2026-10-19;
+merged with its head 717eb518e (bind on by default, FINAL at the fixed point, V_d pinned program).
 
 Labels: **[measured]** = run here; **[model]** = `prep_model.py` on top of the recursion lane's
 `extrapolate_nv2.py` and the `size_cut3.py` milestones; **[estimate]** = counted from the design.
@@ -21,7 +22,9 @@ Labels: **[measured]** = run here; **[model]** = `prep_model.py` on top of the r
   `k1`, so a cached child could not be proven under the k1 lever. It is fixed in the 3-line overlay
   `stark-backend-prep.patch`.
 * **Tests.** All pass: honest preprocessed child, tampered commitment, wrong vk constant, other
-  table, cached children, the O-2 multi-commitment rule, and program ≡ native on every proof element.
+  table, cached children, the O-2 multi-commitment rule, and program ≡ native on every proof element
+  (19,365 elements, 0 mismatches). The fast NV suite is 67/67 in both digest modes after the merge
+  with 717eb518e.
   Each runs at program level, and the rejections also run at the full NV constraint level (debug
   prover). They run in the default and all-lever modes, in both digest modes (§5).
 * **Demo.** A toy base in the pq-wasm-base FETCH style has a preprocessed CODE table (8-felt records
@@ -38,9 +41,12 @@ Labels: **[measured]** = run here; **[model]** = `prep_model.py` on top of the r
   * **Scenario A** (the plan this lane recommends): only the base carries extra commitments. The NV
     fixed point and FINAL do not change, so the final stays at **287,557 B [model]** (measured
     provisional 287,477 B).
-  * **Scenario B1** (program binding by commitment, §8): **295.7 KB [model]**, or 293.2 KB once
-    about 1k program rows are cut to get back to L = 24. App-table binding with a real L1 costs
-    315.7–321.4 KB.
+  * **Scenario B1** (the recursion lane's G2 design, program binding by a second commitment, §8):
+    * with FINAL choosing its own shape: **295.7 KB [model]**, or 293.2 KB once about 1k program
+      rows are cut to get back to L = 24;
+    * with FINAL at the fixed point (717eb518e): 296.1 KB at the k1 = 1 shape (baseline 290.5 KB),
+      313.3 KB at the k1 = 2 shape (baseline 300.2 KB).
+    * App-table binding with a real L1 costs 315.7–321.4 KB.
 
 ## 1. How the native protocol handles a preprocessed trace (what NV mirrors)
 
@@ -125,7 +131,9 @@ Measured checks:
 * Small child (l_skip 2, n_stack 8, k = 3, no coset leaf, depth 8, 10 queries): 288 → 415 rows per
   round-0 query for one extra width-1 tree (+127 = 8 + 49 + 16 + 8 + 40 + 6), and 542 for two extra
   trees (preprocessed + 1 cached). The program goes from 8,138 rows (Fib) to 9,509 (preprocessed Fib).
-* With all levers (k1 = 1, ×15, coset leaf, 42 B), see `logs/qcost-levers.log`.
+* With all levers (k1 = 1, ×15, coset leaf, 42 B; round-0 depth 10 + 4 = 14): 195 → 274 rows per
+  round-0 query (+79 = 7 + 2·1 + 5·14, the law exactly) and +14 Merkle nodes per query. The program
+  goes from 4,991 rows (Fib) to 5,518 (`logs/qcost-levers.log`).
 
 The per-query term is a full Merkle path for every query, since NV verifies one path per query (the
 multiproof lever only shrinks proof bytes). So **every extra commitment costs about one more WHIR
@@ -167,6 +175,14 @@ provisional.
 | app-table binding, real L1 400k rows | 315,677 | 26 | 41 | 1,046,200 | 822,272 |
 | app-table binding, real L1 624k rows | 321,445 | 26 | 41 | 1,499,694 | 843,264 |
 
+With FINAL at the fixed point (recursion lane @717eb518e: FINAL runs the uniform program at the
+penultimate's shape; `final_at` reproduces the lane's 300,191 B and 290,477 B exactly):
+
+| penultimate = FINAL shape (b, log_h, k1, k, lf) | baseline | B1 (app table removed) |
+|---|---:|---:|
+| (7, 20, 2, 4, 6) | 300,191 B (L 24) | 313,295 B (L 25) |
+| (7, 20, 1, 4, 7) | 290,477 B (L 25) | 296,117 B (L 25) |
+
 In B1, the extra cost is about 2/3 cells and 1/3 GKR:
 * The extra round-0 tree of the penultimate child adds q0 × (depth + 1) ≈ 1.3k compressions, which
   is +196k SHA rows.
@@ -188,11 +204,11 @@ buses), which must panic. Logs are in `logs/`.
 | `nv_prep_other_table` | A proof for table B under table A's program and the reverse, with the same AIR and heights and a different selector column, are rejected. A vk claiming B's commitment with A's pre-hash, on A's proof, is rejected by the Merkle root (program and circuit). | pass |
 | `nv_prep_cached` | Cached children: CachedFixture11 (3 commitments), preprocessed + 1 and + 3 cached parts (3 and 5 commitments). Honest children pass the full constraint check. A tampered cached commitment in the proof is rejected. | pass |
 | `nv_prep_o2_round0` | A preprocessed child with Johnson round 0 verifies; with first-order round 0 the generator refuses it. | pass |
-| `nv_prep_every_proof_element` | Program ≡ native on every single-element mutation (EF/F + 1, digest bit flips, cached commitments included), for 3 fixtures (preprocessed Fib, preprocessed + 2 cached, toy base with 2 preprocessed AIRs) × 3 lever sets. | see `logs/elements.log` |
+| `nv_prep_every_proof_element` | Program ≡ native on every single-element mutation (EF/F + 1, digest bit flips, cached commitments included), for 3 fixtures (preprocessed Fib, preprocessed + 2 cached, toy base with 2 preprocessed AIRs) × 3 lever sets. | **19,365 elements, 0 mismatches** (19,364 both reject, 1 both accept) |
 | `nv_prep_demo_toy_base` | §6. | pass |
 | `nv_prep_demo_wrong_program` | An execution of another program (one record changed) is rejected under this program's NV (program and circuit). A tampered code-table opening is rejected. | pass |
 | program identity | Single-commitment Fib and Interactions programs are byte-identical before and after (instrs, vals, jobs, transcript), in the default and all-lever + 42 B modes. | identical |
-| fast NV suite | `nv:: config:: final_layer_domain o2_agreement dkt_cert`, 48 B and 42 B + coset leaf: everything passes except `nv_statement_passthrough`. That test fails identically on the unmodified head 07822685a: "child ALU height must equal ours", from the WIP `bind = bind \|\| child_nv` default; owner is the recursion lane. | 65/66 + 1 pre-existing |
+| fast NV suite | `nv:: config:: final_layer_domain o2_agreement dkt_cert`, 48 B and 42 B + coset leaf, on the merge with 717eb518e. (Before the merge, `nv_statement_passthrough` failed identically on the unmodified 07822685a, from the WIP bind default; it is fixed upstream.) | **67/67 both modes** |
 | levers | `nv_prep*` with every child lever (k1 = 1, ×15, keep-domain, multiproof, Gruen GKR/ZC, derived claims, next mask, WHIR-Y, tight, wide PoW), 48 B and 42 B + coset leaf. | pass |
 
 ## 6. Demo: toy base with a preprocessed CODE table [measured]
@@ -264,73 +280,96 @@ rows move with n.
 
 ## 8. Binding design note: program binding at levels ≥ 2 by commitment (G2) [design, not built]
 
-This refines the recursion lane's G2 note (`pq-recursion-nv/README.md`, "Gap G2") with this lane's
-mechanism and costs. **No binding code is changed here**; the recursion lane owns binding and is
-fixing G1.
+This builds on the recursion lane's G2 design (`pq-recursion-nv/README.md`, "Gap G2", head
+717eb518e). Their design:
+* every NV-family proof gets a second commitment holding its program;
+* the uniform program selects the child's program commitment: the constant C_L1 for a level-1
+  child, or a witness root bound by BIND for a level ≥ 2 child;
+* FINAL stays single-commitment, pinned by V_d;
+* inner proofs move round 0 to Johnson.
 
-**Problem.**
-* Today L2 checks that its child L1's program columns P0..P3, opened at the child's batch point r,
-  equal the fixed L1 program P_L1. It does this by evaluating Σ_x eq(r, x)·pw(P_L1[x]) over a data
-  copy of P_L1 (the app table).
-* Every level carries this table, because the program is uniform. That costs O(|P_L1|) = 400–624k
-  rows over a real base.
+**This lane's NV support is what implements the parent side.** The second commitment is one more
+round-0 tree (P2, P5–P8), and its root cells are `extra_commits[a]`. **No binding code is changed
+here.** The recursion lane owns binding.
 
-**Why the commitment is cached and not preprocessed.**
-* A preprocessed program commitment lives in the vk. The NV vk would then contain the commitment of
-  its own program.
-* But the program contains the child vk's pre-hash, which at the fixed point is its own pre-hash.
-* That is circular. A cached commitment is a proof value, so the vk stays uniform and acyclic.
+### 8.1 The design, as it maps onto this lane's mechanism
 
-**Design B1.**
-1. **NvAir program columns become a cached part.** P0..P3 (4 columns at the NvAir height) move to a
-   cached main part (`PartitionedBaseAir::cached_main_widths = [4]`). The BIND role reads them via
-   `Entry::Main{part_index: 0}`, and common main becomes the last part.
-   * The prover commits the program trace as `CommittedTraceData`. It is the same for every proof of
-     a level, so it is committed once and cached.
-   * Every NV-family proof (L1, L2, …, penultimate) has two commitments: common main and C_P.
+1. **The NvAir program columns become a separate part.** P0..P3 (4 columns at the NvAir height)
+   move to their own part, and the BIND role reads them from it. The prover commits the program
+   trace once per level, since it is identical for every proof of the level.
 2. **The parent check is selected by the child's level flag** (the existing `flag = [child level ≠ 1]`):
    * **child level 1:** `(C_P − C_L1)·(1 − flag) = 0` on the two digest cells, about 6 rows.
-     * C_L1 is a 42/48-byte constant of the NV program: the commitment of P_L1 at the NV parameters,
-       computed at setup by the same `stacked_commit_odd` as a preprocessed keygen. It is
-       deterministic and anyone can recompute it.
-     * The child's program openings at r are then WHIR-bound to MLE(P_L1)(r), so no table is needed.
-   * **child level ≥ 2:** BIND as today, gated by flag. The opening of the child's (witness) program
-     tree at r must equal Σ_x eq(r, x)·pw(own P[x]), the ACC row.
-   * The C_P cells already exist in this lane's generator (`extra_commits[a]`, a loaded root), so the
-     check is one gated `assert_eq` per cell.
-3. **FINAL keeps one commitment.** Its program stays in common main, and V_d checks it natively (G8).
-   * FINAL verifies a two-commitment penultimate. It binds that child with
-     `C_P(penultimate) = C_NV`, where C_NV is the constant commitment of the uniform NV program. This
-     is not circular, because FINAL's program differs from NV's.
-   * This closes the open "FINAL does not bind its child program" gap (README Q3) at about 6 rows,
-     instead of option (a), uniform FINAL params, or option (b) with a 6k-row data table.
+     * C_L1 is the commitment of P_L1 at the NV parameters, computed at setup by the same
+       `stacked_commit_odd` as a preprocessed keygen. It is a constant of the NV program, and it is
+       deterministic and recomputable.
+     * The child's program openings at r are then WHIR-bound to MLE(P_L1)(r), so no app table is
+       needed.
+   * **child level ≥ 2:** BIND as today, gated by flag: the opening of the child's program tree at r
+     equals Σ_x eq(r, x)·pw(own P[x]), the ACC row.
+3. **FINAL** runs the uniform program at the fixed point (717eb518e), so it BINDs its child like any
+   level. Its own proof keeps the program in common main: same program, AIR partition without the
+   program part, one commitment. V_d's `check_final_program` reads the program openings from common
+   main, which is unchanged.
 4. **The app table and the APPB role are removed.**
-5. **Chain of constants:** V_d pins FINAL's program → FINAL pins the penultimate by C_NV → each NV
-   level pins its child by BIND (child = own) → L2 pins L1 by C_L1 → L1's program pins the base vk
-   (pre-hash, preprocessed roots, DAG) → the base pins CODE through the statement (cached root, §6).
+5. **Chain of constants:** V_d pins FINAL's program → FINAL and every NV level pin their child by
+   BIND (child = own) → L2 pins L1 by C_L1 → L1's program pins the base vk (pre-hash, preprocessed
+   roots, DAG) → the base pins CODE through the statement (cached root, §6).
 
-**Size estimate [model, §4.3].**
-* Final 295,741 B (L = 25), or 293,197 B with about 1k program rows cut to return to L = 24. This is
-  independent of |P_L1|.
-* Against app-table binding: 287,557 B with a toy L1, and 315,677–321,445 B with the real 400–624k
-  row L1. B1 saves 20–28 KB at real scale and costs +5.6–8.2 KB against the toy figure.
+### 8.2 Disagreements and corrections
+
+* **D1: the second commitment must be *cached*, not preprocessed.** The design note calls it
+  preprocessed, but two of its own requirements rule that out.
+  * A preprocessed commitment is part of the vk, and the native verifier takes its root from the vk
+    (`avk.preprocessed_data.commit`), never from the proof. So a level ≥ 2 child's "witness root"
+    cannot be a preprocessed commitment.
+  * A vk that contains its own program's commitment is circular. The uniform program contains the
+    child vk's pre-hash, which at the fixed point is its own pre-hash, and that pre-hash would hash
+    in the program commitment.
+  * What the design needs is a **cached main part**: the root is a proof value, observed in the
+    preamble after the heights, and the vk stays uniform. This lane supports cached children: a
+    loaded root, the same Merkle checks, tests `nv_prep_cached` and the cached commitments in
+    `nv_prep_every_proof_element`.
+  * The level-1 check is then an equality of that loaded root with the constant C_L1. "Preprocessed"
+    describes only how C_L1 is computed (deterministic setup).
+  * The native cached-trace path needed one fix under k1 (§7). R5 (tight heights × cached) applies
+    to NvAir's program part if the tight lever is on.
+* **D2: the cost is higher than the README's +5.7k rows per level, and mostly SHA, not ALU.**
+  * The README counts 41 × (26 levels × 5 + 10). At the adopted penultimate (b 7, log_h 20, k1 2,
+    ×15) the round-0 depth is 20 + 7 − 2 + 4 = **29**, and Johnson round 0 gives q0 = **44**
+    (+3, not +2) in `extrapolate_nv2`. With the measured per-query law (7 + 2^k1·⌈w/2⌉ + 5·depth)
+    that is **≈ 6.8k program rows**.
+  * More important is the **≈ 1.3k extra SHA compressions per level (+170–196k SHA rows)**. They
+    dominate the byte cost through cells, and NvAir crosses 2^18 (L 24 → 25).
+  * Modelled finals are in §4.3:
+    * FINAL choosing its own shape: 295.7 KB (293.2 KB at L 24 after about 1k program rows of cuts);
+    * FINAL at the fixed point: 296.1 KB at the k1 = 1 shape (baseline 290.5 KB), 313.3 KB at the
+      k1 = 2 shape (baseline 300.2 KB).
+  * In all cases this is still well under app-table binding with a real L1 (315.7–321.4 KB) and
+    independent of |P_L1|.
+* **D3 (minor): FINAL single-commitment needs a second AIR partition.** At the fixed point FINAL runs
+  the same program as the NV levels, but its own AIR set must keep P0..P3 in common main. Otherwise
+  FINAL's proof has two commitments: Johnson round 0 on the final proof and one more tree in the
+  bytes. So NvCircuit needs a "program part on/off" switch. It does not change the program, because
+  the program depends on the *child's* vk.
+
+### 8.3 Size estimate [model, §4.3]
+
 * Per level:
-  * +q0 × (7 + 2·1 + 5·29) ≈ 6.8k program rows, plus about 110 fixed rows;
-  * +1.3k compressions (+170k SHA rows), plus three Johnson queries in round 0;
+  * +q0 × (7 + 2^k1 + 5·29) ≈ 6.8k program rows, plus about 110 fixed rows (constant/loaded root,
+    4 opened columns, stacking);
+  * +q0 × 30 ≈ 1.3k compressions, plus three Johnson queries in round 0;
   * −10,988 app-table program rows and their data/BIND rows.
+* Final, FINAL choosing its own shape: 295,741 B (L 25), or 293,197 B with about 1k program rows cut.
+* Final, FINAL at the fixed point: 296,117 B (k1 = 1 shape), against 290,477 B without the program
+  commitment.
+* Against app-table binding with the real 400–624k row L1: 315,677–321,445 B.
 
 **Alternatives considered.**
 * *Preprocessed program with the vk hash as a public value:* the pre-hash becomes a witness, passed
-  through and checked by V_d. This avoids cached commitments, but the preamble's first observation
-  becomes a witness, and that needs its own soundness argument.
+  through and checked by V_d. This would allow a truly preprocessed program commitment, but the
+  preamble's first observation becomes a witness, which needs its own soundness argument.
 * *In-circuit WHIR opening of C_L1 at r:* 60–80k rows per level.
 * *Keeping the app table:* O(|P_L1|).
-
-**For the recursion lane to decide:**
-* whether the Johnson round-0 cost on inner levels (q0 +3) is acceptable;
-* C_L1's exact parameters: it must be recomputed whenever the NV params, the digest mode, or the L1
-  program change;
-* whether NvAir's cached part interacts with the tight-heights lever (R5).
 
 ## 9. Open risks
 
@@ -342,7 +381,8 @@ fixing G1.
   cached-CODE design moves the code binding into the statement. V_d or the chain must then check the
   CODE root against the contract's code commitment, which is a new native obligation, not yet
   specified.
-* **R3 Scenario B1 cost.** It is +5.6–8.2 KB on the final and needs NvAir cuts to stay at L = 24.
+* **R3 Scenario B1 cost.** It is +5.6–8.2 KB on the final (+5.6 KB at the fixed-point k1 = 1
+  FINAL shape) and needs NvAir cuts to get back to L = 24.
   Inner levels go to a Johnson round 0. This is a model, not measured.
 * **R4 Audit.** P1–P8 are generator changes with no new constraints. The constant-root mechanism is
   the one already used for the pre-hash, and the per-tree Merkle checks are the existing
@@ -350,8 +390,8 @@ fixing G1.
   (P5).
 * **R5 Tight heights and cached traces** (§7): the device-commit/proof-shape mismatch is native and
   not exercised by the NV tests.
-* **R6 The pre-existing `nv_statement_passthrough` failure** on the recursion head (WIP bind
-  default). It is not related to this lane.
+* **R6 `nv_statement_passthrough`** failed on 07822685a (WIP bind default), unrelated to this lane.
+  It is fixed upstream in 717eb518e (`test_no_bind`) and passes after the merge (§5).
 
 ## 10. Reproduction
 

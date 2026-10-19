@@ -1,6 +1,6 @@
 test nv::faithful_sha_tests::nv_faithful_fake_and_reordered_segments ... ok
-test nv::faithful_sha_tests::nv_faithful_limb_split_exhaustive ... ok
 test nv::faithful_sha_tests::nv_faithful_limb_split_fractional ... ok
+test nv::faithful_sha_tests::nv_faithful_limb_split_exhaustive ... ok
 test nv::faithful_sha_tests::nv_faithful_noncanonical_felt ... ok
 test nv::faithful_sha_tests::nv_faithful_sign_polys ... ok
 test nv::faithful_sha_tests::nv_faithful_tail_framing_unique ... ok
@@ -24,24 +24,28 @@ test nv::faithful_tr_tests::nv_tr_hook_tamper has been running for over 60 secon
 test nv::faithful_tr_tests::nv_tr_hook_tamper ... ok
 test nv::faithful_tr_tests::nv_tr_native_schedule_levers ... ok
 test nv::faithful_tr_tests::nv_tr_pow_free_limb ... ok
-test nv::faithful_tests::nv_statement_passthrough ... FAILED
+test nv::faithful_tr_tests::nv_tr_pow_tamper has been running for over 60 seconds
+test nv::faithful_tr_tests::nv_tr_pow_tamper ... ok
 test nv::faithful_tr_tests::nv_tr_squeeze_id_collision ... ok
 test nv::faithful_tr_tests::nv_tr_tamper ... ok
-test nv::faithful_tr_tests::nv_tr_pow_tamper ... ok
-test nv::hash_tests::nv_hash2_random_jobs ... ok
 test nv::faithful_tr_tests::nv_tr_x15_hook_tamper ... ok
+test nv::hash_tests::nv_hash2_random_jobs ... ok
 test nv::hash_tests::nv_hash2_rejects_mutations ... ok
+test nv::faithful_tests::nv_statement_passthrough ... ok
 test nv::prep_demo::nv_prep_demo_wrong_program ... ok
-test nv::prep_tests::nv_prep_cached ... ok
+test nv::prep_demo::nv_prep_demo_toy_base has been running for over 60 seconds
+test nv::prep_tests::nv_prep_cached has been running for over 60 seconds
 test nv::prep_demo::nv_prep_demo_toy_base ... ok
+test nv::prep_tests::nv_prep_cached ... ok
+test nv::prep_tests::nv_prep_honest ... ok
 test nv::prep_tests::nv_prep_o2_round0 ... ok
 test nv::prep_tests::nv_prep_other_table ... ok
 test nv::prep_tests::nv_prep_tampered_commitment ... ok
 test nv::prep_tests::nv_prep_wrong_vk_constant ... ok
 test nv::tests::dkt_cert_loader ... ok
 test nv::tests::final_layer_domain ... ok
-test nv::prep_tests::nv_prep_honest ... ok
 test nv::tests::nv_circuit_fib_debug ... ok
+test nv::prep_tests::nv_prep_every_proof_element ... ok
 test nv::tests::nv_circuit_interactions_debug ... ok
 test nv::tests::nv_degrees ... ok
 test nv::tests::nv_horn2_tamper ... ok
@@ -68,4 +72,4 @@ test sha384::config::tests::native_transcript_vectors ... ok
 test sha384::config::tests::tstar_counter_mode ... ok
 test sha384::config::tests::tstar_pow ... ok
 test nv::tests::o2_agreement_table ... ok
-test result: FAILED. 65 passed; 1 failed; 2 ignored; 0 measured; 15 filtered out; finished in 415.44s
+test result: ok. 67 passed; 0 failed; 2 ignored; 0 measured; 15 filtered out; finished in 756.32s

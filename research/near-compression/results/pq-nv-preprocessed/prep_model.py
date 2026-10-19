@@ -85,9 +85,31 @@ def show(tag):
     b, ns, k, k1, lf = PEN
     c, pb, q = e.fixed_point(236, 236, 42, b, ns, k1=k1, k=k, lf=lf)
     print(f"{tag:46s} final {pb['total']:,} B (whir {pb['whir']:,} gkr {pb['gkr']:,} L={pb['L']}) | pen q={q} | "
-          f"prog {c['prog']:,} NvAir {c['nv_rows']:,} (2^{math.log2(c['nv_rows']):.3f}, {100 * (1 - c['nv_rows'] / 2 ** 18):+.1f}% to 2^18) "
+          f"prog {c['prog']:,} NvAir {c['nv_rows']:,} (2^{math.log2(c['nv_rows']):.3f}, {100 * (1 - c['nv_rows'] / 2 ** 18):+.1f}% headroom to 2^18) "
           f"SHA {c['sha_rows']:,} | final shape {pb['shape']} q={pb['q']}", flush=True)
     return c, pb
+
+
+def final_at(c, shape, target=236, digest=42):
+    """Final proof bytes when FINAL runs at a fixed (penultimate) shape (recursion lane @717eb518e:
+    FINAL = the uniform program under the final domain; (b, log_h, k1, k, lf))."""
+    b, log_h, k1, k, lf = shape
+    P = e.ext.P(target=target, m=3, extra=e.L15, shrink=0, digest=digest)
+    reg = e.regime_for((b, log_h, k1, k, lf))
+    r = e.with_regime(reg, lambda: e.ext.layer(c['cells'], e.COLS, b, k1, k, log_h, lf, dict(P, colb=0)))
+    w = r['bytes'] - (3112 + 8456 + 1840 + 861)
+    g, L = e.gkr(c['inter'])
+    n = math.ceil(math.log2(max(c['nv_rows'], c['sha_rows']))) - e.L_SKIP
+    certified = (b, log_h, k1, k, lf) in e.CERT_SHAPES
+    reserve = e.o2_reserve(len(r['q'])) if certified and reg == 'O2' else 0
+    return round(w + g + e.relations(n) + e.stacking(log_h - e.L_SKIP, r['width']) + 73 + reserve), L, r['q']
+
+
+def show_fixed_final(tag, pen=PEN):
+    b, ns, k, k1, lf = pen
+    c, pb, q = e.fixed_point(236, 236, 42, b, ns, k1=k1, k=k, lf=lf)
+    tot, L, fq = final_at(c, (b, ns + 2, k1, k, lf))
+    print(f"{tag:46s} FINAL at the penultimate shape {pen}: {tot:,} B (L={L}, final q={fq}) | NvAir {c['nv_rows']:,}", flush=True)
 
 
 def l1_cost():
@@ -97,7 +119,7 @@ def l1_cost():
     for name, b, q0, l1_prog, l1_comps in [("pinned b=1, m=16", 1, 536, 623_802, 22_751 + 1_600),
                                            ("alternative b=2, m=8", 2, 268, 400_280, 14_421 + 1_600)]:
         depth = 2 + 22 + b - 1 + 4
-        for w in (1, 2):
+        for w in (1, 8):
             r, cp = q0 * tree_rows(depth, 1, w) + FIXED_PER_COMMIT, q0 * tree_comps(depth, 1, w)
             print(f"  base {name:22s} depth {depth}, stacked width {w}: +{r:,} program rows "
                   f"({100 * r / l1_prog:.1f}% of L1's {l1_prog:,}), +{cp:,} compressions "
@@ -126,4 +148,16 @@ if __name__ == '__main__':
         e.APP_ROWS = rows
         show(f"app-table binding, real L1 ({rows:,} rows)")
         e.P_FIXED, e.APP_ROWS = saved
+    # FINAL at the fixed point (recursion lane @717eb518e): FINAL = the uniform program, penultimate shape
+    print()
+    for pen in (PEN, (7, 18, 4, 1, 7)):
+        globals()['PEN'] = pen
+        MODE['b1'] = False
+        show_fixed_final("baseline, FINAL at the fixed point", pen)
+        MODE['b1'] = True
+        e.P_FIXED -= e.APP_ROWS; e.APP_ROWS = 0
+        show_fixed_final("B1 (app table removed), FINAL at the fixed point", pen)
+        e.P_FIXED, e.APP_ROWS = saved
+        MODE['b1'] = False
+    globals()['PEN'] = (7, 18, 4, 2, 6)
     l1_cost()
