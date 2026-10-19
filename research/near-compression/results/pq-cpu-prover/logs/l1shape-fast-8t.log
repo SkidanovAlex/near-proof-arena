@@ -1,0 +1,156 @@
+[1;32mINFO    [0m ｉ [info]: FibonacciAir         | Constraint Deg = 2  | Prep Cols = 0  | Main Cols = [2]      |    5 Constraints |   0 Interactions
+[1;32mINFO    [0m ｉ [info]: Actual max constraint degree across all AIRs (2) does not match configured max constraint degree (4)
+MEMPROF commit.stacked_matrix rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+STREAM_COMMIT width=1 ext=1 c=1 log_domain=11 k=3 n=10 sub=2^11 subcosets=1 dropped=4 stored_digests=31 secs=0.0 dft=0.0 leafhash=0.0
+MEMPROF commit.tree rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+MEMPROF prove.after_commit rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+MEMPROF zerocheck.gkr_input rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+MEMPROF zerocheck.after_gkr rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+MEMPROF zerocheck.round0 rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+MEMPROF zerocheck.fold_ple rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+MEMPROF zerocheck.mle_rounds rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+MEMPROF prove.after_rap_constraints rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+MEMPROF openings.after_stacking rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+MEMPROF whir.f_evals rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+STREAM_COMMIT width=1 ext=12 c=1 log_domain=10 k=3 n=7 sub=2^10 subcosets=1 dropped=4 stored_digests=15 secs=0.0 dft=0.0 leafhash=0.0
+MEMPROF whir.round0.g_tree rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+MEMPROF whir.round0.queries rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+STREAM_COMMIT width=1 ext=12 c=1 log_domain=9 k=3 n=4 sub=2^9 subcosets=1 dropped=4 stored_digests=7 secs=0.0 dft=0.0 leafhash=0.0
+MEMPROF whir.round1.g_tree rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+MEMPROF whir.round1.queries rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+STREAM_REBUILD rows=128 leaves=16 secs=0.00
+MEMPROF whir.round2.queries rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+MEMPROF prove.after_openings rss_gb=0.01 hwm_gb=0.01 cpu_s=0.0 wall_s=0.0
+[1;32mINFO    [0m stark_prove_excluding_trace [ 4.35ms | 1.00% / 100.00% ] phase: "prover"
+[1;32mINFO    [0m ┝━ ｉ [info]:  | num_airs_present: 1
+[1;32mINFO    [0m ┝━ prover.main_trace_commit [ 677µs | 0.07% / 15.54% ] phase: "prover"
+[1;32mINFO    [0m │  ┕━ trace_commit_cpu [ 673µs | 0.27% / 15.47% ]
+[1;32mINFO    [0m │     ┕━ stacked_commit_odd [ 662µs | 15.20% ]
+[1;32mINFO    [0m ┝━ prove_zerocheck_and_logup [ 388µs | 3.35% / 8.90% ]
+[1;32mINFO    [0m │  ┝━ fractional_sumcheck_with [ 140ns | 0.00% ]
+[1;32mINFO    [0m │  ┝━ sumcheck_uni_round0_polys [ 73.9µs | 1.70% ]
+[1;32mINFO    [0m │  ┝━ fold_ple_evals_fast [ 48.8µs | 1.12% ]
+[1;32mINFO    [0m │  ┕━ prover.batch_constraints.mle_rounds [ 119µs | 2.73% ] phase: "prover"
+[1;32mINFO    [0m ┕━ prover.openings [ 3.25ms | 3.68% / 74.55% ] phase: "prover"
+[1;32mINFO    [0m    ┝━ prove_stacked_opening_reduction [ 761µs | 17.47% ]
+[1;32mINFO    [0m    ┝━ whir.f_evals [ 194µs | 4.45% ]
+[1;32mINFO    [0m    ┝━ whir.sumcheck [ 120µs | 2.75% ] round: 0
+[1;32mINFO    [0m    ┝━ whir.g_commit [ 411µs | 9.44% ] round: 0
+[1;32mINFO    [0m    ┝━ whir.queries [ 473µs | 10.87% ] round: 0
+[1;32mINFO    [0m    ┝━ whir.y_and_w [ 388µs | 8.92% ] round: 0
+[1;32mINFO    [0m    ┝━ whir.sumcheck [ 34.6µs | 0.79% ] round: 1
+[1;32mINFO    [0m    ┝━ whir.g_commit [ 227µs | 5.21% ] round: 1
+[1;32mINFO    [0m    ┝━ whir.queries [ 248µs | 5.69% ] round: 1
+[1;32mINFO    [0m    ┝━ whir.y_and_w [ 81.8µs | 1.88% ] round: 1
+[1;32mINFO    [0m    ┝━ whir.sumcheck [ 23.6µs | 0.54% ] round: 2
+[1;32mINFO    [0m    ┝━ whir.g_commit [ 330ns | 0.01% ] round: 2
+[1;32mINFO    [0m    ┝━ whir.queries [ 123µs | 2.83% ] round: 2
+[1;32mINFO    [0m    ┕━ whir.y_and_w [ 490ns | 0.01% ] round: 2
+NVL_PARAMS l_skip=2 n_stack=20 k=4 log_blowup=1 queries=[106, 87, 50, 36, 28] pow(mu,fold,query,logup)=(0,0,0,0)
+[1;32mINFO    [0m ｉ [info]: NvAir                | Constraint Deg = 9  | Prep Cols = 0  | Main Cols = [77]     |  591 Constraints |  51 Interactions
+[1;32mINFO    [0m ｉ [info]: Sha512Air4           | Constraint Deg = 9  | Prep Cols = 0  | Main Cols = [83]     |  177 Constraints |  17 Interactions
+[1;32mINFO    [0m ｉ [info]: TableAir4            | Constraint Deg = 8  | Prep Cols = 0  | Main Cols = [9]      |   21 Constraints |   2 Interactions
+[1;32mINFO    [0m ｉ [info]: ByteAir              | Constraint Deg = 3  | Prep Cols = 0  | Main Cols = [5]      |    9 Constraints |   1 Interactions
+NV_PHASE before_dag 2182
+NV_DAG air=0 nodes=21 rows_so_far=2232
+NV_PHASE after_dag 2245
+NV_PHASE after_stacking 2553
+NV_QCOST round=0 queries=10 rows=2160 per_query=216 nbits=8 k=3 merkle_nodes=80
+NV_QCOST round=1 queries=4 rows=864 per_query=216 nbits=7 k=3 merkle_nodes=108
+NV_QCOST round=2 queries=2 rows=418 per_query=209 nbits=6 k=3 merkle_nodes=120
+NV_PHASE end 8522
+MEMPROF commit.stacked_matrix rss_gb=3.23 hwm_gb=3.23 cpu_s=3.7 wall_s=2.3
+STREAM_COMMIT width=2 ext=1 c=15 log_domain=23 k=1 n=22 sub=2^22 subcosets=30 dropped=4 stored_digests=7864321 secs=15.2 dft=5.2 leafhash=3.3
+MEMPROF commit.tree rss_gb=4.01 hwm_gb=4.20 cpu_s=30.8 wall_s=18.5
+MEMPROF prove.after_commit rss_gb=2.11 hwm_gb=4.20 cpu_s=30.9 wall_s=18.6
+MEMPROF zerocheck.gkr_input rss_gb=2.12 hwm_gb=4.20 cpu_s=30.9 wall_s=18.6
+MEMPROF gkr.layers_built rss_gb=5.12 hwm_gb=5.12 cpu_s=67.0 wall_s=41.7
+GKR_FILL total_wall_s=96.80
+MEMPROF zerocheck.after_gkr rss_gb=2.17 hwm_gb=6.67 cpu_s=477.3 wall_s=279.2
+MEMPROF zerocheck.round0 rss_gb=2.36 hwm_gb=6.67 cpu_s=570.3 wall_s=304.5
+MEMPROF zerocheck.fold_ple rss_gb=2.36 hwm_gb=6.67 cpu_s=570.3 wall_s=304.5
+MEMPROF zerocheck.mle_rounds rss_gb=2.38 hwm_gb=10.16 cpu_s=846.6 wall_s=373.7
+MEMPROF prove.after_rap_constraints rss_gb=2.24 hwm_gb=10.16 cpu_s=846.6 wall_s=373.8
+MEMPROF openings.after_stacking rss_gb=2.26 hwm_gb=10.16 cpu_s=852.0 wall_s=375.5
+MEMPROF whir.f_evals rss_gb=2.60 hwm_gb=10.16 cpu_s=853.5 wall_s=375.9
+STREAM_COMMIT width=1 ext=12 c=15 log_domain=23 k=4 n=21 sub=2^21 subcosets=60 dropped=4 stored_digests=983041 secs=14.4 dft=11.6 leafhash=2.0
+MEMPROF whir.round0.g_tree rss_gb=2.92 hwm_gb=10.16 cpu_s=887.0 wall_s=390.9
+STREAM_REBUILD rows=3392 leaves=1696 secs=1.23
+MEMPROF whir.round0.queries rss_gb=2.92 hwm_gb=10.16 cpu_s=894.7 wall_s=394.4
+STREAM_COMMIT width=1 ext=12 c=15 log_domain=23 k=4 n=17 sub=2^17 subcosets=960 dropped=4 stored_digests=983041 secs=5.3 dft=4.8 leafhash=0.0
+MEMPROF whir.round1.g_tree rss_gb=2.89 hwm_gb=10.16 cpu_s=915.8 wall_s=403.1
+STREAM_REBUILD rows=22272 leaves=1392 secs=0.96
+MEMPROF whir.round1.queries rss_gb=2.80 hwm_gb=10.16 cpu_s=923.5 wall_s=408.2
+STREAM_COMMIT width=1 ext=12 c=15 log_domain=23 k=4 n=13 sub=2^16 subcosets=1920 dropped=4 stored_digests=983041 secs=2.8 dft=2.3 leafhash=0.0
+MEMPROF whir.round2.g_tree rss_gb=2.86 hwm_gb=10.16 cpu_s=934.2 wall_s=411.2
+STREAM_REBUILD rows=12800 leaves=800 secs=0.06
+MEMPROF whir.round2.queries rss_gb=2.86 hwm_gb=10.16 cpu_s=934.4 wall_s=411.4
+STREAM_COMMIT width=1 ext=12 c=15 log_domain=23 k=4 n=9 sub=2^16 subcosets=1920 dropped=4 stored_digests=983041 secs=3.7 dft=2.5 leafhash=0.0
+MEMPROF whir.round3.g_tree rss_gb=2.88 hwm_gb=10.16 cpu_s=944.7 wall_s=415.1
+STREAM_REBUILD rows=9216 leaves=576 secs=0.00
+MEMPROF whir.round3.queries rss_gb=2.88 hwm_gb=10.16 cpu_s=944.8 wall_s=415.2
+STREAM_REBUILD rows=7168 leaves=448 secs=0.00
+MEMPROF whir.round4.queries rss_gb=2.88 hwm_gb=10.16 cpu_s=944.8 wall_s=415.2
+MEMPROF prove.after_openings rss_gb=0.84 hwm_gb=10.16 cpu_s=944.9 wall_s=415.3
+[1;32mINFO    [0m stark_prove_excluding_trace [ 415s | 0.00% / 100.00% ] phase: "prover"
+[1;32mINFO    [0m ┝━ ｉ [info]:  | num_airs_present: 4
+[1;32mINFO    [0m ┝━ prover.main_trace_commit [ 18.2s | 0.00% / 4.38% ] phase: "prover"
+[1;32mINFO    [0m │  ┕━ trace_commit_cpu [ 18.2s | 0.27% / 4.38% ]
+[1;32mINFO    [0m │     ┕━ stacked_commit_odd [ 17.0s | 4.10% ]
+[1;32mINFO    [0m ┝━ prove_zerocheck_and_logup [ 355s | 0.00% / 85.62% ]
+[1;32mINFO    [0m │  ┝━ fractional_sumcheck_fast [ 261s | 62.83% ]
+[1;32mINFO    [0m │  ┝━ sumcheck_uni_round0_polys [ 25.3s | 0.03% / 6.09% ]
+[1;32mINFO    [0m │  │  ┝━ round0 [ 13.2s | 3.19% ]
+[1;32mINFO    [0m │  │  ┝━ round0 [ 11.8s | 2.85% ]
+[1;32mINFO    [0m │  │  ┝━ round0 [ 89.0ms | 0.02% ]
+[1;32mINFO    [0m │  │  ┕━ round0 [ 257µs | 0.00% ]
+[1;32mINFO    [0m │  ┝━ fold_ple_evals_fast [ 16.6ms | 0.00% ]
+[1;32mINFO    [0m │  ┕━ prover.batch_constraints.mle_rounds [ 69.2s | 16.69% ] phase: "prover"
+[1;32mINFO    [0m ┕━ prover.openings [ 41.5s | 0.04% / 10.01% ] phase: "prover"
+[1;32mINFO    [0m    ┝━ prove_stacked_opening_reduction [ 1.71s | 0.41% ]
+[1;32mINFO    [0m    ┝━ whir.f_evals [ 461ms | 0.11% ]
+[1;32mINFO    [0m    ┝━ whir.sumcheck [ 225ms | 0.05% ] round: 0
+[1;32mINFO    [0m    ┝━ whir.g_commit [ 15.1s | 3.65% ] round: 0
+[1;32mINFO    [0m    ┝━ whir.queries [ 3.07s | 0.74% ] round: 0
+[1;32mINFO    [0m    ┝━ whir.y_and_w [ 3.12s | 0.75% ] round: 0
+[1;32mINFO    [0m    ┝━ whir.sumcheck [ 231ms | 0.06% ] round: 1
+[1;32mINFO    [0m    ┝━ whir.g_commit [ 5.32s | 1.28% ] round: 1
+[1;32mINFO    [0m    ┝━ whir.queries [ 5.11s | 1.23% ] round: 1
+[1;32mINFO    [0m    ┝━ whir.y_and_w [ 144ms | 0.03% ] round: 1
+[1;32mINFO    [0m    ┝━ whir.sumcheck [ 13.1ms | 0.00% ] round: 2
+[1;32mINFO    [0m    ┝━ whir.g_commit [ 2.87s | 0.69% ] round: 2
+[1;32mINFO    [0m    ┝━ whir.queries [ 182ms | 0.04% ] round: 2
+[1;32mINFO    [0m    ┝━ whir.y_and_w [ 8.93ms | 0.00% ] round: 2
+[1;32mINFO    [0m    ┝━ whir.sumcheck [ 824µs | 0.00% ] round: 3
+[1;32mINFO    [0m    ┝━ whir.g_commit [ 3.66s | 0.88% ] round: 3
+[1;32mINFO    [0m    ┝━ whir.queries [ 53.3ms | 0.01% ] round: 3
+[1;32mINFO    [0m    ┝━ whir.y_and_w [ 1.88ms | 0.00% ] round: 3
+[1;32mINFO    [0m    ┝━ whir.sumcheck [ 59.0µs | 0.00% ] round: 4
+[1;32mINFO    [0m    ┝━ whir.g_commit [ 30.2µs | 0.00% ] round: 4
+[1;32mINFO    [0m    ┝━ whir.queries [ 2.49ms | 0.00% ] round: 4
+[1;32mINFO    [0m    ┕━ whir.y_and_w [ 10.7µs | 0.00% ] round: 4
+NVL_AIR 0 h=2097152 w=77 int/row=51 deg=9
+NVL_AIR 1 h=4194304 w=83 int/row=17 deg=9
+NVL_AIR 2 h=128 w=9 int/row=2 deg=8
+NVL_AIR 3 h=65536 w=5 int/row=1 deg=3
+NVL_PROOF_SHA256 7917543ccb6dbb5281ebbfe2f24859a96a61c3e4238bfe1c6bbd8ef4b65c9833
+NVL_SUMMARY wall_s=415.3 (keygen+tracegen+prove+verify) peak_rss_gb=10.16 cells=509936768 (2^28.93) program_rows=8522 proof_bytes=447625
+
+real	6m55.354s
+user	14m57.042s
+sys	0m47.898s

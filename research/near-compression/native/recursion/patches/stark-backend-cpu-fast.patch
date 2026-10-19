@@ -1,0 +1,4185 @@
+diff --git a/crates/cpu-backend/src/fast/gkr.rs b/crates/cpu-backend/src/fast/gkr.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/cpu-backend/src/fast/gkr.rs
+@@ -0,0 +1,1009 @@
++//! [pq-cpu-prover] Fractional-sum GKR (LogUp) prover, byte-identical to
++//! `fractional_sumcheck_with`.
++//!
++//! Differences from the original, none of which changes a transcript value:
++//! * **No materialised input layer.** The LogUp input (numerators in the base field) is
++//!   generated chunk by chunk from the traces whenever it is needed: to build the first tree
++//!   level, and for the two passes (sums, then fold) of the input layer's first sumcheck round.
++//!   The largest stored tree level (2^(L-1) fractions) is dropped after the next level is built
++//!   and regenerated for its own layer. The original keeps a 2^(L+1)-entry segment tree, a copy
++//!   of the input and per-layer column copies.
++//! * **Gruen eq split.** `s(X) = A · eq(ξ_i, X) · t(X)` with `t(X) = Σ_y eq(ξ_{>i}, y) g(X, y)`
++//!   of degree 2: per pair only `t(1), t(2)` are evaluated; `t(0)` follows from the round claim,
++//!   `t(3)` by quadratic extrapolation (if `ξ_i = 1` or `A = 0`, `t(0)` is evaluated directly).
++//!   No eq column is interpolated or folded; eq tables are sqrt-split.
++//! * **Fused fold and next round:** one pass per sumcheck round.
++//! * Interpolation at X = 2 uses additions; all Ext12 arithmetic runs 16 pairs at a time in
++//!   packed SoA form.
++
++use openvm_stark_backend::{
++    proof::GkrLayerClaims,
++    prover::{error::LogupZerocheckError, fractional_sumcheck_gkr::FracSumcheckProof},
++    FiatShamirTranscript, StarkProtocolConfig,
++};
++use p3_field::{ExtensionField, Field, PackedField, PackedValue, PrimeCharacteristicRing};
++use p3_maybe_rayon::prelude::*;
++
++use super::pext::{coeffs, from_coeffs, PreMul, PE};
++
++/// The LogUp input layer as a generator: `fill(start, p, q)` writes positions
++/// `[start, start + p.len())` (numerators in the base field, `q` including `alpha`).
++pub trait InputSource<F, EF>: Sync {
++    fn n(&self) -> usize;
++    fn fill(&self, start: usize, p: &mut [F], q: &mut [EF]);
++    /// Visit `[0, n)` as disjoint runs `f(start, p, q)`, each of length >= `min_run` and aligned
++    /// to `min_run`, in any order and possibly in parallel; results are combined with `add`.
++    fn visit_runs<R: Send, Fv, Z, A>(&self, min_run: usize, f: Fv, zero: Z, add: A) -> R
++    where
++        F: Field,
++        EF: Field,
++        Fv: Fn(usize, &[F], &[EF]) -> R + Sync,
++        Z: Fn() -> R + Sync,
++        A: Fn(R, R) -> R + Sync,
++    {
++        let n = self.n();
++        let ch = CHUNK.min(n).max(min_run);
++        let mut p = vec![F::ZERO; ch];
++        let mut q = vec![EF::ZERO; ch];
++        let mut acc = zero();
++        for start in (0..n).step_by(ch) {
++            self.fill(start, &mut p, &mut q);
++            acc = add(acc, f(start, &p, &q));
++        }
++        acc
++    }
++}
++
++/// Positions generated per chunk.
++const CHUNK: usize = 1 << 20;
++
++#[derive(Clone, Copy, Default)]
++struct FracE<EF> {
++    p: EF,
++    q: EF,
++}
++
++#[inline(always)]
++fn gather<F: Field, EF: ExtensionField<F>, Q: PackedField<Scalar = F>>(f: impl Fn(usize) -> EF) -> PE<Q> {
++    let mut vals = [EF::ZERO; 16];
++    for (l, v) in vals.iter_mut().enumerate().take(Q::WIDTH) {
++        *v = f(l);
++    }
++    PE(core::array::from_fn(|j| Q::from_fn(|l| coeffs::<F, EF>(&vals[l])[j])))
++}
++
++#[inline(always)]
++fn scatter<F: Field, EF: ExtensionField<F>, Q: PackedField<Scalar = F>>(v: &PE<Q>, mut f: impl FnMut(usize, EF)) {
++    for l in 0..Q::WIDTH {
++        f(l, from_coeffs::<F, EF>(&v.lane(l)));
++    }
++}
++
++#[inline(always)]
++fn lanes<F: Field>() -> usize {
++    <F::Packing as PackedValue>::WIDTH
++}
++
++/// out[x] = in[2x] + in[2x+1] (Frac add: p = a.p b.q + a.q b.p, q = a.q b.q) from input buffers.
++fn level_from_input_chunk<F: Field, EF: ExtensionField<F>>(p: &[F], q: &[EF], out: &mut [FracE<EF>], w: F) {
++    let n = out.len();
++    let wl = lanes::<F>();
++    if n >= wl && n % wl == 0 {
++        out.par_chunks_mut(wl).enumerate().for_each(|(b, o)| {
++            let x0 = b * wl;
++            let q0: PE<F::Packing> = gather(|l| q[2 * (x0 + l)]);
++            let q1: PE<F::Packing> = gather(|l| q[2 * (x0 + l) + 1]);
++            let p0 = F::Packing::from_fn(|l| p[2 * (x0 + l)]);
++            let p1 = F::Packing::from_fn(|l| p[2 * (x0 + l) + 1]);
++            let pp = q1.mul_base(p0).add(&q0.mul_base(p1));
++            let qq = q0.mul(&q1, w);
++            scatter(&pp, |l, v: EF| o[l].p = v);
++            scatter(&qq, |l, v: EF| o[l].q = v);
++        });
++    } else {
++        for x in 0..n {
++            out[x] = FracE { p: q[2 * x + 1] * p[2 * x] + q[2 * x] * p[2 * x + 1], q: q[2 * x] * q[2 * x + 1] };
++        }
++    }
++}
++
++fn level_up<F: Field, EF: ExtensionField<F>>(lay: &[FracE<EF>], w: F) -> Vec<FracE<EF>> {
++    let n = lay.len() / 2;
++    let mut out = vec![FracE::<EF>::default(); n];
++    let wl = lanes::<F>();
++    if n >= wl && n % wl == 0 {
++        out.par_chunks_mut(wl).enumerate().for_each(|(b, o)| {
++            let x0 = b * wl;
++            let p0: PE<F::Packing> = gather(|l| lay[2 * (x0 + l)].p);
++            let q0: PE<F::Packing> = gather(|l| lay[2 * (x0 + l)].q);
++            let p1: PE<F::Packing> = gather(|l| lay[2 * (x0 + l) + 1].p);
++            let q1: PE<F::Packing> = gather(|l| lay[2 * (x0 + l) + 1].q);
++            let pp = p0.mul(&q1, w).add(&q0.mul(&p1, w));
++            let qq = q0.mul(&q1, w);
++            scatter(&pp, |l, v: EF| o[l].p = v);
++            scatter(&qq, |l, v: EF| o[l].q = v);
++        });
++    } else {
++        for x in 0..n {
++            let (a, b) = (lay[2 * x], lay[2 * x + 1]);
++            out[x] = FracE { p: a.p * b.q + a.q * b.p, q: a.q * b.q };
++        }
++    }
++    out
++}
++
++/// eq(ξ, y) for y over `xi.len()` bits, bit k <-> xi[k].
++fn eq_table<EF: Field>(xi: &[EF]) -> Vec<EF> {
++    let mut out = vec![EF::ZERO; 1 << xi.len()];
++    out[0] = EF::ONE;
++    for (i, &x) in xi.iter().enumerate() {
++        let (lo, hi) = out[..2 << i].split_at_mut(1 << i);
++        for (l, h) in lo.iter_mut().zip(hi.iter_mut()) {
++            *h = *l * x;
++            *l *= EF::ONE - x;
++        }
++    }
++    out
++}
++
++/// Split eq table: E(y) = lo[y mod 2^h] * hi[y >> h].
++struct SplitEq<EF> {
++    h: usize,
++    lo: Vec<EF>,
++    hi: Vec<EF>,
++}
++
++impl<EF: Field> SplitEq<EF> {
++    fn new(xi: &[EF]) -> Self {
++        let h = xi.len().div_ceil(2);
++        Self { h, lo: eq_table(&xi[..h]), hi: eq_table(&xi[h..]) }
++    }
++    #[inline(always)]
++    fn get(&self, y: usize) -> EF {
++        self.lo[y & ((1 << self.h) - 1)] * self.hi[y >> self.h]
++    }
++}
++
++/// A packed value of a numerator column: base-field (input layer) or extension.
++#[derive(Clone, Copy)]
++enum PVal<Q: PackedField> {
++    B(Q),
++    E(PE<Q>),
++}
++
++impl<Q: PackedField> PVal<Q> {
++    #[inline(always)]
++    fn mul_e(&self, q: &PE<Q>, w: Q::Scalar) -> PE<Q> {
++        match self {
++            PVal::B(b) => q.mul_base(*b),
++            PVal::E(e) => e.mul(q, w),
++        }
++    }
++    /// value at X = 2: 2 hi - lo
++    #[inline(always)]
++    fn at2(lo: &Self, hi: &Self) -> Self {
++        match (lo, hi) {
++            (PVal::B(a), PVal::B(b)) => PVal::B(b.double() - *a),
++            (PVal::E(a), PVal::E(b)) => PVal::E(b.add(b).sub(a)),
++            _ => unreachable!(),
++        }
++    }
++    #[inline(always)]
++    fn to_pe(&self) -> PE<Q> {
++        match self {
++            PVal::B(b) => {
++                let mut r = PE::zero();
++                r.0[0] = *b;
++                r
++            }
++            PVal::E(e) => *e,
++        }
++    }
++}
++
++/// x-entries (p0, q0, p1, q1) of a sumcheck table.
++#[derive(Clone, Copy)]
++enum Tab<'a, F, EF> {
++    /// a chunk of the input layer: x-entry x = positions (2x, 2x+1)
++    Input(&'a [F], &'a [EF]),
++    /// a stored layer: x-entry x = (lay[2x], lay[2x+1])
++    Layer(&'a [FracE<EF>]),
++    /// folded table
++    Folded(&'a [[EF; 4]]),
++}
++
++impl<F: Field, EF: ExtensionField<F>> Tab<'_, F, EF> {
++    fn len(&self) -> usize {
++        match self {
++            Tab::Input(p, _) => p.len() / 2,
++            Tab::Layer(l) => l.len() / 2,
++            Tab::Folded(f) => f.len(),
++        }
++    }
++    #[inline(always)]
++    fn load<Q: PackedField<Scalar = F>>(&self, x_of: impl Fn(usize) -> usize) -> [PVal<Q>; 4] {
++        match self {
++            Tab::Input(p, q) => [
++                PVal::B(Q::from_fn(|l| p[2 * x_of(l)])),
++                PVal::E(gather(|l| q[2 * x_of(l)])),
++                PVal::B(Q::from_fn(|l| p[2 * x_of(l) + 1])),
++                PVal::E(gather(|l| q[2 * x_of(l) + 1])),
++            ],
++            Tab::Layer(lay) => [
++                PVal::E(gather(|l| lay[2 * x_of(l)].p)),
++                PVal::E(gather(|l| lay[2 * x_of(l)].q)),
++                PVal::E(gather(|l| lay[2 * x_of(l) + 1].p)),
++                PVal::E(gather(|l| lay[2 * x_of(l) + 1].q)),
++            ],
++            Tab::Folded(f) => core::array::from_fn(|c| PVal::E(gather(|l| f[x_of(l)][c]))),
++        }
++    }
++}
++
++/// `[x][k]`: Σ_y E(y)·pp(x, y) (k = 0) and Σ_y E(y)·qq(x, y) (k = 1) for x in {0, 1, 2}.
++type Sums<EF> = [[EF; 2]; 3];
++
++#[inline(always)]
++fn pair_terms<Q: PackedField>(lo: &[PVal<Q>; 4], hi: &[PVal<Q>; 4], x: usize, w: Q::Scalar) -> (PE<Q>, PE<Q>) {
++    let v: [PVal<Q>; 4] = match x {
++        0 => *lo,
++        1 => *hi,
++        _ => core::array::from_fn(|c| PVal::at2(&lo[c], &hi[c])),
++    };
++    let q0 = v[1].to_pe();
++    let q1 = v[3].to_pe();
++    let pp = v[0].mul_e(&q1, w).add(&v[2].mul_e(&q0, w));
++    let qq = q0.mul(&q1, w);
++    (pp, qq)
++}
++
++struct SyncPtr<T>(*mut T);
++unsafe impl<T> Send for SyncPtr<T> {}
++unsafe impl<T> Sync for SyncPtr<T> {}
++impl<T> SyncPtr<T> {
++    #[inline(always)]
++    fn get(&self) -> *mut T {
++        self.0
++    }
++}
++
++/// One pass over the table `tab`. With `r = Some(r)` the x-entries are first folded at `r`
++/// (T'[y'] = T[2y'] + r (T[2y'+1] - T[2y']), written to `out[y']`) and the sums run over pairs of
++/// the folded table; with `None` over pairs of `tab`. `eq.get(pair_base + local pair)` is E.
++fn pass<F: Field, EF: ExtensionField<F>>(
++    tab: Tab<'_, F, EF>,
++    r: Option<EF>,
++    out: Option<&mut [[EF; 4]]>,
++    eq: &SplitEq<EF>,
++    pair_base: usize,
++    points: &[usize],
++    w: F,
++) -> Sums<EF> {
++    let len = tab.len();
++    if let (Some(r), 2) = (r, len) {
++        // final fold of a layer: one output entry, no pairs left
++        debug_assert!(points.is_empty());
++        let lo = tab.load::<F>(|_| 0);
++        let hi = tab.load::<F>(|_| 1);
++        let out = out.expect("fold output");
++        for c in 0..4 {
++            let a: EF = from_coeffs::<F, EF>(&lo[c].to_pe().lane(0));
++            let b: EF = from_coeffs::<F, EF>(&hi[c].to_pe().lane(0));
++            out[0][c] = a + (b - a) * r;
++        }
++        return zero_sums();
++    }
++    let (npairs, step) = if r.is_some() { (len / 4, 4) } else { (len / 2, 2) };
++    #[allow(clippy::too_many_arguments)]
++    fn run<F: Field, EF: ExtensionField<F>, Q: PackedField<Scalar = F>>(
++        tab: Tab<'_, F, EF>,
++        r: Option<EF>,
++        out: Option<&mut [[EF; 4]]>,
++        eq: &SplitEq<EF>,
++        pair_base: usize,
++        points: &[usize],
++        w: F,
++        nblk: usize,
++        step: usize,
++    ) -> Sums<EF> {
++        let wl = Q::WIDTH;
++        let rp = r.map(|r| PreMul::<Q>::new(coeffs::<F, EF>(&r), w));
++        let outp = out.map(|o| SyncPtr(o.as_mut_ptr()));
++        let body = |mut acc: [PE<Q>; 6], b: usize| {
++            let y0 = b * wl;
++            let (lo, hi) = match &rp {
++                None => (tab.load::<Q>(|l| step * (y0 + l)), tab.load::<Q>(|l| step * (y0 + l) + 1)),
++                Some(rp) => {
++                    let t: [[PVal<Q>; 4]; 4] = core::array::from_fn(|k| tab.load::<Q>(|l| step * (y0 + l) + k));
++                    let fold = |a: &[PVal<Q>; 4], b: &[PVal<Q>; 4]| -> [PVal<Q>; 4] {
++                        core::array::from_fn(|c| {
++                            let (x, z) = (a[c].to_pe(), b[c].to_pe());
++                            PVal::E(x.add(&rp.mul(&z.sub(&x))))
++                        })
++                    };
++                    let f0 = fold(&t[0], &t[1]);
++                    let f1 = fold(&t[2], &t[3]);
++                    if let Some(op) = &outp {
++                        for c in 0..4 {
++                            let (PVal::E(a), PVal::E(bv)) = (f0[c], f1[c]) else { unreachable!() };
++                            // SAFETY: each block writes its own output entries 2(y0+l), 2(y0+l)+1
++                            scatter(&a, |l, v: EF| unsafe { (*op.get().add(2 * (y0 + l)))[c] = v });
++                            scatter(&bv, |l, v: EF| unsafe { (*op.get().add(2 * (y0 + l) + 1))[c] = v });
++                        }
++                    }
++                    (f0, f1)
++                }
++            };
++            if !points.is_empty() {
++                let ev: PE<Q> = gather(|l| eq.get(pair_base + y0 + l));
++                for &x in points {
++                    let (pp, qq) = pair_terms(&lo, &hi, x, w);
++                    acc[2 * x].add_assign(&ev.mul(&pp, w));
++                    acc[2 * x + 1].add_assign(&ev.mul(&qq, w));
++                }
++            }
++            acc
++        };
++        let acc = (0..nblk)
++            .into_par_iter()
++            .with_min_len(64)
++            .fold(|| [PE::<Q>::zero(); 6], body)
++            .reduce(
++                || [PE::<Q>::zero(); 6],
++                |mut a, b| {
++                    for i in 0..6 {
++                        a[i].add_assign(&b[i]);
++                    }
++                    a
++                },
++            );
++        core::array::from_fn(|x| core::array::from_fn(|k| from_coeffs::<F, EF>(&acc[2 * x + k].hsum())))
++    }
++    let wl = lanes::<F>();
++    if npairs >= wl && npairs % wl == 0 {
++        run::<F, EF, F::Packing>(tab, r, out, eq, pair_base, points, w, npairs / wl, step)
++    } else {
++        run::<F, EF, F>(tab, r, out, eq, pair_base, points, w, npairs, step)
++    }
++}
++
++#[inline(always)]
++fn eq1<EF: Field>(xi: EF, x: EF) -> EF {
++    (EF::ONE - xi) * (EF::ONE - x) + xi * x
++}
++
++/// Cubic through (0, s0), .., (3, s3), evaluated at r.
++fn cubic_at<EF: Field>(s: [EF; 4], r: EF) -> EF {
++    let one = EF::ONE;
++    let two = one.double();
++    let three = two + one;
++    let (r0, r1, r2, r3) = (r, r - one, r - two, r - three);
++    let six_inv = EF::from_u32(6).inverse();
++    let two_inv = two.inverse();
++    let l0 = -(r1 * r2 * r3) * six_inv;
++    let l1 = r0 * r2 * r3 * two_inv;
++    let l2 = -(r0 * r1 * r3) * two_inv;
++    let l3 = r0 * r1 * r2 * six_inv;
++    s[0] * l0 + s[1] * l1 + s[2] * l2 + s[3] * l3
++}
++
++/// Claim and accumulated eq prefix `A = Π eq(ξ_k, r_k)` of the running sumcheck.
++struct Round<EF> {
++    claim: EF,
++    a: EF,
++}
++
++impl<EF: Field> Round<EF> {
++    fn direct(&self, xi: EF) -> bool {
++        xi == EF::ONE || self.a == EF::ZERO
++    }
++    fn points(&self, xi: EF) -> &'static [usize] {
++        if self.direct(xi) || check_mode() {
++            &[0, 1, 2]
++        } else {
++            &[1, 2]
++        }
++    }
++    /// s(0), .., s(3) from the sums.
++    fn evals(&self, sums: &Sums<EF>, lambda: EF, xi: EF) -> [EF; 4] {
++        let t = |x: usize| sums[x][0] + lambda * sums[x][1];
++        let (t1, t2) = (t(1), t(2));
++        let t0 = if self.direct(xi) {
++            t(0)
++        } else {
++            (self.claim * self.a.inverse() - xi * t1) * (EF::ONE - xi).inverse()
++        };
++        if check_mode() && !self.direct(xi) {
++            assert_eq!(t0, t(0), "GKR claim-derived t(0) differs from the direct sum at {:?}", DBG.lock().unwrap());
++        }
++        let t3 = t0 - t1.double() - t1 + t2.double() + t2;
++        let ts = [t0, t1, t2, t3];
++        core::array::from_fn(|k| self.a * eq1(xi, EF::from_usize(k)) * ts[k])
++    }
++}
++
++/// `NEARPROOF_GKR_CHECK=1`: also evaluate t(0) directly and assert it equals the claim-derived one.
++fn check_mode() -> bool {
++    use std::sync::OnceLock;
++    static ON: OnceLock<bool> = OnceLock::new();
++    *ON.get_or_init(|| std::env::var("NEARPROOF_GKR_CHECK").map(|v| v == "1").unwrap_or(false))
++}
++
++static DBG: std::sync::Mutex<(usize, usize, usize)> = std::sync::Mutex::new((0, 0, 0));
++
++fn add_sums<EF: Field>(a: &mut Sums<EF>, b: &Sums<EF>) {
++    for x in 0..3 {
++        for k in 0..2 {
++            a[x][k] += b[x][k];
++        }
++    }
++}
++
++fn zero_sums<EF: Field>() -> Sums<EF> {
++    [[EF::ZERO; 2]; 3]
++}
++
++/// Largest stored tree level / materialised fold table, log2 entries (`NEARPROOF_GKR_CAP_LOG`,
++/// default 24): bigger levels are streamed from the input generator.
++fn cap_log() -> usize {
++    std::env::var("NEARPROOF_GKR_CAP_LOG").ok().and_then(|v| v.parse().ok()).unwrap_or(24)
++}
++
++/// Level entries of a run of input positions, combining `sh >= 1` times.
++fn level_of_run<F: Field, EF: ExtensionField<F>>(p: &[F], q: &[EF], sh: usize, w: F) -> Vec<FracE<EF>> {
++    let mut cur = vec![FracE::<EF>::default(); p.len() / 2];
++    level_from_input_chunk(p, q, &mut cur, w);
++    for _ in 1..sh {
++        cur = level_up(&cur, w);
++    }
++    cur
++}
++
++/// Folds of a chunk of x-entries by `rs` in order (the same arithmetic as the stored-table folds).
++fn fold_chunk<F: Field, EF: ExtensionField<F>>(tab: Tab<'_, F, EF>, rs: &[EF], w: F) -> Vec<[EF; 4]> {
++    let mut cur: Option<Vec<[EF; 4]>> = None;
++    for &r in rs {
++        let src = match &cur {
++            None => tab,
++            Some(v) => Tab::Folded(v),
++        };
++        let n = src.len() / 2;
++        let mut out = vec![[EF::ZERO; 4]; n];
++        if n == 1 {
++            pass(src, Some(r), Some(&mut out), &SplitEq::new(&[]), 0, &[], w);
++        } else {
++            // fold only: pairs of the output are not summed (no points)
++            pass(src, Some(r), Some(&mut out), &SplitEq::new(&[]), 0, &[], w);
++        }
++        cur = Some(out);
++    }
++    cur.expect("at least one fold")
++}
++
++/// Byte-identical replacement of `fractional_sumcheck_with` for a LogUp input generator with at
++/// least 8 positions.
++#[tracing::instrument(level = "info", skip_all)]
++pub fn fractional_sumcheck_fast<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>, S: InputSource<SC::F, SC::EF>>(
++    transcript: &mut TS,
++    src: &S,
++    assert_zero: bool,
++    gruen: bool,
++    w: SC::F,
++) -> Result<(FracSumcheckProof<SC>, Vec<SC::EF>), LogupZerocheckError> {
++    type EF<SC> = <SC as StarkProtocolConfig>::EF;
++    let n_in = src.n();
++    let total_rounds = p3_util::log2_strict_usize(n_in);
++    assert!(total_rounds >= 3, "tiny GKR handled by the original code");
++    let cap = cap_log().max(2);
++    // stored levels: 2^k entries for k <= top_stored; bigger levels (and the input) are streamed
++    let top_stored = cap.min(total_rounds - 1);
++    let mut layers: Vec<Vec<FracE<EF<SC>>>> = vec![vec![]; total_rounds];
++    {
++        // build level top_stored from runs of the input
++        let sh = total_rounds - top_stored;
++        let mut lev = vec![FracE::<EF<SC>>::default(); 1 << top_stored];
++        let lp = SyncPtr(lev.as_mut_ptr());
++        src.visit_runs(
++            1 << sh,
++            |start, p, q| {
++                let v = level_of_run(p, q, sh, w);
++                // SAFETY: runs are disjoint, so their level entries are
++                unsafe { std::ptr::copy_nonoverlapping(v.as_ptr(), lp.get().add(start >> sh), v.len()) };
++            },
++            || (),
++            |_, _| (),
++        );
++        layers[top_stored] = lev;
++    }
++    for k in (0..top_stored).rev() {
++        layers[k] = level_up(&layers[k + 1], w);
++    }
++    openvm_stark_backend::prover::stream_pcs::memprof("gkr.layers_built");
++    let fill_report = || {
++        if std::env::var("NEARPROOF_MEMPROF").map(|v| v == "1").unwrap_or(false) {
++            println!("GKR_FILL total_wall_s={:.2}", FILL_NS.load(std::sync::atomic::Ordering::Relaxed) as f64 * 1e-9);
++        }
++    };
++    let frac_sum = layers[0][0];
++    if assert_zero {
++        if frac_sum.p != EF::<SC>::ZERO {
++            return Err(LogupZerocheckError::NonZeroRootSum);
++        }
++    } else {
++        transcript.observe_ext(frac_sum.p);
++    }
++    transcript.observe_ext(frac_sum.q);
++
++    let mut claims_per_layer: Vec<GkrLayerClaims<SC>> = Vec::with_capacity(total_rounds);
++    let mut sumcheck_polys: Vec<Vec<[EF<SC>; 3]>> = Vec::with_capacity(total_rounds);
++    let l1 = std::mem::take(&mut layers[1]);
++    claims_per_layer.push(GkrLayerClaims::<SC> { p_xi_0: l1[0].p, q_xi_0: l1[0].q, p_xi_1: l1[1].p, q_xi_1: l1[1].q });
++    drop(l1);
++    layers[0] = vec![];
++    {
++        let c = &claims_per_layer[0];
++        for v in [c.p_xi_0, c.q_xi_0, c.p_xi_1, c.q_xi_1] {
++            transcript.observe_ext(v);
++        }
++    }
++    let mu_1 = transcript.sample_ext();
++    let mut xi_prev = vec![mu_1];
++
++    for round in 1..total_rounds {
++        let lambda = transcript.sample_ext();
++        let n = round;
++        let seg_layer = round + 1;
++        let mu = xi_prev[0];
++        let mut st = {
++            let prev = &claims_per_layer[round - 1];
++            Round {
++                claim: (EF::<SC>::ONE - mu) * (prev.p_xi_0 + lambda * prev.q_xi_0)
++                    + mu * (prev.p_xi_1 + lambda * prev.q_xi_1),
++                a: EF::<SC>::ONE,
++            }
++        };
++        let mut round_polys_eval: Vec<[EF<SC>; 3]> = Vec::with_capacity(n);
++        let mut r_vec: Vec<EF<SC>> = Vec::with_capacity(n);
++        let emit = |st: &mut Round<EF<SC>>,
++                    sums: &Sums<EF<SC>>,
++                    xi: EF<SC>,
++                    transcript: &mut TS,
++                    round_polys_eval: &mut Vec<[EF<SC>; 3]>|
++         -> EF<SC> {
++            if check_mode() {
++                *DBG.lock().unwrap() = (round, round_polys_eval.len(), total_rounds);
++            }
++            let s = st.evals(sums, lambda, xi);
++            let mut s_evals = [s[1], s[2], s[3]];
++            if gruen {
++                s_evals[2] = EF::<SC>::ZERO;
++            }
++            for &eval in &s_evals[..if gruen { 2 } else { 3 }] {
++                transcript.observe_ext(eval);
++            }
++            round_polys_eval.push(s_evals);
++            let r = transcript.sample_ext();
++            st.claim = cubic_at(s, r);
++            st.a *= eq1(xi, r);
++            r
++        };
++        // sums for sumcheck round `sr` (pairs of the table after sr folds) need E and points
++        let round_setup = |st: &Round<EF<SC>>, sr: usize| -> (SplitEq<EF<SC>>, &'static [usize]) {
++            if sr >= n {
++                (SplitEq::new(&[]), &[][..])
++            } else {
++                (SplitEq::new(&xi_prev[sr + 1..]), st.points(xi_prev[sr]))
++            }
++        };
++        let mut cur: Vec<[EF<SC>; 4]>;
++        let next_sr: usize; // first round whose sums are not yet emitted; `cur` is folded next_sr times
++        if seg_layer <= top_stored {
++            let lay = std::mem::take(&mut layers[seg_layer]);
++            let (e, pts) = round_setup(&st, 0);
++            let sums = pass(Tab::Layer(&lay), None, None, &e, 0, pts, w);
++            let r0 = emit(&mut st, &sums, xi_prev[0], transcript, &mut round_polys_eval);
++            r_vec.push(r0);
++            let (e, pts) = round_setup(&st, 1);
++            cur = vec![[EF::<SC>::ZERO; 4]; lay.len() / 4];
++            let sums = pass(Tab::Layer(&lay), Some(r0), Some(&mut cur), &e, 0, pts, w);
++            drop(lay);
++            next_sr = 1;
++            if n > 1 {
++                let r = emit(&mut st, &sums, xi_prev[1], transcript, &mut round_polys_eval);
++                r_vec.push(r);
++            }
++        } else {
++            // streamed layer: x-entries of level seg_layer generated run by run from the input
++            let xent_log = seg_layer - 1; // log2 of x-entries (= n)
++            // streamed rounds K: the table after K folds has 2^(n-K) entries <= 2^cap
++            let k_str = n.saturating_sub(cap).max(1).min(n);
++            let sh = total_rounds - seg_layer; // positions per level entry: 2^sh
++            let min_run = 1usize << (sh + k_str + 2).min(total_rounds);
++            let tab_of = |p: &[SC::F], q: &[EF<SC>]| -> Option<Vec<FracE<EF<SC>>>> {
++                if sh == 0 { None } else { Some(level_of_run(p, q, sh, w)) }
++            };
++            // passes 0..k_str: sums of round j from runs folded j times
++            for j in 0..k_str {
++                let (e, pts) = round_setup(&st, j);
++                let rs = &r_vec[..j];
++                let sums = src.visit_runs(
++                    min_run,
++                    |start, p, q| {
++                        let lv = tab_of(p, q);
++                        let tab = match &lv {
++                            None => Tab::Input(p, q),
++                            Some(v) => Tab::Layer(v),
++                        };
++                        let x0 = (start >> sh) / 2;
++                        if j == 0 {
++                            pass(tab, None, None, &e, x0 / 2, pts, w)
++                        } else {
++                            let f = fold_chunk(tab, rs, w);
++                            pass(Tab::Folded(&f), None, None, &e, (x0 >> j) / 2, pts, w)
++                        }
++                    },
++                    zero_sums,
++                    |mut a, b| {
++                        add_sums(&mut a, &b);
++                        a
++                    },
++                );
++                let r = emit(&mut st, &sums, xi_prev[j], transcript, &mut round_polys_eval);
++                r_vec.push(r);
++            }
++            // final pass: fold k_str times, store, and sum round k_str (fused)
++            let (e, pts) = round_setup(&st, k_str);
++            cur = vec![[EF::<SC>::ZERO; 4]; 1usize << (xent_log - k_str)];
++            let cp = SyncPtr(cur.as_mut_ptr());
++            let rs = &r_vec[..k_str];
++            let sums = src.visit_runs(
++                min_run,
++                |start, p, q| {
++                    let lv = tab_of(p, q);
++                    let tab = match &lv {
++                        None => Tab::Input(p, q),
++                        Some(v) => Tab::Layer(v),
++                    };
++                    let x0 = (start >> sh) / 2;
++                    let o0 = x0 >> k_str;
++                    let olen = tab.len() >> k_str;
++                    // SAFETY: runs are disjoint, so their folded entries are
++                    let out = unsafe { std::slice::from_raw_parts_mut(cp.get().add(o0), olen) };
++                    if k_str == 1 {
++                        pass(tab, Some(rs[0]), Some(out), &e, o0 / 2, pts, w)
++                    } else {
++                        let f = fold_chunk(tab, &rs[..k_str - 1], w);
++                        pass(Tab::Folded(&f), Some(rs[k_str - 1]), Some(out), &e, o0 / 2, pts, w)
++                    }
++                },
++                zero_sums,
++                |mut a, b| {
++                    add_sums(&mut a, &b);
++                    a
++                },
++            );
++            next_sr = k_str;
++            if k_str < n {
++                let r = emit(&mut st, &sums, xi_prev[k_str], transcript, &mut round_polys_eval);
++                r_vec.push(r);
++            }
++        }
++        // remaining rounds on the materialised table: fold by r_(sr) fused with round sr+1's sums
++        let mut sr = next_sr;
++        while cur.len() > 1 {
++            let (e, pts) = round_setup(&st, sr + 1);
++            let mut nf = vec![[EF::<SC>::ZERO; 4]; cur.len() / 2];
++            let sums = pass(Tab::Folded(&cur), Some(r_vec[sr]), Some(&mut nf), &e, 0, pts, w);
++            cur = nf;
++            sr += 1;
++            if sr < n {
++                let r = emit(&mut st, &sums, xi_prev[sr], transcript, &mut round_polys_eval);
++                r_vec.push(r);
++            }
++        }
++        debug_assert_eq!(r_vec.len(), n);
++        let c = cur[0];
++        claims_per_layer.push(GkrLayerClaims::<SC> { p_xi_0: c[0], q_xi_0: c[1], p_xi_1: c[2], q_xi_1: c[3] });
++        for v in [c[0], c[1], c[2], c[3]] {
++            transcript.observe_ext(v);
++        }
++        let mu = transcript.sample_ext();
++        xi_prev = [vec![mu], r_vec].concat();
++        sumcheck_polys.push(round_polys_eval);
++    }
++    fill_report();
++    Ok((
++        FracSumcheckProof { fractional_sum: (frac_sum.p, frac_sum.q), claims_per_layer, sumcheck_polys },
++        xi_prev,
++    ))
++}
++
++/// Placement of one interaction's column in the stacked LogUp input: rows `[row_idx, row_idx+len)`
++/// hold the trace's values repeated cyclically (len / height times), numerators scaled by `norm`.
++pub struct Placement<F> {
++    pub interaction: usize,
++    pub row_idx: usize,
++    pub len: usize,
++    pub norm: F,
++}
++
++/// One trace's contribution to the LogUp input: per-interaction programs (functionals
++/// `[raw count, denom]`, see `gkr_input_specs_one`), the trace matrices and placements.
++pub struct TraceInput<'a, F: Field, EF> {
++    /// all interactions at once: functionals `[count_i (raw), denom_i]` (see `gkr_input_specs_all`)
++    pub full: super::zc::Program<F, EF>,
++    pub progs: Vec<super::zc::Program<F, EF>>,
++    pub mats: Vec<(&'a p3_matrix::dense::RowMajorMatrix<F>, bool)>,
++    pub height: usize,
++    pub placements: Vec<Placement<F>>,
++}
++
++/// The LogUp input generated from the traces (`eval_interactions` per row, in stacked order).
++pub struct TraceInputSource<'a, F: Field, EF> {
++    pub n: usize,
++    pub alpha: EF,
++    pub traces: Vec<TraceInput<'a, F, EF>>,
++}
++
++impl<F: Field, EF: ExtensionField<F>> InputSource<F, EF> for TraceInputSource<'_, F, EF> {
++    fn n(&self) -> usize {
++        self.n
++    }
++    fn fill(&self, start: usize, p: &mut [F], q: &mut [EF]) {
++        let t0 = std::time::Instant::now();
++        self.fill_inner(start, p, q);
++        FILL_NS.fetch_add(t0.elapsed().as_nanos() as u64, std::sync::atomic::Ordering::Relaxed);
++    }
++
++    /// Row-block order: each block of trace rows is evaluated once for all interactions (one
++    /// pass over the trace instead of one per interaction); placements smaller than the block
++    /// size form a tail that is generated by position.
++    fn visit_runs<R: Send, Fv, Z, A>(&self, min_run: usize, f: Fv, zero: Z, add: A) -> R
++    where
++        Fv: Fn(usize, &[F], &[EF]) -> R + Sync,
++        Z: Fn() -> R + Sync,
++        A: Fn(R, R) -> R + Sync,
++    {
++        type P<F> = <F as Field>::Packing;
++        let wl = <P<F> as PackedValue>::WIDTH;
++        let t0 = std::time::Instant::now();
++        let t_min = min_run.max(wl).max(1 << 12);
++        if self.n < t_min {
++            assert!(self.n >= min_run);
++            let mut p = vec![F::ZERO; self.n];
++            let mut q = vec![EF::ZERO; self.n];
++            self.fill(0, &mut p, &mut q);
++            return f(0, &p, &q);
++        }
++        // big traces: height >= t_min; their placements must form the prefix [0, big_end)
++        let mut big_end = 0usize;
++        let mut big_len = 0usize;
++        let mut small_start = usize::MAX;
++        for tr in &self.traces {
++            for pl in &tr.placements {
++                if tr.height >= t_min {
++                    big_end = big_end.max(pl.row_idx + pl.len);
++                    big_len += pl.len;
++                } else {
++                    small_start = small_start.min(pl.row_idx);
++                }
++            }
++        }
++        if big_len != big_end || (small_start != usize::MAX && small_start < big_end) || big_end % t_min != 0 {
++            // layout not as expected: generate by position
++            let ch = CHUNK.min(self.n).max(min_run);
++            let mut p = vec![F::ZERO; ch];
++            let mut q = vec![EF::ZERO; ch];
++            let mut acc = zero();
++            for start in (0..self.n).step_by(ch) {
++                self.fill(start, &mut p, &mut q);
++                acc = add(acc, f(start, &p, &q));
++            }
++            return acc;
++        }
++        // units: (trace, first row) with blocks of rb rows
++        let units: Vec<(usize, usize, usize)> = self
++            .traces
++            .iter()
++            .enumerate()
++            .filter(|(_, tr)| tr.height >= t_min)
++            .flat_map(|(ti, tr)| {
++                let rb = tr.height.min(t_min.max(1 << 12));
++                (0..tr.height).step_by(rb).map(move |r0| (ti, r0, rb))
++            })
++            .collect();
++        let alpha = self.alpha;
++        let big = units
++            .par_iter()
++            .map(|&(ti, r0, rb)| {
++                let tr = &self.traces[ti];
++                let prog = &tr.full;
++                let nint = prog.num_funcs() / 2;
++                let height = tr.height;
++                let mut slots = vec![P::<F>::ZERO; prog.n_slots()];
++                let mut fsum = vec![PE::<P<F>>::zero(); 2 * nint];
++                let mut raw = vec![P::<F>::ZERO; 2 * nint];
++                let konst: Vec<PE<P<F>>> = (0..2 * nint)
++                    .map(|fi| if fi % 2 == 1 { PE::broadcast(coeffs::<F, EF>(&(prog.konst[fi] + alpha))) } else { PE::zero() })
++                    .collect();
++                let mut ps = vec![F::ZERO; nint * rb];
++                let mut qs = vec![EF::ZERO; nint * rb];
++                for sb in (0..rb).step_by(wl) {
++                    let rr = r0 + sb;
++                    for (i, &(t, c)) in prog.inputs().iter().enumerate() {
++                        slots[i] = if t == 0 {
++                            P::<F>::from_fn(|l| {
++                                let row = rr + l;
++                                F::from_bool(match c {
++                                    0 => row == 0,
++                                    1 => row != height - 1,
++                                    _ => row == height - 1,
++                                })
++                            })
++                        } else {
++                            let (m, rot) = tr.mats[t - 1];
++                            let h = m.values.len() / m.width;
++                            let base = rr + usize::from(rot);
++                            if base + wl <= h {
++                                let w = m.width;
++                                P::<F>::from_fn(|l| m.values[(base + l) * w + c])
++                            } else {
++                                P::<F>::from_fn(|l| m.values[((base + l) % h) * m.width + c])
++                            }
++                        };
++                    }
++                    fsum.copy_from_slice(&konst);
++                    prog.run_base(&mut slots, &mut fsum, &mut raw);
++                    for &(fi, v) in &prog.raw_const {
++                        raw[fi] = P::<F>::from(v);
++                    }
++                    for ii in 0..nint {
++                        let pv = raw[2 * ii];
++                        let qv = &fsum[2 * ii + 1];
++                        for l in 0..wl {
++                            ps[ii * rb + sb + l] = pv.as_slice()[l];
++                            qs[ii * rb + sb + l] = from_coeffs::<F, EF>(&qv.lane(l));
++                        }
++                    }
++                }
++                let mut acc = zero();
++                let mut pscaled = vec![F::ZERO; rb];
++                for pl in &tr.placements {
++                    let ii = pl.interaction;
++                    let pr = &ps[ii * rb..(ii + 1) * rb];
++                    let qr = &qs[ii * rb..(ii + 1) * rb];
++                    let pr: &[F] = if pl.norm == F::ONE {
++                        pr
++                    } else {
++                        for (d, &x) in pscaled.iter_mut().zip(pr) {
++                            *d = x * pl.norm;
++                        }
++                        &pscaled
++                    };
++                    for k in 0..pl.len / height {
++                        let start = pl.row_idx + k * height + r0;
++                        acc = add(acc, f(start, pr, qr));
++                    }
++                }
++                acc
++            })
++            .reduce(&zero, &add);
++        // tail: positions [big_end, n) by position, chunks of t_min
++        let tail_chunks: Vec<usize> = (big_end..self.n).step_by(t_min).collect();
++        let tail = tail_chunks
++            .par_iter()
++            .map(|&start| {
++                let mut p = vec![F::ZERO; t_min];
++                let mut q = vec![EF::ZERO; t_min];
++                self.fill_inner(start, &mut p, &mut q);
++                f(start, &p, &q)
++            })
++            .reduce(&zero, &add);
++        FILL_NS.fetch_add(t0.elapsed().as_nanos() as u64, std::sync::atomic::Ordering::Relaxed);
++        add(big, tail)
++    }
++}
++
++/// Wall time spent generating the LogUp input (reported with `NEARPROOF_MEMPROF=1`).
++pub static FILL_NS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
++
++impl<F: Field, EF: ExtensionField<F>> TraceInputSource<'_, F, EF> {
++    fn fill_inner(&self, start: usize, p: &mut [F], q: &mut [EF]) {
++        type P<F> = <F as Field>::Packing;
++        let wl = <P<F> as PackedValue>::WIDTH;
++        let end = start + p.len();
++        p.par_iter_mut().for_each(|x| *x = F::ZERO);
++        let alpha = self.alpha;
++        q.par_iter_mut().for_each(|x| *x = alpha);
++        // work items: (trace, placement, block start position) of WIDTH positions
++        let mut items: Vec<(usize, usize, usize)> = vec![];
++        for (ti, tr) in self.traces.iter().enumerate() {
++            for (pi, pl) in tr.placements.iter().enumerate() {
++                let lo = pl.row_idx.max(start);
++                let hi = (pl.row_idx + pl.len).min(end);
++                let mut pos = lo;
++                while pos < hi {
++                    items.push((ti, pi, pos));
++                    pos += wl;
++                }
++            }
++        }
++        let pp = SyncPtr(p.as_mut_ptr());
++        let qp = SyncPtr(q.as_mut_ptr());
++        items.par_iter().with_min_len(16).for_each_init(
++            || (vec![P::<F>::ZERO; 64], vec![PE::<P<F>>::zero(); 2], vec![P::<F>::ZERO; 2]),
++            |(slots, fsum, raw), &(ti, pi, pos)| {
++                let tr = &self.traces[ti];
++                let pl = &tr.placements[pi];
++                let prog = &tr.progs[pl.interaction];
++                if slots.len() < prog.n_slots() {
++                    slots.resize(prog.n_slots(), P::<F>::ZERO);
++                }
++                let height = tr.height;
++                let r0 = (pos - pl.row_idx) % height;
++                debug_assert!(r0 + wl <= height);
++                for (i, &(t, c)) in prog.inputs().iter().enumerate() {
++                    slots[i] = if t == 0 {
++                        P::<F>::from_fn(|l| {
++                            let row = r0 + l;
++                            F::from_bool(match c {
++                                0 => row == 0,
++                                1 => row != height - 1,
++                                _ => row == height - 1,
++                            })
++                        })
++                    } else {
++                        let (m, rot) = tr.mats[t - 1];
++                        let h = m.values.len() / m.width;
++                        let base = r0 + usize::from(rot);
++                        if base + wl <= h {
++                            let w = m.width;
++                            P::<F>::from_fn(|l| m.values[(base + l) * w + c])
++                        } else {
++                            P::<F>::from_fn(|l| m.values[((base + l) % h) * m.width + c])
++                        }
++                    };
++                }
++                // q = alpha + denom: start the functional at konst + alpha
++                fsum[1] = PE::broadcast(coeffs::<F, EF>(&(prog.konst[1] + alpha)));
++                prog.run_base(slots, fsum, raw);
++                for &(f, v) in &prog.raw_const {
++                    raw[f] = P::<F>::from(v);
++                }
++                let pv = raw[0] * pl.norm;
++                for l in 0..wl {
++                    let off = pos + l - start;
++                    // SAFETY: placements are disjoint; each position is written by one item
++                    unsafe {
++                        *pp.get().add(off) = pv.as_slice()[l];
++                        *qp.get().add(off) = from_coeffs::<F, EF>(&fsum[1].lane(l));
++                    }
++                }
++            },
++        );
++    }
++}
++
++/// Functionals of one interaction's LogUp input: `[count (raw), Σ_j β^j msg_j + β^len (bus + 1)]`.
++pub fn gkr_input_specs_one<F: Field, EF: ExtensionField<F>>(
++    int: &openvm_stark_backend::interaction::Interaction<usize>,
++    beta_pows: &[EF],
++) -> Vec<super::zc::FuncSpec<EF>> {
++    let b = F::from_u32(int.bus_index as u32 + 1);
++    vec![
++        super::zc::FuncSpec { terms: vec![(int.count, EF::ONE)], konst: EF::ZERO, raw: true },
++        super::zc::FuncSpec {
++            terms: int.message.iter().enumerate().map(|(j, &m)| (m, beta_pows[j])).collect(),
++            konst: beta_pows[int.message.len()] * b,
++            raw: false,
++        },
++    ]
++}
++
++/// Functionals of all interactions of a trace: `[count_0 (raw), denom_0, count_1, denom_1, ..]`.
++pub fn gkr_input_specs_all<F: Field, EF: ExtensionField<F>>(
++    interactions: &[openvm_stark_backend::interaction::Interaction<usize>],
++    beta_pows: &[EF],
++) -> Vec<super::zc::FuncSpec<EF>> {
++    interactions.iter().flat_map(|int| gkr_input_specs_one::<F, EF>(int, beta_pows)).collect()
++}
+diff --git a/crates/cpu-backend/src/fast/mod.rs b/crates/cpu-backend/src/fast/mod.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/cpu-backend/src/fast/mod.rs
+@@ -0,0 +1,7 @@
++//! [pq-cpu-prover] Fast CPU prover paths (byte-identical to the original code; see each module).
++pub mod gkr;
++pub mod pext;
++pub mod round0;
++pub mod zc;
++
++pub use pext::{detect_w, fast_enabled};
+diff --git a/crates/cpu-backend/src/fast/pext.rs b/crates/cpu-backend/src/fast/pext.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/cpu-backend/src/fast/pext.rs
+@@ -0,0 +1,183 @@
++//! [pq-cpu-prover] Packed degree-12 binomial extension arithmetic, struct-of-arrays.
++//!
++//! `PE<P>` holds `P::WIDTH` independent extension elements: coefficient `j` of all lanes lives in
++//! `self.0[j]`. With `-C target-cpu=native` on AVX-512 hosts `P` is `PackedBabyBearAVX512`
++//! (16 lanes); without SIMD it is the scalar field (1 lane), and the same code still runs.
++//!
++//! Multiplication uses the lazy-reduction dot products of `PrimeCharacteristicRing::dot_product`
++//! (products summed in u64 before one Montgomery reduction), which are exact: every function here
++//! returns the field-exact result, so its output is bit-identical to p3's generic arithmetic.
++
++use p3_field::{BasedVectorSpace, ExtensionField, Field, PackedField};
++
++pub const D: usize = 12;
++
++#[derive(Clone, Copy, Debug)]
++#[repr(transparent)]
++pub struct PE<P>(pub [P; D]);
++
++impl<P: PackedField> Default for PE<P> {
++    fn default() -> Self {
++        Self::zero()
++    }
++}
++
++impl<P: PackedField> PE<P> {
++    #[inline(always)]
++    pub fn zero() -> Self {
++        PE([P::ZERO; D])
++    }
++    #[inline(always)]
++    pub fn add(&self, o: &Self) -> Self {
++        PE(core::array::from_fn(|i| self.0[i] + o.0[i]))
++    }
++    #[inline(always)]
++    pub fn add_assign(&mut self, o: &Self) {
++        for i in 0..D {
++            self.0[i] += o.0[i];
++        }
++    }
++    #[inline(always)]
++    pub fn sub(&self, o: &Self) -> Self {
++        PE(core::array::from_fn(|i| self.0[i] - o.0[i]))
++    }
++    #[inline(always)]
++    pub fn neg(&self) -> Self {
++        PE(core::array::from_fn(|i| -self.0[i]))
++    }
++    /// Multiply every lane by a packed base-field value.
++    #[inline(always)]
++    pub fn mul_base(&self, s: P) -> Self {
++        PE(core::array::from_fn(|i| self.0[i] * s))
++    }
++    /// Multiply every lane by one base-field scalar.
++    #[inline(always)]
++    pub fn mul_scalar(&self, s: P::Scalar) -> Self {
++        PE(core::array::from_fn(|i| self.0[i] * s))
++    }
++    /// Add a base-field scalar (to the constant coefficient).
++    #[inline(always)]
++    pub fn add_scalar(&self, s: P::Scalar) -> Self {
++        let mut r = *self;
++        r.0[0] += s;
++        r
++    }
++    /// `self * o` in F[X]/(X^12 - w).
++    #[inline(always)]
++    pub fn mul(&self, o: &Self, w: P::Scalar) -> Self {
++        // ext[m] = w * o[m + 1] (m < 11), ext[11 + j] = o[j]
++        let mut ext = [P::ZERO; 2 * D - 1];
++        ext[D - 1..].copy_from_slice(&o.0);
++        for m in 0..D - 1 {
++            ext[m] = o.0[m + 1] * w;
++        }
++        self.mul_ext(&ext)
++    }
++    /// `self * b` where `ext` is the precomputed `[w*b_1, .., w*b_11, b_0, .., b_11]`.
++    /// res_k = sum_t a_{11-t} ext_{k+t}.
++    #[inline(always)]
++    pub fn mul_ext(&self, ext: &[P; 2 * D - 1]) -> Self {
++        let mut a_rev = [P::ZERO; D];
++        for t in 0..D {
++            a_rev[t] = self.0[D - 1 - t];
++        }
++        PE(core::array::from_fn(|k| {
++            P::dot_product::<D>(&a_rev, ext[k..k + D].try_into().unwrap())
++        }))
++    }
++    /// Broadcast one extension element (given by its coefficients) to all lanes.
++    #[inline(always)]
++    pub fn broadcast(c: &[P::Scalar]) -> Self {
++        PE(core::array::from_fn(|j| P::from(c[j])))
++    }
++    /// Sum over lanes; coefficients of the resulting extension element.
++    #[inline(always)]
++    pub fn hsum(&self) -> [P::Scalar; D] {
++        core::array::from_fn(|j| self.0[j].as_slice().iter().copied().sum())
++    }
++    #[inline(always)]
++    pub fn lane(&self, l: usize) -> [P::Scalar; D] {
++        core::array::from_fn(|j| self.0[j].as_slice()[l])
++    }
++}
++
++/// A fixed multiplier, precomputed for `PE::mul_ext`.
++#[derive(Clone, Copy, Debug)]
++pub struct PreMul<P>(pub [P; 2 * D - 1]);
++
++impl<P: PackedField> PreMul<P> {
++    pub fn new(b: &[P::Scalar], w: P::Scalar) -> Self {
++        let mut ext = [P::ZERO; 2 * D - 1];
++        for j in 0..D {
++            ext[D - 1 + j] = P::from(b[j]);
++        }
++        for m in 0..D - 1 {
++            ext[m] = P::from(b[m + 1] * w);
++        }
++        PreMul(ext)
++    }
++    #[inline(always)]
++    pub fn mul(&self, a: &PE<P>) -> PE<P> {
++        a.mul_ext(&self.0)
++    }
++}
++
++/// Coefficients of an extension element.
++#[inline(always)]
++pub fn coeffs<F: Field, EF: ExtensionField<F>>(x: &EF) -> &[F] {
++    x.as_basis_coefficients_slice()
++}
++
++#[inline(always)]
++pub fn from_coeffs<F: Field, EF: ExtensionField<F>>(c: &[F]) -> EF {
++    EF::from_basis_coefficients_fn(|i| c[i])
++}
++
++/// `Some(w)` if `EF` is `F[X]/(X^12 - w)` with the power basis (checked on sample products);
++/// the fast paths are used only then.
++pub fn detect_w<F: Field, EF: ExtensionField<F>>() -> Option<F> {
++    if <EF as BasedVectorSpace<F>>::DIMENSION != D {
++        return None;
++    }
++    let x: EF = EF::from_basis_coefficients_fn(|i| if i == 1 { F::ONE } else { F::ZERO });
++    let mut x12 = EF::ONE;
++    for _ in 0..D {
++        x12 *= x;
++    }
++    let c = coeffs::<F, EF>(&x12);
++    if c[1..].iter().any(|v| *v != F::ZERO) {
++        return None;
++    }
++    let w = c[0];
++    // spot-check products against the field's own multiplication (scalar lane path)
++    let mut s = 0x9e3779b9u32;
++    let mut next = || {
++        s ^= s << 13;
++        s ^= s >> 17;
++        s ^= s << 5;
++        F::from_u32(s >> 2)
++    };
++    for _ in 0..8 {
++        let a: EF = EF::from_basis_coefficients_fn(|_| next());
++        let b: EF = EF::from_basis_coefficients_fn(|_| next());
++        let pa: PE<F> = PE::broadcast(coeffs::<F, EF>(&a));
++        let pb: PE<F> = PE::broadcast(coeffs::<F, EF>(&b));
++        let pr = pa.mul(&pb, w);
++        if from_coeffs::<F, EF>(&pr.hsum()) != a * b {
++            return None;
++        }
++        let pm = PreMul::<F::Packing>::new(coeffs::<F, EF>(&b), w);
++        let pa2: PE<F::Packing> = PE::broadcast(coeffs::<F, EF>(&a));
++        if from_coeffs::<F, EF>(&pm.mul(&pa2).lane(0)) != a * b {
++            return None;
++        }
++    }
++    Some(w)
++}
++
++/// Fast path switch: `NEARPROOF_CPU_FAST=0` selects the original code everywhere.
++pub fn fast_enabled() -> bool {
++    use std::sync::OnceLock;
++    static ON: OnceLock<bool> = OnceLock::new();
++    *ON.get_or_init(|| std::env::var("NEARPROOF_CPU_FAST").map(|v| v != "0").unwrap_or(true))
++}
+diff --git a/crates/cpu-backend/src/fast/round0.rs b/crates/cpu-backend/src/fast/round0.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/cpu-backend/src/fast/round0.rs
+@@ -0,0 +1,170 @@
++//! [pq-cpu-prover] Univariate-skip round 0 of zerocheck + LogUp in packed base-field arithmetic.
++//!
++//! The original code (`sumcheck_uni_round0_zerocheck_packed`, `sumcheck_uni_round0_batch`) walks
++//! the hypercube point by point: per point it extracts and iDFTs a block of `2^l_skip` rows,
++//! coset-DFTs it, evaluates the constraint DAG packed over the `2^l_skip` skip points only, then
++//! re-evaluates every interaction as an expression tree, per point, per coset. Here the lanes run
++//! over hypercube points `x`, the coset values come from one precomputed Lagrange matrix per coset
++//! (`L_z(s ω^z')`, lazy dot products), and a single compiled DAG pass gives the zerocheck and both
++//! LogUp functionals. The evaluations are the same field elements at the same coset points, so
++//! the round-0 polynomials are identical.
++
++use p3_field::{ExtensionField, Field, PackedValue, PrimeCharacteristicRing, TwoAdicField};
++use p3_matrix::dense::RowMajorMatrix;
++use p3_maybe_rayon::prelude::*;
++
++use super::{
++    pext::{coeffs, from_coeffs, PE},
++    zc::{lanes, Program},
++};
++
++type P<F> = <F as Field>::Packing;
++
++pub struct Round0Out<EF> {
++    /// `[z * d_zc + ci]`, Σ_x eq(x) Σ λ^i C_i at `g^(ci+1) ω^z` (no zerofier factor)
++    pub zc: Vec<EF>,
++    /// `[z * d_lg + ci]`
++    pub num: Vec<EF>,
++    pub den: Vec<EF>,
++}
++
++/// Number of hypercube points needed for the packed path.
++pub fn min_points<F: Field>() -> usize {
++    lanes::<F>()
++}
++
++/// `tables[0]` is the selector matrix, `tables[1..]` the AIR's row-major matrices (with rotation
++/// flags) in `view_mats_rowmaj` order. `eq_xi[x]` for `x < 2^n_lift`.
++#[tracing::instrument(level = "info", skip_all)]
++pub fn round0<F: TwoAdicField, EF: ExtensionField<F>>(
++    prog: &Program<F, EF>,
++    l_skip: usize,
++    n_lift: usize,
++    tables: &[(&RowMajorMatrix<F>, bool)],
++    eq_xi: &[EF],
++    d_zc: usize,
++    d_lg: usize,
++) -> Round0Out<EF> {
++    let wl = lanes::<F>();
++    let npts = 1usize << n_lift;
++    debug_assert!(npts >= wl);
++    let nb = npts / wl;
++    let sk = 1usize << l_skip;
++    let n_cos = d_zc.max(if prog.used[1] { d_lg } else { 0 });
++    let g = F::GENERATOR;
++    let omega = F::two_adic_generator(l_skip);
++    let om: Vec<F> = omega.powers().take(sk).collect();
++    let n_inv = F::from_usize(sk).inverse();
++    // m[ci][z'][z] = L_z(s ω^z') = ω^z (s^N - 1) / (N (s ω^z' - ω^z))
++    let mut m: Vec<Vec<Vec<P<F>>>> = Vec::with_capacity(n_cos);
++    let mut s = F::ONE;
++    for _ in 0..n_cos {
++        s *= g;
++        let sn1 = s.exp_power_of_2(l_skip) - F::ONE;
++        m.push(
++            (0..sk)
++                .map(|zp| {
++                    (0..sk)
++                        .map(|z| P::<F>::from(om[z] * sn1 * n_inv * (s * om[zp] - om[z]).inverse()))
++                        .collect()
++                })
++                .collect(),
++        );
++    }
++    let inputs = prog.inputs();
++    let n_in = inputs.len();
++    let nf = prog.num_funcs();
++    let heights: Vec<usize> = tables.iter().map(|(t, _)| t.values.len() / t.width).collect();
++    let konst: Vec<PE<P<F>>> = prog.konst.iter().map(|k| PE::broadcast(coeffs::<F, EF>(k))).collect();
++    struct St<Q> {
++        v: Vec<Q>,
++        slots: Vec<Q>,
++        raw: Vec<Q>,
++        fsum: Vec<PE<Q>>,
++        zc: Vec<PE<Q>>,
++        num: Vec<PE<Q>>,
++        den: Vec<PE<Q>>,
++    }
++    let new_st = || St::<P<F>> {
++        v: vec![P::<F>::ZERO; n_in * sk],
++        slots: vec![P::<F>::ZERO; prog.n_slots()],
++        raw: vec![P::<F>::ZERO; nf],
++        fsum: vec![PE::zero(); nf],
++        zc: vec![PE::zero(); sk * d_zc],
++        num: vec![PE::zero(); sk * d_lg],
++        den: vec![PE::zero(); sk * d_lg],
++    };
++    let used = prog.used.clone();
++    let fold_blk = |mut st: St<P<F>>, b: usize| -> St<P<F>> {
++        for (i, &(t, c)) in inputs.iter().enumerate() {
++            let (mat, rot) = tables[t];
++            let h = heights[t];
++            let w = mat.width;
++            let off = usize::from(rot);
++            for z in 0..sk {
++                let r_first = ((b * wl) << l_skip) + z + off;
++                let r_last = r_first + ((wl - 1) << l_skip);
++                st.v[i * sk + z] = if r_last < h {
++                    P::<F>::from_fn(|l| mat.values[(r_first + (l << l_skip)) * w + c])
++                } else {
++                    P::<F>::from_fn(|l| {
++                        let x = b * wl + l;
++                        mat.values[(((x << l_skip) + z + off) % h) * w + c]
++                    })
++                };
++            }
++        }
++        let eq: PE<P<F>> = PE(core::array::from_fn(|j| {
++            P::<F>::from_fn(|l| coeffs::<F, EF>(&eq_xi[b * wl + l])[j])
++        }));
++        for ci in 0..n_cos {
++            for zp in 0..sk {
++                let row = &m[ci][zp];
++                for i in 0..n_in {
++                    let vi = &st.v[i * sk..i * sk + sk];
++                    st.slots[i] = if sk == 4 {
++                        P::<F>::dot_product::<4>(vi.try_into().unwrap(), row[..4].try_into().unwrap())
++                    } else {
++                        let mut a = P::<F>::ZERO;
++                        for z in 0..sk {
++                            a += vi[z] * row[z];
++                        }
++                        a
++                    };
++                }
++                st.fsum.copy_from_slice(&konst);
++                prog.run_base(&mut st.slots, &mut st.fsum, &mut st.raw);
++                if ci < d_zc && used[0] {
++                    let v = eq.mul(&st.fsum[0], prog.w());
++                    st.zc[zp * d_zc + ci].add_assign(&v);
++                }
++                if ci < d_lg && used[1] {
++                    let v = eq.mul(&st.fsum[1], prog.w());
++                    st.num[zp * d_lg + ci].add_assign(&v);
++                    let v = eq.mul(&st.fsum[2], prog.w());
++                    st.den[zp * d_lg + ci].add_assign(&v);
++                }
++            }
++        }
++        st
++    };
++    let st = (0..nb)
++        .into_par_iter()
++        .with_min_len(2)
++        .fold(new_st, fold_blk)
++        .reduce(new_st, |mut a, b| {
++            for (x, y) in a.zc.iter_mut().zip(&b.zc) {
++                x.add_assign(y);
++            }
++            for (x, y) in a.num.iter_mut().zip(&b.num) {
++                x.add_assign(y);
++            }
++            for (x, y) in a.den.iter_mut().zip(&b.den) {
++                x.add_assign(y);
++            }
++            a
++        });
++    let h = |v: &[PE<P<F>>]| v.iter().map(|x| from_coeffs::<F, EF>(&x.hsum())).collect::<Vec<EF>>();
++    Round0Out { zc: h(&st.zc), num: h(&st.num), den: h(&st.den) }
++}
++
+diff --git a/crates/cpu-backend/src/fast/zc.rs b/crates/cpu-backend/src/fast/zc.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/cpu-backend/src/fast/zc.rs
+@@ -0,0 +1,1067 @@
++//! [pq-cpu-prover] Zerocheck + LogUp MLE rounds on struct-of-arrays Ext12 tables.
++//!
++//! After the univariate round the trace tables are Ext12. The original code evaluates the
++//! constraint DAG once per (y, x) on scalar Ext12 values (allocating a node vector each time) and
++//! evaluates every interaction expression a second time as an expression tree. Here:
++//!
++//! * the tables are stored lane-strided (`SoaTable`): lane `l` of block `b` holds row
++//!   `l * B + b` (B = height / WIDTH). Row pairs `(2y, 2y+1)` then sit in blocks `(2b', 2b'+1)` of
++//!   the same lane, so the round evaluation and the fold are pure vector code, and folding keeps
++//!   the layout;
++//! * the DAG (constraints and interaction expressions together) is compiled once per round set
++//!   into a register program with liveness-based slot reuse, constants folded, and Ext×base
++//!   multiplications where one side is constant;
++//! * the three outputs (Σ λ^i C_i, Σ eq3b_i count_i, Σ eq3b_i denom_i) are linear functionals of
++//!   node values; their coefficients are precomputed (duplicates merged, constant terms folded).
++//!
++//! Every quantity is the same field element the original code computes, so round polynomials,
++//! openings and proofs are byte-identical.
++
++use std::collections::HashMap;
++
++use openvm_stark_backend::{
++    air_builders::symbolic::{symbolic_variable::Entry, SymbolicExpressionDag, SymbolicExpressionNode},
++    interaction::Interaction,
++};
++use p3_field::{ExtensionField, Field, PackedValue, PrimeCharacteristicRing};
++use p3_matrix::dense::RowMajorMatrix;
++use p3_maybe_rayon::prelude::*;
++
++use super::pext::{coeffs, from_coeffs, PreMul, D, PE};
++
++type P<F> = <F as Field>::Packing;
++
++/// Lane-strided SoA Ext12 table: element (row `l*B + b`, col `c`) coefficient `j` is lane `l` of
++/// `data[(b * width + c) * D + j]`.
++pub struct SoaTable<F: Field> {
++    pub width: usize,
++    pub height: usize,
++    pub data: Vec<P<F>>,
++}
++
++#[inline(always)]
++pub fn lanes<F: Field>() -> usize {
++    <P<F> as PackedValue>::WIDTH
++}
++
++/// Tables with fewer rows than this use the row-major scalar code.
++#[inline(always)]
++pub fn min_height<F: Field>() -> usize {
++    2 * lanes::<F>()
++}
++
++impl<F: Field> SoaTable<F> {
++    #[inline(always)]
++    pub fn blocks(&self) -> usize {
++        self.height / lanes::<F>()
++    }
++    #[inline(always)]
++    pub fn get(&self, b: usize, c: usize) -> PE<P<F>> {
++        let o = (b * self.width + c) * D;
++        PE(self.data[o..o + D].try_into().unwrap())
++    }
++
++    /// Univariate-skip fold of a base-field row-major matrix (`fold_ple_evals_rowmajor`), written
++    /// directly in SoA layout. `cs[z] = scaling * omega^z / (r - omega^z)`.
++    pub fn from_ple<EF: ExtensionField<F>>(
++        l_skip: usize,
++        rm: &RowMajorMatrix<F>,
++        is_rot: bool,
++        cs: &[EF],
++    ) -> Self {
++        let width = rm.width;
++        let height = rm.values.len() / width;
++        let skip = 1usize << l_skip;
++        let new_height = height.max(skip) >> l_skip;
++        let w = lanes::<F>();
++        let nb = new_height / w;
++        let off = usize::from(is_rot);
++        let csb: Vec<Vec<P<F>>> = (0..D)
++            .map(|j| cs.iter().map(|c| P::<F>::from(coeffs::<F, EF>(c)[j])).collect())
++            .collect();
++        let mut data = vec![P::<F>::ZERO; nb * width * D];
++        data.par_chunks_mut(width * D).enumerate().for_each(|(b, out)| {
++            let mut vz = vec![P::<F>::ZERO; skip];
++            for c in 0..width {
++                for z in 0..skip {
++                    vz[z] = P::<F>::from_fn(|l| {
++                        let x = l * nb + b;
++                        let row = ((x << l_skip) + z + off) % height;
++                        rm.values[row * width + c]
++                    });
++                }
++                for j in 0..D {
++                    out[c * D + j] = if skip == 4 {
++                        P::<F>::dot_product::<4>(
++                            vz[..4].try_into().unwrap(),
++                            csb[j][..4].try_into().unwrap(),
++                        )
++                    } else {
++                        let mut acc = P::<F>::ZERO;
++                        for z in 0..skip {
++                            acc += vz[z] * csb[j][z];
++                        }
++                        acc
++                    };
++                }
++            }
++        });
++        Self { width, height: new_height, data }
++    }
++
++    /// `out[x] = Σ_k weights[k] * rm[(x << log_step) + k + rot]` (rows mod the height, lifted
++    /// to at least 2^log_step rows): the univariate-skip fold (`log_step = l_skip`) or the skip
++    /// fold followed by the first multilinear fold (`log_step = l_skip + 1`) in one pass.
++    pub fn from_ple_weights<EF: ExtensionField<F>>(
++        log_step: usize,
++        rm: &RowMajorMatrix<F>,
++        is_rot: bool,
++        weights: &[EF],
++    ) -> Self {
++        let width = rm.width;
++        let height = rm.values.len() / width;
++        let step = 1usize << log_step;
++        debug_assert_eq!(weights.len(), step);
++        let new_height = height.max(step) >> log_step;
++        let w = lanes::<F>();
++        let nb = new_height / w;
++        let off = usize::from(is_rot);
++        let wb: Vec<Vec<P<F>>> = (0..D)
++            .map(|j| weights.iter().map(|c| P::<F>::from(coeffs::<F, EF>(c)[j])).collect())
++            .collect();
++        let mut data = vec![P::<F>::ZERO; nb * width * D];
++        data.par_chunks_mut(width * D).enumerate().for_each(|(b, out)| {
++            let mut vz = vec![P::<F>::ZERO; step];
++            for c in 0..width {
++                for z in 0..step {
++                    vz[z] = P::<F>::from_fn(|l| {
++                        let x = l * nb + b;
++                        let row = ((x << log_step) + z + off) % height;
++                        rm.values[row * width + c]
++                    });
++                }
++                for j in 0..D {
++                    out[c * D + j] = match step {
++                        4 => P::<F>::dot_product::<4>(vz[..4].try_into().unwrap(), wb[j][..4].try_into().unwrap()),
++                        8 => P::<F>::dot_product::<8>(vz[..8].try_into().unwrap(), wb[j][..8].try_into().unwrap()),
++                        16 => P::<F>::dot_product::<16>(vz[..16].try_into().unwrap(), wb[j][..16].try_into().unwrap()),
++                        _ => {
++                            let mut acc = P::<F>::ZERO;
++                            for z in 0..step {
++                                acc += vz[z] * wb[j][z];
++                            }
++                            acc
++                        }
++                    };
++                }
++            }
++        });
++        Self { width, height: new_height, data }
++    }
++
++    /// Multilinear fold of row pairs at `r`: row' y = row 2y + r (row 2y+1 - row 2y).
++    pub fn fold(&self, r: &PreMul<P<F>>) -> Self {
++        let nb = self.blocks() / 2;
++        let width = self.width;
++        let mut data = vec![P::<F>::ZERO; nb * width * D];
++        data.par_chunks_mut(width * D).enumerate().for_each(|(b, out)| {
++            for c in 0..width {
++                let lo = self.get(2 * b, c);
++                let hi = self.get(2 * b + 1, c);
++                let v = lo.add(&r.mul(&hi.sub(&lo)));
++                out[c * D..c * D + D].copy_from_slice(&v.0);
++            }
++        });
++        Self { width, height: self.height / 2, data }
++    }
++
++    pub fn to_rowmajor<EF: ExtensionField<F>>(&self) -> RowMajorMatrix<EF> {
++        let w = lanes::<F>();
++        let nb = self.blocks();
++        let mut values = vec![EF::ZERO; self.height * self.width];
++        for b in 0..nb {
++            for c in 0..self.width {
++                let v = self.get(b, c);
++                for l in 0..w {
++                    values[(l * nb + b) * self.width + c] = from_coeffs::<F, EF>(&v.lane(l));
++                }
++            }
++        }
++        RowMajorMatrix::new(values, self.width)
++    }
++}
++
++#[derive(Clone, Copy, Debug)]
++enum Ins<F> {
++    Mul { d: u32, a: u32, b: u32 },
++    Add { d: u32, a: u32, b: u32 },
++    Sub { d: u32, a: u32, b: u32 },
++    Neg { d: u32, a: u32 },
++    MulC { d: u32, a: u32, c: F },
++    AddC { d: u32, a: u32, c: F },
++    /// a - c
++    SubC { d: u32, a: u32, c: F },
++    /// c - a
++    CSub { d: u32, a: u32, c: F },
++    /// F[f] += coef[k] * slot[a]
++    Acc { f: u32, a: u32, k: u32 },
++    /// raw[f] = slot[a] (base-field evaluation only)
++    Raw { f: u32, a: u32 },
++}
++
++/// A linear functional of DAG node values: `konst + Σ coef * node`. With `raw`, the functional is
++/// the single node's value itself (base-field evaluation; the node must be non-constant or the
++/// constant is reported through `konst`).
++#[derive(Clone, Debug)]
++pub struct FuncSpec<EF> {
++    pub terms: Vec<(usize, EF)>,
++    pub konst: EF,
++    pub raw: bool,
++}
++
++/// Degree-aware instruction: every slot holds its node at x = 1..=m points (m = degree + 1,
++/// capped at the round degree `d`), and is extended to all `d` points by finite differences
++/// only when a consumer needs more points.
++#[derive(Clone, Copy, Debug)]
++enum DIns<F> {
++    Mul { d: u32, a: u32, b: u32, m: u8 },
++    Add { d: u32, a: u32, b: u32, m: u8 },
++    Sub { d: u32, a: u32, b: u32, m: u8 },
++    Neg { d: u32, a: u32, m: u8 },
++    MulC { d: u32, a: u32, c: F, m: u8 },
++    AddC { d: u32, a: u32, c: F, m: u8 },
++    SubC { d: u32, a: u32, c: F, m: u8 },
++    CSub { d: u32, a: u32, c: F, m: u8 },
++    /// extend slot `s` from its first `b` points (a polynomial of degree < b) to all d points
++    Ext { s: u32, b: u8 },
++    /// group[f][m] += coef[k] * slot[a][..m]
++    Acc { f: u32, a: u32, k: u32, m: u8 },
++}
++
++/// Degree-aware program for round degree `d`.
++pub struct DaProgram<F> {
++    d: usize,
++    ins: Vec<DIns<F>>,
++}
++
++#[derive(Clone, Copy, Debug)]
++enum Val<F> {
++    C(F),
++    S(u32),
++}
++
++/// One AIR's compiled evaluation program for the MLE rounds.
++pub struct Program<F: Field, EF> {
++    /// (table index into [sels, mats..], column) of each input slot
++    inputs: Vec<(usize, usize)>,
++    n_slots: usize,
++    ins: Vec<Ins<F>>,
++    coefs: Vec<PreMul<P<F>>>,
++    coef_scalars: Vec<[F; D]>,
++    /// constant term of each functional
++    pub konst: Vec<EF>,
++    pub used: Vec<bool>,
++    /// raw functional whose node folded to a constant: (functional, value)
++    pub raw_const: Vec<(usize, F)>,
++    w: F,
++    pub stats: String,
++}
++
++pub struct Layout {
++    pub has_pre: bool,
++    pub needs_next: bool,
++}
++
++impl Layout {
++    fn table(&self, entry: Entry, index: usize) -> (usize, usize) {
++        let (mat, off) = match entry {
++            Entry::Preprocessed { offset } => (0, offset),
++            Entry::Main { part_index, offset } => (usize::from(self.has_pre) + part_index, offset),
++            _ => unreachable!(),
++        };
++        let t = if self.needs_next { 1 + 2 * mat + off } else {
++            debug_assert_eq!(off, 0);
++            1 + mat
++        };
++        (t, index)
++    }
++}
++
++/// The three functionals of a zerocheck/LogUp round: Σ λ^i C_i, Σ eq3b_i count_i, Σ eq3b_i denom_i.
++pub fn zc_logup_specs<F: Field, EF: ExtensionField<F>>(
++    dag: &SymbolicExpressionDag<F>,
++    interactions: &[Interaction<usize>],
++    lambda_pows: &[EF],
++    eq3b: &[EF],
++    beta_pows: &[EF],
++) -> Vec<FuncSpec<EF>> {
++    let zc = FuncSpec {
++        terms: dag.constraint_idx.iter().enumerate().map(|(i, &n)| (n, lambda_pows[i])).collect(),
++        konst: EF::ZERO,
++        raw: false,
++    };
++    let mut num = FuncSpec { terms: vec![], konst: EF::ZERO, raw: false };
++    let mut den = FuncSpec { terms: vec![], konst: EF::ZERO, raw: false };
++    if !eq3b.is_empty() {
++        for (i, int) in interactions.iter().enumerate() {
++            num.terms.push((int.count, eq3b[i]));
++            let b = F::from_u32(int.bus_index as u32 + 1);
++            den.konst += eq3b[i] * beta_pows[int.message.len()] * b;
++            for (j, &m) in int.message.iter().enumerate() {
++                den.terms.push((m, eq3b[i] * beta_pows[j]));
++            }
++        }
++    }
++    vec![zc, num, den]
++}
++
++impl<F: Field, EF: ExtensionField<F>> Program<F, EF> {
++    /// Zerocheck + LogUp program (`zc_logup_specs`).
++    pub fn compile(
++        dag: &SymbolicExpressionDag<F>,
++        interactions: &[Interaction<usize>],
++        public_values: &[F],
++        layout: &Layout,
++        lambda_pows: &[EF],
++        eq3b: &[EF],
++        beta_pows: &[EF],
++        w: F,
++    ) -> Self {
++        let specs = zc_logup_specs(dag, interactions, lambda_pows, eq3b, beta_pows);
++        let mut p = Self::compile_specs(dag, public_values, layout, &specs, w);
++        p.used = vec![!dag.constraint_idx.is_empty(), !eq3b.is_empty(), !eq3b.is_empty()];
++        p
++    }
++
++    pub fn compile_specs(
++        dag: &SymbolicExpressionDag<F>,
++        public_values: &[F],
++        layout: &Layout,
++        specs: &[FuncSpec<EF>],
++        w: F,
++    ) -> Self {
++        let nodes = &dag.nodes;
++        let n = nodes.len();
++        let nf = specs.len();
++        // output coefficients per node: (functional, coef), duplicates merged
++        let mut outc: Vec<Vec<(usize, EF)>> = vec![vec![]; n];
++        let mut konst: Vec<EF> = specs.iter().map(|s| s.konst).collect();
++        let mut raw_of: Vec<Vec<usize>> = vec![vec![]; n];
++        for (f, sp) in specs.iter().enumerate() {
++            if sp.raw {
++                assert_eq!(sp.terms.len(), 1);
++                raw_of[sp.terms[0].0].push(f);
++                continue;
++            }
++            for &(node, c) in &sp.terms {
++                if let Some(e) = outc[node].iter_mut().find(|(g, _)| *g == f) {
++                    e.1 += c;
++                } else {
++                    outc[node].push((f, c));
++                }
++            }
++        }
++        let used: Vec<bool> = specs.iter().map(|s| !s.terms.is_empty()).collect();
++        let mut raw_const = vec![];
++        // reachability
++        let mut need = vec![false; n];
++        for i in 0..n {
++            if !outc[i].is_empty() || !raw_of[i].is_empty() {
++                need[i] = true;
++            }
++        }
++        for i in (0..n).rev() {
++            if !need[i] {
++                continue;
++            }
++            match nodes[i] {
++                SymbolicExpressionNode::Add { left_idx, right_idx, .. }
++                | SymbolicExpressionNode::Sub { left_idx, right_idx, .. }
++                | SymbolicExpressionNode::Mul { left_idx, right_idx, .. } => {
++                    need[left_idx] = true;
++                    need[right_idx] = true;
++                }
++                SymbolicExpressionNode::Neg { idx, .. } => need[idx] = true,
++                _ => {}
++            }
++        }
++        // inputs
++        let mut input_map: HashMap<(usize, usize), u32> = HashMap::new();
++        let mut inputs = vec![];
++        let mut input_of = |key: (usize, usize), inputs: &mut Vec<(usize, usize)>| -> u32 {
++            *input_map.entry(key).or_insert_with(|| {
++                inputs.push(key);
++                (inputs.len() - 1) as u32
++            })
++        };
++        // first pass: values and last use
++        let mut val: Vec<Option<Val<F>>> = vec![None; n];
++        let mut last_use = vec![0usize; n];
++        for i in 0..n {
++            if !need[i] {
++                continue;
++            }
++            match nodes[i] {
++                SymbolicExpressionNode::Add { left_idx, right_idx, .. }
++                | SymbolicExpressionNode::Sub { left_idx, right_idx, .. }
++                | SymbolicExpressionNode::Mul { left_idx, right_idx, .. } => {
++                    last_use[left_idx] = i;
++                    last_use[right_idx] = i;
++                }
++                SymbolicExpressionNode::Neg { idx, .. } => last_use[idx] = i,
++                _ => {}
++            }
++        }
++        for i in 0..n {
++            if !need[i] {
++                continue;
++            }
++            match nodes[i] {
++                SymbolicExpressionNode::Variable(v) => match v.entry {
++                    Entry::Public => val[i] = Some(Val::C(public_values[v.index])),
++                    Entry::Challenge => unreachable!(),
++                    e => {
++                        let k = layout.table(e, v.index);
++                        val[i] = Some(Val::S(input_of(k, &mut inputs)));
++                    }
++                },
++                SymbolicExpressionNode::IsFirstRow => val[i] = Some(Val::S(input_of((0, 0), &mut inputs))),
++                SymbolicExpressionNode::IsTransition => val[i] = Some(Val::S(input_of((0, 1), &mut inputs))),
++                SymbolicExpressionNode::IsLastRow => val[i] = Some(Val::S(input_of((0, 2), &mut inputs))),
++                SymbolicExpressionNode::Constant(c) => val[i] = Some(Val::C(c)),
++                _ => {}
++            }
++        }
++        let n_in = inputs.len();
++        // second pass: instructions with slot allocation
++        let mut free: Vec<u32> = vec![];
++        let mut n_slots = n_in;
++        let mut ins = vec![];
++        let mut coefs = vec![];
++        let mut coef_scalars = vec![];
++        let (mut n_mul, mut n_mulc, mut n_lin) = (0usize, 0usize, 0usize);
++        let alloc = |free: &mut Vec<u32>, n_slots: &mut usize| -> u32 {
++            free.pop().unwrap_or_else(|| {
++                *n_slots += 1;
++                (*n_slots - 1) as u32
++            })
++        };
++        let is_tmp = |s: u32| (s as usize) >= n_in;
++        for i in 0..n {
++            if !need[i] {
++                continue;
++            }
++            let bin = |l: usize, r: usize| (val[l].unwrap(), val[r].unwrap());
++            let new_val: Option<Val<F>> = match nodes[i] {
++                SymbolicExpressionNode::Add { left_idx, right_idx, .. } => Some(match bin(left_idx, right_idx) {
++                    (Val::C(a), Val::C(b)) => Val::C(a + b),
++                    (Val::S(a), Val::C(c)) | (Val::C(c), Val::S(a)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::AddC { d, a, c });
++                        n_lin += 1;
++                        Val::S(d)
++                    }
++                    (Val::S(a), Val::S(b)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::Add { d, a, b });
++                        n_lin += 1;
++                        Val::S(d)
++                    }
++                }),
++                SymbolicExpressionNode::Sub { left_idx, right_idx, .. } => Some(match bin(left_idx, right_idx) {
++                    (Val::C(a), Val::C(b)) => Val::C(a - b),
++                    (Val::S(a), Val::C(c)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::SubC { d, a, c });
++                        n_lin += 1;
++                        Val::S(d)
++                    }
++                    (Val::C(c), Val::S(a)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::CSub { d, a, c });
++                        n_lin += 1;
++                        Val::S(d)
++                    }
++                    (Val::S(a), Val::S(b)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::Sub { d, a, b });
++                        n_lin += 1;
++                        Val::S(d)
++                    }
++                }),
++                SymbolicExpressionNode::Mul { left_idx, right_idx, .. } => Some(match bin(left_idx, right_idx) {
++                    (Val::C(a), Val::C(b)) => Val::C(a * b),
++                    (Val::S(a), Val::C(c)) | (Val::C(c), Val::S(a)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::MulC { d, a, c });
++                        n_mulc += 1;
++                        Val::S(d)
++                    }
++                    (Val::S(a), Val::S(b)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::Mul { d, a, b });
++                        n_mul += 1;
++                        Val::S(d)
++                    }
++                }),
++                SymbolicExpressionNode::Neg { idx, .. } => Some(match val[idx].unwrap() {
++                    Val::C(a) => Val::C(-a),
++                    Val::S(a) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::Neg { d, a });
++                        n_lin += 1;
++                        Val::S(d)
++                    }
++                }),
++                _ => None,
++            };
++            if let Some(v) = new_val {
++                val[i] = Some(v);
++            }
++            // free operands whose last use is this node (after allocating the destination, so the
++            // destination never aliases an operand; harmless either way)
++            let ops: &[usize] = &match nodes[i] {
++                SymbolicExpressionNode::Add { left_idx, right_idx, .. }
++                | SymbolicExpressionNode::Sub { left_idx, right_idx, .. }
++                | SymbolicExpressionNode::Mul { left_idx, right_idx, .. } => [left_idx, right_idx],
++                SymbolicExpressionNode::Neg { idx, .. } => [idx, idx],
++                _ => [usize::MAX, usize::MAX],
++            };
++            // outputs of this node
++            for &(f, c) in &outc[i] {
++                match val[i].unwrap() {
++                    Val::C(v) => konst[f] += c * v,
++                    Val::S(a) => {
++                        coefs.push(PreMul::new(coeffs::<F, EF>(&c), w));
++                        coef_scalars.push(coeffs::<F, EF>(&c).try_into().unwrap());
++                        ins.push(Ins::Acc { f: f as u32, a, k: (coefs.len() - 1) as u32 });
++                    }
++                }
++            }
++            for &f in &raw_of[i] {
++                match val[i].unwrap() {
++                    Val::C(v) => raw_const.push((f, v)),
++                    Val::S(a) => ins.push(Ins::Raw { f: f as u32, a }),
++                }
++            }
++            let mut freed = [u32::MAX; 2];
++            for (q, &o) in ops.iter().enumerate() {
++                if o != usize::MAX && last_use[o] == i {
++                    if let Some(Val::S(s)) = val[o] {
++                        if is_tmp(s) && !freed.contains(&s) {
++                            free.push(s);
++                            freed[q] = s;
++                        }
++                    }
++                }
++            }
++            // a computed node nobody reads (pure output) dies here
++            if let Some(Val::S(s)) = val[i] {
++                if is_tmp(s) && last_use[i] <= i && !matches!(nodes[i], SymbolicExpressionNode::Variable(_)) {
++                    if !free.contains(&s) {
++                        free.push(s);
++                    }
++                }
++            }
++        }
++        // degree in x of each node (variables and selectors are linear in x)
++        let mut deg = vec![0usize; n];
++        for i in 0..n {
++            deg[i] = match nodes[i] {
++                SymbolicExpressionNode::Variable(v) => usize::from(!matches!(v.entry, Entry::Public)),
++                SymbolicExpressionNode::IsFirstRow | SymbolicExpressionNode::IsLastRow | SymbolicExpressionNode::IsTransition => 1,
++                SymbolicExpressionNode::Constant(_) => 0,
++                SymbolicExpressionNode::Add { left_idx, right_idx, .. } | SymbolicExpressionNode::Sub { left_idx, right_idx, .. } => deg[left_idx].max(deg[right_idx]),
++                SymbolicExpressionNode::Mul { left_idx, right_idx, .. } => deg[left_idx] + deg[right_idx],
++                SymbolicExpressionNode::Neg { idx, .. } => deg[idx],
++            };
++        }
++        let (mut mul_pts, mut out_pts, mut mul_deg_hist) = (0usize, 0usize, [0usize; 12]);
++        for i in 0..n {
++            if !need[i] {
++                continue;
++            }
++            if let (SymbolicExpressionNode::Mul { left_idx, right_idx, .. }, Some(Val::S(_))) = (&nodes[i], val[i]) {
++                if !matches!(val[*left_idx], Some(Val::C(_))) && !matches!(val[*right_idx], Some(Val::C(_))) {
++                    mul_pts += (deg[i] + 1).min(9);
++                    mul_deg_hist[deg[i].min(11)] += 1;
++                }
++            }
++            if !outc[i].is_empty() {
++                if let Some(Val::S(_)) = val[i] {
++                    out_pts += ((deg[i] + 1).min(9)) * outc[i].len();
++                }
++            }
++        }
++        let stats = format!(
++            "nodes={n} inputs={n_in} slots={n_slots} mulEE={n_mul} mulEC={n_mulc} lin={n_lin} outputs={} | degree-aware (d=9): mul_points={mul_pts} (vs {}) out_points={out_pts} (vs {}) mul_deg_hist={:?}",
++            coefs.len(), 9 * n_mul, 9 * coefs.len(), mul_deg_hist
++        );
++        let _ = nf;
++        Self { inputs, n_slots, ins, coefs, coef_scalars, konst, used, raw_const, w, stats }
++    }
++
++    pub fn w(&self) -> F {
++        self.w
++    }
++
++    pub fn num_funcs(&self) -> usize {
++        self.konst.len()
++    }
++
++    /// Base-field evaluation (packed over lanes): `fsum[f] += Σ coef * node`, `raw[f] = node`.
++    #[inline(always)]
++    pub fn run_base(&self, slots: &mut [P<F>], fsum: &mut [PE<P<F>>], raw: &mut [P<F>]) {
++        for ins in &self.ins {
++            match *ins {
++                Ins::Mul { d, a, b } => slots[d as usize] = slots[a as usize] * slots[b as usize],
++                Ins::Add { d, a, b } => slots[d as usize] = slots[a as usize] + slots[b as usize],
++                Ins::Sub { d, a, b } => slots[d as usize] = slots[a as usize] - slots[b as usize],
++                Ins::Neg { d, a } => slots[d as usize] = -slots[a as usize],
++                Ins::MulC { d, a, c } => slots[d as usize] = slots[a as usize] * c,
++                Ins::AddC { d, a, c } => slots[d as usize] = slots[a as usize] + c,
++                Ins::SubC { d, a, c } => slots[d as usize] = slots[a as usize] - c,
++                Ins::CSub { d, a, c } => slots[d as usize] = P::<F>::from(c) - slots[a as usize],
++                Ins::Acc { f, a, k } => {
++                    let v = slots[a as usize];
++                    let c = &self.coef_scalars[k as usize];
++                    let acc = &mut fsum[f as usize];
++                    for j in 0..D {
++                        acc.0[j] += v * c[j];
++                    }
++                }
++                Ins::Raw { f, a } => raw[f as usize] = slots[a as usize],
++            }
++        }
++    }
++
++    pub fn inputs(&self) -> &[(usize, usize)] {
++        &self.inputs
++    }
++    pub fn n_slots(&self) -> usize {
++        self.n_slots
++    }
++
++    #[inline(always)]
++    fn run(&self, slots: &mut [PE<P<F>>], fsum: &mut [PE<P<F>>]) {
++        let w = self.w;
++        for ins in &self.ins {
++            match *ins {
++                Ins::Mul { d, a, b } => {
++                    let v = slots[a as usize].mul(&slots[b as usize], w);
++                    slots[d as usize] = v;
++                }
++                Ins::Add { d, a, b } => {
++                    let v = slots[a as usize].add(&slots[b as usize]);
++                    slots[d as usize] = v;
++                }
++                Ins::Sub { d, a, b } => {
++                    let v = slots[a as usize].sub(&slots[b as usize]);
++                    slots[d as usize] = v;
++                }
++                Ins::Neg { d, a } => {
++                    let v = slots[a as usize].neg();
++                    slots[d as usize] = v;
++                }
++                Ins::MulC { d, a, c } => {
++                    let v = slots[a as usize].mul_scalar(c);
++                    slots[d as usize] = v;
++                }
++                Ins::AddC { d, a, c } => {
++                    let v = slots[a as usize].add_scalar(c);
++                    slots[d as usize] = v;
++                }
++                Ins::SubC { d, a, c } => {
++                    let v = slots[a as usize].add_scalar(-c);
++                    slots[d as usize] = v;
++                }
++                Ins::CSub { d, a, c } => {
++                    let v = slots[a as usize].neg().add_scalar(c);
++                    slots[d as usize] = v;
++                }
++                Ins::Acc { f, a, k } => {
++                    let v = self.coefs[k as usize].mul(&slots[a as usize]);
++                    fsum[f as usize].add_assign(&v);
++                }
++                Ins::Raw { .. } => unreachable!("raw outputs are base-field only"),
++            }
++        }
++    }
++
++    /// The degree-aware form of this program for round degree `d` (see [`DIns`]).
++    pub fn degree_aware(&self, d: usize) -> DaProgram<F> {
++        let n_in = self.inputs.len();
++        let mut deg = vec![0usize; self.n_slots];
++        let mut ext = vec![false; self.n_slots];
++        for i in 0..n_in {
++            deg[i] = 1;
++        }
++        let base = |deg: usize| (deg + 1).min(d);
++        let mut out = Vec::with_capacity(self.ins.len() * 2);
++        // make slot `a` available at m points
++        let need = |out: &mut Vec<DIns<F>>, ext: &mut Vec<bool>, deg: &Vec<usize>, a: u32, m: usize| {
++            let a_ = a as usize;
++            if base(deg[a_]) < m && !ext[a_] {
++                out.push(DIns::Ext { s: a, b: base(deg[a_]) as u8 });
++                ext[a_] = true;
++            }
++        };
++        for ins in &self.ins {
++            match *ins {
++                Ins::Mul { d: dd, a, b } => {
++                    let dg = deg[a as usize] + deg[b as usize];
++                    let m = base(dg);
++                    need(&mut out, &mut ext, &deg, a, m);
++                    need(&mut out, &mut ext, &deg, b, m);
++                    out.push(DIns::Mul { d: dd, a, b, m: m as u8 });
++                    deg[dd as usize] = dg;
++                    ext[dd as usize] = m == d;
++                }
++                Ins::Add { d: dd, a, b } | Ins::Sub { d: dd, a, b } => {
++                    let dg = deg[a as usize].max(deg[b as usize]);
++                    let m = base(dg);
++                    need(&mut out, &mut ext, &deg, a, m);
++                    need(&mut out, &mut ext, &deg, b, m);
++                    out.push(if matches!(ins, Ins::Add { .. }) {
++                        DIns::Add { d: dd, a, b, m: m as u8 }
++                    } else {
++                        DIns::Sub { d: dd, a, b, m: m as u8 }
++                    });
++                    deg[dd as usize] = dg;
++                    ext[dd as usize] = m == d;
++                }
++                Ins::Neg { d: dd, a } | Ins::MulC { d: dd, a, .. } | Ins::AddC { d: dd, a, .. } | Ins::SubC { d: dd, a, .. } | Ins::CSub { d: dd, a, .. } => {
++                    let dg = deg[a as usize];
++                    // operate on all valid points of a (extended or not)
++                    let m = if ext[a as usize] { d } else { base(dg) };
++                    let mu = m as u8;
++                    out.push(match *ins {
++                        Ins::Neg { .. } => DIns::Neg { d: dd, a, m: mu },
++                        Ins::MulC { c, .. } => DIns::MulC { d: dd, a, c, m: mu },
++                        Ins::AddC { c, .. } => DIns::AddC { d: dd, a, c, m: mu },
++                        Ins::SubC { c, .. } => DIns::SubC { d: dd, a, c, m: mu },
++                        Ins::CSub { c, .. } => DIns::CSub { d: dd, a, c, m: mu },
++                        _ => unreachable!(),
++                    });
++                    deg[dd as usize] = dg;
++                    ext[dd as usize] = m == d;
++                }
++                Ins::Acc { f, a, k } => {
++                    out.push(DIns::Acc { f, a, k, m: base(deg[a as usize]) as u8 });
++                }
++                Ins::Raw { .. } => unreachable!("raw outputs are base-field only"),
++            }
++        }
++        DaProgram { d, ins: out }
++    }
++
++    /// `round_evals` through the degree-aware program (identical values).
++    pub fn round_evals_da(&self, da: &DaProgram<F>, tables: &[&SoaTable<F>], eq_xi: &[EF]) -> [Vec<EF>; 3] {
++        let h = tables[0].height;
++        self.round_evals_da_with(da, h, eq_xi, |t, c, bb| (tables[t].get(2 * bb, c), tables[t].get(2 * bb + 1, c)))
++    }
++
++    /// [`Self::round_evals_da`] for the first multilinear round straight from the base-field
++    /// trace (the univariate-skip fold is applied on the fly, so its Ext12 table is never
++    /// stored). `mats[t]` is input table t (selectors first), `cs` the skip-fold weights.
++    pub fn round_evals_da_ple(
++        &self,
++        da: &DaProgram<F>,
++        l_skip: usize,
++        mats: &[(&RowMajorMatrix<F>, bool)],
++        cs: &[EF],
++        eq_xi: &[EF],
++    ) -> [Vec<EF>; 3] {
++        let sk = 1usize << l_skip;
++        let h0 = {
++            let (m, _) = mats[0];
++            (m.values.len() / m.width).max(sk) >> l_skip
++        };
++        let wl = lanes::<F>();
++        let nb0 = h0 / wl;
++        let csb: Vec<Vec<P<F>>> = (0..D)
++            .map(|j| cs.iter().map(|c| P::<F>::from(coeffs::<F, EF>(c)[j])).collect())
++            .collect();
++        let val = |t: usize, c: usize, x_of: &dyn Fn(usize) -> usize| -> PE<P<F>> {
++            let (m, rot) = mats[t];
++            let height = m.values.len() / m.width;
++            let off = usize::from(rot);
++            let vz: Vec<P<F>> = (0..sk)
++                .map(|z| P::<F>::from_fn(|l| m.values[(((x_of(l) << l_skip) + z + off) % height) * m.width + c]))
++                .collect();
++            PE(core::array::from_fn(|j| {
++                if sk == 4 {
++                    P::<F>::dot_product::<4>(vz[..4].try_into().unwrap(), csb[j][..4].try_into().unwrap())
++                } else if sk == 8 {
++                    P::<F>::dot_product::<8>(vz[..8].try_into().unwrap(), csb[j][..8].try_into().unwrap())
++                } else if sk == 16 {
++                    P::<F>::dot_product::<16>(vz[..16].try_into().unwrap(), csb[j][..16].try_into().unwrap())
++                } else {
++                    let mut acc = P::<F>::ZERO;
++                    for z in 0..sk {
++                        acc += vz[z] * csb[j][z];
++                    }
++                    acc
++                }
++            }))
++        };
++        self.round_evals_da_with(da, h0, eq_xi, |t, c, bb| {
++            (val(t, c, &|l| l * nb0 + 2 * bb), val(t, c, &|l| l * nb0 + 2 * bb + 1))
++        })
++    }
++
++    fn round_evals_da_with(
++        &self,
++        da: &DaProgram<F>,
++        h: usize,
++        eq_xi: &[EF],
++        load: impl Fn(usize, usize, usize) -> (PE<P<F>>, PE<P<F>>) + Sync,
++    ) -> [Vec<EF>; 3] {
++        let d = da.d;
++        let wl = lanes::<F>();
++        let nb = h / wl;
++        let ny_blk = nb / 2;
++        let w = self.w;
++        struct St<Q> {
++            slots: Vec<PE<Q>>,
++            groups: Vec<PE<Q>>,
++            acc: Vec<PE<Q>>,
++            eqsum: PE<Q>,
++        }
++        let new_st = || St::<P<F>> {
++            slots: vec![PE::zero(); self.n_slots * d],
++            groups: vec![PE::zero(); 3 * (d + 1) * d],
++            acc: vec![PE::zero(); 3 * d],
++            eqsum: PE::zero(),
++        };
++        // extend v[0..b] (degree < b) to v[0..d] by finite differences (additions only)
++        fn extend<Q: p3_field::PackedField>(v: &mut [PE<Q>], b: usize, d: usize) {
++            if b >= d {
++                return;
++            }
++            if b == 1 {
++                for x in 1..d {
++                    v[x] = v[0];
++                }
++                return;
++            }
++            // difference table at the last base point: dt[j] = Δ^j v(b-1)
++            let mut dt: [PE<Q>; 10] = [PE::zero(); 10];
++            let mut row: [PE<Q>; 10] = [PE::zero(); 10];
++            row[..b].copy_from_slice(&v[..b]);
++            // dt[j] = backward difference of order j at the last point
++            for j in 0..b {
++                dt[j] = row[b - 1];
++                for i in (j + 1..b).rev() {
++                    row[i] = row[i].sub(&row[i - 1]);
++                }
++            }
++            // dt[j] now holds Δ^j at the last point (Δ^0 = v(b-1)); advance
++            for x in b..d {
++                for j in (0..b - 1).rev() {
++                    let t = dt[j].add(&dt[j + 1]);
++                    dt[j] = t;
++                }
++                v[x] = dt[0];
++            }
++        }
++        let fold_blk = |mut st: St<P<F>>, bb: usize| -> St<P<F>> {
++            for (i, &(t, c)) in self.inputs.iter().enumerate() {
++                let (lo, hi) = load(t, c, bb);
++                st.slots[i * d] = hi;
++                if d > 1 {
++                    st.slots[i * d + 1] = hi.add(&hi.sub(&lo));
++                }
++            }
++            let eq: PE<P<F>> = PE(core::array::from_fn(|j| {
++                P::<F>::from_fn(|l| coeffs::<F, EF>(&eq_xi[l * ny_blk + bb])[j])
++            }));
++            st.eqsum.add_assign(&eq);
++            for g in st.groups.iter_mut() {
++                *g = PE::zero();
++            }
++            let mut used_m = [[false; 11]; 3];
++            for ins in &da.ins {
++                match *ins {
++                    DIns::Mul { d: dd, a, b, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].mul(&st.slots[b as usize * d + p], w);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::Add { d: dd, a, b, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].add(&st.slots[b as usize * d + p]);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::Sub { d: dd, a, b, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].sub(&st.slots[b as usize * d + p]);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::Neg { d: dd, a, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].neg();
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::MulC { d: dd, a, c, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].mul_scalar(c);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::AddC { d: dd, a, c, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].add_scalar(c);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::SubC { d: dd, a, c, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].add_scalar(-c);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::CSub { d: dd, a, c, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].neg().add_scalar(c);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::Ext { s, b } => {
++                        let o = s as usize * d;
++                        extend(&mut st.slots[o..o + d], b as usize, d);
++                    }
++                    DIns::Acc { f, a, k, m } => {
++                        let (f, m) = (f as usize, m as usize);
++                        used_m[f][m] = true;
++                        let g0 = (f * (d + 1) + m) * d;
++                        for p in 0..m {
++                            let v = self.coefs[k as usize].mul(&st.slots[a as usize * d + p]);
++                            st.groups[g0 + p].add_assign(&v);
++                        }
++                    }
++                }
++            }
++            for f in 0..3 {
++                if !self.used[f] {
++                    continue;
++                }
++                let mut tot = [PE::<P<F>>::zero(); 10];
++                for m in 1..=d {
++                    if !used_m[f][m] {
++                        continue;
++                    }
++                    let g0 = (f * (d + 1) + m) * d;
++                    extend(&mut st.groups[g0..g0 + d], m, d);
++                    for x in 0..d {
++                        tot[x].add_assign(&st.groups[g0 + x]);
++                    }
++                }
++                for x in 0..d {
++                    let v = eq.mul(&tot[x], w);
++                    st.acc[x * 3 + f].add_assign(&v);
++                }
++            }
++            st
++        };
++        let st = (0..ny_blk)
++            .into_par_iter()
++            .with_min_len(4)
++            .fold(new_st, fold_blk)
++            .reduce(new_st, |mut a, b| {
++                for (x, y) in a.acc.iter_mut().zip(&b.acc) {
++                    x.add_assign(y);
++                }
++                a.eqsum.add_assign(&b.eqsum);
++                a
++            });
++        let eqsum: EF = from_coeffs::<F, EF>(&st.eqsum.hsum());
++        let mut out: [Vec<EF>; 3] = [vec![EF::ZERO; d], vec![EF::ZERO; d], vec![EF::ZERO; d]];
++        for x in 0..d {
++            for f in 0..3 {
++                if self.used[f] {
++                    out[f][x] = from_coeffs::<F, EF>(&st.acc[x * 3 + f].hsum()) + self.konst[f] * eqsum;
++                }
++            }
++        }
++        out
++    }
++
++    /// Round polynomial evaluations at x = 1..=d: `[Σ_y eq(y) zc(x,y), Σ_y eq(y) numer, Σ_y eq(y) denom]`
++    /// (the latter two without the lifting normalisation), as `sumcheck_round_poly_evals_rm` with
++    /// the `acc_constraints` / `acc_interactions` closures.
++    pub fn round_evals(&self, tables: &[&SoaTable<F>], eq_xi: &[EF], d: usize) -> [Vec<EF>; 3] {
++        let h = tables[0].height;
++        debug_assert!(tables.iter().all(|t| t.height == h));
++        let wl = lanes::<F>();
++        let nb = h / wl;
++        let ny_blk = nb / 2;
++        let n_in = self.inputs.len();
++        struct St<Q> {
++            slots: Vec<PE<Q>>,
++            diff: Vec<PE<Q>>,
++            acc: Vec<PE<Q>>,
++            eqsum: PE<Q>,
++        }
++        let new_st = || St::<P<F>> {
++            slots: vec![PE::zero(); self.n_slots],
++            diff: vec![PE::zero(); n_in],
++            acc: vec![PE::zero(); 3 * d],
++            eqsum: PE::zero(),
++        };
++        let fold_blk = |mut st: St<P<F>>, bb: usize| -> St<P<F>> {
++            for (i, &(t, c)) in self.inputs.iter().enumerate() {
++                let lo = tables[t].get(2 * bb, c);
++                let hi = tables[t].get(2 * bb + 1, c);
++                st.diff[i] = hi.sub(&lo);
++                st.slots[i] = hi;
++            }
++            let eq: PE<P<F>> = PE(core::array::from_fn(|j| {
++                P::<F>::from_fn(|l| coeffs::<F, EF>(&eq_xi[l * ny_blk + bb])[j])
++            }));
++            st.eqsum.add_assign(&eq);
++            for x in 1..=d {
++                if x > 1 {
++                    for i in 0..n_in {
++                        let v = st.slots[i].add(&st.diff[i]);
++                        st.slots[i] = v;
++                    }
++                }
++                let mut fsum = [PE::zero(); 3];
++                self.run(&mut st.slots, &mut fsum);
++                for f in 0..3 {
++                    if self.used[f] {
++                        let v = eq.mul(&fsum[f], self.w);
++                        st.acc[(x - 1) * 3 + f].add_assign(&v);
++                    }
++                }
++            }
++            st
++        };
++        let st = (0..ny_blk)
++            .into_par_iter()
++            .with_min_len(4)
++            .fold(new_st, fold_blk)
++            .reduce(new_st, |mut a, b| {
++                for (x, y) in a.acc.iter_mut().zip(&b.acc) {
++                    x.add_assign(y);
++                }
++                a.eqsum.add_assign(&b.eqsum);
++                a
++            });
++        let eqsum: EF = from_coeffs::<F, EF>(&st.eqsum.hsum());
++        let mut out: [Vec<EF>; 3] = [vec![EF::ZERO; d], vec![EF::ZERO; d], vec![EF::ZERO; d]];
++        for x in 0..d {
++            for f in 0..3 {
++                if self.used[f] {
++                    out[f][x] = from_coeffs::<F, EF>(&st.acc[x * 3 + f].hsum()) + self.konst[f] * eqsum;
++                }
++            }
++        }
++        out
++    }
++}
+diff --git a/crates/cpu-backend/src/lib.rs b/crates/cpu-backend/src/lib.rs
+--- a/crates/cpu-backend/src/lib.rs
++++ b/crates/cpu-backend/src/lib.rs
+@@ -19,6 +19,7 @@
+ mod backend;
+ mod device;
+ pub mod error;
++pub mod fast;
+ pub mod logup_zerocheck;
+ pub mod merkle;
+ mod pcs_data;
+diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/src/logup_zerocheck/mod.rs
+--- a/crates/cpu-backend/src/logup_zerocheck/mod.rs
++++ b/crates/cpu-backend/src/logup_zerocheck/mod.rs
+@@ -619,6 +619,8 @@ fn eval_nodes_into<F, E>(
+ /// Evaluation helper for a single AIR, storing preprocessed trace as row-major.
+ pub(crate) struct RowMajorEvalHelper<'a, SC: StarkProtocolConfig> {
+     pub constraints_dag: &'a SymbolicExpressionDag<SC::F>,
++    /// [pq-cpu-prover] interactions as DAG node indices (same order as `interactions`)
++    pub dag_interactions: &'a [openvm_stark_backend::interaction::Interaction<usize>],
+     pub interactions: Vec<SymbolicInteraction<SC::F>>,
+     pub public_values: Vec<SC::F>,
+     pub preprocessed_trace: Option<&'a RowMajorMatrix<SC::F>>,
+@@ -851,6 +853,52 @@ pub(crate) struct LogupZerocheckRowMajor<'a, SC: StarkProtocolConfig> {
+     pub(crate) prev_s_eval: SC::EF,
+     pub(crate) eq_ns: Vec<SC::EF>,
+     pub(crate) eq_sharp_ns: Vec<SC::EF>,
++
++    // [pq-cpu-prover] fast MLE rounds: per trace SoA tables [sels, mats..] and compiled program
++    fast_w: Option<SC::F>,
++    soa: Vec<Option<Vec<crate::fast::zc::SoaTable<SC::F>>>>,
++    progs: Vec<Option<crate::fast::zc::Program<SC::F, SC::EF>>>,
++    da_progs: Vec<std::sync::OnceLock<crate::fast::zc::DaProgram<SC::F>>>,
++    /// traces whose skip-folded table is not stored: round 1 reads the base trace
++    ple: Vec<Option<PleSrc<'a, SC::F, SC::EF>>>,
++}
++
++/// [pq-cpu-prover] Base-field source of a trace's first multilinear round.
++struct PleSrc<'a, F, EF> {
++    sels: RowMajorMatrix<F>,
++    mats: Vec<(&'a RowMajorMatrix<F>, bool)>,
++    /// current table = Σ_k cs[k] * row((x << log_step) + k): the skip fold then the
++    /// multilinear folds so far
++    cs: Vec<EF>,
++    log_step: usize,
++}
++
++/// [pq-cpu-prover] number of multilinear rounds that read the base trace before the first Ext12
++/// table is stored (`NEARPROOF_CPU_PLE_ROUNDS`, default 2: the stored table is a quarter of the
++/// skip-folded one).
++fn ple_rounds() -> usize {
++    std::env::var("NEARPROOF_CPU_PLE_ROUNDS").ok().and_then(|v| v.parse().ok()).unwrap_or(2).max(1)
++}
++
++impl<F, EF> PleSrc<'_, F, EF> {
++    fn tables(&self) -> Vec<(&RowMajorMatrix<F>, bool)> {
++        std::iter::once((&self.sels, false)).chain(self.mats.iter().copied()).collect()
++    }
++}
++
++/// [pq-cpu-prover] `NEARPROOF_CPU_PLE_DEFER=0` stores the skip-folded Ext12 tables (more memory).
++fn ple_defer_enabled() -> bool {
++    use std::sync::OnceLock;
++    static ON: OnceLock<bool> = OnceLock::new();
++    *ON.get_or_init(|| std::env::var("NEARPROOF_CPU_PLE_DEFER").map(|v| v != "0").unwrap_or(true))
++}
++
++/// [pq-cpu-prover] `NEARPROOF_CPU_DA=0` evaluates the MLE rounds at every point instead of
++/// degree-aware (both give identical values).
++fn da_enabled() -> bool {
++    use std::sync::OnceLock;
++    static ON: OnceLock<bool> = OnceLock::new();
++    *ON.get_or_init(|| std::env::var("NEARPROOF_CPU_DA").map(|v| v != "0").unwrap_or(true))
+ }
+ 
+ impl<'a, SC: StarkProtocolConfig> LogupZerocheckRowMajor<'a, SC>
+@@ -948,6 +996,7 @@ where
+                 let symbolic_constraints = SymbolicConstraints::from(&pk.vk.symbolic_constraints);
+                 RowMajorEvalHelper {
+                     constraints_dag: &pk.vk.symbolic_constraints.constraints,
++                    dag_interactions: &pk.vk.symbolic_constraints.interactions,
+                     interactions: symbolic_constraints.interactions,
+                     public_values,
+                     preprocessed_trace,
+@@ -989,9 +1038,19 @@ where
+             prev_s_eval: SC::EF::ZERO,
+             eq_ns: Vec::with_capacity(n_max + 1),
+             eq_sharp_ns: Vec::with_capacity(n_max + 1),
++            fast_w: if crate::fast::fast_enabled() {
++                crate::fast::detect_w::<SC::F, SC::EF>()
++            } else {
++                None
++            },
++            soa: vec![],
++            progs: vec![],
++            da_progs: vec![],
++            ple: vec![],
+         }
+     }
+ 
++    #[instrument(level = "info", skip_all)]
+     pub fn sumcheck_uni_round0_polys(
+         &mut self,
+         ctx: &ProvingContext<CpuBackend<SC>>,
+@@ -1058,6 +1117,42 @@ where
+             })
+             .collect_vec();
+ 
++        // [pq-cpu-prover] compile the per-AIR programs (also used by the MLE rounds) and run the
++        // packed round 0 where the trace has enough hypercube points.
++        let fast_r0: Vec<Option<crate::fast::round0::Round0Out<SC::EF>>> = if let Some(w) = self.fast_w {
++            self.compile_programs(w);
++            self.eval_helpers
++                .iter()
++                .enumerate()
++                .map(|(trace_idx, helper)| {
++                    let trace_ctx = &ctx.per_trace[trace_idx].1;
++                    let n_lift = log2_strict_usize(trace_ctx.height()).saturating_sub(l_skip);
++                    if (1usize << n_lift) < crate::fast::round0::min_points::<SC::F>()
++                        || helper.constraint_degree == 0
++                    {
++                        return None;
++                    }
++                    let mut tables = vec![(&self.sels_per_trace_base[trace_idx], false)];
++                    tables.extend(helper.view_mats_rowmaj(trace_ctx));
++                    let eq_xi = &self.eq_xi_per_trace[trace_idx][(1 << n_lift) - 1..(2 << n_lift) - 1];
++                    let deg = helper.constraint_degree as usize;
++                    Some(crate::fast::round0::round0(
++                        self.progs[trace_idx].as_ref().unwrap(),
++                        l_skip,
++                        n_lift,
++                        &tables,
++                        eq_xi,
++                        deg - 1,
++                        deg,
++                    ))
++                })
++                .collect()
++        } else {
++            vec![]
++        };
++        let xi = &self.xi;
++        let _ = xi;
++
+         // Zerocheck round 0 — uses batch DFT from row-major data
+         let sp_0_zerochecks = self
+             .eval_helpers
+@@ -1075,7 +1170,26 @@ where
+                     return UnivariatePoly::new(vec![]);
+                 }
+                 let num_cosets = constraint_deg - 1;
+-                let q = sumcheck_uni_round0_zerocheck_packed::<SC>(
++                let q = if let Some(Some(r0)) = fast_r0.get(trace_idx) {
++                    if num_cosets == 0 {
++                        UnivariatePoly::new(vec![])
++                    } else {
++                        let g = SC::F::GENERATOR;
++                        let zinv: Vec<SC::F> = g
++                            .powers()
++                            .skip(1)
++                            .take(num_cosets)
++                            .map(|s| (s.exp_power_of_2(l_skip) - SC::F::ONE).inverse())
++                            .collect();
++                        let vals: Vec<SC::EF> =
++                            r0.zc.iter().enumerate().map(|(k, &v)| v * zinv[k % num_cosets]).collect();
++                        UnivariatePoly::from_geometric_cosets_evals_idft(
++                            RowMajorMatrix::new(vals, num_cosets),
++                            g,
++                            g,
++                        )
++                    }
++                } else { sumcheck_uni_round0_zerocheck_packed::<SC>(
+                     l_skip,
+                     n_lift,
+                     num_cosets,
+@@ -1084,7 +1198,7 @@ where
+                     helper,
+                     eq_xi,
+                     &self.lambda_pows,
+-                );
++                ) };
+                 let sp_0_deg = sumcheck_round0_deg(l_skip, constraint_deg);
+                 let coeffs = (0..=sp_0_deg)
+                     .map(|i| {
+@@ -1124,6 +1238,24 @@ where
+                 let norm_factor_denom = 1 << l_skip.saturating_sub(log_height);
+                 let norm_factor = SC::F::from_usize(norm_factor_denom).inverse();
+ 
++                if let Some(Some(r0)) = fast_r0.get(trace_idx) {
++                    let d = helper.constraint_degree as usize;
++                    let g = SC::F::GENERATOR;
++                    let mut numer = UnivariatePoly::from_geometric_cosets_evals_idft(
++                        RowMajorMatrix::new(r0.num.clone(), d),
++                        g,
++                        g,
++                    );
++                    let denom = UnivariatePoly::from_geometric_cosets_evals_idft(
++                        RowMajorMatrix::new(r0.den.clone(), d),
++                        g,
++                        g,
++                    );
++                    for p in numer.coeffs_mut() {
++                        *p *= norm_factor;
++                    }
++                    return [numer, denom];
++                }
+                 let [mut numer, denom] = sumcheck_uni_round0_batch::<SC::F, SC::EF, _, 2>(
+                     l_skip,
+                     n_lift,
+@@ -1150,7 +1282,10 @@ where
+     /// Fold PLE evaluations using randomness r_0.
+     /// Reads directly from row-major matrices via barycentric interpolation,
+     /// avoiding the O(n*m) transpose to col-major (saves ~3s for keccakf).
+-    pub fn fold_ple_evals(&mut self, ctx: &ProvingContext<CpuBackend<SC>>, r_0: SC::EF) {
++    pub fn fold_ple_evals(&mut self, ctx: &'a ProvingContext<CpuBackend<SC>>, r_0: SC::EF) {
++        if let Some(w) = self.fast_w {
++            return self.fold_ple_evals_fast(ctx, r_0, w);
++        }
+         let l_skip = self.l_skip;
+         self.mat_evals_per_trace = self
+             .eval_helpers
+@@ -1179,9 +1314,141 @@ where
+         });
+     }
+ 
++    /// [pq-cpu-prover] `fold_ple_evals` writing SoA tables for traces tall enough, and compiling
++    /// each AIR's MLE-round program.
++    #[instrument(level = "info", skip_all)]
++    fn fold_ple_evals_fast(&mut self, ctx: &'a ProvingContext<CpuBackend<SC>>, r_0: SC::EF, w: SC::F) {
++        use crate::fast::zc::{min_height, SoaTable};
++        let l_skip = self.l_skip;
++        let skip_sz = 1usize << l_skip;
++        let omega = SC::F::two_adic_generator(l_skip);
++        let omega_pows: Vec<SC::F> = omega.powers().take(skip_sz).collect_vec();
++        let denoms: Vec<SC::EF> = omega_pows.iter().map(|&x| r_0 - SC::EF::from(x)).collect_vec();
++        let inv_denoms = batch_multiplicative_inverse(&denoms);
++        let scaling = (r_0.exp_power_of_2(l_skip) - SC::EF::ONE) * SC::EF::from_usize(skip_sz).inverse();
++        let cs: Vec<SC::EF> = omega_pows
++            .iter()
++            .zip(&inv_denoms)
++            .map(|(&sg, &inv)| inv * sg * scaling)
++            .collect_vec();
++        let num = self.eval_helpers.len();
++        let mut soa = Vec::with_capacity(num);
++        let mut ple = Vec::with_capacity(num);
++        let mut mats_aos = Vec::with_capacity(num);
++        let mut sels_aos = Vec::with_capacity(num);
++        let sels_base = take(&mut self.sels_per_trace_base);
++        for (t, (helper, (_, trace_ctx))) in self.eval_helpers.iter().zip(ctx.per_trace.iter()).enumerate() {
++            let rm_mats = helper.view_mats_rowmaj(trace_ctx);
++            let height = trace_ctx.height();
++            let new_height = height.max(skip_sz) >> l_skip;
++            if new_height >= min_height::<SC::F>() && ple_defer_enabled() {
++                // [pq-cpu-prover] defer: round 1 reads the base trace; the first stored table is
++                // folded by r_0 and r_1 together (half the size)
++                ple.push(Some(PleSrc { sels: sels_base[t].clone(), mats: rm_mats, cs: cs.clone(), log_step: l_skip }));
++                soa.push(None);
++                mats_aos.push(vec![]);
++                sels_aos.push(RowMajorMatrix::new(vec![SC::EF::ZERO], 1));
++            } else if new_height >= min_height::<SC::F>() {
++                let mut tables = vec![SoaTable::from_ple(l_skip, &sels_base[t], false, &cs)];
++                for (rm, is_rot) in rm_mats {
++                    tables.push(SoaTable::from_ple(l_skip, rm, is_rot, &cs));
++                }
++                ple.push(None);
++                soa.push(Some(tables));
++                mats_aos.push(vec![]);
++                sels_aos.push(RowMajorMatrix::new(vec![SC::EF::ZERO], 1));
++            } else {
++                ple.push(None);
++                soa.push(None);
++                mats_aos.push(
++                    rm_mats
++                        .into_iter()
++                        .map(|(rm, is_rot)| fold_ple_evals_rowmajor(l_skip, rm, is_rot, r_0))
++                        .collect::<Vec<_>>(),
++                );
++                sels_aos.push(fold_ple_evals_rowmajor(l_skip, &sels_base[t], false, r_0));
++            }
++        }
++        if self.progs.len() != num {
++            self.compile_programs(w);
++        }
++        self.soa = soa;
++        self.ple = ple;
++        self.mat_evals_per_trace = mats_aos;
++        self.sels_per_trace = sels_aos;
++        let eq_r0 = eval_eq_uni(l_skip, self.xi[0], r_0);
++        let eq_sharp_r0 = eval_eq_sharp_uni(&self.omega_skip_pows, &self.xi[..l_skip], r_0);
++        self.eq_ns.push(eq_r0);
++        self.eq_sharp_ns.push(eq_sharp_r0);
++        self.eq_xi_per_trace.iter_mut().for_each(|eq| {
++            if eq.len() > 1 {
++                eq.truncate(eq.len() / 2);
++            }
++        });
++    }
++
++    /// [pq-cpu-prover] compile every AIR's zerocheck/LogUp program (needs lambda, eq3b, beta).
++    fn compile_programs(&mut self, w: SC::F) {
++        use crate::fast::zc::{Layout, Program};
++        self.progs = self
++            .eval_helpers
++            .par_iter()
++            .enumerate()
++            .map(|(t, helper)| {
++                let layout = Layout { has_pre: helper.has_preprocessed(), needs_next: helper.needs_next };
++                let p = Program::compile(
++                    helper.constraints_dag,
++                    helper.dag_interactions,
++                    &helper.public_values,
++                    &layout,
++                    &self.lambda_pows,
++                    &self.eq_3b_per_trace[t],
++                    &self.beta_pows,
++                    w,
++                );
++                if std::env::var("NEARPROOF_CPU_FAST_STATS").is_ok() {
++                    println!("CPU_FAST_PROGRAM trace={t} {}", p.stats);
++                }
++                Some(p)
++            })
++            .collect();
++        self.da_progs = (0..self.eval_helpers.len()).map(|_| std::sync::OnceLock::new()).collect();
++    }
++
++    /// [pq-cpu-prover] fast round evaluations for traces held in SoA form.
++    fn fast_round_evals(&self, round: usize) -> Vec<Option<[Vec<SC::EF>; 3]>> {
++        let sp_deg = self.constraint_degree;
++        (0..self.eval_helpers.len())
++            .map(|t| {
++                if let Some(Some(src)) = self.ple.get(t) {
++                    let prog = self.progs[t].as_ref().unwrap();
++                    let n_lift = self.n_per_trace[t].max(0) as usize;
++                    let num_y = 1 << (n_lift - round);
++                    let eq_xi = &self.eq_xi_per_trace[t][num_y - 1..];
++                    let da = self.da_progs[t].get_or_init(|| prog.degree_aware(sp_deg));
++                    return Some(prog.round_evals_da_ple(da, src.log_step, &src.tables(), &src.cs, eq_xi));
++                }
++                let tabs = self.soa.get(t)?.as_ref()?;
++                let prog = self.progs[t].as_ref().unwrap();
++                let n_lift = self.n_per_trace[t].max(0) as usize;
++                debug_assert!(round <= n_lift);
++                let num_y = 1 << (n_lift - round);
++                let eq_xi = &self.eq_xi_per_trace[t][num_y - 1..];
++                let refs: Vec<_> = tabs.iter().collect();
++                if sp_deg <= 10 && da_enabled() {
++                    let da = self.da_progs[t].get_or_init(|| prog.degree_aware(sp_deg));
++                    Some(prog.round_evals_da(da, &refs, eq_xi))
++                } else {
++                    Some(prog.round_evals(&refs, eq_xi, sp_deg))
++                }
++            })
++            .collect()
++    }
++
+     /// After PLE folding, operates on small RowMajorMatrix<EF> via RM sumcheck.
+     pub fn sumcheck_polys_eval(&mut self, round: usize, r_prev: SC::EF) -> Vec<Vec<SC::EF>> {
+         let sp_deg = self.constraint_degree;
++        let fast = self.fast_round_evals(round);
+         let sp_zerocheck_evals: Vec<Vec<SC::EF>> = izip!(
+             &self.eval_helpers,
+             &mut self.zerocheck_tilde_evals,
+@@ -1190,8 +1457,12 @@ where
+             &self.sels_per_trace,
+             &self.eq_xi_per_trace
+         )
+-        .map(|(helper, tilde_eval, &n, mats, sels, eq_xi_tree)| {
++        .enumerate()
++        .map(|(t, (helper, tilde_eval, &n, mats, sels, eq_xi_tree))| {
+             let n_lift = n.max(0) as usize;
++            if let Some(r) = &fast[t] {
++                return r[0].clone();
++            }
+             if round > n_lift {
+                 if round == n_lift + 1 {
+                     // Height is 1 — extract single row as Vec
+@@ -1235,13 +1506,21 @@ where
+             &self.eq_xi_per_trace,
+             &self.eq_3b_per_trace
+         )
+-        .flat_map(|(helper, tilde_eval, &n, mats, sels, eq_xi_tree, eq_3bs)| {
++        .enumerate()
++        .flat_map(|(t, (helper, tilde_eval, &n, mats, sels, eq_xi_tree, eq_3bs))| {
+             if helper.interactions.is_empty() {
+                 return [vec![SC::EF::ZERO; sp_deg], vec![SC::EF::ZERO; sp_deg]];
+             }
+             let n_lift = n.max(0) as usize;
+             let norm_factor_denom = 1 << (-n).max(0);
+             let norm_factor = SC::F::from_usize(norm_factor_denom).inverse();
++            if let Some(r) = &fast[t] {
++                let mut numer = r[1].clone();
++                for p in &mut numer {
++                    *p *= norm_factor;
++                }
++                return [numer, r[2].clone()];
++            }
+             if round > n_lift {
+                 if round == n_lift + 1 {
+                     // Height is 1 — extract single row as Vec
+@@ -1298,6 +1577,51 @@ where
+             .collect_vec();
+         self.sels_per_trace =
+             crate::row_major_ops::batch_fold_mle_evals_rm(take(&mut self.sels_per_trace), r_round);
++        if let Some(w) = self.fast_w {
++            use crate::fast::{pext::{coeffs, PreMul}, zc::{min_height, SoaTable}};
++            let rp = PreMul::new(coeffs::<SC::F, SC::EF>(&r_round), w);
++            for t in 0..self.soa.len() {
++                let Some(tabs) = self.soa[t].take() else { continue };
++                let folded: Vec<_> = tabs.iter().map(|tab| tab.fold(&rp)).collect();
++                drop(tabs);
++                if folded[0].height >= min_height::<SC::F>() {
++                    self.soa[t] = Some(folded);
++                } else {
++                    self.sels_per_trace[t] = folded[0].to_rowmajor();
++                    self.mat_evals_per_trace[t] = folded[1..].iter().map(|tab| tab.to_rowmajor()).collect();
++                }
++            }
++            for t in 0..self.ple.len() {
++                let Some(mut src) = self.ple[t].take() else { continue };
++                // T'[y] = (1 - r) T[2y] + r T[2y + 1], T[x] = Σ_k cs_k row((x << log_step) + k)
++                let one_m = SC::EF::ONE - r_round;
++                let wts: Vec<SC::EF> =
++                    src.cs.iter().map(|&c| c * one_m).chain(src.cs.iter().map(|&c| c * r_round)).collect();
++                let new_step = src.log_step + 1;
++                let h_next = {
++                    let (m, _) = src.tables()[0];
++                    (m.values.len() / m.width).max(1 << new_step) >> new_step
++                };
++                if new_step - self.l_skip < ple_rounds() && h_next >= min_height::<SC::F>() && new_step <= 4 {
++                    // keep reading the base trace for one more round
++                    src.cs = wts;
++                    src.log_step = new_step;
++                    self.ple[t] = Some(src);
++                    continue;
++                }
++                let tabs: Vec<SoaTable<SC::F>> = src
++                    .tables()
++                    .into_iter()
++                    .map(|(m, rot)| SoaTable::from_ple_weights(new_step, m, rot, &wts))
++                    .collect();
++                if tabs[0].height >= min_height::<SC::F>() {
++                    self.soa[t] = Some(tabs);
++                } else {
++                    self.sels_per_trace[t] = tabs[0].to_rowmajor();
++                    self.mat_evals_per_trace[t] = tabs[1..].iter().map(|tab| tab.to_rowmajor()).collect();
++                }
++            }
++        }
+         self.eq_xi_per_trace.par_iter_mut().for_each(|eq| {
+             if eq.len() > 1 {
+                 eq.truncate(eq.len() / 2);
+@@ -1372,8 +1696,8 @@ where
+     CpuBackend<SC>: ProverBackend<Val = SC::F, Matrix = RowMajorMatrix<SC::F>>,
+ {
+     let l_skip = mpk.params.l_skip;
+-    let constraint_degree = mpk.max_constraint_degree;
+-    let num_traces = ctx.per_trace.len();
++    let _constraint_degree = mpk.max_constraint_degree;
++    let _num_traces = ctx.per_trace.len();
+ 
+     let n_max = log2_strict_usize(MatrixDimensions::height(&ctx.per_trace[0].1.common_main))
+         .saturating_sub(l_skip);
+@@ -1400,7 +1724,7 @@ where
+     let beta_logup = transcript.sample_ext();
+     debug!(%alpha_logup, %beta_logup);
+ 
+-    let mut prover = LogupZerocheckRowMajor::new(
++    let prover = LogupZerocheckRowMajor::new(
+         mpk,
+         ctx,
+         n_logup,
+@@ -1411,6 +1735,75 @@ where
+ 
+     // GKR: compute logup input layer using row-major access
+     let has_interactions = !prover.interactions_layout.sorted_cols.is_empty();
++    // [pq-cpu-prover] fast input layer (base numerators, packed DAG pass) + fast GKR
++    let fast_gkr = prover.fast_w.filter(|_| {
++        has_interactions
++            && l_skip + n_logup >= 3
++            && ctx.per_trace.iter().zip(&prover.eval_helpers).all(|((_, t), h)| {
++                h.interactions.is_empty()
++                    || MatrixDimensions::height(&t.common_main)
++                        % <<SC::F as p3_field::Field>::Packing as PackedValue>::WIDTH
++                        == 0
++            })
++    });
++    if let Some(w) = fast_gkr {
++        use crate::fast::gkr::{
++            fractional_sumcheck_fast, gkr_input_specs_all, gkr_input_specs_one, Placement, TraceInput, TraceInputSource,
++        };
++        use crate::fast::zc::{Layout, Program};
++        let n_total = 1usize << (l_skip + n_logup);
++        let traces: Vec<TraceInput<'_, SC::F, SC::EF>> = prover
++            .eval_helpers
++            .iter()
++            .enumerate()
++            .filter(|(_, h)| !h.interactions.is_empty())
++            .map(|(trace_idx, helper)| {
++                let trace_ctx = &ctx.per_trace[trace_idx].1;
++                let height = MatrixDimensions::height(&trace_ctx.common_main);
++                let placements: Vec<Placement<SC::F>> = prover
++                    .interactions_layout
++                    .sorted_cols
++                    .iter()
++                    .filter(|(t, _, _)| *t == trace_idx)
++                    .map(|&(_, i, s)| Placement {
++                        interaction: i,
++                        row_idx: s.row_idx,
++                        len: s.len(0),
++                        norm: SC::F::from_usize(s.len(0) / height).inverse(),
++                    })
++                    .collect();
++                let layout = Layout { has_pre: helper.has_preprocessed(), needs_next: helper.needs_next };
++                let progs = helper
++                    .dag_interactions
++                    .iter()
++                    .map(|int| {
++                        let specs = gkr_input_specs_one(int, &prover.beta_pows);
++                        Program::compile_specs(helper.constraints_dag, &helper.public_values, &layout, &specs, w)
++                    })
++                    .collect();
++                let full = Program::compile_specs(
++                    helper.constraints_dag,
++                    &helper.public_values,
++                    &layout,
++                    &gkr_input_specs_all(helper.dag_interactions, &prover.beta_pows),
++                    w,
++                );
++                TraceInput { full, progs, mats: helper.view_mats_rowmaj(trace_ctx), height, placements }
++            })
++            .collect();
++        let src = TraceInputSource { n: n_total, alpha: alpha_logup, traces };
++        openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.gkr_input");
++        let (frac_sum_proof, xi) = fractional_sumcheck_fast::<SC, _, _>(
++            transcript,
++            &src,
++            true,
++            mpk.params.whir.levers.gruen_gkr,
++            w,
++        )?;
++        drop(src);
++        openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.after_gkr");
++        return finish_zerocheck_and_logup(transcript, mpk, ctx, prover, frac_sum_proof, xi, logup_pow_witness, n_max, n_logup);
++    }
+     let gkr_input_evals = if !has_interactions {
+         vec![]
+     } else {
+@@ -1462,7 +1855,7 @@ where
+     };
+ 
+     openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.gkr_input");
+-    let (frac_sum_proof, mut xi) =
++    let (frac_sum_proof, xi) =
+         fractional_sumcheck_with::<SC, _>(
+             transcript,
+             &gkr_input_evals,
+@@ -1471,6 +1864,30 @@ where
+         )?;
+ 
+     openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.after_gkr");
++    finish_zerocheck_and_logup(transcript, mpk, ctx, prover, frac_sum_proof, xi, logup_pow_witness, n_max, n_logup)
++}
++
++/// The part of `prove_zerocheck_and_logup` after the GKR (split out so the fast GKR can share it).
++fn finish_zerocheck_and_logup<'a, SC: StarkProtocolConfig, TS>(
++    transcript: &mut TS,
++    mpk: &'a DeviceMultiStarkProvingKey<CpuBackend<SC>>,
++    ctx: &'a ProvingContext<CpuBackend<SC>>,
++    mut prover: LogupZerocheckRowMajor<'a, SC>,
++    frac_sum_proof: openvm_stark_backend::prover::fractional_sumcheck_gkr::FracSumcheckProof<SC>,
++    mut xi: Vec<SC::EF>,
++    logup_pow_witness: SC::F,
++    n_max: usize,
++    n_logup: usize,
++) -> Result<(GkrProof<SC>, BatchConstraintProof<SC>, Vec<SC::EF>), LogupZerocheckError>
++where
++    TS: FiatShamirTranscript<SC>,
++    SC::F: TwoAdicField,
++    SC::EF: TwoAdicField + ExtensionField<SC::F>,
++    CpuBackend<SC>: ProverBackend<Val = SC::F, Matrix = RowMajorMatrix<SC::F>>,
++{
++    let l_skip = mpk.params.l_skip;
++    let constraint_degree = mpk.max_constraint_degree;
++    let num_traces = ctx.per_trace.len();
+     let n_global = max(n_max, n_logup);
+     debug!(%n_global);
+     while xi.len() != l_skip + n_global {
+@@ -1486,6 +1903,7 @@ where
+     debug!(%lambda);
+ 
+     let sp_0_polys = prover.sumcheck_uni_round0_polys(ctx, lambda);
++    openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.round0");
+     let sp_0_deg = sumcheck_round0_deg(l_skip, constraint_degree);
+     let s_deg = constraint_degree + 1;
+     let s_0_deg = sumcheck_round0_deg(l_skip, s_deg);
+@@ -1584,6 +2002,7 @@ where
+     debug!("s_0(r_0) = {}", prover.prev_s_eval);
+ 
+     prover.fold_ple_evals(ctx, r_0);
++    openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.fold_ple");
+ 
+     // MLE rounds
+     let _mle_rounds_span =
+@@ -1666,6 +2085,7 @@ where
+         prover.fold_mle_evals(round, r_round);
+     }
+     drop(_mle_rounds_span);
++    openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.mle_rounds");
+     assert_eq!(r.len(), n_max + 1);
+ 
+     let column_openings = prover.into_column_openings();
+diff --git a/crates/stark-backend/src/hasher.rs b/crates/stark-backend/src/hasher.rs
+--- a/crates/stark-backend/src/hasher.rs
++++ b/crates/stark-backend/src/hasher.rs
+@@ -48,8 +48,33 @@ pub trait MerkleHasher: 'static + Clone + Send + Sync {
+     fn hash_coset(&self, rows: &[Vec<Self::F>]) -> Self::Digest {
+         self.tree_compress(rows.iter().map(|row| self.hash_slice(row)).collect())
+     }
++
++    /// [pq-cpu-prover] `hash_coset` of many leaves; configs may batch the hashing (multi-buffer
++    /// SIMD). Must equal the one-by-one result.
++    fn hash_coset_batch(&self, leaves: &[Vec<Vec<Self::F>>]) -> Vec<Self::Digest> {
++        leaves.iter().map(|rows| self.hash_coset(rows)).collect()
++    }
++
++    /// [pq-cpu-prover] `hash_coset` of `data.len() / (rows_per_leaf * row_len)` leaves stored
++    /// flat (`[leaf][row][col]`); configs may hash straight from the buffer.
++    fn hash_leaves_flat(&self, data: &[Self::F], row_len: usize, rows_per_leaf: usize) -> Vec<Self::Digest> {
++        let per = row_len * rows_per_leaf;
++        let leaves: Vec<Vec<Vec<Self::F>>> = data
++            .chunks_exact(per.max(1))
++            .map(|leaf| leaf.chunks_exact(row_len.max(1)).map(|r| r.to_vec()).collect())
++            .collect();
++        self.hash_coset_batch(&leaves)
++    }
++
++    /// [pq-cpu-prover] `out[i] = compress(inputs[2i], inputs[2i+1])`; configs may batch it.
++    fn compress_pairs(&self, inputs: &[Self::Digest]) -> Vec<Self::Digest> {
++        inputs.chunks_exact(2).map(|p| self.compress(p[0], p[1])).collect()
++    }
+ }
+ 
++/// [pq-cpu-prover] leaves per batched hashing task.
++pub const HASH_BATCH: usize = 64;
++
+ /// [MerkleHasher] implementation built from a cryptographic hash function and a compression
+ /// function. This struct is intended for use by the protocol verifier. Prover backends may use
+ /// independent but functionally equivalent implementations.
+diff --git a/crates/stark-backend/src/lib.rs b/crates/stark-backend/src/lib.rs
+--- a/crates/stark-backend/src/lib.rs
++++ b/crates/stark-backend/src/lib.rs
+@@ -7,6 +7,7 @@
+ // Re-export all Plonky3 crates
+ pub use p3_air;
+ pub use p3_challenger;
++pub use p3_dft;
+ pub use p3_field;
+ pub use p3_matrix;
+ pub use p3_maybe_rayon;
+diff --git a/crates/stark-backend/src/prover/fast_dft.rs b/crates/stark-backend/src/prover/fast_dft.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/stark-backend/src/prover/fast_dft.rs
+@@ -0,0 +1,229 @@
++//! [pq-cpu-prover] Cache-blocked ("four-step") coset DFT of a wide row-major matrix.
++//!
++//! For n = n1 * n2 rows, j = j1 + n1 j2 and k = k2 + n2 k1:
++//!   X[k] = sum_j s^j x[j] w^(jk)
++//!        = sum_j1 w_n1^(j1 k1) * w^(j1 k2) * [ sum_j2 w_n2^(j2 k2) * s^j x[j1 + n1 j2] ].
++//! Step 1 runs n1 DFTs of size n2 on gathered, twisted rows (each block fits in L2), applies the
++//! twiddles w^(j1 k2) and stores the results transposed; step 2 runs n2 DFTs of size n1 on
++//! contiguous blocks and scatters to natural order. The small DFTs are radix-2
++//! decimation-in-frequency on whole rows (SIMD across columns) with precomputed twiddles; their
++//! bit-reversed outputs are absorbed into the transposed store and the final scatter, so there
++//! is no bit-reversal pass. Two passes over memory instead of log2(n).
++//! A DFT is a fixed linear map, so the output equals any other exact implementation's.
++
++use p3_dft::{Radix2Dit, TwoAdicSubgroupDft};
++use p3_field::{Field, PackedValue, TwoAdicField};
++use p3_matrix::dense::RowMajorMatrix;
++use p3_maybe_rayon::prelude::*;
++use p3_util::{log2_strict_usize, reverse_bits_len};
++
++/// A zeroed vector whose pages are advised as transparent huge pages (Linux, THP in `madvise`
++/// mode): the four-step DFT walks 300+ MB matrices at large strides, and with 4-KB pages almost
++/// every strided row is a TLB miss.
++pub fn huge_zero_vec<F: Field>(n: usize) -> Vec<F> {
++    let mut v: Vec<F> = Vec::with_capacity(n);
++    #[cfg(target_os = "linux")]
++    {
++        extern "C" {
++            fn madvise(addr: *mut core::ffi::c_void, len: usize, advice: i32) -> i32;
++        }
++        const MADV_HUGEPAGE: i32 = 14;
++        const HP: usize = 1 << 21;
++        let start = v.as_mut_ptr() as usize;
++        let end = start + n * core::mem::size_of::<F>();
++        let a = start.div_ceil(HP) * HP;
++        let b = end / HP * HP;
++        if b > a {
++            // SAFETY: advisory only, on pages inside this allocation
++            unsafe {
++                madvise(a as *mut core::ffi::c_void, b - a, MADV_HUGEPAGE);
++            }
++        }
++    }
++    v.resize(n, F::ZERO);
++    v
++}
++
++struct SyncPtr<T>(*mut T);
++unsafe impl<T> Send for SyncPtr<T> {}
++unsafe impl<T> Sync for SyncPtr<T> {}
++impl<T> SyncPtr<T> {
++    #[inline(always)]
++    fn get(&self) -> *mut T {
++        self.0
++    }
++}
++
++/// tw[l][i] = w_(2^(l+1))^i for i < 2^l (twiddles of the DIF stage with half size 2^l).
++fn twiddles<F: TwoAdicField>(log_n: usize) -> Vec<Vec<F>> {
++    (0..log_n)
++        .map(|l| F::two_adic_generator(l + 1).powers().take(1 << l).collect())
++        .collect()
++}
++
++#[inline(always)]
++fn scale_row<F: Field>(row: &mut [F], t: F) {
++    let (p, s) = F::Packing::pack_slice_with_suffix_mut(row);
++    let tp = F::Packing::from(t);
++    for x in p.iter_mut() {
++        *x *= tp;
++    }
++    for x in s.iter_mut() {
++        *x *= t;
++    }
++}
++
++/// In-place radix-2 DIF DFT of the 2^log_n rows of `buf` (row-major, `width` columns); the
++/// result is in bit-reversed row order.
++fn dif_rows<F: Field>(buf: &mut [F], width: usize, log_n: usize, tw: &[Vec<F>]) {
++    for l in (0..log_n).rev() {
++        let h = 1usize << l;
++        let t = &tw[l];
++        for block in buf.chunks_exact_mut(2 * h * width) {
++            let (top, bot) = block.split_at_mut(h * width);
++            for i in 0..h {
++                let ru = &mut top[i * width..(i + 1) * width];
++                let rv = &mut bot[i * width..(i + 1) * width];
++                let (pu, su) = F::Packing::pack_slice_with_suffix_mut(ru);
++                let (pv, sv) = F::Packing::pack_slice_with_suffix_mut(rv);
++                if i == 0 {
++                    for (a, b) in pu.iter_mut().zip(pv.iter_mut()) {
++                        let (x, y) = (*a, *b);
++                        *a = x + y;
++                        *b = x - y;
++                    }
++                    for (a, b) in su.iter_mut().zip(sv.iter_mut()) {
++                        let (x, y) = (*a, *b);
++                        *a = x + y;
++                        *b = x - y;
++                    }
++                } else {
++                    let w = t[i];
++                    let wp = F::Packing::from(w);
++                    for (a, b) in pu.iter_mut().zip(pv.iter_mut()) {
++                        let (x, y) = (*a, *b);
++                        *a = x + y;
++                        *b = (x - y) * wp;
++                    }
++                    for (a, b) in su.iter_mut().zip(sv.iter_mut()) {
++                        let (x, y) = (*a, *b);
++                        *a = x + y;
++                        *b = (x - y) * w;
++                    }
++                }
++            }
++        }
++    }
++}
++
++/// Coset DFT (evaluations at `shift * w_n^k`, natural order) of each column of the row-major
++/// `n x width` matrix `coeffs`.
++pub fn coset_dft_rows<F: TwoAdicField>(coeffs: &[F], width: usize, shift: F) -> Vec<F> {
++    coset_dft_rows_multi(coeffs, width, &[shift])
++}
++
++/// Coset DFTs of the same `n x width` coefficient matrix for several shifts at once: output row
++/// u is `[evals at shifts[0] w^u | evals at shifts[1] w^u | ..]` (width `shifts.len() * width`).
++/// Narrow matrices get full SIMD rows this way.
++pub fn coset_dft_rows_multi<F: TwoAdicField>(coeffs: &[F], bw: usize, shifts: &[F]) -> Vec<F> {
++    let (mut y, mut x) = (vec![], vec![]);
++    coset_dft_rows_multi_into(coeffs, bw, shifts, &mut y, &mut x);
++    x
++}
++
++/// [`coset_dft_rows_multi`] into `out`, with `scratch` as the transposed intermediate; both are
++/// reused across calls (no fresh pages, no zeroing), which matters for repeated large DFTs.
++pub fn coset_dft_rows_multi_into<F: TwoAdicField>(
++    coeffs: &[F],
++    bw: usize,
++    shifts: &[F],
++    scratch: &mut Vec<F>,
++    out: &mut Vec<F>,
++) {
++    let g = shifts.len();
++    let width = g * bw;
++    let n = coeffs.len() / bw;
++    let log_n = log2_strict_usize(n);
++    if log_n < 12 {
++        let outs: Vec<Vec<F>> = shifts
++            .iter()
++            .map(|&sh| Radix2Dit::<F>::default().coset_dft_batch(RowMajorMatrix::new(coeffs.to_vec(), bw), sh).values)
++            .collect();
++        out.clear();
++        out.resize(n * width, F::ZERO);
++        for u in 0..n {
++            for k in 0..g {
++                out[u * width + k * bw..u * width + (k + 1) * bw].copy_from_slice(&outs[k][u * bw..(u + 1) * bw]);
++            }
++        }
++        return;
++    }
++    let l1 = log_n / 2;
++    let l2 = log_n - l1;
++    let (n1, n2) = (1usize << l1, 1usize << l2);
++    let tw1 = twiddles::<F>(l1);
++    let tw2 = twiddles::<F>(l2);
++    let w_n = F::two_adic_generator(log_n);
++    let s_n1: Vec<F> = shifts.iter().map(|s| s.exp_u64(n1 as u64)).collect();
++    // y[k2 * n1 + j1] (rows), the transposed intermediate
++    if scratch.len() != n * width {
++        *scratch = huge_zero_vec(n * width);
++    }
++    let y = scratch;
++    let yp = SyncPtr(y.as_mut_ptr());
++    (0..n1).into_par_iter().for_each_init(
++        || F::zero_vec(n2 * width),
++        |buf, j1| {
++            // gather rows j1 + n1 j2, twisted per shift group by s^(j1 + n1 j2) = s^j1 (s^n1)^j2
++            let mut tw: Vec<F> = shifts.iter().map(|s| s.exp_u64(j1 as u64)).collect();
++            for j2 in 0..n2 {
++                let src = &coeffs[(j1 + n1 * j2) * bw..(j1 + n1 * j2 + 1) * bw];
++                for k in 0..g {
++                    let dst = &mut buf[j2 * width + k * bw..j2 * width + (k + 1) * bw];
++                    dst.copy_from_slice(src);
++                    scale_row(dst, tw[k]);
++                    tw[k] *= s_n1[k];
++                }
++            }
++            dif_rows(buf, width, l2, &tw2);
++            // position p holds k2 = bitrev(p): twiddle w^(j1 k2), store transposed
++            let wj = w_n.exp_u64(j1 as u64);
++            let pw: Vec<F> = wj.powers().take(n2).collect();
++            for p in 0..n2 {
++                let k2 = reverse_bits_len(p, l2);
++                let row = &mut buf[p * width..(p + 1) * width];
++                if k2 > 0 && j1 > 0 {
++                    scale_row(row, pw[k2]);
++                }
++                // SAFETY: (k2, j1) cells are written by exactly one task (j1)
++                unsafe {
++                    std::ptr::copy_nonoverlapping(row.as_ptr(), yp.get().add((k2 * n1 + j1) * width), width);
++                }
++            }
++        },
++    );
++    if out.len() != n * width {
++        *out = huge_zero_vec(n * width);
++    }
++    let xp = SyncPtr(out.as_mut_ptr());
++    let yp2 = SyncPtr(y.as_mut_ptr());
++    (0..n2).into_par_iter().for_each(|k2| {
++        {
++            // SAFETY: block k2 of y is owned by this task alone; the DIF runs in place
++            let buf = unsafe { std::slice::from_raw_parts_mut(yp2.get().add(k2 * n1 * width), n1 * width) };
++            dif_rows(buf, width, l1, &tw1);
++            for p in 0..n1 {
++                let k1 = reverse_bits_len(p, l1);
++                // SAFETY: output row k2 + n2 k1 is written by exactly one task (k2)
++                unsafe {
++                    std::ptr::copy_nonoverlapping(
++                        buf[p * width..(p + 1) * width].as_ptr(),
++                        xp.get().add((k2 + n2 * k1) * width),
++                        width,
++                    );
++                }
++            }
++        }
++    });
++}
++
+diff --git a/crates/stark-backend/src/prover/mod.rs b/crates/stark-backend/src/prover/mod.rs
+--- a/crates/stark-backend/src/prover/mod.rs
++++ b/crates/stark-backend/src/prover/mod.rs
+@@ -12,6 +12,7 @@ use crate::{
+ 
+ mod cpu_backend;
+ pub mod error;
++pub mod fast_dft;
+ mod hal;
+ mod logup_zerocheck;
+ mod matrix;
+@@ -190,9 +191,11 @@ where
+                 .prove_rap_constraints(transcript, mpk, &ctx, &common_main_pcs_data)?;
+         stream_pcs::memprof("prove.after_rap_constraints");
+ 
++        let _openings_span = info_span!("prover.openings", phase = "prover").entered();
+         let opening_proof =
+             self.device
+                 .prove_openings(transcript, mpk, ctx, common_main_pcs_data, r.into())?;
++        drop(_openings_span);
+ 
+         stream_pcs::memprof("prove.after_openings");
+         let (gkr_proof, batch_constraint_proof) = constraints_proof.into();
+diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backend/src/prover/stacked_pcs.rs
+--- a/crates/stark-backend/src/prover/stacked_pcs.rs
++++ b/crates/stark-backend/src/prover/stacked_pcs.rs
+@@ -654,6 +654,41 @@ pub fn rs_code_matrix_odd<F: TwoAdicField + Ord + p3_field::PrimeField64>(
+ ) -> Result<ColMajorMatrix<F>, StackedPcsError> {
+     let height = eval_matrix.height();
+     let log_rs = log2_strict_usize(height) + log_blowup;
++    if crate::prover::stream_pcs::fast_paths() && eval_matrix.width() > 0 {
++        // [pq-cpu-prover] all columns at once: row-major coefficients, one four-step coset DFT per
++        // coset (instead of one DFT, with fresh twiddles, per column and coset)
++        let w = eval_matrix.width();
++        let n = 1usize << log_rs;
++        let coeff_cols: Vec<Vec<F>> = eval_matrix
++            .values
++            .par_chunks_exact(height)
++            .map(|column_evals| eval_to_coeff_rs_message(l_skip, column_evals))
++            .collect();
++        let mut rm = F::zero_vec(n * w);
++        rm.par_chunks_mut(w).enumerate().for_each(|(i, row)| {
++            for (c, col) in coeff_cols.iter().enumerate() {
++                if let Some(&v) = col.get(i) {
++                    row[c] = v;
++                }
++            }
++        });
++        drop(coeff_cols);
++        let c = domain_odd_factor;
++        let zeta = if c == 1 { F::ONE } else { crate::odd_domain::odd_root::<F>(c) };
++        let total = c * n;
++        let mut out = F::zero_vec(total * w);
++        for a in 0..c {
++            let ev = crate::prover::fast_dft::coset_dft_rows(&rm, w, zeta.exp_u64(a as u64));
++            // column-major codewords: out[col * total + a * n + u] = ev[u * w + col]
++            out.par_chunks_mut(total).enumerate().for_each(|(col, dst)| {
++                let dst = &mut dst[a * n..(a + 1) * n];
++                for (u, d) in dst.iter_mut().enumerate() {
++                    *d = ev[u * w + col];
++                }
++            });
++        }
++        return Ok(ColMajorMatrix::new_any_height(out, w));
++    }
+     let codewords: Vec<_> = eval_matrix
+         .values
+         .par_chunks_exact(height)
+@@ -815,19 +850,36 @@ where
+         let query_stride = num_leaves / rows_per_query;
+         // One Merkle leaf per query index `y`: the coset rows { y + t * query_stride }. The
+         // default `MerkleHasher::hash_coset` reproduces upstream (row hashes + binary subtree).
+-        let query_digest_layer: Vec<_> = (0..query_stride)
+-            .into_par_iter()
+-            .map(|y| {
+-                let rows: Vec<Vec<H::F>> = (0..rows_per_query)
+-                    .map(|t| {
+-                        Self::row_iter(&matrix, t * query_stride + y)
+-                            .flat_map(|ef| ef.as_basis_coefficients_slice().to_vec())
+-                            .collect()
+-                    })
+-                    .collect();
+-                hasher.hash_coset(&rows)
+-            })
+-            .collect();
++        let leaf_rows = |y: usize| -> Vec<Vec<H::F>> {
++            (0..rows_per_query)
++                .map(|t| {
++                    Self::row_iter(&matrix, t * query_stride + y)
++                        .flat_map(|ef| ef.as_basis_coefficients_slice().to_vec())
++                        .collect()
++                })
++                .collect()
++        };
++        let query_digest_layer: Vec<_> = if crate::prover::stream_pcs::fast_paths() {
++            // [pq-cpu-prover] batched leaf hashing
++            let b = crate::hasher::HASH_BATCH;
++            (0..query_stride.div_ceil(b))
++                .into_par_iter()
++                .flat_map_iter(|c| {
++                    let (flat, row_len) = leaf_batch_flat::<H::F, EF>(
++                        &matrix,
++                        c * b..((c + 1) * b).min(query_stride),
++                        rows_per_query,
++                        |y, t| t * query_stride + y,
++                    );
++                    hasher.hash_leaves_flat(&flat, row_len, rows_per_query)
++                })
++                .collect()
++        } else {
++            (0..query_stride)
++                .into_par_iter()
++                .map(|y| hasher.hash_coset(&leaf_rows(y)))
++                .collect()
++        };
+ 
+         let mut digest_layers = vec![query_digest_layer];
+         while digest_layers
+@@ -839,10 +891,7 @@ where
+             let prev_layer = digest_layers
+                 .last()
+                 .ok_or(StackedPcsError::MerkleTreeNoRoot)?;
+-            let layer: Vec<_> = prev_layer
+-                .par_chunks_exact(2)
+-                .map(|pair| hasher.compress(pair[0], pair[1]))
+-                .collect();
++            let layer: Vec<_> = compress_layer(hasher, prev_layer);
+             digest_layers.push(layer);
+         }
+ 
+@@ -882,20 +931,35 @@ where
+         // One leaf per fold coset of each block: rows { a * block + t * qs + y }, hashed with
+         // `MerkleHasher::hash_coset` (the default reproduces row hashes + a binary subtree, the
+         // levers' coset-leaf hook hashes the coset as one message).
+-        let joined: Vec<_> = (0..num_cosets * qs)
+-            .into_par_iter()
+-            .map(|i| {
+-                let (a, y) = (i / qs, i % qs);
+-                let rows: Vec<Vec<H::F>> = (0..rows_per_query)
+-                    .map(|t| {
+-                        Self::row_iter(&matrix, a * block + t * qs + y)
+-                            .flat_map(|ef| ef.as_basis_coefficients_slice().to_vec())
+-                            .collect()
+-                    })
+-                    .collect();
+-                hasher.hash_coset(&rows)
+-            })
+-            .collect();
++        let leaf_rows = |i: usize| -> Vec<Vec<H::F>> {
++            let (a, y) = (i / qs, i % qs);
++            (0..rows_per_query)
++                .map(|t| {
++                    Self::row_iter(&matrix, a * block + t * qs + y)
++                        .flat_map(|ef| ef.as_basis_coefficients_slice().to_vec())
++                        .collect()
++                })
++                .collect()
++        };
++        let n_leaves = num_cosets * qs;
++        let joined: Vec<_> = if crate::prover::stream_pcs::fast_paths() {
++            // [pq-cpu-prover] batched leaf hashing
++            let b = crate::hasher::HASH_BATCH;
++            (0..n_leaves.div_ceil(b))
++                .into_par_iter()
++                .flat_map_iter(|c| {
++                    let (flat, row_len) = leaf_batch_flat::<H::F, EF>(
++                        &matrix,
++                        c * b..((c + 1) * b).min(n_leaves),
++                        rows_per_query,
++                        |i, t| (i / qs) * block + t * qs + i % qs,
++                    );
++                    hasher.hash_leaves_flat(&flat, row_len, rows_per_query)
++                })
++                .collect()
++        } else {
++            (0..n_leaves).into_par_iter().map(|i| hasher.hash_coset(&leaf_rows(i))).collect()
++        };
+         let pad = hasher.hash_slice(&[]);
+         let mut digest_layers = vec![joined];
+         while digest_layers.last().unwrap().len() > 1 {
+@@ -903,10 +967,7 @@ where
+             if prev.len() % 2 == 1 {
+                 prev.push(pad);
+             }
+-            let layer: Vec<_> = prev
+-                .par_chunks_exact(2)
+-                .map(|pair| hasher.compress(pair[0], pair[1]))
+-                .collect();
++            let layer: Vec<_> = compress_layer(hasher, prev);
+             digest_layers.push(layer);
+         }
+         Ok(Self {
+@@ -959,7 +1020,7 @@ where
+         }
+ 
+         if let Some(src) = &self.stream {
+-            return Ok(src.oracle.rows(&self.leaf_row_indices(index)));
++            return Ok(src.oracle.rows_grouped(&self.leaf_row_indices(index), self.rows_per_query));
+         }
+         let rows_per_query = self.rows_per_query;
+         let width = self.backing_matrix.width();
+@@ -1064,3 +1125,70 @@ mod tests {
+         );
+     }
+ }
++
++/// [pq-cpu-prover] One Merkle level: `compress(prev[2i], prev[2i+1])`, batched through
++/// `MerkleHasher::compress_pairs` (identical to the pairwise loop).
++pub fn compress_layer<H: crate::hasher::MerkleHasher>(hasher: &H, prev: &[H::Digest]) -> Vec<H::Digest> {
++    if crate::prover::stream_pcs::fast_paths() {
++        let b = 2 * crate::hasher::HASH_BATCH;
++        prev.par_chunks(b).flat_map_iter(|ch| hasher.compress_pairs(&ch[..ch.len() / 2 * 2])).collect()
++    } else {
++        prev.par_chunks_exact(2).map(|pair| hasher.compress(pair[0], pair[1])).collect()
++    }
++}
++
++/// [pq-cpu-prover] Like `leaf_batch_rows`, flat `[leaf][row][base coordinate]`; returns the row length.
++fn leaf_batch_flat<F: p3_field::Field, EF: p3_field::ExtensionField<F>>(
++    matrix: &ColMajorMatrix<EF>,
++    leaves: std::ops::Range<usize>,
++    rows_per_query: usize,
++    row_of: impl Fn(usize, usize) -> usize,
++) -> (Vec<F>, usize) {
++    let w = matrix.width();
++    let h = matrix.height();
++    let d = EF::DIMENSION;
++    let rl = w * d;
++    let mut out = vec![F::ZERO; leaves.len() * rows_per_query * rl];
++    for c in 0..w {
++        let col = &matrix.values[c * h..(c + 1) * h];
++        for (li, leaf) in leaves.clone().enumerate() {
++            for t in 0..rows_per_query {
++                let r = row_of(leaf, t);
++                if r < h {
++                    let o = (li * rows_per_query + t) * rl + c * d;
++                    out[o..o + d].copy_from_slice(col[r].as_basis_coefficients_slice());
++                }
++            }
++        }
++    }
++    (out, rl)
++}
++
++/// [pq-cpu-prover] Rows (flattened base coordinates) of the leaves in `leaves`, gathered column by
++/// column (contiguous reads of a column-major matrix instead of one cache line per cell). Row
++/// indices beyond the matrix height read as zero, like `row_iter`.
++#[allow(dead_code)]
++fn leaf_batch_rows<F: p3_field::Field, EF: p3_field::ExtensionField<F>>(
++    matrix: &ColMajorMatrix<EF>,
++    leaves: std::ops::Range<usize>,
++    rows_per_query: usize,
++    row_of: impl Fn(usize, usize) -> usize,
++) -> Vec<Vec<Vec<F>>> {
++    let w = matrix.width();
++    let h = matrix.height();
++    let d = EF::DIMENSION;
++    let nl = leaves.len();
++    let mut out: Vec<Vec<Vec<F>>> = vec![vec![vec![F::ZERO; w * d]; rows_per_query]; nl];
++    for c in 0..w {
++        let col = &matrix.values[c * h..(c + 1) * h];
++        for (li, leaf) in leaves.clone().enumerate() {
++            for t in 0..rows_per_query {
++                let r = row_of(leaf, t);
++                if r < h {
++                    out[li][t][c * d..(c + 1) * d].copy_from_slice(col[r].as_basis_coefficients_slice());
++                }
++            }
++        }
++    }
++    out
++}
+diff --git a/crates/stark-backend/src/prover/stream_pcs.rs b/crates/stark-backend/src/prover/stream_pcs.rs
+--- a/crates/stark-backend/src/prover/stream_pcs.rs
++++ b/crates/stark-backend/src/prover/stream_pcs.rs
+@@ -28,7 +28,7 @@ use std::{
+ };
+ 
+ use p3_dft::{Radix2DitParallel, TwoAdicSubgroupDft};
+-use p3_field::{ExtensionField, PrimeField64, TwoAdicField};
++use p3_field::{ExtensionField, PackedValue, PrimeCharacteristicRing, PrimeField64, TwoAdicField};
+ use p3_matrix::{bitrev::BitReversibleMatrix, dense::RowMajorMatrix, Matrix};
+ use p3_maybe_rayon::prelude::*;
+ use p3_util::{log2_ceil_usize, reverse_bits_len};
+@@ -83,13 +83,31 @@ pub fn memprof(label: &str) {
+                 }
+             }
+         }
+-        println!("MEMPROF {label} rss_gb={rss:.2} hwm_gb={hwm:.2}");
++        // [pq-cpu-prover] process CPU seconds (utime + stime) and wall clock, for phase deltas
++        let cpu = std::fs::read_to_string("/proc/self/stat")
++            .ok()
++            .and_then(|s| {
++                let rest = &s[s.rfind(')')? + 2..];
++                let f: Vec<&str> = rest.split_whitespace().collect();
++                let t = |i: usize| f.get(i).and_then(|x| x.parse::<f64>().ok());
++                Some((t(11)? + t(12)?) / 100.0)
++            })
++            .unwrap_or(0.0);
++        static T0: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
++        let wall = T0.get_or_init(std::time::Instant::now).elapsed().as_secs_f64();
++        println!("MEMPROF {label} rss_gb={rss:.2} hwm_gb={hwm:.2} cpu_s={cpu:.1} wall_s={wall:.1}");
+     }
+ }
+ 
+ /// Evaluates codeword rows (row index in the coset-major codeword) on demand.
+ pub trait RowOracle<V>: Send + Sync {
+     fn rows(&self, row_indices: &[usize]) -> Vec<Vec<V>>;
++    /// [pq-cpu-prover] Same as `rows`; the indices come in consecutive groups of `group` rows
++    /// that are the rows of one Merkle leaf (a fold coset), which implementations may exploit.
++    fn rows_grouped(&self, row_indices: &[usize], group: usize) -> Vec<Vec<V>> {
++        let _ = group;
++        self.rows(row_indices)
++    }
+ }
+ 
+ /// The recompute side of a streamed [`MerkleTree`].
+@@ -148,7 +166,22 @@ where
+     F: TwoAdicField + PrimeField64,
+     V: ExtensionField<F>,
+ {
++    fn rows_grouped(&self, row_indices: &[usize], group: usize) -> Vec<Vec<V>> {
++        if fast_paths() {
++            if let Some(r) = self.rows_cosets(row_indices, group) {
++                return r;
++            }
++        }
++        self.rows(row_indices)
++    }
++
+     fn rows(&self, row_indices: &[usize]) -> Vec<Vec<V>> {
++        // [pq-cpu-prover] packed Horner: the points are base-field, so each basis coordinate of
++        // an extension-valued polynomial is evaluated separately, WIDTH points per vector.
++        // Exact, so equal to the scalar Horner below.
++        if fast_paths() && row_indices.len() >= <F::Packing as PackedValue>::WIDTH {
++            return self.rows_packed(row_indices);
++        }
+         const B: usize = 8;
+         let ncols = self.coeffs.len();
+         // one task per (row, block of B columns); the B Horner chains run interleaved
+@@ -181,6 +214,207 @@ where
+     }
+ }
+ 
++impl<F, V> PolyOracle<F, V>
++where
++    F: TwoAdicField + PrimeField64,
++    V: ExtensionField<F>,
++{
++    /// Rows of whole leaves: each group of `g` rows lies on a coset `x0 <zeta>` (zeta of order
++    /// g), so f(x0 zeta^t) = sum_j zeta^(tj) x0^j H_j(x0^g) with H_j(Y) = sum_m c_(gm+j) Y^m: one
++    /// pass over the coefficients per leaf instead of one per row. 16 leaves per vector.
++    /// Returns None if the indices do not have that structure.
++    fn rows_cosets(&self, row_indices: &[usize], g: usize) -> Option<Vec<Vec<V>>> {
++        type P<F> = <F as p3_field::Field>::Packing;
++        let wl = <P<F> as PackedValue>::WIDTH;
++        if g < 2 || row_indices.len() % g != 0 || !g.is_power_of_two() {
++            return None;
++        }
++        let ngroups = row_indices.len() / g;
++        // per group: x0, and check x_t = x0 * zeta^t with one common zeta of order g
++        let mut x0s = Vec::with_capacity(ngroups);
++        let mut zeta = None;
++        for grp in row_indices.chunks_exact(g) {
++            let x0 = self.point(grp[0]);
++            let z = self.point(grp[1]) * x0.inverse();
++            if *zeta.get_or_insert(z) != z {
++                return None;
++            }
++            let mut x = x0;
++            for &r in grp {
++                if self.point(r) != x {
++                    return None;
++                }
++                x *= z;
++            }
++            if x != x0 {
++                return None; // zeta^g != 1
++            }
++            x0s.push(x0);
++        }
++        let zeta = zeta?;
++        let zpow: Vec<F> = zeta.powers().take(g).collect();
++        let d = V::DIMENSION;
++        let ncols = self.coeffs.len();
++        let nchunks = ngroups.div_ceil(wl);
++        // H[j][coord] per lane, for each (chunk of 16 leaves, column)
++        let hs: Vec<Vec<P<F>>> = (0..nchunks * ncols)
++            .into_par_iter()
++            .map(|task| {
++                let (ch, col) = (task / ncols, task % ncols);
++                let y = P::<F>::from_fn(|l| x0s[(ch * wl + l).min(ngroups - 1)].exp_u64(g as u64));
++                let c = &self.coeffs[col];
++                let m = c.len().div_ceil(g);
++                let mut acc = vec![P::<F>::ZERO; g * d];
++                for mi in (0..m).rev() {
++                    for j in 0..g {
++                        let a = &mut acc[j * d..(j + 1) * d];
++                        match c.get(mi * g + j) {
++                            Some(v) => {
++                                let vc = v.as_basis_coefficients_slice();
++                                for k in 0..d {
++                                    a[k] = a[k] * y + vc[k];
++                                }
++                            }
++                            None => {
++                                for k in 0..d {
++                                    a[k] *= y;
++                                }
++                            }
++                        }
++                    }
++                }
++                acc
++            })
++            .collect();
++        let mut out = vec![vec![V::ZERO; ncols]; row_indices.len()];
++        for (task, acc) in hs.iter().enumerate() {
++            let (ch, col) = (task / ncols, task % ncols);
++            for l in 0..wl {
++                let gi = ch * wl + l;
++                if gi >= ngroups {
++                    break;
++                }
++                let x0 = x0s[gi];
++                // G_j = x0^j H_j
++                let mut xj = F::ONE;
++                let gs: Vec<V> = (0..g)
++                    .map(|j| {
++                        let h = V::from_basis_coefficients_fn(|k| acc[j * d + k].as_slice()[l]);
++                        let r = h * xj;
++                        xj *= x0;
++                        r
++                    })
++                    .collect();
++                for t in 0..g {
++                    let mut v = V::ZERO;
++                    for j in 0..g {
++                        v += gs[j] * zpow[(t * j) % g];
++                    }
++                    out[gi * g + t][col] = v;
++                }
++            }
++        }
++        Some(out)
++    }
++
++    fn rows_packed(&self, row_indices: &[usize]) -> Vec<Vec<V>> {
++        type P<F> = <F as p3_field::Field>::Packing;
++        let wl = <P<F> as PackedValue>::WIDTH;
++        let d = V::DIMENSION;
++        let ncols = self.coeffs.len();
++        let nchunks = row_indices.len().div_ceil(wl);
++        // tasks: (chunk of WIDTH rows, column)
++        let vals: Vec<Vec<P<F>>> = (0..nchunks * ncols)
++            .into_par_iter()
++            .map(|task| {
++                let (ch, col) = (task / ncols, task % ncols);
++                let x = P::<F>::from_fn(|l| {
++                    let r = (ch * wl + l).min(row_indices.len() - 1);
++                    self.point(row_indices[r])
++                });
++                let c = &self.coeffs[col];
++                fn horner<F: p3_field::Field, V: ExtensionField<F>, const N: usize>(
++                    c: &[V],
++                    x: P<F>,
++                ) -> Vec<P<F>> {
++                    let mut acc = [P::<F>::ZERO; N];
++                    for v in c.iter().rev() {
++                        let vc = v.as_basis_coefficients_slice();
++                        for j in 0..N {
++                            acc[j] = acc[j] * x + vc[j];
++                        }
++                    }
++                    acc.to_vec()
++                }
++                // base-field columns: 8 independent Horner chains over coefficient segments
++                // (one chain is latency-bound), combined as sum_s acc_s * x^(s*m)
++                fn horner_seg<F: p3_field::Field, V: ExtensionField<F>>(c: &[V], x: P<F>) -> Vec<P<F>> {
++                    const S: usize = 8;
++                    let m = c.len().div_ceil(S);
++                    if m < 64 {
++                        return horner::<F, V, 1>(c, x);
++                    }
++                    let mut acc = [P::<F>::ZERO; S];
++                    for i in (0..m).rev() {
++                        for s in 0..S {
++                            let v = c.get(s * m + i).map_or(F::ZERO, |v| v.as_basis_coefficients_slice()[0]);
++                            acc[s] = acc[s] * x + v;
++                        }
++                    }
++                    let mut xm = P::<F>::ONE;
++                    let mut pw = x;
++                    let mut e = m;
++                    while e > 0 {
++                        if e & 1 == 1 {
++                            xm *= pw;
++                        }
++                        pw = pw * pw;
++                        e >>= 1;
++                    }
++                    let mut r = P::<F>::ZERO;
++                    for s in (0..S).rev() {
++                        r = r * xm + acc[s];
++                    }
++                    vec![r]
++                }
++                match d {
++                    1 => horner_seg::<F, V>(c, x),
++                    4 => horner::<F, V, 4>(c, x),
++                    12 => horner::<F, V, 12>(c, x),
++                    _ => {
++                        let mut acc = vec![P::<F>::ZERO; d];
++                        for v in c.iter().rev() {
++                            let vc = v.as_basis_coefficients_slice();
++                            for j in 0..d {
++                                acc[j] = acc[j] * x + vc[j];
++                            }
++                        }
++                        acc
++                    }
++                }
++            })
++            .collect();
++        let mut out = vec![vec![V::ZERO; ncols]; row_indices.len()];
++        for (task, acc) in vals.iter().enumerate() {
++            let (ch, col) = (task / ncols, task % ncols);
++            for l in 0..wl {
++                let r = ch * wl + l;
++                if r < row_indices.len() {
++                    out[r][col] = V::from_basis_coefficients_fn(|j| acc[j].as_slice()[l]);
++                }
++            }
++        }
++        out
++    }
++}
++
++/// [pq-cpu-prover] `NEARPROOF_CPU_FAST=0` selects the original code paths.
++pub fn fast_paths() -> bool {
++    use std::sync::OnceLock;
++    static ON: OnceLock<bool> = OnceLock::new();
++    *ON.get_or_init(|| std::env::var("NEARPROOF_CPU_FAST").map(|v| v != "0").unwrap_or(true))
++}
++
+ fn flatten_row<F: PrimeField64, V: ExtensionField<F>>(row: &[V]) -> Vec<F> {
+     row.iter().flat_map(|v| v.as_basis_coefficients_slice().to_vec()).collect()
+ }
+@@ -210,7 +444,15 @@ where
+     let len = coeffs.iter().map(|c| c.len()).max().unwrap();
+     let n = log2_ceil_usize(len.max(1));
+     assert!(n <= log_domain);
+-    let s = log_domain - n.max(k);
++    // [pq-cpu-prover] sub-cosets of at least 2^MIN_LOG_SUB points: a short polynomial on a large
++    // domain otherwise becomes 10^5 tiny DFTs. Any s <= log_domain - max(n, k) yields the same
++    // codeword values and leaf placement (each sub-coset still holds whole leaves).
++    const MIN_LOG_SUB: usize = 16;
++    let s = if fast_paths() {
++        log_domain - n.max(k).max(MIN_LOG_SUB.min(log_domain))
++    } else {
++        log_domain - n.max(k)
++    };
+     let log_sub = log_domain - s;
+     let sub = 1usize << log_sub;
+     let log_qs = log_domain - k;
+@@ -223,7 +465,7 @@ where
+     // Row-major base-field coefficient matrix: row i = coordinates of coefficient i of every
+     // polynomial (polynomial-major, basis order), zero rows up to the sub-coset size.
+     let bw = width * d_ext;
+-    let mut base = F::zero_vec(sub * bw);
++    let mut base = if fast_paths() { crate::prover::fast_dft::huge_zero_vec(sub * bw) } else { F::zero_vec(sub * bw) };
+     base.par_chunks_exact_mut(bw).enumerate().for_each(|(i, row)| {
+         for (j, col) in coeffs.iter().enumerate() {
+             if let Some(v) = col.get(i) {
+@@ -233,35 +475,149 @@ where
+     });
+ 
+     let dft = Radix2DitParallel::<F>::default();
++    let (mut t_dft, mut t_hash) = (0f64, 0f64);
+     let mut joined: Vec<H::Digest> = Vec::with_capacity((c * qs) >> dropped);
+     let filler = hasher.hash_slice(&[]);
++    // [pq-cpu-prover] small sub-cosets: one task per (coset, residue) with a sequential DFT and
++    // sequential leaf hashing, instead of two fine-grained parallel regions per sub-coset (which
++    // stall on a busy machine). Same codeword values, same digests and placement.
++    let outer = fast_paths() && sub * bw <= (1 << 22) && (c << s) >= 2;
++    let mut leaf_by_task: Vec<Vec<H::Digest>> = if outer {
++        let td = std::time::Instant::now();
++        let seq = p3_dft::Radix2Dit::<F>::default();
++        // G sub-cosets of one coset per task, side by side in one DFT matrix of width G * bw so
++        // the butterflies run on full SIMD rows (a 12-wide Ext12 row alone does not fill a lane
++        // vector). Column group g holds the coefficients twisted by shift_g^i: a coset DFT.
++        let nsub = 1usize << s;
++        let g = (48usize.div_ceil(bw)).clamp(1, nsub).min((1usize << 22) / (sub * bw)).max(1);
++        let g = if nsub % g == 0 { g } else { 1 };
++        let res: Vec<Vec<Vec<H::Digest>>> = (0..(c * nsub / g))
++            .into_par_iter()
++            .map(|task| {
++                let a = task / (nsub / g);
++                let r0 = (task % (nsub / g)) * g;
++                let za = zeta.exp_u64(a as u64);
++                let shifts: Vec<F> = (0..g).map(|k| za * omega.exp_u64((r0 + k) as u64)).collect();
++                let gw = g * bw;
++                // natural order, the G coset DFTs side by side
++                let evals = RowMajorMatrix::new(crate::prover::fast_dft::coset_dft_rows_multi(&base, bw, &shifts), gw);
++                let _ = &seq;
++                let hb = crate::hasher::HASH_BATCH;
++                let mut flat: Vec<F> = Vec::with_capacity(hb * rows_per_query * bw);
++                (0..g)
++                    .map(|k| {
++                        (0..nv.div_ceil(hb))
++                            .flat_map(|cb| {
++                                flat.clear();
++                                for v in cb * hb..((cb + 1) * hb).min(nv) {
++                                    for t in 0..rows_per_query {
++                                        let i = v + t * nv;
++                                        flat.extend_from_slice(&evals.values[i * gw + k * bw..i * gw + (k + 1) * bw]);
++                                    }
++                                }
++                                hasher.hash_leaves_flat(&flat, bw, rows_per_query)
++                            })
++                            .collect::<Vec<_>>()
++                    })
++                    .collect()
++            })
++            .collect();
++        let res: Vec<Vec<H::Digest>> = res.into_iter().flatten().collect();
++        t_dft += td.elapsed().as_secs_f64();
++        res
++    } else {
++        vec![]
++    };
+     for a in 0..c {
+         let za = zeta.exp_u64(a as u64);
+         let mut buf: Vec<H::Digest> = vec![filler; qs];
+-        for r in 0..(1usize << s) {
++        if outer {
++            for r in 0..(1usize << s) {
++                for (v, dg) in std::mem::take(&mut leaf_by_task[(a << s) + r]).into_iter().enumerate() {
++                    buf[r + (v << s)] = dg;
++                }
++            }
++        }
++        // [pq-cpu-prover] inner path: G sub-cosets per four-step DFT when the rows are narrow
++        let nsub_in = if outer { 0 } else { 1usize << s };
++        let gi = if fast_paths() {
++            let g = 16usize.div_ceil(bw).clamp(1, nsub_in.max(1));
++            if nsub_in % g == 0 { g } else { 1 }
++        } else {
++            1
++        };
++        let mut grouped: Vec<Vec<F>> = vec![];
++        let (mut dft_scratch, mut dft_out): (Vec<F>, Vec<F>) = (vec![], vec![]);
++        for r in 0..nsub_in {
+             let shift = za * omega.exp_u64(r as u64);
+-            let evals = dft
+-                .coset_dft_batch(RowMajorMatrix::new(base.clone(), bw), shift)
+-                .bit_reverse_rows();
+-            let digests: Vec<H::Digest> = (0..nv)
+-                .into_par_iter()
+-                .map(|v| {
+-                    let rows: Vec<Vec<F>> = (0..rows_per_query)
+-                        .map(|t| {
+-                            let i = reverse_bits_len(v + t * nv, log_sub);
+-                            evals.values[i * bw..(i + 1) * bw].to_vec()
++            let td = std::time::Instant::now();
++            // four-step DFT (natural order); `nat` maps a natural index to the storage index
++            let (evals_vals, nat): (Vec<F>, bool) = if fast_paths() && gi == 1 {
++                // reuse the DFT buffers across sub-cosets (no fresh pages per DFT)
++                crate::prover::fast_dft::coset_dft_rows_multi_into(&base, bw, &[shift], &mut dft_scratch, &mut dft_out);
++                (std::mem::take(&mut dft_out), true)
++            } else if fast_paths() {
++                if r % gi == 0 {
++                    let shifts: Vec<F> = (0..gi).map(|k| za * omega.exp_u64((r + k) as u64)).collect();
++                    let wide = crate::prover::fast_dft::coset_dft_rows_multi(&base, bw, &shifts);
++                    // split into per-sub-coset matrices (gi of them)
++                    grouped = (0..gi)
++                        .map(|k| {
++                            let mut v = F::zero_vec(sub * bw);
++                            v.par_chunks_mut(bw).enumerate().for_each(|(u, row)| {
++                                row.copy_from_slice(&wide[u * gi * bw + k * bw..u * gi * bw + (k + 1) * bw]);
++                            });
++                            v
+                         })
++                        .rev()
+                         .collect();
+-                    hasher.hash_coset(&rows)
+-                })
+-                .collect();
+-            drop(evals);
++                }
++                (grouped.pop().expect("grouped DFT output"), true)
++            } else {
++                (dft.coset_dft_batch(RowMajorMatrix::new(base.clone(), bw), shift).bit_reverse_rows().values, false)
++            };
++            let evals = RowMajorMatrix::new(evals_vals, bw);
++            let idx = |u: usize| if nat { u } else { reverse_bits_len(u, log_sub) };
++            t_dft += td.elapsed().as_secs_f64();
++            let th = std::time::Instant::now();
++            let leaf = |v: usize| -> Vec<Vec<F>> {
++                (0..rows_per_query)
++                    .map(|t| {
++                        let i = idx(v + t * nv);
++                        evals.values[i * bw..(i + 1) * bw].to_vec()
++                    })
++                    .collect()
++            };
++            let digests: Vec<H::Digest> = if fast_paths() {
++                let b = crate::hasher::HASH_BATCH;
++                (0..nv.div_ceil(b))
++                    .into_par_iter()
++                    .flat_map_iter(|c| {
++                        let mut flat: Vec<F> = Vec::with_capacity(b * rows_per_query * bw);
++                        for v in c * b..((c + 1) * b).min(nv) {
++                            for t in 0..rows_per_query {
++                                let i = idx(v + t * nv);
++                                flat.extend_from_slice(&evals.values[i * bw..(i + 1) * bw]);
++                            }
++                        }
++                        hasher.hash_leaves_flat(&flat, bw, rows_per_query)
++                    })
++                    .collect()
++            } else {
++                (0..nv).into_par_iter().map(|v| hasher.hash_coset(&leaf(v))).collect()
++            };
++            if fast_paths() && gi == 1 {
++                dft_out = evals.values;
++            } else {
++                drop(evals);
++            }
+             for (v, dg) in digests.into_iter().enumerate() {
+                 buf[r + (v << s)] = dg;
+             }
++            t_hash += th.elapsed().as_secs_f64();
+         }
+         for _ in 0..dropped {
+-            buf = buf.par_chunks_exact(2).map(|p| hasher.compress(p[0], p[1])).collect();
++            buf = crate::prover::stacked_pcs::compress_layer(hasher, &buf);
+         }
+         joined.extend_from_slice(&buf);
+     }
+@@ -272,12 +628,12 @@ where
+         if prev.len() % 2 == 1 {
+             prev.push(filler);
+         }
+-        let layer: Vec<_> = prev.par_chunks_exact(2).map(|p| hasher.compress(p[0], p[1])).collect();
++        let layer: Vec<_> = crate::prover::stacked_pcs::compress_layer(hasher, prev);
+         digest_layers.push(layer);
+     }
+     if std::env::var("NEARPROOF_MEMPROF").map(|v| v == "1").unwrap_or(false) {
+         println!(
+-            "STREAM_COMMIT width={width} ext={d_ext} c={c} log_domain={log_domain} k={k} n={n} sub=2^{log_sub} subcosets={} dropped={dropped} stored_digests={} secs={:.1}",
++            "STREAM_COMMIT width={width} ext={d_ext} c={c} log_domain={log_domain} k={k} n={n} sub=2^{log_sub} subcosets={} dropped={dropped} stored_digests={} secs={:.1} dft={t_dft:.1} leafhash={t_hash:.1}",
+             c << s,
+             digest_layers.iter().map(|l| l.len()).sum::<usize>(),
+             t0.elapsed().as_secs_f64()
+@@ -331,7 +687,11 @@ impl<V: Clone + Send + Sync, Digest: Copy + Send + Sync> MerkleTree<V, Digest> {
+         }
+         let leaf_ids: Vec<usize> = blocks.iter().flat_map(|&b| (b << d)..((b + 1) << d)).collect();
+         let row_ids: Vec<usize> = leaf_ids.iter().flat_map(|&i| self.leaf_row_indices(i)).collect();
+-        let rows = src.oracle.rows(&row_ids);
++        let t_rows = std::time::Instant::now();
++        let rows = src.oracle.rows_grouped(&row_ids, self.rows_per_query);
++        if std::env::var("NEARPROOF_MEMPROF").map(|v| v == "1").unwrap_or(false) {
++            println!("STREAM_REBUILD rows={} leaves={} secs={:.2}", row_ids.len(), leaf_ids.len(), t_rows.elapsed().as_secs_f64());
++        }
+         let rpq = self.rows_per_query;
+         let leaf_digests: Vec<Digest> =
+             rows.par_chunks_exact(rpq).map(|leaf_rows| (src.hash_leaf)(leaf_rows)).collect();
+diff --git a/crates/stark-backend/src/prover/whir.rs b/crates/stark-backend/src/prover/whir.rs
+--- a/crates/stark-backend/src/prover/whir.rs
++++ b/crates/stark-backend/src/prover/whir.rs
+@@ -116,6 +116,7 @@ where
+     let num_whir_rounds = whir_params.num_whir_rounds();
+     let num_sumcheck_rounds = whir_params.num_sumcheck_rounds();
+ 
++    let _fe_span = tracing::info_span!("whir.f_evals").entered();
+     let mles: Vec<Vec<SC::F>> = committed_mats
+         .par_iter()
+         .flat_map(|(mat, _)| {
+@@ -140,6 +141,7 @@ where
+         .collect();
+ 
+     drop(mles);
++    drop(_fe_span);
+     crate::prover::stream_pcs::memprof("whir.f_evals");
+     // We assume `\hat{w}` in a WHIR round is always multilinear and maintain its
+     // evaluations on `H_m`.
+@@ -165,6 +167,7 @@ where
+         let is_last_round = whir_round == num_whir_rounds - 1;
+         let k_whir = whir_params.k_round(whir_round);
+         // Run k_whir rounds of sumcheck on `sum_{x in H_m} \hat{w}(\hat{f}(x), x)`
++        let _sc_span = tracing::info_span!("whir.sumcheck", round = whir_round).entered();
+         for round in 0..k_whir {
+             debug_assert_eq!(f_evals.len(), 1 << (m - round));
+ 
+@@ -216,6 +219,8 @@ where
+             f_evals.truncate(half);
+             w_evals.truncate(half);
+         }
++        drop(_sc_span);
++        let _g_span = tracing::info_span!("whir.g_commit", round = whir_round).entered();
+         // Define g^ = f^(alpha, \cdot) and send matrix commit of RS(g^)
+         // f_evals is the evaluations of f^(alpha, \cdot) on hypercube
+         let g_mle = Mle::from_evaluations(&f_evals);
+@@ -274,6 +279,8 @@ where
+             (None, None)
+         };
+ 
++        drop(_g_span);
++        let _q_span = tracing::info_span!("whir.queries", round = whir_round).entered();
+         // omega is generator of RS domain `\mathcal{L}^{(2^k)}`
+         let omega = SC::F::two_adic_generator(log_rs_domain_size - k_whir);
+         let num_queries = round_params.num_queries;
+@@ -378,6 +385,8 @@ where
+         rs_tree = g_tree;
+         crate::prover::stream_pcs::memprof(&format!("whir.round{whir_round}.queries"));
+ 
++        drop(_q_span);
++        let _y_span = tracing::info_span!("whir.y_and_w", round = whir_round).entered();
+         // WHIR-Y lever: observe the shift-query answers y_i = g(z_i) before gamma.
+         if whir_params.levers.whir_y {
+             let coeffs = g_mle.coeffs();
+@@ -407,6 +416,7 @@ where
+             }
+         }
+ 
++        drop(_y_span);
+         m -= k_whir;
+         log_rs_domain_size -= shrink;
+     }

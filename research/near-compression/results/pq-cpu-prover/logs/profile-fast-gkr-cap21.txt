@@ -1,0 +1,21 @@
+# gdb profile of the FAST prover's GKR phase, real layer at NEARPROOF_GKR_CAP_LOG=21 (before the row-block LogUp generation)
+samples 178
+-- innermost known:
+ 43.8% run_base
+ 34.3% fill_inner
+ 11.8% gkr::pass
+  2.2% memcpy
+  2.2% level_up
+  2.2% gen_level_chunk
+  1.1% lane
+  0.6% level_from_input_chunk
+  0.6% ?:_int_realloc
+  0.6% ?:write<[p3_field::extension::binomial_extension::BinomialExte
+  0.6% ?:get<core::num::wrapping::Wrapping<usize>>
+-- outermost known:
+ 78.1% fill_inner
+ 14.6% gkr::pass
+  2.8% level_up
+  2.2% gen_level_chunk
+  1.7% ?
+  0.6% level_from_input_chunk

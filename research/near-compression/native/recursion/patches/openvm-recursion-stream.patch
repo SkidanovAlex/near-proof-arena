@@ -1,7 +1,7 @@
 diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
 --- a/crates/recursion/src/nv/mod.rs
 +++ b/crates/recursion/src/nv/mod.rs
-@@ -21,3 +21,5 @@ mod tests;
+@@ -25,3 +25,5 @@ mod prep_demo;
  mod faithful_dof;
  #[cfg(test)]
  mod faithful_tests;
@@ -117,7 +117,7 @@ diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
  /// NV-verifies-NV chain (ignored; env-driven).
  ///   NV_LEVELS=4 NV_LOG_ROWS=17 PARENT_N_STACK=16 PARENT_BITS=20 PARENT_LIST_M=3 ...
  #[test]
-@@ -438,6 +453,11 @@ fn nv_chain() {
+@@ -430,6 +445,11 @@ fn nv_chain() {
          fixed = if prev.is_empty() { hs.clone() } else { hs.iter().zip(&prev).map(|(a, b)| *a.max(b)).collect() };
          prev = hs;
      }
@@ -129,24 +129,10 @@ diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
      println!("NV_FIXED_HEIGHTS {fixed:?}");
      if let Some(fe) = final_engine.as_ref().filter(|_| unbound_final) {
          // UNBOUND measurement-only final layer: verifies the last phase-A proof without binding
-@@ -462,6 +482,13 @@ fn nv_chain() {
-         circ.child_nv = level >= 2;
-         circ.app = if level >= 2 { app_a.clone() } else { None };
-         let (v, q, _, app) = run(&circ, &vk, &p, &format!("L{level}"));
-+        print_vk_regimes(&format!("L{level}"), &v);
-+        if let Some(d) = &save_dir {
-+            use openvm_stark_backend::codec::Encode;
-+            let mut bytes = vec![];
-+            q.encode(&mut bytes).unwrap();
-+            std::fs::write(format!("{d}/L{level}.proof"), &bytes).unwrap();
-+        }
-         if level == 1 {
-             assert_eq!(Some(app.clone()), app_a, "level-1 program differs from the phase-A table");
-         }
-@@ -474,6 +501,18 @@ fn nv_chain() {
-     assert!(levels >= 2, "FINAL needs an NV child (NV_LEVELS >= 2)");
-     let fe = Sha384CpuEngine::new_final(openvm_stark_backend::StarkEngine::params(&engine).clone());
-     let (vkf, pf, _, words_f) = run_with(&fe, &circ, &vk, &p, "FINAL");
+@@ -520,6 +540,18 @@ fn nv_chain() {
+     fcirc.program_part = false;
+     fcirc.tight_floor = None; // nobody verifies FINAL in-circuit
+     let (vkf, pf, _, words_f) = run_with(&fe, &fcirc, &vk, &p, "FINAL");
 +    print_vk_regimes("FINAL", &vkf);
 +    {
 +        // [stream research] final proof digest (and the proof, with NV_SAVE_DIR)
