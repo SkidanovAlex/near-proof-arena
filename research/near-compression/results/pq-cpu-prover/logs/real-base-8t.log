@@ -45,3 +45,36 @@ MEMPROF commit.tree rss_gb=3.15 hwm_gb=3.15
 MEMPROF prove.after_commit rss_gb=2.75 hwm_gb=3.15
 MEMPROF zerocheck.gkr_input rss_gb=6.74 hwm_gb=6.91
 MEMPROF zerocheck.after_gkr rss_gb=6.94 hwm_gb=18.19
+MEMPROF prove.after_rap_constraints rss_gb=4.18 hwm_gb=18.19
+MEMPROF openings.after_stacking rss_gb=4.05 hwm_gb=18.19
+MEMPROF whir.f_evals rss_gb=4.09 hwm_gb=18.19
+MEMPROF whir.round0.g_tree rss_gb=5.72 hwm_gb=18.19
+MEMPROF whir.round0.queries rss_gb=5.72 hwm_gb=18.19
+MEMPROF whir.round1.g_tree rss_gb=7.29 hwm_gb=18.19
+MEMPROF whir.round1.queries rss_gb=5.75 hwm_gb=18.19
+MEMPROF whir.round2.g_tree rss_gb=7.29 hwm_gb=18.19
+MEMPROF whir.round2.queries rss_gb=5.75 hwm_gb=18.19
+MEMPROF whir.round3.g_tree rss_gb=7.29 hwm_gb=18.19
+MEMPROF whir.round3.queries rss_gb=5.75 hwm_gb=18.19
+MEMPROF whir.round4.queries rss_gb=4.21 hwm_gb=18.19
+MEMPROF prove.after_openings rss_gb=1.79 hwm_gb=18.19
+[1;32mINFO    [0m stark_prove_excluding_trace [ 9520s | 2.98% / 100.00% ] phase: "prover"
+[1;32mINFO    [0m ┝━ ｉ [info]:  | num_airs_present: 4
+[1;32mINFO    [0m ┝━ prover.main_trace_commit [ 9.04s | 0.00% / 0.09% ] phase: "prover"
+[1;32mINFO    [0m │  ┕━ trace_commit_cpu [ 9.04s | 0.00% / 0.09% ]
+[1;32mINFO    [0m │     ┕━ stacked_commit_odd [ 8.71s | 0.05% / 0.09% ]
+[1;32mINFO    [0m │        ┕━ rs_code_matrix_odd [ 3.61s | 0.04% ]
+[1;32mINFO    [0m ┝━ prove_zerocheck_and_logup [ 9209s | 6.93% / 96.73% ]
+[1;32mINFO    [0m │  ┝━ fractional_sumcheck_with [ 220s | 2.31% ]
+[1;32mINFO    [0m │  ┕━ prover.batch_constraints.mle_rounds [ 8329s | 87.49% ] phase: "prover"
+[1;32mINFO    [0m ┕━ prove_stacked_opening_reduction [ 18.8s | 0.20% ]
+NVL_AIR 0 h=262144 w=77 int/row=51 deg=9
+NVL_AIR 1 h=1048576 w=83 int/row=17 deg=9
+NVL_AIR 2 h=128 w=9 int/row=2 deg=8
+NVL_AIR 3 h=65536 w=5 int/row=1 deg=3
+NVL_PROOF_SHA256 ef3b730be34007dfaf08f50dc4568be0f229cdcfaf511cffe1bfd073bceed3f8
+NVL_SUMMARY wall_s=9520.7 (keygen+tracegen+prove+verify) peak_rss_gb=18.19 cells=107545728 (2^26.68) program_rows=7626 proof_bytes=414385
+
+real	158m41.463s
+user	316m16.240s
+sys	0m28.594s

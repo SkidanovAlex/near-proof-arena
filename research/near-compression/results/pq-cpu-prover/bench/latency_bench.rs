@@ -209,6 +209,25 @@ fn commit(w: usize, h: usize, b: usize, k: usize, c: usize) {
     );
 }
 
+/// lane/pq-cpu-prover: streamed commitment of W base-field polynomials of 2^n coefficients on the
+/// c * 2^L domain (L = n + b), as the stacked commit of a real NV layer runs it.
+fn stream(w: usize, n: usize, b: usize, k: usize, c: usize) {
+    use openvm_stark_backend::prover::stream_pcs::stream_commit;
+    let coeffs: Vec<Vec<F>> = (0..w)
+        .map(|j| (0..(1u32 << n)).map(|i| F::from_u32((i ^ (j as u32 * 7919)).wrapping_mul(2654435761) % 2013265921)).collect())
+        .collect();
+    let t = Instant::now();
+    let tree = stream_commit::<F, F, _>(&ShaHasher, coeffs, n + b, c, 1 << k);
+    let s = t.elapsed().as_secs_f64();
+    let cells = (w << (n + b)) * c;
+    println!(
+        "STREAM W={w} n={n} b={b} k={k} c={c} threads={} cells={cells:.3e} secs={s:.2} ({:.2} ns/cell) root0={}",
+        threads(),
+        1e9 * s / cells as f64,
+        tree.root().unwrap()[0]
+    );
+}
+
 fn main() {
     let a: Vec<String> = std::env::args().collect();
     let what = a.get(1).map(|s| s.as_str()).unwrap_or("all");
@@ -218,6 +237,10 @@ fn main() {
         "grind" => grind(nt),
         "ext" => ext(),
         "ntt" => ntt(),
+        "stream" => {
+            let p = |i: usize, d: usize| a.get(i).and_then(|s| s.parse().ok()).unwrap_or(d);
+            stream(p(2, 82), p(3, 20), p(4, 2), p(5, 1), p(6, 15))
+        }
         "commit" => {
             let p = |i: usize, d: usize| a.get(i).and_then(|s| s.parse().ok()).unwrap_or(d);
             commit(p(2, 32), p(3, 18), p(4, 3), p(5, 1), p(6, 15))
