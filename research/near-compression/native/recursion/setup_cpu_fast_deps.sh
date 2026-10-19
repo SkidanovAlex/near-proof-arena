@@ -3,7 +3,8 @@
 # fast CPU prover overlay:
 #   patches/stark-backend-cpu-fast.patch  (cpu-backend/src/fast/*: SoA Ext12, MLE rounds, GKR, ...)
 #   patches/plonky3-ext12-simd.patch      (Ext12 under AVX2/AVX-512 builds: p3 had no SIMD path for
-#                                          degree 12 and panicked)
+#                                          degree 12 and panicked; one-dot-product Ext12 mul)
+#   patches/openvm-recursion-cpu-fast.patch (8-lane AVX-512 SHA-384: grinding, Merkle leaves/nodes)
 # Every fast path is byte-identical to the original code; NEARPROOF_CPU_FAST=0 selects the original
 # code at run time. Build with RUSTFLAGS="-C target-cpu=native" for the AVX-512 packing.
 set -euo pipefail
@@ -16,12 +17,14 @@ if [ ! -f "$DEPS/.cpu-fast-overlay" ]; then
   git -C "$DEPS/stark-backend-unified" apply "$HERE/patches/stark-backend-cpu-fast.patch"
   git -C "$DEPS/stark-backend-unified" add -N .
   (cd "$DEPS/plonky3-ext12" && patch -s -p1 < "$HERE/patches/plonky3-ext12-simd.patch")
+  git -C "$DEPS/openvm-sha384" apply "$HERE/patches/openvm-recursion-cpu-fast.patch"
+  git -C "$DEPS/openvm-sha384" add -N .
   touch "$DEPS/.cpu-fast-overlay"
 fi
 # verify: the overlay regenerated from the live trees equals the pinned patches
 CHK=$(mktemp -d); trap 'rm -rf "$CHK"' EXIT
 CPU_FAST_PATCH_OUT=$CHK "$HERE/make_cpu_fast_patches.sh" >/dev/null
-for p in stark-backend-cpu-fast plonky3-ext12-simd; do
+for p in stark-backend-cpu-fast plonky3-ext12-simd openvm-recursion-cpu-fast; do
   cmp -s "$CHK/$p.patch" "$HERE/patches/$p.patch" || { echo "$p: live tree differs from patch" >&2; exit 1; }
 done
 echo "cpu-fast deps OK: $DEPS"

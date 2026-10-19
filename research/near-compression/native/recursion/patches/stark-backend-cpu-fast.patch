@@ -2007,6 +2007,32 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      let n_global = max(n_max, n_logup);
      debug!(%n_global);
      while xi.len() != l_skip + n_global {
+diff --git a/crates/stark-backend/src/hasher.rs b/crates/stark-backend/src/hasher.rs
+--- a/crates/stark-backend/src/hasher.rs
++++ b/crates/stark-backend/src/hasher.rs
+@@ -48,8 +48,22 @@ pub trait MerkleHasher: 'static + Clone + Send + Sync {
+     fn hash_coset(&self, rows: &[Vec<Self::F>]) -> Self::Digest {
+         self.tree_compress(rows.iter().map(|row| self.hash_slice(row)).collect())
+     }
++
++    /// [pq-cpu-prover] `hash_coset` of many leaves; configs may batch the hashing (multi-buffer
++    /// SIMD). Must equal the one-by-one result.
++    fn hash_coset_batch(&self, leaves: &[Vec<Vec<Self::F>>]) -> Vec<Self::Digest> {
++        leaves.iter().map(|rows| self.hash_coset(rows)).collect()
++    }
++
++    /// [pq-cpu-prover] `out[i] = compress(inputs[2i], inputs[2i+1])`; configs may batch it.
++    fn compress_pairs(&self, inputs: &[Self::Digest]) -> Vec<Self::Digest> {
++        inputs.chunks_exact(2).map(|p| self.compress(p[0], p[1])).collect()
++    }
+ }
+ 
++/// [pq-cpu-prover] leaves per batched hashing task.
++pub const HASH_BATCH: usize = 64;
++
+ /// [MerkleHasher] implementation built from a cryptographic hash function and a compression
+ /// function. This struct is intended for use by the protocol verifier. Prover backends may use
+ /// independent but functionally equivalent implementations.
 diff --git a/crates/stark-backend/src/prover/mod.rs b/crates/stark-backend/src/prover/mod.rs
 --- a/crates/stark-backend/src/prover/mod.rs
 +++ b/crates/stark-backend/src/prover/mod.rs
@@ -2022,6 +2048,138 @@ diff --git a/crates/stark-backend/src/prover/mod.rs b/crates/stark-backend/src/p
  
          stream_pcs::memprof("prove.after_openings");
          let (gkr_proof, batch_constraint_proof) = constraints_proof.into();
+diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backend/src/prover/stacked_pcs.rs
+--- a/crates/stark-backend/src/prover/stacked_pcs.rs
++++ b/crates/stark-backend/src/prover/stacked_pcs.rs
+@@ -780,19 +780,31 @@ where
+         let query_stride = num_leaves / rows_per_query;
+         // One Merkle leaf per query index `y`: the coset rows { y + t * query_stride }. The
+         // default `MerkleHasher::hash_coset` reproduces upstream (row hashes + binary subtree).
+-        let query_digest_layer: Vec<_> = (0..query_stride)
+-            .into_par_iter()
+-            .map(|y| {
+-                let rows: Vec<Vec<H::F>> = (0..rows_per_query)
+-                    .map(|t| {
+-                        Self::row_iter(&matrix, t * query_stride + y)
+-                            .flat_map(|ef| ef.as_basis_coefficients_slice().to_vec())
+-                            .collect()
+-                    })
+-                    .collect();
+-                hasher.hash_coset(&rows)
+-            })
+-            .collect();
++        let leaf_rows = |y: usize| -> Vec<Vec<H::F>> {
++            (0..rows_per_query)
++                .map(|t| {
++                    Self::row_iter(&matrix, t * query_stride + y)
++                        .flat_map(|ef| ef.as_basis_coefficients_slice().to_vec())
++                        .collect()
++                })
++                .collect()
++        };
++        let query_digest_layer: Vec<_> = if crate::prover::stream_pcs::fast_paths() {
++            // [pq-cpu-prover] batched leaf hashing
++            let b = crate::hasher::HASH_BATCH;
++            (0..query_stride.div_ceil(b))
++                .into_par_iter()
++                .flat_map_iter(|c| {
++                    let leaves: Vec<_> = (c * b..((c + 1) * b).min(query_stride)).map(&leaf_rows).collect();
++                    hasher.hash_coset_batch(&leaves)
++                })
++                .collect()
++        } else {
++            (0..query_stride)
++                .into_par_iter()
++                .map(|y| hasher.hash_coset(&leaf_rows(y)))
++                .collect()
++        };
+ 
+         let mut digest_layers = vec![query_digest_layer];
+         while digest_layers
+@@ -804,10 +816,7 @@ where
+             let prev_layer = digest_layers
+                 .last()
+                 .ok_or(StackedPcsError::MerkleTreeNoRoot)?;
+-            let layer: Vec<_> = prev_layer
+-                .par_chunks_exact(2)
+-                .map(|pair| hasher.compress(pair[0], pair[1]))
+-                .collect();
++            let layer: Vec<_> = compress_layer(hasher, prev_layer);
+             digest_layers.push(layer);
+         }
+ 
+@@ -847,20 +856,30 @@ where
+         // One leaf per fold coset of each block: rows { a * block + t * qs + y }, hashed with
+         // `MerkleHasher::hash_coset` (the default reproduces row hashes + a binary subtree, the
+         // levers' coset-leaf hook hashes the coset as one message).
+-        let joined: Vec<_> = (0..num_cosets * qs)
+-            .into_par_iter()
+-            .map(|i| {
+-                let (a, y) = (i / qs, i % qs);
+-                let rows: Vec<Vec<H::F>> = (0..rows_per_query)
+-                    .map(|t| {
+-                        Self::row_iter(&matrix, a * block + t * qs + y)
+-                            .flat_map(|ef| ef.as_basis_coefficients_slice().to_vec())
+-                            .collect()
+-                    })
+-                    .collect();
+-                hasher.hash_coset(&rows)
+-            })
+-            .collect();
++        let leaf_rows = |i: usize| -> Vec<Vec<H::F>> {
++            let (a, y) = (i / qs, i % qs);
++            (0..rows_per_query)
++                .map(|t| {
++                    Self::row_iter(&matrix, a * block + t * qs + y)
++                        .flat_map(|ef| ef.as_basis_coefficients_slice().to_vec())
++                        .collect()
++                })
++                .collect()
++        };
++        let n_leaves = num_cosets * qs;
++        let joined: Vec<_> = if crate::prover::stream_pcs::fast_paths() {
++            // [pq-cpu-prover] batched leaf hashing
++            let b = crate::hasher::HASH_BATCH;
++            (0..n_leaves.div_ceil(b))
++                .into_par_iter()
++                .flat_map_iter(|c| {
++                    let leaves: Vec<_> = (c * b..((c + 1) * b).min(n_leaves)).map(&leaf_rows).collect();
++                    hasher.hash_coset_batch(&leaves)
++                })
++                .collect()
++        } else {
++            (0..n_leaves).into_par_iter().map(|i| hasher.hash_coset(&leaf_rows(i))).collect()
++        };
+         let pad = hasher.hash_slice(&[]);
+         let mut digest_layers = vec![joined];
+         while digest_layers.last().unwrap().len() > 1 {
+@@ -868,10 +887,7 @@ where
+             if prev.len() % 2 == 1 {
+                 prev.push(pad);
+             }
+-            let layer: Vec<_> = prev
+-                .par_chunks_exact(2)
+-                .map(|pair| hasher.compress(pair[0], pair[1]))
+-                .collect();
++            let layer: Vec<_> = compress_layer(hasher, prev);
+             digest_layers.push(layer);
+         }
+         Ok(Self {
+@@ -1029,3 +1045,14 @@ mod tests {
+         );
+     }
+ }
++
++/// [pq-cpu-prover] One Merkle level: `compress(prev[2i], prev[2i+1])`, batched through
++/// `MerkleHasher::compress_pairs` (identical to the pairwise loop).
++pub fn compress_layer<H: crate::hasher::MerkleHasher>(hasher: &H, prev: &[H::Digest]) -> Vec<H::Digest> {
++    if crate::prover::stream_pcs::fast_paths() {
++        let b = 2 * crate::hasher::HASH_BATCH;
++        prev.par_chunks(b).flat_map_iter(|ch| hasher.compress_pairs(&ch[..ch.len() / 2 * 2])).collect()
++    } else {
++        prev.par_chunks_exact(2).map(|pair| hasher.compress(pair[0], pair[1])).collect()
++    }
++}
 diff --git a/crates/stark-backend/src/prover/stream_pcs.rs b/crates/stark-backend/src/prover/stream_pcs.rs
 --- a/crates/stark-backend/src/prover/stream_pcs.rs
 +++ b/crates/stark-backend/src/prover/stream_pcs.rs
@@ -2143,7 +2301,7 @@ diff --git a/crates/stark-backend/src/prover/stream_pcs.rs b/crates/stark-backen
      let log_sub = log_domain - s;
      let sub = 1usize << log_sub;
      let log_qs = log_domain - k;
-@@ -233,16 +319,60 @@ where
+@@ -233,35 +319,93 @@ where
      });
  
      let dft = Radix2DitParallel::<F>::default();
@@ -2165,15 +2323,20 @@ diff --git a/crates/stark-backend/src/prover/stream_pcs.rs b/crates/stark-backen
 +                // Radix2Dit returns natural order (Radix2DitParallel a bit-reversed view)
 +                let evals: RowMajorMatrix<F> =
 +                    seq.coset_dft_batch(RowMajorMatrix::new(base.clone(), bw), shift);
-+                let mut rows: Vec<Vec<F>> = vec![vec![]; rows_per_query];
-+                (0..nv)
-+                    .map(|v| {
-+                        for (t, row) in rows.iter_mut().enumerate() {
-+                            let i = v + t * nv;
-+                            row.clear();
-+                            row.extend_from_slice(&evals.values[i * bw..(i + 1) * bw]);
-+                        }
-+                        hasher.hash_coset(&rows)
++                let b = crate::hasher::HASH_BATCH;
++                (0..nv.div_ceil(b))
++                    .flat_map(|c| {
++                        let leaves: Vec<Vec<Vec<F>>> = (c * b..((c + 1) * b).min(nv))
++                            .map(|v| {
++                                (0..rows_per_query)
++                                    .map(|t| {
++                                        let i = v + t * nv;
++                                        evals.values[i * bw..(i + 1) * bw].to_vec()
++                                    })
++                                    .collect()
++                            })
++                            .collect();
++                        hasher.hash_coset_batch(&leaves)
 +                    })
 +                    .collect::<Vec<_>>()
 +            })
@@ -2200,20 +2363,59 @@ diff --git a/crates/stark-backend/src/prover/stream_pcs.rs b/crates/stark-backen
              let evals = dft
                  .coset_dft_batch(RowMajorMatrix::new(base.clone(), bw), shift)
                  .bit_reverse_rows();
+-            let digests: Vec<H::Digest> = (0..nv)
+-                .into_par_iter()
+-                .map(|v| {
+-                    let rows: Vec<Vec<F>> = (0..rows_per_query)
+-                        .map(|t| {
+-                            let i = reverse_bits_len(v + t * nv, log_sub);
+-                            evals.values[i * bw..(i + 1) * bw].to_vec()
+-                        })
+-                        .collect();
+-                    hasher.hash_coset(&rows)
+-                })
+-                .collect();
 +            t_dft += td.elapsed().as_secs_f64();
 +            let th = std::time::Instant::now();
-             let digests: Vec<H::Digest> = (0..nv)
-                 .into_par_iter()
-                 .map(|v| {
-@@ -259,6 +389,7 @@ where
++            let leaf = |v: usize| -> Vec<Vec<F>> {
++                (0..rows_per_query)
++                    .map(|t| {
++                        let i = reverse_bits_len(v + t * nv, log_sub);
++                        evals.values[i * bw..(i + 1) * bw].to_vec()
++                    })
++                    .collect()
++            };
++            let digests: Vec<H::Digest> = if fast_paths() {
++                let b = crate::hasher::HASH_BATCH;
++                (0..nv.div_ceil(b))
++                    .into_par_iter()
++                    .flat_map_iter(|c| {
++                        let leaves: Vec<_> = (c * b..((c + 1) * b).min(nv)).map(&leaf).collect();
++                        hasher.hash_coset_batch(&leaves)
++                    })
++                    .collect()
++            } else {
++                (0..nv).into_par_iter().map(|v| hasher.hash_coset(&leaf(v))).collect()
++            };
+             drop(evals);
              for (v, dg) in digests.into_iter().enumerate() {
                  buf[r + (v << s)] = dg;
              }
 +            t_hash += th.elapsed().as_secs_f64();
          }
          for _ in 0..dropped {
-             buf = buf.par_chunks_exact(2).map(|p| hasher.compress(p[0], p[1])).collect();
-@@ -277,7 +408,7 @@ where
+-            buf = buf.par_chunks_exact(2).map(|p| hasher.compress(p[0], p[1])).collect();
++            buf = crate::prover::stacked_pcs::compress_layer(hasher, &buf);
+         }
+         joined.extend_from_slice(&buf);
+     }
+@@ -272,12 +416,12 @@ where
+         if prev.len() % 2 == 1 {
+             prev.push(filler);
+         }
+-        let layer: Vec<_> = prev.par_chunks_exact(2).map(|p| hasher.compress(p[0], p[1])).collect();
++        let layer: Vec<_> = crate::prover::stacked_pcs::compress_layer(hasher, prev);
+         digest_layers.push(layer);
      }
      if std::env::var("NEARPROOF_MEMPROF").map(|v| v == "1").unwrap_or(false) {
          println!(
@@ -2222,7 +2424,7 @@ diff --git a/crates/stark-backend/src/prover/stream_pcs.rs b/crates/stark-backen
              c << s,
              digest_layers.iter().map(|l| l.len()).sum::<usize>(),
              t0.elapsed().as_secs_f64()
-@@ -331,7 +462,11 @@ impl<V: Clone + Send + Sync, Digest: Copy + Send + Sync> MerkleTree<V, Digest> {
+@@ -331,7 +475,11 @@ impl<V: Clone + Send + Sync, Digest: Copy + Send + Sync> MerkleTree<V, Digest> {
          }
          let leaf_ids: Vec<usize> = blocks.iter().flat_map(|&b| (b << d)..((b + 1) << d)).collect();
          let row_ids: Vec<usize> = leaf_ids.iter().flat_map(|&i| self.leaf_row_indices(i)).collect();
