@@ -366,7 +366,7 @@ def layoutOk (fns : List Nat) (offs sizes : List Nat) (total : Nat) : Bool :=
     (List.range (sizes.getD k 0)).all fun l => decide (locate offs sizes (offs.getD k 0 + l) = (k, l)))
 
 /-- Type mask of a list of local tags: bit `j` set iff local `j` is i64. -/
-def maskOf (tags : List Nat) : Nat := (tags.zipIdx.map fun (t, j) => t * 2 ^ j).foldl (· + ·) 0
+def maskOf (tags : List Nat) : Nat := ((List.range 64).map fun i => 2 ^ i * tags.getD i 0).foldl (· + ·) 0
 
 /-- The function-table row of a checked function placed at `off`. -/
 def funcRow (off : Nat) (ck : CheckOut) : List Nat :=

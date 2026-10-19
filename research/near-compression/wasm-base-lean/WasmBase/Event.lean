@@ -286,6 +286,11 @@ def chainMsgs (X : Ctx) : Nat → Nat → List Frame → List Saved → Msg → 
       x ∈ localView (16 + c.cid) fc.locals c.tpl ∨ chainMsgs X c.cid c.k rest sv x
   | _, _, _, _, _ => False
 
+/-- The stack charges of the pending calls along the chain (callee of each saved caller). -/
+def chainCharge (X : Ctx) : Nat → List Saved → Nat
+  | _, [] => 0
+  | k, c :: sv => (X.pfOf k).stackCharge + chainCharge X c.k sv
+
 /-- A locals space of a returned activation (`16 + c`, `c < t`, not an active activation). -/
 def deadSp (t cid : Nat) (sv : List Saved) (x : Msg) : Prop :=
   16 ≤ x.space ∧ x.space < 16 + t ∧ x.space ≠ 16 + cid ∧ ∀ c ∈ sv, x.space ≠ 16 + c.cid
@@ -297,8 +302,8 @@ structure CallsOK (X : Ctx) (E : Env) (s : St) (t : Nat) : Prop where
   cidLtT : E.cid < t
   chain : ∃ sv, Chain X t E.cid E.sb E.k E.rest sv ∧
     (∀ x, chainMsgs X E.cid E.k E.rest sv x → E.live x) ∧
-    (∀ x, E.live x → (x.space = 4 ∨ 16 ≤ x.space) → chainMsgs X E.cid E.k E.rest sv x ∨ deadSp t E.cid sv x)
-  remLt : s.stackRem < 2 ^ 30
+    (∀ x, E.live x → (x.space = 4 ∨ 16 ≤ x.space) → chainMsgs X E.cid E.k E.rest sv x ∨ deadSp t E.cid sv x) ∧
+    s.stackRem + chainCharge X E.k sv < 2 ^ 30
   budget : ∃ tpb, tpb < t ∧ ∀ x, x.space = 5 → (E.live x ↔ x = budMsg s.stackRem tpb)
 
 theorem Chain.mono {X : Ctx} {t t' : Nat} (ht : t ≤ t') :
@@ -317,7 +322,7 @@ theorem CallsOK.mono {X : Ctx} {E E' : Env} {s s' : St} {t t' : Nat} (C : CallsO
     (hsb : E'.sb = E.sb) (hcid : E'.cid = E.cid) (hk : E'.k = E.k) (hrest : E'.rest = E.rest)
     (hlive : ∀ x, (x.space = 4 ∨ x.space = 5 ∨ 16 ≤ x.space) → (E'.live x ↔ E.live x))
     (hrem : s'.stackRem = s.stackRem) : CallsOK X E' s' t' := by
-  obtain ⟨sv, hc, hin, hout⟩ := C.chain
+  obtain ⟨sv, hc, hin, hout, hrl⟩ := C.chain
   obtain ⟨tpb, htpb, hb⟩ := C.budget
   have chainSp : ∀ {cid k : Nat} {rest : List Frame} {sv : List Saved} {x : Msg}, chainMsgs X cid k rest sv x →
       x.space = 4 ∨ 16 ≤ x.space := by
@@ -332,7 +337,7 @@ theorem CallsOK.mono {X : Ctx} {E E' : Env} {s s' : St} {t t' : Nat} (C : CallsO
         · exact Or.inl rfl
         · obtain ⟨j, -, rfl⟩ := mem_localView.mp h; right; simp [enc]
         · exact ih h
-  refine ⟨by rw [hcid]; have := C.cidLtT; omega, ⟨sv, ?_, fun x h => ?_, fun x h hs => ?_⟩, by rw [hrem]; exact C.remLt,
+  refine ⟨by rw [hcid]; have := C.cidLtT; omega, ⟨sv, ?_, fun x h => ?_, fun x h hs => ?_, by rw [hrem, hk]; exact hrl⟩,
     ⟨tpb, by omega, fun x hx => by rw [hlive x (Or.inr (Or.inl hx)), hrem]; exact hb x hx⟩⟩
   · rw [hcid, hsb, hk, hrest]; exact Chain.mono ht hc
   · rw [hcid, hk, hrest] at h

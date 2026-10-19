@@ -38,6 +38,7 @@ def busStk : Nat := 2
 def busR16 : Nat := 3
 def busByte : Nat := 4
 def busData : Nat := 5
+def busFunc : Nat := 6
 
 def B16 : Expr := 65536
 def bool (x : Expr) : Expr := x * (x - 1)
@@ -938,6 +939,144 @@ def cachedWidth : Nat := 2
 def table : Table := ⟨"DATA", ["addr", "byte", "mult"], [], [⟨busData, false, v mult, [v 0, v 1]⟩]⟩
 end Data
 
+/-! ## CALL: `call` of a checked function.  Fetches the call record `[pc, 0x10, h, fee, entry, 0, 0,
+0]` and the callee's function-table row `[entry, np + 128 nl, charge, prologue, m0..m3]` (bus FUNC);
+moves the `np ≤ 8` params from the operand stack into the callee's locals (space `16 + ts`),
+produces the declared locals (zero, typed by the mask bits), the call record (space 4, slot `ts`)
+and the decremented stack budget (space 5).  New state: `(entry, ts + 1, S + fee + prologue, 0,
+sb + h − np, ts)`; `sb + h − np` and `ts` are range-checked below `2^28`. -/
+namespace Call
+def opCall : Nat := 0x10
+def act : Nat := 5
+def entry : Nat := 6
+def shape : Nat := 7
+def charge : Nat := 8
+def pro : Nat := 9
+def m (q : Nat) : Nat := 10 + q        -- 10..13
+def pf (j : Nat) : Nat := 14 + j       -- 14..21: param j present (j < np)
+def af (j : Nat) : Nat := 22 + j       -- 22..85: local j present (j < nl)
+def tg (j : Nat) : Nat := 86 + j       -- 86..149: local j is i64 (mask bit)
+def tagP (j : Nat) : Nat := 150 + 7 * j
+def P (j : Nat) : Nat := 151 + 7 * j   -- 4 limbs
+def tP (j : Nat) : Nat := 155 + 7 * j
+def hP (j : Nat) : Nat := 156 + 7 * j
+def r0 : Nat := 206
+def r1 : Nat := 207
+def tpb : Nat := 208
+def hb : Nat := 209
+def n0 : Nat := 210
+def n1 : Nat := 211
+def sbn0 : Nat := 212
+def sbn1 : Nat := 213
+def ts0 : Nat := 214
+def ts1 : Nat := 215
+def kSb : Nat := 216
+def kCid : Nat := 217
+def cols : List String := headerCols ++ ["act", "entry", "shape", "charge", "pro", "m0", "m1", "m2", "m3"] ++
+  (List.range 8).map (fun j => s!"pf{j}") ++ (List.range 64).map (fun j => s!"af{j}") ++
+  (List.range 64).map (fun j => s!"tg{j}") ++
+  ((List.range 8).flatMap fun j => [s!"tagP{j}", s!"P{j}_0", s!"P{j}_1", s!"P{j}_2", s!"P{j}_3", s!"tP{j}", s!"hP{j}"]) ++
+  ["r0", "r1", "tpb", "hb", "n0", "n1", "sbn0", "sbn1", "ts0", "ts1"] ++ frameCols
+/-- number of params / locals -/
+def np : Expr := ((List.range 8).map fun j => v (pf j)).foldl (· + ·) 0
+def nl : Expr := ((List.range 64).map fun j => v (af j)).foldl (· + ·) 0
+/-- the new stack base `sb + h − np` -/
+def sbNew : Expr := v kSb + v cH - np
+def maskOf (q : Nat) : Expr := ((List.range 16).map fun i => Expr.c (2 ^ i) * v (tg (16 * q + i))).foldl (· + ·) 0
+/-- count of the zero-initialised declared local `j` -/
+def lcnt (j : Nat) : Expr := if j < 8 then v (af j) - v (pf j) else v (af j)
+def constraints : List Expr :=
+  [bool (v act), v (af 0) * (1 - v act)] ++
+  (List.range 8).flatMap (fun j => [bool (v (pf j)), v (pf j) * (1 - v (af j))]) ++
+  (List.range 7).map (fun j => v (pf (j + 1)) * (1 - v (pf j))) ++
+  (List.range 64).map (fun j => bool (v (af j))) ++
+  (List.range 63).map (fun j => v (af (j + 1)) * (1 - v (af j))) ++
+  (List.range 64).map (fun j => bool (v (tg j))) ++
+  [v shape - np - 128 * nl] ++
+  (List.range 4).map (fun q => v (m q) - maskOf q) ++
+  [v n0 + B16 * v n1 + v charge - v r0 - B16 * v r1,
+   sbNew - v sbn0 - B16 * v sbn1,
+   v cTs - v ts0 - B16 * v ts1]
+def inters : List Inter :=
+  [stateIn (v cPc) (v cTs) (v cS) (v kSb) (v kCid) (v act),
+   stateOut (v entry) (v cTs + 1) (v cS + v cFee + v pro) 0 sbNew (v cTs) (v act),
+   fetch (v cPc) (Expr.c opCall) (v cH) (v cFee) [v entry, 0, 0, 0] (v act),
+   ⟨busFunc, true, v act, [v entry, v shape, v charge, v pro, v (m 0), v (m 1), v (m 2), v (m 3)]⟩,
+   chRecv 5 0 0 [v r0, v r1, 0, 0] (v tpb) (v act)] ++ timeChk (v cTs) (v tpb) (v hb) (v act) ++
+  [chSend 5 0 0 [v n0, v n1, 0, 0] (v cTs) (v act), r16 (v n0) (v act), r16 (v n1) (v act),
+   r16 (4 * v n1) (v act),
+   chSend 4 (v cTs) 0 [v cPc + 1, v kSb, v kCid, v charge] (v cTs) (v act),
+   r16 (v sbn0) (v act), r16 (v sbn1) (v act), r16 (16 * v sbn1) (v act),
+   r16 (v ts0) (v act), r16 (v ts1) (v act), r16 (16 * v ts1) (v act)] ++
+  ((List.range 8).flatMap fun j =>
+    [stkRecv (sbNew + Expr.c j) (v (tagP j)) (limbsOf (P j)) (v (tP j)) (v (pf j))] ++
+    timeChk (v cTs) (v (tP j)) (v (hP j)) (v (pf j)) ++
+    [chSend (16 + v cTs) (Expr.c j) (v (tagP j)) (limbsOf (P j)) (v cTs) (v (pf j))]) ++
+  (List.range 64).map (fun j => chSend (16 + v cTs) (Expr.c j) (v (tg j)) zeros4 (v cTs) (lcnt j))
+def table : Table := ⟨"CALL", cols, constraints, inters⟩
+end Call
+
+/-! ## RET: `end` of the body / `return` / `br` (HALT records) and `br_if` (HALTIF records) to the
+function label in a callee (`cid ≠ 0`; CTRL handles `cid = 0`).  A taken return consumes the call
+record `[4, cid, 0, retpc, sb_c, cid_c, charge, tp]` and the budget register, produces the budget
+plus `charge`, and continues at `(retpc, ts + 1, S + fee, 0, sb_c, cid_c)`; under D3 the operand
+stack is untouched (the results already sit at the callee's base). -/
+namespace Ret
+def fRet : Nat := 5
+def fRif : Nat := 6
+def c : Nat := 7     -- 7, 8
+def tc : Nat := 9
+def hc : Nat := 10
+def inv : Nat := 11
+def retpc : Nat := 12
+def sbc : Nat := 13
+def cidc : Nat := 14
+def charge : Nat := 15
+def tpr : Nat := 16
+def hr : Nat := 17
+def r0 : Nat := 18
+def r1 : Nat := 19
+def tpb : Nat := 20
+def hb : Nat := 21
+def n0 : Nat := 22
+def n1 : Nat := 23
+def invc : Nat := 24
+def kSb : Nat := 25
+def kCid : Nat := 26
+def cols : List String := headerCols ++ ["f_ret", "f_rif", "c0", "c1", "tc", "hc", "inv", "retpc", "sbc", "cidc",
+  "charge", "tpr", "hr", "r0", "r1", "tpb", "hb", "n0", "n1", "invc"] ++ frameCols
+def act : Expr := v fRet + v fRif
+def nz : Expr := (v c + v (c + 1)) * v inv
+/-- the return is taken -/
+def tk : Expr := v fRet + v fRif * nz
+def op : Expr := Expr.c Ctrl.opHalt * v fRet + Expr.c Ctrl.opHif * v fRif
+def constraints : List Expr :=
+  [bool (v fRet), bool (v fRif), bool act, (v c + v (c + 1)) * (1 - nz),
+   act * (v kCid * v invc - 1),
+   tk * (v n0 + B16 * v n1 - v r0 - B16 * v r1 - v charge)]
+def inters : List Inter :=
+  [stateIn (v cPc) (v cTs) (v cS) (v kSb) (v kCid) act,
+   stateOut (tk * v retpc + (1 - tk) * (v cPc + 1)) (v cTs + 1) (v cS + v cFee) 0
+     (tk * v sbc + (1 - tk) * v kSb) (tk * v cidc + (1 - tk) * v kCid) act,
+   fetch (v cPc) op (v cH) (v cFee) zeros4 act,
+   stkRecv (v kSb + v cH - 1) 0 [v c, v (c + 1), 0, 0] (v tc) (v fRif)] ++
+  timeChk (v cTs) (v tc) (v hc) (v fRif) ++
+  [chRecv 4 (v kCid) 0 [v retpc, v sbc, v cidc, v charge] (v tpr) tk] ++ timeChk (v cTs) (v tpr) (v hr) tk ++
+  [chRecv 5 0 0 [v r0, v r1, 0, 0] (v tpb) tk] ++ timeChk (v cTs) (v tpb) (v hb) tk ++
+  [chSend 5 0 0 [v n0, v n1, 0, 0] (v cTs) tk, r16 (v n0) tk, r16 (v n1) tk, r16 (4 * v n1) tk]
+def table : Table := ⟨"RET", cols, constraints, inters⟩
+end Ret
+
+/-! ## FUNC: the module's function table as a **cached** trace (columns 0..7; multiplicity column 8),
+bound through the statement like CODE: per checked function `[entry, np + 128 nl, charge,
+prologue, m0, m1, m2, m3]`. -/
+namespace Func
+def mult : Nat := 8
+def cachedWidth : Nat := 8
+def table : Table := ⟨"FUNC", ["entry", "shape", "charge", "pro", "m0", "m1", "m2", "m3", "mult"], [],
+  [⟨busFunc, false, v mult, (List.range 8).map v⟩]⟩
+end Func
+
 end Chips
 
 open Chips in
@@ -945,8 +1084,8 @@ open Chips in
 code size only sets the CODE height). -/
 def wasmBaseAir (nloc ngl : Nat) : Air where
   tables := [Boundary.table nloc ngl, Add.table, Bit.table, Mul.table, Shift.table, Cmp.table,
-    Const.table, Stack.table, Ctrl.table, Local.table, Div.table, Load.table, Store.table, Range16.table,
-    Byte.table, Code.table, Drain.table, MemInit.table, Data.table]
+    Const.table, Stack.table, Ctrl.table, Local.table, Div.table, Load.table, Store.table, Call.table, Ret.table,
+    Range16.table, Byte.table, Code.table, Drain.table, MemInit.table, Data.table, Func.table]
   numPub := Boundary.pubLoc + nloc + 5 * ngl + 2
 
 end WasmBase

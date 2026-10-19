@@ -10,6 +10,8 @@ import WasmBase.Main.RowCtrl
 import WasmBase.Main.RowLocal
 import WasmBase.Main.RowDiv
 import WasmBase.Main.RowLoad
+import WasmBase.Main.RowCall
+import WasmBase.Main.RowRet
 /-!
 # WasmBase.Main.Final — the base-faithful theorem for `wasmBaseAir`
 
@@ -24,7 +26,8 @@ theorem chipFacts (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseAir nloc ncode) pub tr) : ChipFacts X nloc ncode pub tr := by
   refine ⟨fun t h1 h9 r hr => ?_, fun t h1 h9 r hr hna => ?_, fun L hpub t h1 h9 r hr ha => ?_⟩ <;>
   rcases (show t = 1 ∨ t = 2 ∨ t = 3 ∨ t = 4 ∨ t = 5 ∨ t = 6 ∨ t = 7 ∨ t = 8 ∨ t = 9 ∨ t = 10 ∨ t = 11 ∨
-    t = 12 by omega) with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+    t = 12 ∨ t = 13 ∨ t = 14 by omega) with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
+    rfl | rfl
   · exact add_counts H hr
   · exact bit_counts H hr
   · exact mul_counts H hr
@@ -37,6 +40,8 @@ theorem chipFacts (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
   · exact div_counts H hr
   · exact load_counts H hr
   · exact store_counts H hr
+  · exact call_counts H hr
+  · exact ret_counts H hr
   · exact add_inactive hna
   · exact bit_inactive hna
   · exact mul_inactive hna
@@ -49,6 +54,8 @@ theorem chipFacts (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
   · exact div_inactive H hr hna
   · exact load_inactive H hr hna
   · exact store_inactive H hr hna
+  · exact call_inactive H hr hna
+  · exact ret_inactive H hr hna
   · exact (add_rowfacts H L hpub hr ha).two
   · exact (bit_rowfacts H L hpub hr ha).two
   · exact (mul_rowfacts H L hpub hr ha).two
@@ -61,6 +68,8 @@ theorem chipFacts (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
   · exact div_rowfacts H L hpub hr ha
   · exact (load_rowfacts H L hpub hr ha).two
   · exact (store_rowfacts H L hpub hr ha).two
+  · exact (call_rowfacts H L hpub hr ha).two
+  · exact (ret_rowfacts H L hpub hr ha).two
 
 /-- **Base-faithful soundness of `wasmBaseAir`** (family F1 + locals + div/rem with traps + linear memory
 + globals).
@@ -76,7 +85,7 @@ The memory conditions (`PagesOK`, `DataOK`, `pubMem`, `pubDataEnd`) bind the ini
 `GlobOK` binds the initial globals (`ncode` = the number of globals) to their public values, `BudOK`
 the initial stack budget (`stackRem`). -/
 theorem wasm_base_sound (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
-    (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub) (hcode : CodeOK X tr)
+    (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub) (hcode : CodeOK X tr) (hfunc : FuncOK X tr)
     (hfeeN : (pub.getD Boundary.pubN 0).toNat * (X.maxFee + 1) < P)
     (hgas : X.R * (pub.getD Boundary.pubS 0).toNat ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     {s0 : St} {f0 : Frame} (hfr : s0.frames = [f0]) (hfn : f0.fn = X.fn) (hpc : f0.pc = 0)
@@ -96,6 +105,6 @@ theorem wasm_base_sound (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (pub.getD Boundary.pubStatus 0 = ((2 : Nat) : F) →
       ∃ sN e, run X.cfg X.p ((pub.getD Boundary.pubN 0).toNat - 1) s0 = .abort sN e ∧
         X.R * (pub.getD Boundary.pubS 0).toNat + sN.gas.g = X.g0) :=
-  wasm_base_exec X H hpub (chipFacts X H) hcode hfeeN hgas hg64 hfr hfn hpc hlab hbase hloc hstk hg hpok hdata hM hMle hDE hzero hglob hbudg
+  wasm_base_exec X H hpub (chipFacts X H) hcode hfunc hfeeN hgas hg64 hfr hfn hpc hlab hbase hloc hstk hg hpok hdata hM hMle hDE hzero hglob hbudg
 
 end WasmBase

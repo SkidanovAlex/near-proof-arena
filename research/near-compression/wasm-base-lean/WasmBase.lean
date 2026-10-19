@@ -35,3 +35,4 @@ import WasmBase.Local.Mem
 import WasmBase.Main.MemInit
 import WasmBase.Main.RowLoad
 import WasmBase.StepCall
+import WasmBase.Local.Call

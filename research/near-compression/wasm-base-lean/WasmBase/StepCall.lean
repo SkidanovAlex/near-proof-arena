@@ -827,3 +827,38 @@ theorem step_returnIf (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
         rintro ⟨d, hd, _⟩; omega
 
 end WasmBase
+
+namespace WasmBase
+open NearSpecV3.Wasm
+
+/-- A live call record of the current activation is the chain head's record. -/
+theorem RelW.call_rec {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) (hcid : E.cid ≠ 0)
+    {m : Msg} (hm : live m) (hms : m.space = 4) (hmsl : m.slot = E.cid) :
+    ∃ (fc : Frame) (rest' : List Frame) (c : Saved), E.rest = fc :: rest' ∧
+      m = callMsg E.cid (X.offOf c.k + fc.pc) c.sb c.cid (X.pfOf E.k).stackCharge c.tpc := by
+  obtain ⟨sv, hch, hin, hout, hrl⟩ := R.calls.chain
+  have hmE : E.live m := R.env_msg hm (by omega) (by simp [Env.lsp]; omega)
+  obtain ⟨fc, rest', hrest⟩ : ∃ fc rest', E.rest = fc :: rest' := by
+    cases h : E.rest with
+    | nil =>
+      rw [h] at hch
+      cases sv with
+      | nil => exact absurd hch.1 hcid
+      | cons _ _ => exact hch.elim
+    | cons fc rest' => exact ⟨fc, rest', rfl⟩
+  rw [hrest] at hch hout
+  obtain ⟨c, sv', rfl⟩ : ∃ c sv', sv = c :: sv' := by
+    cases sv with
+    | nil => exact hch.elim
+    | cons c sv' => exact ⟨c, sv', rfl⟩
+  obtain ⟨-, -, -, -, c5, -, -, -, -, -, -, -, c13⟩ := hch
+  refine ⟨fc, rest', c, hrest, ?_⟩
+  rcases hout m hmE (Or.inl hms) with h | ⟨d1, -, -, -⟩
+  · rcases h with h | h | h
+    · exact h
+    · obtain ⟨j, -, rfl⟩ := mem_localView.mp h; simp [enc] at hms; omega
+    · have := chainMsgs_rec_slot c13 h hms; omega
+  · omega
+
+end WasmBase

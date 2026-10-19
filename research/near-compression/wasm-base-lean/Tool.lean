@@ -33,7 +33,8 @@ def interJson (i : Inter) : String :=
 /-- Number of leading columns committed as a separate cached trace (CODE: the records; DATA: the
 data image). -/
 def cachedCols (T : Table) : Nat :=
-  if T.name = "CODE" then Chips.Code.cachedWidth else if T.name = "DATA" then Chips.Data.cachedWidth else 0
+  if T.name = "CODE" then Chips.Code.cachedWidth else if T.name = "DATA" then Chips.Data.cachedWidth
+  else if T.name = "FUNC" then Chips.Func.cachedWidth else 0
 
 /-- End of the data image: one past the last non-zero byte of the initial memory (0 if none). -/
 def dataEnd (s : St) : Nat := Id.run do
@@ -108,7 +109,7 @@ def prep (path exportName : String) (g0 : Nat) : IO Unit := do
           let de := dataEnd s1
           let img := (List.range de).map fun a => (readByte s1 a).toNat
           let gls := s1.globals.toList.map valLimbs
-          IO.println s!"\{\"eligible\":true,\"fn\":{fn},\"ncode\":{M.records.size},\"nfns\":{M.fns.length},\"localTags\":{natList ck.localTags},\"arity\":{ck.arity},\"resTag\":{ck.resTag},\"maxFee\":{M.maxFee},\"regularOpCost\":{cfg.regularOpCost},\"g0\":{g1},\"steps\":{n},\"status\":{jStr status},\"gFinal\":{gf},\"stack\":{jList (vals.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")},\"heights\":{natList ck.heights.toList},\"records\":{jList recs},\"mem\":{memBytes s1},\"dataEnd\":{de},\"data\":{natList img},\"stackRem\":{s1.stackRem},\"ngl\":{gls.length},\"globals\":{jList (gls.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")}}"
+          IO.println s!"\{\"eligible\":true,\"fn\":{fn},\"ncode\":{M.records.size},\"nfns\":{M.fns.length},\"localTags\":{natList ck.localTags},\"arity\":{ck.arity},\"resTag\":{ck.resTag},\"maxFee\":{M.maxFee},\"regularOpCost\":{cfg.regularOpCost},\"g0\":{g1},\"steps\":{n},\"status\":{jStr status},\"gFinal\":{gf},\"stack\":{jList (vals.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")},\"heights\":{natList ck.heights.toList},\"records\":{jList recs},\"mem\":{memBytes s1},\"dataEnd\":{de},\"data\":{natList img},\"stackRem\":{s1.stackRem},\"funcs\":{jList (M.funcs.map natList)},\"ngl\":{gls.length},\"globals\":{jList (gls.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")}}"
         | _ => throw (IO.userError "enter failed")
   | .prepErr v w => IO.println s!"\{\"eligible\":false,\"prepare\":{jStr v},\"why\":{jStr w}}"
   | .compileErr _ _ => IO.println "{\"eligible\":false,\"prepare\":\"compile\"}"

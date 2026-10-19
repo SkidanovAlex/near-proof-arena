@@ -138,7 +138,13 @@ fn data_root(eng: &Sha384RefEngine, prep: &Prep) -> <Sha384Config as openvm_star
     eng.device().commit(&[&cm]).expect("data root").0
 }
 
-/// The statement check V_d performs on a verified base proof: the proof's cached CODE and DATA
+/// `func_root` = commitment to the canonical FUNC matrix (the module's function table).
+fn func_root(eng: &Sha384RefEngine, prep: &Prep) -> <Sha384Config as openvm_stark_backend::StarkProtocolConfig>::Digest {
+    let cm = ColMajorMatrix::from_row_major(&tracegen::func_matrix(prep));
+    eng.device().commit(&[&cm]).expect("func root").0
+}
+
+/// The statement check V_d performs on a verified base proof: the proof's cached CODE, DATA and FUNC
 /// commitments equal the roots recomputed from the contract code.
 fn check_code_root(
     eng: &Sha384RefEngine,
@@ -150,7 +156,7 @@ fn check_code_root(
         Some(v) => v.cached_commitments.len() == 1 && v.cached_commitments[0] == want,
         None => false,
     };
-    ok("CODE", code_root(eng, &prep.records)) && ok("DATA", data_root(eng, prep))
+    ok("CODE", code_root(eng, &prep.records)) && ok("DATA", data_root(eng, prep)) && ok("FUNC", func_root(eng, prep))
 }
 
 fn hex(bytes: &[u8]) -> String {

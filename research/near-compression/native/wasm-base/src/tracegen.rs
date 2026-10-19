@@ -36,6 +36,8 @@ pub struct Prep {
     pub globals: Vec<(u64, [u64; 4])>,
     /// the spec's stack budget `stackRem` after `enter` (channel space 5; `< 2^30`)
     pub stack_rem: u64,
+    /// the module's function table (bus FUNC): `[entry, np + 128 nl, charge, prologue, m0..m3]`
+    pub funcs: Vec<[u64; 8]>,
 }
 
 impl Prep {
@@ -82,6 +84,11 @@ impl Prep {
                 })
                 .unwrap_or_default(),
             stack_rem: v.get("stackRem").and_then(|x| x.as_u64()).unwrap_or(0),
+            funcs: v
+                .get("funcs")
+                .and_then(|g| g.as_array())
+                .map(|g| g.iter().map(|r| nums(r).try_into().unwrap()).collect())
+                .unwrap_or_default(),
         }
     }
 }
@@ -301,6 +308,9 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     let mut div = Tab::new(t("DIV"));
     let mut ld = Tab::new(t("LOAD"));
     let mut sto = Tab::new(t("STORE"));
+    let call = Tab::new(t("CALL"));
+    let ret = Tab::new(t("RET"));
+    let func_calls: Vec<u64> = vec![0; prep.funcs.len()];
     let mut mem = Mem { prep, cur: Default::default(), init: Default::default() };
     let mut trapped = false;
     let mut st = St { r16: vec![0; 65536], byte: vec![vec![0; 65536]; 4] };
@@ -983,8 +993,19 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
         dat.row().u("addr", rec[0]).u("byte", rec[1]).u("mult", if j < data_mult.len() && (j as u64) < prep.data_end { data_mult[j] } else { 0 });
     }
 
+    // FUNC: the canonical function-table matrix (cached) + multiplicities (calls per function)
+    let mut fun = Tab::new(t("FUNC"));
+    for (j, rec) in func_rows(prep).iter().enumerate() {
+        let mut r = fun.row();
+        for (k, name) in ["entry", "shape", "charge", "pro", "m0", "m1", "m2", "m3"].iter().enumerate() {
+            r.u(name, rec[k]);
+        }
+        r.u("mult", if j < func_calls.len() { func_calls[j] } else { 0 });
+    }
+
     let mut tabs: HashMap<String, Tab> = HashMap::new();
-    for tb in [bnd, add, bit, mul, shift, cmp, cnst, stk, ctrl, loc, div, ld, sto, rng, byt, code, drn, mi, dat] {
+    for tb in [bnd, add, bit, mul, shift, cmp, cnst, stk, ctrl, loc, div, ld, sto, call, ret, rng, byt, code, drn, mi,
+        dat, fun] {
         tabs.insert(tb.spec.name.clone(), tb);
     }
     let mut mats = vec![];
@@ -1011,6 +1032,25 @@ pub fn code_rows(records: &[[u64; 8]]) -> Vec<[u64; 8]> {
     let last = *records.last().expect("non-empty code");
     rows.resize(h, last);
     rows
+}
+
+/// The canonical FUNC rows: the module's function table in checked-function order, padded to a power
+/// of two (≥ 4) by repeating the last row.  `func_root` (a statement component, recomputed by V_d from
+/// the contract code) is the commitment to exactly this matrix.
+pub fn func_rows(prep: &Prep) -> Vec<[u64; 8]> {
+    let mut rows = prep.funcs.clone();
+    if rows.is_empty() {
+        rows.push([0; 8]);
+    }
+    let h = rows.len().max(4).next_power_of_two();
+    let last = *rows.last().unwrap();
+    rows.resize(h, last);
+    rows
+}
+
+pub fn func_matrix(prep: &Prep) -> RowMajorMatrix<F> {
+    let rows = func_rows(prep);
+    RowMajorMatrix::new(rows.iter().flat_map(|r| r.iter().map(|&x| fe(x))).collect(), 8)
 }
 
 /// The canonical DATA rows: `(a, image[a])` for `a < dataEnd` in address order (`(0, 0)` if the image
