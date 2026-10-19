@@ -415,3 +415,415 @@ theorem step_call (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Na
         · exact Or.inr (Or.inr (Or.inr rfl)) }
 
 end WasmBase
+
+namespace WasmBase
+open NearSpecV3.Wasm
+set_option linter.unusedSimpArgs false
+
+set_option maxHeartbeats 1600000 in
+/-- **The relation after a return from a callee** (`cid ≠ 0`): the frame is popped, the top `kp`
+operand-stack entries were consumed (the `br_if` condition, or nothing), the rest of the stack is
+the caller's stack plus the results (D3), the call record `m` and the budget register are consumed
+and the budget is restored.  The relation moves to the caller (the chain head), and the callee's
+locals become dead. -/
+theorem return_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) (fee kp : Nat) (hg : X.R * (S + fee) ≤ X.g0)
+    (hcid : E.cid ≠ 0) (hkp : kp ≤ s.stack.size - E.sb)
+    (har : s.stack.size - kp = E.sb + (X.pfOf E.k).type.results.size)
+    {m : Msg} (hm : live m) (hms : m.space = 4) (hmsl : m.slot = E.cid)
+    {tpb : Nat} (hmb : live (budMsg s.stackRem tpb))
+    (s' : St) (hs'stk : s'.stack = s.stack.extract 0 (s.stack.size - kp)) (hs'fr : s'.frames = E.rest)
+    (hs'g : s'.gas.g = s.gas.g - X.R * fee) (hs'pg : s'.pages = s.pages) (hs'gl : s'.globals = s.globals)
+    (hs'rem : s'.stackRem = s.stackRem + (X.pfOf E.k).stackCharge) :
+    ∃ (fc : Frame) (rest' : List Frame) (c : Saved), E.rest = fc :: rest' ∧
+      m = callMsg E.cid (X.offOf c.k + fc.pc) c.sb c.cid (X.pfOf E.k).stackCharge c.tpc ∧
+      Rel X s' (t + 1) c.k fc.pc (S + fee) c.sb c.cid
+        (stepLive live
+          ((List.range kp).map (fun d => enc 0 (s.stack.size - kp + d)
+              (s.stack[s.stack.size - kp + d]?.getD default) (tps (s.stack.size - kp + d))) ++
+            [m, budMsg s.stackRem tpb])
+          [budMsg (s.stackRem + (X.pfOf E.k).stackCharge) t]) := by
+  obtain ⟨sv, hch, hin, hout, hrl⟩ := R.calls.chain
+  obtain ⟨tpb0, htpb0, hbudE⟩ := R.calls.budget
+  have hcidT := R.calls.cidLtT
+  have hbE : E.live (budMsg s.stackRem tpb) := R.env_msg hmb (by simp [budMsg]) (by simp [budMsg, Env.lsp]; omega)
+  have htpb : tpb = tpb0 := by
+    have := (hbudE _ rfl).mp hbE; simp only [budMsg, Msg.mk.injEq] at this; exact this.2.2.2.2.2.2.2
+  subst htpb
+  have hmE : E.live m := R.env_msg hm (by omega) (by simp [Env.lsp]; omega)
+  -- the chain is non-empty
+  obtain ⟨fc, rest', hrest⟩ : ∃ fc rest', E.rest = fc :: rest' := by
+    cases h : E.rest with
+    | nil =>
+      rw [h] at hch
+      cases sv with
+      | nil => exact absurd hch.1 hcid
+      | cons _ _ => exact hch.elim
+    | cons fc rest' => exact ⟨fc, rest', rfl⟩
+  rw [hrest] at hch hin hout
+  obtain ⟨c, sv', rfl⟩ : ∃ c sv', sv = c :: sv' := by
+    cases sv with
+    | nil => exact hch.elim
+    | cons c sv' => exact ⟨c, sv', rfl⟩
+  obtain ⟨c1, c2, c3, c4, c5, c6, c7, ⟨lsc, hLc, hflc⟩, c9, c10, c11, c12, c13⟩ := hch
+  -- the record
+  have hmrec : m = callMsg E.cid (X.offOf c.k + fc.pc) c.sb c.cid (X.pfOf E.k).stackCharge c.tpc := by
+    rcases hout m hmE (Or.inl hms) with h | ⟨d1, -, -, -⟩
+    · rcases h with h | h | h
+      · exact h
+      · obtain ⟨j, -, rfl⟩ := mem_localView.mp h; simp [enc] at hms; omega
+      · have := chainMsgs_rec_slot c13 h hms; omega
+    · omega
+  refine ⟨fc, rest', c, hrest, hmrec, ?_⟩
+  subst hmrec
+  have hcids := Chain.cids_lt c13
+  let mrec := callMsg E.cid (X.offOf c.k + fc.pc) c.sb c.cid (X.pfOf E.k).stackCharge c.tpc
+  let bOld := budMsg s.stackRem tpb
+  let bNew := budMsg (s.stackRem + (X.pfOf E.k).stackCharge) t
+  let E' : Env := ⟨c.sb, c.cid, rest',
+      fun x => (E.live x ∧ x ≠ mrec ∧ x ≠ bOld ∧ x ∉ localView (16 + c.cid) fc.locals c.tpl) ∨
+        x ∈ localView (16 + E.cid) f.locals tpl ∨ x = bNew, c.k⟩
+  have hgas := R.gas
+  have hsbR := R.sbLe
+  refine ⟨E', fc, fun i => if i < s.stack.size - kp then tps i else t, c.tpl, rfl, rfl, rfl, ?_⟩
+  have hext : (s.stack.extract 0 (s.stack.size - kp)).size = s.stack.size - kp := by
+    simp [Array.size_extract]
+  -- messages of the outer live set in the caller's locals space are its locals
+  have hcl : ∀ x, E.live x → x.space = 16 + c.cid → x ∈ localView (16 + c.cid) fc.locals c.tpl := by
+    intro x hx hs
+    rcases hout x hx (Or.inr (by omega)) with h | ⟨-, -, -, d4⟩
+    · rcases h with rfl | h | h
+      · simp [callMsg] at hs; omega
+      · exact h
+      · rcases chainMsgs_space h with h4 | ⟨c', hc', h16⟩
+        · omega
+        · have := hcids c' hc'; omega
+    · exact absurd hs (d4 c List.mem_cons_self)
+  have hlE : ∀ x, x.space = 2 ∨ x.space = 3 → (E'.live x ↔ E.live x) := by
+    intro x hx
+    show ((E.live x ∧ x ≠ mrec ∧ x ≠ bOld ∧ x ∉ localView (16 + c.cid) fc.locals c.tpl) ∨
+        x ∈ localView (16 + E.cid) f.locals tpl ∨ x = bNew) ↔ _
+    constructor
+    · rintro (⟨h, -⟩ | h | rfl)
+      · exact h
+      · obtain ⟨j, -, rfl⟩ := mem_localView.mp h; simp [enc] at hx; omega
+      · simp [bNew, budMsg] at hx
+    · intro h
+      refine Or.inl ⟨h, fun e => ?_, fun e => ?_, fun hl => ?_⟩
+      · rw [e] at hx; simp [mrec, callMsg] at hx
+      · rw [e] at hx; simp [bOld, budMsg] at hx
+      · obtain ⟨j, -, rfl⟩ := mem_localView.mp hl; simp [enc] at hx; omega
+  exact {
+    frames := hs'fr.trans hrest
+    kLt := c1
+    fn := c2
+    pcEq := rfl
+    pcLt := c7
+    labels := ⟨lsc, hLc, hflc⟩
+    base := c3
+    sbLe := by show c.sb ≤ s'.stack.size; rw [hs'stk, hext]; omega
+    height := by
+      show (X.ckOf c.k).heights[fc.pc]? = some (s'.stack.size - c.sb)
+      rw [hs'stk, hext, c9]; congr 1; omega
+    nloc := c10
+    gas := by
+      rw [hs'g]
+      have : X.R * (S + fee) = X.R * S + X.R * fee := Nat.mul_add _ _ _
+      omega
+    numS := by
+      intro i hi
+      rw [hs'stk, hext] at hi
+      rw [hs'stk, Array.getElem?_extract, if_pos (by rw [Nat.min_eq_left (Nat.sub_le _ _)]; omega), Nat.zero_add]
+      exact R.numS i (by omega)
+    numL := fun j hj => (c11 j hj).1
+    tpsLt := by
+      intro i _
+      show (if i < s.stack.size - kp then tps i else t) < t + 1
+      split
+      · have := R.tpsLt i (by omega); omega
+      · omega
+    tplLt := fun j hj => by have := (c11 j hj).2; omega
+    envSep := by
+      intro x hx
+      rcases hx with ⟨h, -, -, hnl⟩ | h | rfl
+      · refine ⟨(R.envSep x h).1, fun e => hnl (hcl x h e)⟩
+      · obtain ⟨j, -, rfl⟩ := mem_localView.mp h
+        show 16 + E.cid ≠ 0 ∧ 16 + E.cid ≠ 16 + c.cid
+        constructor <;> omega
+      · show 5 ≠ 0 ∧ 5 ≠ 16 + c.cid
+        constructor <;> omega
+    entry := by
+      intro h0
+      show rest' = [] ∧ c.sb = 0
+      cases rest' with
+      | nil => cases sv' with
+        | nil => exact ⟨rfl, c13.2⟩
+        | cons _ _ => exact c13.elim
+      | cons fc' rest'' => cases sv' with
+        | nil => exact c13.elim
+        | cons c' sv'' => exfalso; have := c13.2.2.2.2.1; have h0' : c.cid = 0 := h0; rw [h0'] at this; omega
+    sbLt := c12
+    cidLt := by show c.cid < 2 ^ 28; have := R.cidLt; omega
+    heap := R.heap.congr hlE hs'pg hs'gl (by omega)
+    calls := by
+      refine ⟨by show c.cid < t + 1; omega, ⟨sv', Chain.mono (by omega) c13, ?_, ?_, ?_⟩, ⟨t, by omega, ?_⟩⟩
+      · intro x hx
+        show (E.live x ∧ x ≠ mrec ∧ x ≠ bOld ∧ x ∉ localView (16 + c.cid) fc.locals c.tpl) ∨
+          x ∈ localView (16 + E.cid) f.locals tpl ∨ x = bNew
+        refine Or.inl ⟨hin x (Or.inr (Or.inr hx)), fun e => ?_, fun e => ?_, fun hl => ?_⟩
+        · have := chainMsgs_rec_slot c13 hx (by rw [e]; rfl); rw [e] at this; simp [mrec, callMsg] at this; omega
+        · rcases chainMsgs_space hx with h4 | ⟨c', -, h16⟩
+          · rw [e] at h4; simp [bOld, budMsg] at h4
+          · rw [e] at h16; simp [bOld, budMsg] at h16; omega
+        · obtain ⟨j, -, rfl⟩ := mem_localView.mp hl
+          rcases chainMsgs_space hx with h4 | ⟨c', hc', h16⟩
+          · simp [enc] at h4; omega
+          · simp [enc] at h16; have := Chain.cids_lt c13 c' hc'; omega
+      · intro x hx hs
+        rcases hx with ⟨h, hne, -, hnl⟩ | h | rfl
+        · rcases hout x h hs with h1 | ⟨d1, d2, d3, d4⟩
+          · rcases h1 with rfl | h1 | h1
+            · exact absurd rfl hne
+            · exact absurd h1 hnl
+            · exact Or.inl h1
+          · refine Or.inr ⟨d1, by show x.space < 16 + (t + 1); omega, d4 c List.mem_cons_self,
+              fun c' hc' => d4 c' (List.mem_cons_of_mem _ hc')⟩
+        · obtain ⟨j, -, rfl⟩ := mem_localView.mp h
+          refine Or.inr ⟨by show 16 ≤ 16 + E.cid; omega, by show 16 + E.cid < 16 + (t + 1); omega,
+            by show 16 + E.cid ≠ 16 + c.cid; omega, fun c' hc' => ?_⟩
+          have := Chain.cids_lt c13 c' hc'; show 16 + E.cid ≠ 16 + c'.cid; omega
+        · simp [bNew, budMsg] at hs
+      · rw [hs'rem]
+        show s.stackRem + (X.pfOf E.k).stackCharge + chainCharge X c.k sv' < 2 ^ 30
+        simp only [chainCharge] at hrl; omega
+      · intro x hx
+        rw [hs'rem]
+        show ((E.live x ∧ x ≠ mrec ∧ x ≠ bOld ∧ x ∉ localView (16 + c.cid) fc.locals c.tpl) ∨
+          x ∈ localView (16 + E.cid) f.locals tpl ∨ x = bNew) ↔ x = bNew
+        constructor
+        · rintro (⟨h, -, hne, -⟩ | h | rfl)
+          · exact absurd ((hbudE x hx).mp h) hne
+          · obtain ⟨j, -, rfl⟩ := mem_localView.mp h; simp [enc] at hx; omega
+          · rfl
+        · intro h; exact Or.inr (Or.inr h)
+    live := by
+      intro x
+      have hkeep : ∀ i, i < s.stack.size - kp → (s.stack.extract 0 (s.stack.size - kp))[i]? = s.stack[i]? := by
+        intro i hi
+        rw [Array.getElem?_extract, if_pos (by rw [Nat.min_eq_left (Nat.sub_le _ _)]; omega), Nat.zero_add]
+      have vu := view_update (sp := 16 + E.cid) (by omega) none (k := kp) (stk := s.stack)
+        (stk' := s.stack.extract 0 (s.stack.size - kp)) (locs := f.locals) (locs' := f.locals) (tps := tps)
+        (tpl := tpl) (t := t) (by omega) hkeep (by rw [hext]; exact Nat.le_refl _) rfl (fun _ _ => rfl) (fun j h => by simp at h)
+        R.tpsLt R.tplLt x
+      have htpl : (fun j => if some j = (none : Option Nat) then t else tpl j) = tpl := funext fun j => by simp
+      rw [htpl, hext, Nat.sub_self] at vu
+      simp only [List.range_zero, List.map_nil, Option.toList_none, List.append_nil, List.not_mem_nil, or_false]
+        at vu
+      rw [hs'stk]
+      show (live x ∧ x ∉ _) ∨ x ∈ _ ↔ x ∈ stackView (s.stack.extract 0 (s.stack.size - kp)) _ ∨
+        x ∈ localView (16 + c.cid) fc.locals c.tpl ∨
+        ((E.live x ∧ x ≠ mrec ∧ x ≠ bOld ∧ x ∉ localView (16 + c.cid) fc.locals c.tpl) ∨
+          x ∈ localView (16 + E.cid) f.locals tpl ∨ x = bNew)
+      simp only [List.mem_append, List.mem_cons, List.mem_nil_iff, or_false, not_or, List.mem_singleton]
+      constructor
+      · rintro (⟨hl, hnp, hnr, hnb⟩ | rfl)
+        · rcases (R.live x).mp hl with hs | hlc | he
+          · rcases vu.mpr ⟨Or.inl hs, hnp⟩ with h | h
+            · exact Or.inl h
+            · exact Or.inr (Or.inr (Or.inr (Or.inl h)))
+          · exact Or.inr (Or.inr (Or.inr (Or.inl hlc)))
+          · by_cases hl' : x ∈ localView (16 + c.cid) fc.locals c.tpl
+            · exact Or.inr (Or.inl hl')
+            · exact Or.inr (Or.inr (Or.inl ⟨he, hnr, hnb, hl'⟩))
+        · exact Or.inr (Or.inr (Or.inr (Or.inr rfl)))
+      · rintro (hs | hlc | ⟨he, hnr, hnb, -⟩ | hlc | rfl)
+        · obtain ⟨hold, hnp⟩ := vu.mp (Or.inl hs)
+          refine Or.inl ⟨?_, hnp, fun e => ?_, fun e => ?_⟩
+          · rcases hold with h | h
+            · exact (R.live x).mpr (Or.inl h)
+            · exact (R.live x).mpr (Or.inr (Or.inl h))
+          · obtain ⟨i, -, he⟩ := mem_stackView.mp hs
+            rw [e] at he; have := congrArg Msg.space he; simp [mrec, callMsg, enc] at this
+          · obtain ⟨i, -, he⟩ := mem_stackView.mp hs
+            rw [e] at he; have := congrArg Msg.space he; simp [bOld, budMsg, enc] at this
+        · have hE := hin x (Or.inr (Or.inl hlc))
+          refine Or.inl ⟨(R.live x).mpr (Or.inr (Or.inr hE)), fun hp => ?_, fun e => ?_, fun e => ?_⟩
+          · obtain ⟨d, -, rfl⟩ := List.mem_map.mp hp; exact (R.envSep _ hE).1 rfl
+          · obtain ⟨j, -, he⟩ := mem_localView.mp hlc
+            rw [e] at he; have := congrArg Msg.space he; simp [mrec, callMsg, enc] at this; omega
+          · obtain ⟨j, -, he⟩ := mem_localView.mp hlc
+            rw [e] at he; have := congrArg Msg.space he; simp [bOld, budMsg, enc] at this; omega
+        · refine Or.inl ⟨(R.live x).mpr (Or.inr (Or.inr he)), fun hp => ?_, hnr, hnb⟩
+          obtain ⟨d, -, rfl⟩ := List.mem_map.mp hp; exact (R.envSep _ he).1 rfl
+        · refine Or.inl ⟨(R.live x).mpr (Or.inr (Or.inl hlc)), fun hp => ?_, fun e => ?_, fun e => ?_⟩
+          · obtain ⟨d, -, rfl⟩ := List.mem_map.mp hp
+            obtain ⟨j, -, he⟩ := mem_localView.mp hlc; have := congrArg Msg.space he; simp [enc] at this; omega
+          · obtain ⟨j, -, he⟩ := mem_localView.mp hlc
+            rw [e] at he; have := congrArg Msg.space he; simp [mrec, callMsg, enc] at this; omega
+          · obtain ⟨j, -, he⟩ := mem_localView.mp hlc
+            rw [e] at he; have := congrArg Msg.space he; simp [bOld, budMsg, enc] at this; omega
+        · exact Or.inr rfl }
+
+end WasmBase
+
+namespace WasmBase
+open NearSpecV3.Wasm
+set_option linter.unusedSimpArgs false
+
+/-- `doReturn` from a callee under no-discard: the stack is unchanged, the frame popped, the
+budget restored, and the run continues in the caller. -/
+theorem doReturn_cons (X : Ctx) {k : Nat} (hkn : k < X.nf) (s : St) (f fc : Frame) (rest : List Frame)
+    (hfr : s.frames = f :: fc :: rest) (hfn : f.fn = X.fnOf k) (b : Nat) (hb : f.base = b)
+    (har : s.stack.size = b + (X.pfOf k).type.results.size) :
+    doReturn X.p s = .cont { s with frames := fc :: rest, stackRem := s.stackRem + (X.pfOf k).stackCharge } := by
+  unfold doReturn
+  rw [hfr]
+  simp only
+  rw [hfn, (X.factsOf hkn).func]
+  simp only [hb, List.isEmpty_cons, Bool.false_eq_true, ite_false]
+  rw [stack_nodiscard s.stack b (X.pfOf k).type.results.size (by omega)]
+
+/-- **Return from a callee** (`end` of the body, `return`, `br` to the function label at
+activation `cid ≠ 0`). -/
+theorem step_return (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {ins : Instr} {fee : Nat}
+    (hins : (X.pfOf E.k).code[pc]? = some ins)
+    (hkind : (ins = .end_ ∧ f.labels.length = 1) ∨ ins = .ret ∨ (∃ l, ins = .br l ∧ l + 1 ≥ f.labels.length))
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
+    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) (hcid : E.cid ≠ 0)
+    {m : Msg} (hm : live m) (hms : m.space = 4) (hmsl : m.slot = E.cid)
+    {tpb : Nat} (hmb : live (budMsg s.stackRem tpb)) :
+    ∃ (fc : Frame) (rest' : List Frame) (c : Saved), E.rest = fc :: rest' ∧
+      m = callMsg E.cid (X.offOf c.k + fc.pc) c.sb c.cid (X.pfOf E.k).stackCharge c.tpc ∧
+      ∃ s', step X.cfg X.p s = .cont s' ∧
+        Rel X s' (t + 1) c.k fc.pc (S + fee) c.sb c.cid
+          (stepLive live [m, budMsg s.stackRem tpb] [budMsg (s.stackRem + (X.pfOf E.k).stackCharge) t]) := by
+  have hv := (X.factsOf R.kLt).verify pc R.pcLt
+  obtain ⟨ls0, hL0, hfl⟩ := R.labels
+  have hH := R.height
+  have hlen : f.labels.length = ls0.length := by rw [hfl, shiftLabels_length]
+  have har : s.stack.size - E.sb = (X.pfOf E.k).type.results.size := by
+    unfold verifyAt at hv
+    rw [hins, hL0, hH] at hv
+    rcases hkind with ⟨rfl, h1⟩ | rfl | ⟨l, rfl, hl⟩
+    · rw [hlen] at h1
+      obtain ⟨lab0, hls⟩ := List.length_eq_one_iff.mp h1
+      simp only [hls, decide_eq_true_eq] at hv; exact hv
+    · simpa using hv
+    · rw [hlen] at hl
+      simp only [hl, ite_true, decide_eq_true_eq] at hv; exact hv
+  have hsbR := R.sbLe
+  let s1 : St := { s with gas := { s.gas with g := s.gas.g - X.R * fee } }
+  let s' : St := { s1 with frames := E.rest, stackRem := s1.stackRem + (X.pfOf E.k).stackCharge }
+  obtain ⟨fc, rest', c, hrest, hmrec, hrel⟩ := return_rel X R fee 0 hg hcid (Nat.zero_le _) (by omega) hm hms hmsl hmb
+    { s' with stack := s.stack.extract 0 (s.stack.size - 0) } rfl rfl rfl rfl rfl rfl
+  have hst : ({ s' with stack := s.stack.extract 0 (s.stack.size - 0) } : St) =
+      { s1 with frames := fc :: rest', stackRem := s1.stackRem + (X.pfOf E.k).stackCharge } := by
+    simp only [s', s1, Nat.sub_zero, Array.extract_size, hrest]
+  rw [hst] at hrel
+  refine ⟨fc, rest', c, hrest, hmrec, _, ?_, hrel⟩
+  have hfr : s1.frames = f :: fc :: rest' := by show s.frames = _; rw [R.frames, hrest]
+  have hd := doReturn_cons X R.kLt s1 f fc rest' hfr R.fn E.sb R.base (by show s.stack.size = _; omega)
+  rw [step_eq_exec X R hins hfee hg hg64]
+  rcases hkind with ⟨rfl, h1⟩ | rfl | ⟨l, rfl, hl⟩
+  · obtain ⟨lab0, hls⟩ := List.length_eq_one_iff.mp h1
+    simp only [exec, hls]; exact hd
+  · simp only [exec]; exact hd
+  · simp only [exec]; unfold doBr; rw [if_pos hl]; exact hd
+
+end WasmBase
+
+namespace WasmBase
+open NearSpecV3.Wasm
+set_option linter.unusedSimpArgs false
+
+theorem pop_eq_extract (a : Array Val) : a.pop = a.extract 0 (a.size - 1) := by
+  apply Array.ext
+  · simp
+  · intro i h1 h2
+    simp [Array.getElem_pop, Array.getElem_extract]
+
+/-- **`br_if` to the function label at activation `cid ≠ 0`**: taken, it returns to the caller;
+not taken, it continues at `pc + 1`. -/
+theorem step_returnIf (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {l fee : Nat}
+    (hl : l + 1 ≥ f.labels.length)
+    (hins : (X.pfOf E.k).code[pc]? = some (.brIf l)) (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
+    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) (hcid : E.cid ≠ 0)
+    (mc : Msg) (hmc : live mc) (sc : mc.space = 0 ∧ mc.slot = s.stack.size - 1) :
+    (mc.val ≠ 0 → ∀ {m : Msg}, live m → m.space = 4 → m.slot = E.cid → ∀ {tpb : Nat}, live (budMsg s.stackRem tpb) →
+      ∃ (fc : Frame) (rest' : List Frame) (c : Saved), E.rest = fc :: rest' ∧
+        m = callMsg E.cid (X.offOf c.k + fc.pc) c.sb c.cid (X.pfOf E.k).stackCharge c.tpc ∧
+        ∃ s', step X.cfg X.p s = .cont s' ∧
+          Rel X s' (t + 1) c.k fc.pc (S + fee) c.sb c.cid
+            (stepLive live [mc, m, budMsg s.stackRem tpb] [budMsg (s.stackRem + (X.pfOf E.k).stackCharge) t])) ∧
+    (mc.val = 0 → ∃ s', step X.cfg X.p s = .cont s' ∧
+      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [mc] [])) := by
+  have hv := (X.factsOf R.kLt).verify pc R.pcLt
+  obtain ⟨ls0, hL0, hfl⟩ := R.labels
+  have hH := R.height
+  have hsbR := R.sbLe
+  have hlen : f.labels.length = ls0.length := by rw [hfl, shiftLabels_length]
+  unfold verifyAt at hv
+  rw [hins, hL0, hH] at hv
+  rw [hlen] at hl
+  simp only [hl, ite_true, Bool.and_eq_true, decide_eq_true_eq] at hv
+  obtain ⟨⟨h1, ⟨hnext, hL1⟩, hH1⟩, har⟩ := hv
+  obtain ⟨ec, okc, vc, -⟩ := R.stack_dec hmc sc.1 sc.2 (by omega)
+  have hb' : vNum (s.stack.back?.getD (.i32 0)) = mc.val := by rw [back_getD _ (by omega), vc]
+  let s1 : St := { s with gas := { s.gas with g := s.gas.g - X.R * fee } }
+  let s2 : St := { s1 with stack := s1.stack.pop }
+  constructor
+  · intro h0 m hm hms hmsl tpb hmb
+    let s' : St := { s2 with frames := E.rest, stackRem := s2.stackRem + (X.pfOf E.k).stackCharge }
+    obtain ⟨fc, rest', c, hrest, hmrec, hrel⟩ := return_rel X R fee 1 hg hcid (by omega) (by omega) hm hms hmsl hmb
+      { s' with stack := s.stack.extract 0 (s.stack.size - 1) } rfl rfl rfl rfl rfl rfl
+    have hst : ({ s' with stack := s.stack.extract 0 (s.stack.size - 1) } : St) =
+        { s2 with frames := fc :: rest', stackRem := s2.stackRem + (X.pfOf E.k).stackCharge } := by
+      simp only [s', s2, s1, ← pop_eq_extract, hrest]
+    rw [hst] at hrel
+    refine ⟨fc, rest', c, hrest, hmrec, { s2 with frames := fc :: rest', stackRem := s2.stackRem + (X.pfOf E.k).stackCharge },
+      ?_, ?_⟩
+    · have hfr : s2.frames = f :: fc :: rest' := by show s.frames = _; rw [R.frames, hrest]
+      have hd := doReturn_cons X R.kLt s2 f fc rest' hfr R.fn E.sb R.base
+        (by show s.stack.pop.size = _; simp; omega)
+      rw [step_eq_exec X R hins hfee hg hg64]
+      simp only [exec, popN_eq, hb', ne_eq, h0, not_false_eq_true, ite_true]
+      unfold doBr; rw [if_pos (by rw [hlen]; exact hl)]; exact hd
+    · have e : stepLive live (((List.range 1).map fun d => enc 0 (s.stack.size - 1 + d)
+            (s.stack[s.stack.size - 1 + d]?.getD default) (tps (s.stack.size - 1 + d))) ++ [m, budMsg s.stackRem tpb])
+          [budMsg (s.stackRem + (X.pfOf E.k).stackCharge) t] =
+          stepLive live [mc, m, budMsg s.stackRem tpb] [budMsg (s.stackRem + (X.pfOf E.k).stackCharge) t] := by
+        apply stepLive_congr _ (fun _ => Iff.rfl)
+        intro x
+        simp only [List.range_one, List.map_cons, List.map_nil, Nat.add_zero, List.cons_append, List.nil_append]
+        rw [← ec]
+      rw [e] at hrel; exact hrel
+  · intro h0
+    refine ⟨{ s1 with
+      stack := popK s.stack 1
+      frames := { f with pc := pc + 1, labels := shiftLabels E.sb ls0 } :: E.rest }, ?_, ?_⟩
+    · rw [step_eq_exec X R hins hfee hg hg64]
+      simp only [exec, popN_eq, hb', h0, ne_eq, not_true_eq_false, ite_false, setFrame, R.frames, R.pcEq,
+        popK, s1]
+      rw [← hfl]
+    · have CR := ctrl_rel X R (k := 1) (fee := fee) (by omega) (pc + 1) ls0 hnext hL1 (by omega)
+        (by rw [hH1]; congr 1; omega) hg
+        { s1 with
+          stack := popK s.stack 1
+          frames := { f with pc := pc + 1, labels := shiftLabels E.sb ls0 } :: E.rest } rfl rfl rfl rfl rfl rfl
+      refine Rel_of_RelW_congr CR (stepLive_congr ?_ ?_)
+      · intro x
+        simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_none, List.not_mem_nil,
+          or_false, List.mem_cons, List.mem_nil_iff, false_and, exists_false]
+        constructor
+        · rintro ⟨d, hd, rfl⟩
+          have : d = 0 := by omega
+          subst this; rw [ec, Nat.add_zero]
+        · rintro rfl; exact ⟨0, by omega, by rw [ec, Nat.add_zero]⟩
+      · intro x
+        simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_none, List.not_mem_nil,
+          or_false, false_and, exists_false, popK_size, List.mem_nil_iff, iff_false]
+        rintro ⟨d, hd, _⟩; omega
+
+end WasmBase
