@@ -68,6 +68,17 @@ def run(prog, fuel=10 ** 8):
             if stack:
                 end_of[stack.pop()] = pc
     loc = [0] * len(prog.get('locals', []))
+    mem = {}
+    for off, bs in prog.get('data', []):
+        for k, x in enumerate(bs):
+            mem[off + k] = x
+
+    LOADS = {'i32.load': (4, False, 32), 'i64.load': (8, False, 64), 'i32.load8_s': (1, True, 32),
+             'i32.load8_u': (1, False, 32), 'i32.load16_s': (2, True, 32), 'i32.load16_u': (2, False, 32),
+             'i64.load8_s': (1, True, 64), 'i64.load8_u': (1, False, 64), 'i64.load16_s': (2, True, 64),
+             'i64.load16_u': (2, False, 64), 'i64.load32_s': (4, True, 64), 'i64.load32_u': (4, False, 64)}
+    STORES = {'i32.store': 4, 'i64.store': 8, 'i32.store8': 1, 'i32.store16': 2, 'i64.store8': 1,
+              'i64.store16': 2, 'i64.store32': 4}
     st = []
     labels = [('func', len(body), 1 if prog.get('result') else 0, 0)]  # kind, target, arity, height
     pc, n = 0, 0
@@ -102,6 +113,20 @@ def run(prog, fuel=10 ** 8):
             loc[i[1]] = st.pop(); pc += 1
         elif op == 'local.tee':
             loc[i[1]] = st[-1]; pc += 1
+        elif op in LOADS:
+            w, sgn, rw = LOADS[op]
+            ea = st.pop() + (i[1] if len(i) > 1 else 0)
+            v = sum(mem.get(ea + k, 0) << (8 * k) for k in range(w))
+            if sgn and v >> (8 * w - 1):
+                v = (v - (1 << (8 * w))) & ((1 << rw) - 1)
+            st.append(v); pc += 1
+        elif op in STORES:
+            w = STORES[op]
+            v = st.pop()
+            ea = st.pop() + (i[1] if len(i) > 1 else 0)
+            for k in range(w):
+                mem[ea + k] = (v >> (8 * k)) & 0xFF
+            pc += 1
         elif op in ('i32.eqz', 'i64.eqz'):
             st.append(int(st.pop() == 0)); pc += 1
         elif op == 'block':

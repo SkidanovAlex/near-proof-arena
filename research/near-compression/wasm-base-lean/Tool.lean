@@ -1,4 +1,4 @@
-import WasmBase
+import WasmBase.Check
 /-!
 `wasmbase-tool` — exporter and verifier-side preparation for the direct-Wasm base layer.
 
@@ -29,8 +29,19 @@ def WasmBase.Expr.toJson : WasmBase.Expr → String
 def interJson (i : Inter) : String :=
   s!"\{\"bus\":{i.bus},\"send\":{i.send},\"count\":{Expr.toJson i.count},\"msg\":{jList (i.msg.map Expr.toJson)}}"
 
-/-- Number of leading columns committed as a separate cached trace (CODE: the records). -/
-def cachedCols (T : Table) : Nat := if T.name = "CODE" then Chips.Code.cachedWidth else 0
+/-- Number of leading columns committed as a separate cached trace (CODE: the records; DATA: the
+data image). -/
+def cachedCols (T : Table) : Nat :=
+  if T.name = "CODE" then Chips.Code.cachedWidth else if T.name = "DATA" then Chips.Data.cachedWidth else 0
+
+/-- End of the data image: one past the last non-zero byte of the initial memory (0 if none). -/
+def dataEnd (s : St) : Nat := Id.run do
+  let mut e := 0
+  for i in [0:s.pages.size] do
+    let p := s.pages[i]!
+    for j in [0:p.size] do
+      if p.get! j != 0 then e := i * pageSize + j + 1
+  return e
 
 def tableJson (T : Table) : String :=
   s!"\{\"name\":{jStr T.name},\"cached\":{cachedCols T},\"cols\":{jList (T.cols.map jStr)},\"degree\":{(T.constraints ++ T.inters.flatMap (fun i => i.count :: i.msg)).foldl (fun m e => max m e.degree) 0},\"constraints\":{jList (T.constraints.map Expr.toJson)},\"inters\":{jList (T.inters.map interJson)}}"
@@ -92,7 +103,9 @@ def prep (path exportName : String) (g0 : Nat) : IO Unit := do
             | .cont _ => ("cont", [], 0)
           let vals := stack.map valLimbs
           let recs := ck.records.toList.map natList
-          IO.println s!"\{\"eligible\":true,\"fn\":{fn},\"ncode\":{ck.records.size},\"localTags\":{natList ck.localTags},\"arity\":{ck.arity},\"resTag\":{ck.resTag},\"maxFee\":{ck.maxFee},\"regularOpCost\":{cfg.regularOpCost},\"g0\":{g1},\"steps\":{n},\"status\":{jStr status},\"gFinal\":{gf},\"stack\":{jList (vals.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")},\"heights\":{natList ck.heights.toList},\"records\":{jList recs}}"
+          let de := dataEnd s1
+          let img := (List.range de).map fun a => (readByte s1 a).toNat
+          IO.println s!"\{\"eligible\":true,\"fn\":{fn},\"ncode\":{ck.records.size},\"localTags\":{natList ck.localTags},\"arity\":{ck.arity},\"resTag\":{ck.resTag},\"maxFee\":{ck.maxFee},\"regularOpCost\":{cfg.regularOpCost},\"g0\":{g1},\"steps\":{n},\"status\":{jStr status},\"gFinal\":{gf},\"stack\":{jList (vals.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")},\"heights\":{natList ck.heights.toList},\"records\":{jList recs},\"mem\":{memBytes s1},\"dataEnd\":{de},\"data\":{natList img}}"
         | _ => throw (IO.userError "enter failed")
   | .prepErr v w => IO.println s!"\{\"eligible\":false,\"prepare\":{jStr v},\"why\":{jStr w}}"
   | .compileErr _ _ => IO.println "{\"eligible\":false,\"prepare\":\"compile\"}"

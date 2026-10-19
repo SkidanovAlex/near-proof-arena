@@ -28,6 +28,10 @@ pub struct Prep {
     pub status: String,
     pub stack: Vec<(u64, [u64; 4])>,
     pub max_fee: u64,
+    /// memory size in bytes (constant), end of the data image, and the image bytes
+    pub mem: u64,
+    pub data_end: u64,
+    pub data: Vec<u64>,
 }
 
 impl Prep {
@@ -57,6 +61,9 @@ impl Prep {
                 .map(|e| (e["tag"].as_u64().unwrap(), nums(&e["limbs"]).try_into().unwrap()))
                 .collect(),
             max_fee: v["maxFee"].as_u64().unwrap(),
+            mem: v["mem"].as_u64().unwrap_or(0),
+            data_end: v["dataEnd"].as_u64().unwrap_or(0),
+            data: v.get("data").map(|d| nums(d)).unwrap_or_default(),
         }
     }
 }
@@ -169,6 +176,35 @@ impl St {
     }
 }
 
+/// LOAD ops in flag order: `(opcode, width, signed, is64)` (= `Chips.Load.ops`).
+pub const LOAD_OPS: [(u64, u64, bool, bool); 12] = [
+    (0x28, 4, false, false), (0x29, 8, false, true), (0x2C, 1, true, false), (0x2D, 1, false, false),
+    (0x2E, 2, true, false), (0x2F, 2, false, false), (0x30, 1, true, true), (0x31, 1, false, true),
+    (0x32, 2, true, true), (0x33, 2, false, true), (0x34, 4, true, true), (0x35, 4, false, true)];
+/// STORE ops in flag order: `(opcode, width, is64)` (= `Chips.Store.ops`).
+pub const STORE_OPS: [(u64, u64, bool); 7] =
+    [(0x36, 4, false), (0x37, 8, true), (0x3A, 1, false), (0x3B, 2, false), (0x3C, 1, true), (0x3D, 2, true),
+     (0x3E, 4, true)];
+
+/// Memory: the current `(byte, producer time)` of every touched address, and its initial byte.
+struct Mem<'p> {
+    prep: &'p Prep,
+    cur: std::collections::BTreeMap<u64, (u64, u64)>,
+    init: std::collections::BTreeMap<u64, u64>,
+}
+impl Mem<'_> {
+    fn get(&mut self, a: u64) -> (u64, u64) {
+        assert!(a < self.prep.mem, "memory access out of bounds at {a}: the trap is not provable");
+        if let Some(&e) = self.cur.get(&a) {
+            return e;
+        }
+        let b = if a < self.prep.data_end { self.prep.data[a as usize] } else { 0 };
+        self.init.insert(a, b);
+        self.cur.insert(a, (b, 0));
+        (b, 0)
+    }
+}
+
 fn binop(op: u64, a: u64, b: u64) -> u64 {
     let w: u32 = if (0x7C..=0x8A).contains(&op) { 64 } else { 32 };
     let m: u64 = if w == 64 { u64::MAX } else { 0xffff_ffff };
@@ -245,6 +281,9 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     let mut ctrl = Tab::new(t("CTRL"));
     let mut loc = Tab::new(t("LOCAL"));
     let mut div = Tab::new(t("DIV"));
+    let mut ld = Tab::new(t("LOAD"));
+    let mut sto = Tab::new(t("STORE"));
+    let mut mem = Mem { prep, cur: Default::default(), init: Default::default() };
     let mut trapped = false;
     let mut st = St { r16: vec![0; 65536], byte: vec![vec![0; 65536]; 4] };
     let mut fetch = vec![0u64; prep.records.len()];
@@ -707,6 +746,89 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                     stack.push(Ent { tag: is64, val: resv, tp: ts });
                 }
             }
+            op if LOAD_OPS.iter().any(|o| o.0 == op) => {
+                let k = LOAD_OPS.iter().position(|o| o.0 == op).unwrap();
+                let (_, w, sgn, is64) = LOAD_OPS[k];
+                let a = stack.pop().unwrap();
+                assert_eq!(a.tag, 0);
+                let off = rec[4] + 65536 * rec[5];
+                let ea = a.val + off;
+                let al = limbs(a.val);
+                let (e0, cye) = ((al[0] + rec[4]) & 0xffff, (al[0] + rec[4]) >> 16);
+                let e1 = al[1] + rec[5] + cye;
+                assert_eq!(e0 + 65536 * e1, ea);
+                assert!(e1 < 2048, "effective address beyond 2^27");
+                let ha = st.tchk(ts, a.tp);
+                st.r16(e0);
+                st.r16(32 * e1);
+                let mut bv = [0u64; 8];
+                let mut tbv = [0u64; 8];
+                let mut hbv = [0u64; 8];
+                for i in 0..w as usize {
+                    let (b, tp) = mem.get(ea + i as u64);
+                    bv[i] = b;
+                    tbv[i] = tp;
+                    hbv[i] = st.tchk(ts, tp);
+                    mem.cur.insert(ea + i as u64, (b, ts));
+                }
+                let v: u64 = (0..w as usize).map(|i| bv[i] << (8 * i)).sum();
+                let top = bv[w as usize - 1];
+                let (sbit, low7) = (top >> 7, top & 0x7f);
+                st.r16(512 * low7);
+                let rv = if sgn && sbit == 1 {
+                    let ext = v | (u64::MAX << (8 * w));
+                    if is64 { ext } else { ext & 0xffff_ffff }
+                } else {
+                    v
+                };
+                let mut r = ld.row();
+                hdr(&mut r);
+                r.u(&format!("f{k}"), 1);
+                r.u("a0", al[0]).u("a1", al[1]).u("ta", a.tp).u("ha", ha);
+                r.u("off0", rec[4]).u("off1", rec[5]).u("e0", e0).u("e1", e1).u("cyE", cye);
+                r.bytes("b", bv).bytes("tb", tbv).bytes("hb", hbv).u("sbit", sbit).u("low7", low7);
+                r.limbs("r", limbs(rv));
+                stack.push(Ent { tag: is64 as u64, val: rv, tp: ts });
+            }
+            op if STORE_OPS.iter().any(|o| o.0 == op) => {
+                let k = STORE_OPS.iter().position(|o| o.0 == op).unwrap();
+                let (_, w, is64) = STORE_OPS[k];
+                let v = stack.pop().unwrap();
+                let a = stack.pop().unwrap();
+                assert_eq!(v.tag, is64 as u64);
+                assert_eq!(a.tag, 0);
+                let off = rec[4] + 65536 * rec[5];
+                let ea = a.val + off;
+                let al = limbs(a.val);
+                let (e0, cye) = ((al[0] + rec[4]) & 0xffff, (al[0] + rec[4]) >> 16);
+                let e1 = al[1] + rec[5] + cye;
+                assert_eq!(e0 + 65536 * e1, ea);
+                assert!(e1 < 2048, "effective address beyond 2^27");
+                let hv = st.tchk(ts, v.tp);
+                let ha = st.tchk(ts, a.tp);
+                st.r16(e0);
+                st.r16(32 * e1);
+                let vb = bytes(v.val);
+                for j in 0..4 {
+                    st.byte(0, vb[2 * j], vb[2 * j + 1]);
+                }
+                let mut ob = [0u64; 8];
+                let mut tob = [0u64; 8];
+                let mut hob = [0u64; 8];
+                for i in 0..w as usize {
+                    let (b, tp) = mem.get(ea + i as u64);
+                    ob[i] = b;
+                    tob[i] = tp;
+                    hob[i] = st.tchk(ts, tp);
+                    mem.cur.insert(ea + i as u64, (vb[i], ts));
+                }
+                let mut r = sto.row();
+                hdr(&mut r);
+                r.u(&format!("f{k}"), 1).limbs("v", limbs(v.val)).u("tv", v.tp).u("hv", hv).bytes("vb", vb);
+                r.u("a0", al[0]).u("a1", al[1]).u("ta", a.tp).u("ha", ha);
+                r.u("off0", rec[4]).u("off1", rec[5]).u("e0", e0).u("e1", e1).u("cyE", cye);
+                r.bytes("ob", ob).bytes("tob", tob).bytes("hob", hob);
+            }
             _ => panic!("unknown op {op:#x}"),
         }
         s += fee;
@@ -727,8 +849,41 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     let mut drn = Tab::new(t("DRAIN"));
     if trapped {
         for (i, e) in stack.iter().enumerate() {
-            drn.row().u("act", 1).u("slot", i as u64).u("tag", e.tag).limbs("v", limbs(e.val)).u("tp", e.tp);
+            drn.row().u("act", 1).u("space", 0).u("slot", i as u64).u("tag", e.tag).limbs("v", limbs(e.val)).u("tp", e.tp);
         }
+    }
+    // every touched memory byte is left over at the end (space 3)
+    for (&a, &(b, tp)) in mem.cur.iter() {
+        drn.row().u("act", 1).u("space", 3).u("slot", a).u("tag", 0).limbs("v", [b, 0, 0, 0]).u("tp", tp)
+            .s("inv", fe(3).inverse());
+    }
+    // MEMINIT: one row per touched byte, sorted, with its initial byte; DATA multiplicities
+    let mut mi = Tab::new(t("MEMINIT"));
+    let mut data_mult = vec![0u64; (prep.data_end as usize).max(1)];
+    let mut prev: Option<u64> = None;
+    for (&a, &b) in mem.init.iter() {
+        let zd = a >= prep.data_end;
+        let gap = prev.map(|p| a - p - 1).unwrap_or(0);
+        let mut r = mi.row();
+        r.u("act", 1).u("ad", a).u("bv", b).u("zd", zd as u64);
+        r.u("glo", gap & 0xffff).u("ghi", gap >> 16).u("alo", a & 0xffff).u("ahi", a >> 16);
+        let m = prep.mem - 1 - a;
+        r.u("mlo", m & 0xffff).u("mhi", m >> 16);
+        st.r16(gap & 0xffff);
+        st.r16(32 * (gap >> 16));
+        st.r16(a & 0xffff);
+        st.r16(32 * (a >> 16));
+        st.r16(m & 0xffff);
+        st.r16(32 * (m >> 16));
+        if zd {
+            let d = a - prep.data_end;
+            r.u("dlo", d & 0xffff).u("dhi", d >> 16);
+            st.r16(d & 0xffff);
+            st.r16(32 * (d >> 16));
+        } else {
+            data_mult[a as usize] += 1;
+        }
+        prev = Some(a);
     }
 
     // BOUNDARY
@@ -747,6 +902,8 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     pubs.push(fe(rtag));
     pubs.extend(limbs(rval).map(fe));
     pubs.push(fe(status));
+    pubs.push(fe(prep.mem));
+    pubs.push(fe(prep.data_end));
     pubs.extend(prep.local_tags.iter().map(|&x| fe(x)));
     assert_eq!(pubs.len(), air.num_pub);
 
@@ -778,8 +935,14 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
         r.u("mult", if j < fetch.len() { fetch[j] } else { 0 });
     }
 
+    // DATA: the canonical image matrix (cached) + multiplicities
+    let mut dat = Tab::new(t("DATA"));
+    for (j, rec) in data_rows(prep).iter().enumerate() {
+        dat.row().u("addr", rec[0]).u("byte", rec[1]).u("mult", if j < data_mult.len() && (j as u64) < prep.data_end { data_mult[j] } else { 0 });
+    }
+
     let mut tabs: HashMap<String, Tab> = HashMap::new();
-    for tb in [bnd, add, bit, mul, shift, cmp, cnst, stk, ctrl, loc, div, rng, byt, code, drn] {
+    for tb in [bnd, add, bit, mul, shift, cmp, cnst, stk, ctrl, loc, div, ld, sto, rng, byt, code, drn, mi, dat] {
         tabs.insert(tb.spec.name.clone(), tb);
     }
     let mut mats = vec![];
@@ -806,6 +969,25 @@ pub fn code_rows(records: &[[u64; 8]]) -> Vec<[u64; 8]> {
     let last = *records.last().expect("non-empty code");
     rows.resize(h, last);
     rows
+}
+
+/// The canonical DATA rows: `(a, image[a])` for `a < dataEnd` in address order (`(0, 0)` if the image
+/// is empty), padded to a power of two (≥ 4) by repeating the last row.  `data_root` (a statement
+/// component, recomputed by V_d from the contract code) is the commitment to exactly this matrix.
+pub fn data_rows(prep: &Prep) -> Vec<[u64; 2]> {
+    let mut rows: Vec<[u64; 2]> = (0..prep.data_end).map(|a| [a, prep.data[a as usize]]).collect();
+    if rows.is_empty() {
+        rows.push([0, 0]);
+    }
+    let h = rows.len().max(4).next_power_of_two();
+    let last = *rows.last().unwrap();
+    rows.resize(h, last);
+    rows
+}
+
+pub fn data_matrix(prep: &Prep) -> RowMajorMatrix<F> {
+    let rows = data_rows(prep);
+    RowMajorMatrix::new(rows.iter().flat_map(|r| r.iter().map(|&x| fe(x))).collect(), 2)
 }
 
 pub fn code_matrix(records: &[[u64; 8]]) -> RowMajorMatrix<F> {

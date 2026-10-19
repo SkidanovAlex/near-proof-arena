@@ -139,6 +139,73 @@ def trap(t, kind):
     return {'name': f'trap_{t}_{kind}', 'result': t, 'locals': [t], 'body': body}
 
 
+LOADS32 = ['i32.load', 'i32.load8_s', 'i32.load8_u', 'i32.load16_s', 'i32.load16_u']
+LOADS64 = ['i64.load', 'i64.load8_s', 'i64.load8_u', 'i64.load16_s', 'i64.load16_u', 'i64.load32_s',
+           'i64.load32_u']
+DATA0 = [0x01, 0x80, 0xFF, 0x7F, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x00, 0x80, 0x00, 0x00,
+         0xFE, 0xFF, 0xFF, 0xFF, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x55]
+
+
+def memkat():
+    """Every integer load at aligned / unaligned / word-crossing addresses of a data segment, every
+    integer store (fresh, overlapping the data, near a page edge), loads after the stores."""
+    a32, a64 = 0, 1
+    body = []
+    def acc32(load, addr, off=0):
+        return [('local.get', a32), ('i32.const', 31), 'i32.mul', ('i32.const', addr), (load, off), 'i32.add',
+                ('local.set', a32)]
+    def acc64(load, addr, off=0):
+        return [('local.get', a64), ('i64.const', 31), 'i64.mul', ('i32.const', addr), (load, off), 'i64.add',
+                ('local.set', a64)]
+    addrs = [100, 101, 103, 107, 112, 116, 120]
+    for addr in addrs:
+        for l in LOADS32:
+            body += acc32(l, addr)
+        for l in LOADS64:
+            body += acc64(l, addr)
+    body += acc32('i32.load', 96, 5) + acc64('i64.load', 0, 109)
+    stores = [('i32.store', 2000, 0xDEADBEEF), ('i64.store', 2003, 0x0123456789ABCDEF), ('i32.store8', 102, 0x1FF),
+              ('i32.store16', 105, 0x8001), ('i64.store8', 65535, 0xAB), ('i64.store16', 65534, 0xCDEF),
+              ('i64.store32', 110, 0xFFFFFFFF80000000), ('i32.store', 99, 0x80000001), ('i64.store', 65528, -2)]
+    for op, addr, val in stores:
+        t = 'i64' if op.startswith('i64') else 'i32'
+        body += [('i32.const', addr), (f'{t}.const', val), op]
+    for addr in [2000, 2001, 2003, 2007, 100, 101, 102, 105, 106, 110, 113, 99, 65528, 65531, 65534, 65535]:
+        for l in ['i32.load8_s', 'i32.load16_u', 'i32.load16_s'] + (['i32.load'] if addr <= 65532 else []):
+            body += acc32(l, addr)
+        for l in ['i64.load8_u', 'i64.load32_s'] + (['i64.load'] if addr <= 65528 else []):
+            body += acc64(l, addr)
+    body += [('local.get', a64), ('local.get', a32), 'i32.eqz', 'select'] if False else [('local.get', a64)]
+    return {'name': 'memkat', 'result': 'i64', 'locals': ['i32', 'i64'], 'body': body, 'data': [(100, DATA0)]}
+
+
+def memloop(n):
+    """An array loop: writes `n` i64 words, then reads them back through narrower loads; n
+    iterations per pass."""
+    i, h, s_ = 0, 1, 2
+    base = 4096
+    b = [
+        ('i64.const', 0x9e3779b97f4a7c15), ('local.set', h),
+        ('loop',),
+          ('local.get', i), ('i32.const', 8), 'i32.mul', ('local.get', h), ('i64.store', base),
+          ('local.get', h), ('i64.const', 0x100000001b3), 'i64.mul', ('i64.const', 29), 'i64.rotl',
+          ('local.get', i), ('i32.const', 4), 'i32.mul', ('i64.load32_u', base), 'i64.xor', ('local.set', h),
+          ('local.get', i), ('i32.const', 1), 'i32.add', ('local.tee', i),
+          ('i32.const', n), 'i32.lt_u', ('br_if', 0),
+        ('end',),
+        ('i32.const', 0), ('local.set', i),
+        ('loop',),
+          ('local.get', s_), ('local.get', i), ('i32.const', 8), 'i32.mul', ('i64.load', base), 'i64.add',
+          ('local.get', i), ('i32.const', 8), 'i32.mul', ('i64.load8_s', base + 3), 'i64.add',
+          ('local.get', i), ('i32.const', 8), 'i32.mul', ('i64.load16_s', base + 5), 'i64.sub', ('local.set', s_),
+          ('local.get', i), ('i32.const', 1), 'i32.add', ('local.tee', i),
+          ('i32.const', n), 'i32.lt_u', ('br_if', 0),
+        ('end',),
+        ('local.get', s_),
+    ]
+    return {'name': f'memloop{n}', 'result': 'i64', 'locals': ['i32', 'i64', 'i64'], 'body': b, 'memory': True}
+
+
 def main():
     out = sys.argv[1]
     iters = [int(a) for a in sys.argv[2:]] or [8, 64]
@@ -147,6 +214,7 @@ def main():
     progs = [kat(t, op, rng) for t in ('i32', 'i64') for op in BIN + DIV + REL + ['eqz']]
     progs += [trap(t, k) for t in ('i32', 'i64') for k in ('zero_u', 'zero_rem', 'ovf')]
     progs += [ctrl()] + [hashloop(n) for n in iters] + [divloop(n) for n in iters]
+    progs += [memkat()] + [memloop(n) for n in iters]
     for p in progs:
         res, steps = run(p)
         with open(os.path.join(out, p['name'] + '.wasm'), 'wb') as f:

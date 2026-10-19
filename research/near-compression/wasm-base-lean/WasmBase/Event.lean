@@ -1,5 +1,6 @@
 import WasmBase.Prelude
 import WasmBase.Check
+import WasmBase.Mem
 /-!
 # WasmBase.Event — channel messages, the spec-state relation, and the gas/charge step
 
@@ -176,6 +177,45 @@ def shiftLabels (sb : Nat) (ls : List Label) : List Label := ls.map fun l => { l
 @[simp] theorem shiftLabels_zero (ls : List Label) : shiftLabels 0 ls = ls := by
   simp [shiftLabels]
 
+/-! ## Linear memory as channel messages (space 3, one message per touched byte) -/
+
+/-- A memory message: byte `x` at address `a`, produced at time `tp`. -/
+def encB (a x tp : Nat) : Msg := ⟨3, a, 0, x, 0, 0, 0, tp⟩
+
+/-- The touched bytes `T` of the memory of `s`, with producer times `tpm`. -/
+def memView (T : List Nat) (s : St) (tpm : Nat → Nat) : List Msg :=
+  T.map fun a => encB a (readByte s a).toNat (tpm a)
+
+theorem mem_memView {x : Msg} {T : List Nat} {s : St} {tpm : Nat → Nat} :
+    x ∈ memView T s tpm ↔ ∃ a ∈ T, x = encB a (readByte s a).toNat (tpm a) := by
+  simp only [memView, List.mem_map]
+  constructor
+  · rintro ⟨a, ha, rfl⟩; exact ⟨a, ha, rfl⟩
+  · rintro ⟨a, ha, rfl⟩; exact ⟨a, ha, rfl⟩
+
+/-- The heap part of the outer live set: every page has `pageSize` bytes, and the space-3 messages
+of `E.live` are exactly one message per touched byte `a ∈ T` (in bounds), carrying the current
+byte, produced before `t`.  `T` is fixed for the whole run (the MEMINIT rows). -/
+structure HeapOK (E : Env) (s : St) (t : Nat) : Prop where
+  pages : PagesOK s
+  mem : ∃ (T : List Nat) (tpm : Nat → Nat), T.Nodup ∧ (∀ a ∈ T, a < memBytes s) ∧ (∀ a ∈ T, tpm a < t) ∧
+    ∀ x, x.space = 3 → (E.live x ↔ x ∈ memView T s tpm)
+
+theorem readByte_congr {s s' : St} (h : s'.pages = s.pages) (a : Nat) : readByte s' a = readByte s a := by
+  simp only [readByte, h]
+
+theorem memBytes_congr {s s' : St} (h : s'.pages = s.pages) : memBytes s' = memBytes s := by
+  simp only [memBytes, h]
+
+theorem HeapOK.mono {E : Env} {s s' : St} {t t' : Nat} (H : HeapOK E s t) (hpg : s'.pages = s.pages)
+    (ht : t ≤ t') : HeapOK E s' t' := by
+  obtain ⟨T, tpm, hnd, hlt, htp, hv⟩ := H.mem
+  refine ⟨fun i h => by have := H.pages i (by rw [← hpg]; exact h); simpa only [hpg] using this,
+    T, tpm, hnd, fun a ha => by rw [memBytes_congr hpg]; exact hlt a ha, fun a ha => by have := htp a ha; omega,
+    fun x hx => ?_⟩
+  rw [hv x hx]
+  simp only [memView, readByte_congr hpg]
+
 /-- **The simulation relation** between a spec state and the AIR view at time `t` (design note:
 results/pq-wasm-base/README.md §10). -/
 structure RelW (X : Ctx) (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat)
@@ -200,6 +240,8 @@ structure RelW (X : Ctx) (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) 
   /-- Field-size bounds on the frame fields (the AIR carries `sb`, `cid` as field elements). -/
   sbLt : E.sb < 2 ^ 28
   cidLt : E.cid < 2 ^ 28
+  /-- The memory (space 3) part of the outer live set matches the spec memory. -/
+  heap : HeapOK E s t
   live : ∀ x, live x ↔ x ∈ stackView s.stack tps ∨ x ∈ localView E.lsp f.locals tpl ∨ E.live x
 
 /-- The relation with the frame data existential; `sb`/`cid` are the AIR state's. -/

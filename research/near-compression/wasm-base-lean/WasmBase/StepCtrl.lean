@@ -19,7 +19,7 @@ theorem ctrl_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat
     (hgs : X.R * (S + fee) ≤ X.g0)
     (s' : St) (hs'stk : s'.stack = popK s.stack k)
     (hs'fr : s'.frames = { f with pc := pc', labels := shiftLabels E.sb ls' } :: E.rest)
-    (hs'g : s'.gas.g = s.gas.g - X.R * fee) :
+    (hs'g : s'.gas.g = s.gas.g - X.R * fee) (hs'pg : s'.pages = s.pages) :
     RelW X E s' { f with pc := pc', labels := shiftLabels E.sb ls' }
       (fun i => if i < s.stack.size - k then tps i else t) (fun j => if some j = none then t else tpl j)
       (t + 1) pc' (S + fee)
@@ -61,6 +61,7 @@ theorem ctrl_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat
   entry := R.entry
   sbLt := R.sbLt
   cidLt := R.cidLt
+  heap := R.heap.mono hs'pg (by omega)
   live := by
     intro x
     rw [hs'stk]
@@ -132,7 +133,7 @@ theorem step_ctrl0 (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
     (by simpa using hH) hg
     { s with gas := { s.gas with g := s.gas.g - X.R * fee },
              frames := { f with pc := pc', labels := shiftLabels E.sb ls' } :: E.rest }
-    rfl rfl rfl
+    rfl rfl rfl rfl
   refine Rel_of_RelW_congr CR (stepLive_congr ?_ ?_)
   · intro x; simp
   · intro x; simp [popK_size]
@@ -289,7 +290,7 @@ theorem step_brIf (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Na
     refine ⟨_, by rw [step_eq_exec X R hins hfee hg hg64, hexec], ?_⟩
     have CR := ctrl_rel X R (k := 1) (fee := fee) (by omega) pc' ls' hn' hL' (by omega) hH' hg
       { s with gas := { s.gas with g := s.gas.g - X.R * fee }, stack := popK s.stack 1,
-               frames := { f with pc := pc', labels := shiftLabels E.sb ls' } :: E.rest } rfl rfl rfl
+               frames := { f with pc := pc', labels := shiftLabels E.sb ls' } :: E.rest } rfl rfl rfl rfl
     refine Rel_of_RelW_congr CR (stepLive_congr ?_ ?_)
     · intro x
       simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_none, List.not_mem_nil,
@@ -402,7 +403,7 @@ theorem step_haltIf (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → 
         (by rw [hH1, hent.2]; rfl) hg
         { s1 with
           stack := popK s.stack 1
-          frames := { f with pc := pc + 1, labels := shiftLabels E.sb f.labels } :: E.rest } rfl rfl rfl
+          frames := { f with pc := pc + 1, labels := shiftLabels E.sb f.labels } :: E.rest } rfl rfl rfl rfl
       refine Rel_of_RelW_congr CR (stepLive_congr ?_ ?_)
       · intro x
         simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_none, List.not_mem_nil,

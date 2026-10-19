@@ -29,3 +29,8 @@ import WasmBase.Main.RowConst
 import WasmBase.Local.Div
 import WasmBase.Main.RowDiv
 import WasmBase.Main.Final
+import WasmBase.Mem
+import WasmBase.StepMem
+import WasmBase.Local.Mem
+import WasmBase.Main.MemInit
+import WasmBase.Main.RowLoad

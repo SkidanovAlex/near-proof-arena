@@ -484,3 +484,73 @@ message that is still needed leaves its later consumer without a producer, so th
   * KAT 63/63.
   * difftest: 480 points; 10,784 constraint values and 6,560 interactions agree.
   * Tamper suites, including the new frame columns: `logs/tamper-*.log`.
+
+## 11. Family 2: linear memory (2026-10-19)
+
+**Scope.** All 12 integer loads and 7 integer stores, with static offsets below 2^32 (`isLoadOp`,
+`isStoreOp` in `Check`). Memory has the configuration's initial size for the whole run. These are
+domain conditions:
+* no `memory.grow` or `memory.size`;
+* no bulk memory operations;
+* `mem ≤ 2^27`;
+* `dataEnd ≤ 2^27`.
+
+An out-of-bounds access cannot be proved (like out-of-gas): the trace generator refuses it, and a
+proof of it does not exist. **D3 (no-discard branches) is not lifted yet**; see "Not done" below.
+
+**Design: offline memory checking through the value channel** (`Chips.lean`):
+* Memory is CH space 3, with one message `[3, addr, 0, byte, 0, 0, 0, tp]` per touched byte.
+* A LOAD consumes the address and the `w` byte messages at `ea + i`, and produces them again with
+  time `ts`, followed by the result.
+* A STORE consumes the value, the address and the old bytes, and produces the value's bytes.
+* `ea = e0 + 2^16·e1` is exact:
+  * `a0 + off0 = e0 + 2^16·c` and `e1 = a1 + off1 + c`;
+  * R16 checks on `e0` and on `32·e1`;
+  * only `32·e1` is used, as in the existing time check, so a free `e1` cannot wrap.
+* Sign extension uses the top byte's bit: `top = 128·sbit + low7`, with an R16 check on `512·low7`.
+* MEMINIT (one row per touched byte, time 0):
+  * active rows come first;
+  * addresses strictly increase (gap `glo + 2^16·ghi`);
+  * each address is `< 2^27` and `< mem`;
+  * the value comes from a DATA lookup (`zd = 0`), or is 0 beyond `dataEnd` (`zd = 1`).
+* DATA is a second **cached** table: `(a, image[a])` for `a < dataEnd`. Its commitment `data_root` is
+  a statement component that V_d recomputes, like `code_root`; the native statement check verifies
+  both.
+* DRAIN is generalised: it consumes any leftover message, but `space = 0` (operand stack) only after a
+  trap (`act·(1 − space·inv)·(status − 2) = 0`).
+* Public values gain `mem` (index 9) and `dataEnd` (index 10); the locals' tags start at 11.
+* There are 19 AIRs: LOAD and STORE are instruction tables 11 and 12; MEMINIT is table 17 and DATA
+  table 18.
+
+**Lean** (`WasmBase.Mem`, `StepMem`, `Local/Mem`, `Main/MemInit`, `Main/RowLoad`):
+* `HeapOK` is a new `RelW` field. The space-3 part of the outer live set is exactly
+  `memView T s tpm`, with `T` the touched set (fixed for the run, in bounds) and `PagesOK s`.
+* `readLE`/`writeLE` are characterised byte-wise (`readLE_eq`, `writeLE_facts`).
+* `step_load` and `step_store`: from live byte messages, no trap, the spec value, and the heap update
+  (`heap_update`). They are built on `straight_rel_env`, a straight step that also changes the outer
+  live set.
+* `load_sem`: the 12 loads' little-endian and sign-extension arithmetic, proved per op.
+* Row lemmas `load_rowfacts` and `store_rowfacts`.
+* MEMINIT: active rows and their decoded messages (`meminit_row`, `meminit_mono`, `meminit_init`:
+  the messages are distinct, at time 0, and equal to the initial memory view).
+* `wasm_base_sound` now needs these statement hypotheses on the initial state:
+  * `PagesOK s0`;
+  * `DataOK s0 tr` (the binding of the cached DATA table);
+  * `pub.mem = memBytes s0 ≤ 2^27`, `pub.dataEnd ≤ 2^27`;
+  * bytes at addresses `≥ dataEnd` are 0.
+
+  Axioms: `[propext, Classical.choice, Quot.sound]`.
+
+**Evidence.**
+* KAT 66/66, including `memkat` (every load at aligned, unaligned and word-crossing addresses; every
+  store, including at the page edge) and `memloop8` / `memloop64`. Each is checked as Python reference
+  = Lean spec = Rust trace + AIR pre-check.
+* difftest: 608 points; 12,256 constraint values and 9,760 interactions agree.
+* Tamper suite on `memkat`, including memory cases (LOAD/STORE bytes, `ea`, sign bit, MEMINIT
+  value / address / duplicate address, DATA byte vs `data_root`, DRAIN space):
+  `logs/tamper-memkat.log`.
+
+**Not done (next).**
+* Lifting D3: discarding branches would need kill rows, or an orphan sink with the stale-slot argument.
+* `memory.size`/`memory.grow`.
+* Word-granular memory messages, to cut the ~32 interactions of an 8-byte access.

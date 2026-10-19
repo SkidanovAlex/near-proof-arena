@@ -10,7 +10,9 @@ and decidable:
 * **D1 family:** the function has no params, at most 64 declared locals (i32/i64), at most one
   result (i32/i64), and every instruction is in family F1: `i32/i64.const`, `drop`, `select`,
   `local.get/set/tee` (index in range), the numeric opcodes of `isFamilyNum`, `block`, `loop` (no
-  result), `end`, `br`, `br_if`, `return`.
+  result), `end`, `br`, `br_if`, `return`, and the integer loads/stores (`isLoadOp`, `isStoreOp`)
+  with a static offset `< 2^32`.  No `memory.grow` / `memory.size` / bulk memory: the memory size is
+  the configuration's initial size for the whole run.
 * **D2 gas:** every gas entry is `none` or `some (k, fee)` with `fee.l = 0` and
   `fee.c = units · regular_op_cost`, `units < 2^16`.
 * **D3 no-discard branches:** at every `br l` / taken `br_if l` to a non-function label the static
@@ -32,6 +34,12 @@ deriving instance DecidableEq for NearSpecV3.Wasm.Label
 def isFamilyNum (op : Nat) : Bool :=
   (0x45 ≤ op && op ≤ 0x5A) ||
   (0x6A ≤ op && op ≤ 0x78) || (0x7C ≤ op && op ≤ 0x8A)
+
+/-- Integer loads `i32/i64.load*` (`0x28, 0x29, 0x2C‥0x35`; no float loads). -/
+def isLoadOp (op : Nat) : Bool := op == 0x28 || op == 0x29 || (0x2C ≤ op && op ≤ 0x35)
+
+/-- Integer stores `i32/i64.store*` (`0x36, 0x37, 0x3A‥0x3E`; no float stores). -/
+def isStoreOp (op : Nat) : Bool := op == 0x36 || op == 0x37 || (0x3A ≤ op && op ≤ 0x3E)
 
 /-- Operands popped by a numeric family opcode. -/
 def numPops (op : Nat) : Nat := if op = 0x45 ∨ op = 0x50 then 1 else 2
@@ -84,6 +92,8 @@ def kindOf (ls : List Label) : Instr → Option Kind
   | .localSet _ => some (.straight 1 0)
   | .localTee _ => some (.straight 1 1)
   | .num op => if isFamilyNum op then some (.straight (numPops op) 1) else none
+  | .load op _ off => if isLoadOp op ∧ off < 2 ^ 32 then some (.straight 1 1) else none
+  | .store op _ off => if isStoreOp op ∧ off < 2 ^ 32 then some (.straight 2 0) else none
   | .block _ | .loop none => some .next
   | .end_ => match ls with
     | [_] => some .halt
@@ -193,6 +203,8 @@ def recordOf (ls : List Label) (h fee pc : Nat) (ins : Instr) : Option (List Nat
   | .localSet x => mk 0x21 [x, 0, 0, 0]
   | .localTee x => mk 0x22 [x, 0, 0, 0]
   | .num op => if isFamilyNum op then mk op [0, 0, 0, 0] else none
+  | .load op _ off => if isLoadOp op ∧ off < 2 ^ 32 then mk op [off % 65536, off / 65536, 0, 0] else none
+  | .store op _ off => if isStoreOp op ∧ off < 2 ^ 32 then mk op [off % 65536, off / 65536, 0, 0] else none
   | i => match kindOf ls i with
     | some .next => mk Chips.Ctrl.opNext [0, 0, 0, 0]
     | some (.jump t) => mk Chips.Ctrl.opJump [t, 0, 0, 0]

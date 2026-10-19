@@ -93,6 +93,7 @@ theorem step_binop (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
       (setFrame ({ s with gas := { s.gas with g := s.gas.g - X.R * fee }, stack := s.stack.pop.pop.push v })
         { f with pc := f.pc + 1 })
       (by simp [setFrame, R.frames]) (by simp [setFrame, R.frames, R.pcEq]) (by simp [setFrame, R.frames])
+      (by simp [setFrame, R.frames])
     refine Rel_of_RelW_congr SR (stepLive_congr ?_ ?_)
     · intro x
       simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_none, List.not_mem_nil,

@@ -1,8 +1,8 @@
 import WasmBase.Air
 /-!
-# WasmBase.Chips — the AIR set `wasm-base-v2` (instruction family F1)
+# WasmBase.Chips — the AIR set `wasm-base-v3` (families F1, linear memory)
 
-Fifteen AIRs (≤ 32), max degree 8, no preprocessed or cached traces.  Buses:
+Nineteen AIRs (≤ 32), max degree 8; CODE and DATA are cached traces.  Buses:
 
 | bus | name | message | role |
 |---|---|---|---|
@@ -11,6 +11,11 @@ Fifteen AIRs (≤ 32), max degree 8, no preprocessed or cached traces.  Buses:
 | 2 | CH | `[space, slot, tag, v0, v1, v2, v3, tp]` | value channel: operand stack (space 0, absolute slot `sb + h − k`) and the locals of activation `cid` (space `16 + cid`); producer → consumer (P-PERF-5) |
 | 3 | R16 | `[v]` | 16-bit range lookups into RANGE16 |
 | 4 | BYTE | `[kind, x, y, z]` | byte-pair range (kind 0) / and (1) / or (2) / xor (3) into BYTE |
+| 5 | DATA | `[addr, byte]` | initial-memory bytes of the data image; queried by MEMINIT, answered by the cached DATA table |
+
+Linear memory is channel space 3: one message `[3, addr, 0, byte, 0, 0, 0, tp]` per touched byte,
+produced initially by a MEMINIT row (time 0) and consumed / re-produced by every LOAD / STORE that
+touches it (offline memory checking through the channel); leftover messages are drained at the end.
 
 Values are 4 limbs of 16 bits (i32: limbs 2, 3 are 0); `tag` = 1 for i64.  `S` is the number of
 gas units (`regular_op_cost`) charged so far; `h` is the static operand-stack height at `pc` (from
@@ -32,6 +37,7 @@ def busFetch : Nat := 1
 def busStk : Nat := 2
 def busR16 : Nat := 3
 def busByte : Nat := 4
+def busData : Nat := 5
 
 def B16 : Expr := 65536
 def bool (x : Expr) : Expr := x * (x - 1)
@@ -530,7 +536,7 @@ def sbf : Nat := 2
 def cidf : Nat := 3
 /-- per local `j`: final tag, value limbs, producer time (6 columns from `4 + 6 j`) -/
 def fin (j : Nat) : Nat := 4 + 6 * j
-/-- Public values: `[N, S_final, nres, rtag, r0, r1, r2, r3, status]`, then one tag per local
+/-- Public values: `[N, S_final, nres, rtag, r0, r1, r2, r3, status, mem, dataEnd]`, then one tag per local
 (`status` = 1: the function returned; 2: it trapped).  The code is not public: it is the cached CODE
 table, whose commitment is a statement component (`code_root`).  The first instruction row has
 `ts = 1`; initial locals are produced at time 0. -/
@@ -540,7 +546,11 @@ def pubNres : Nat := 2
 def pubTag : Nat := 3
 def pubR : Nat := 4
 def pubStatus : Nat := 8
-def pubLoc : Nat := 9
+/-- memory size in bytes (`pages · 65536`, constant: no `memory.grow`) -/
+def pubMem : Nat := 9
+/-- end of the data image: bytes at addresses `≥ pubDataEnd` are initially 0 -/
+def pubDataEnd : Nat := 10
+def pubLoc : Nat := 11
 def recWidth : Nat := 8
 def cols (nloc : Nat) : List String := ["pcf", "tpr", "sbf", "cidf"] ++
   ((List.range nloc).flatMap fun j => [s!"ftag{j}", s!"fv{j}_0", s!"fv{j}_1", s!"fv{j}_2", s!"fv{j}_3", s!"ftp{j}"])
@@ -729,29 +739,199 @@ def table : Table := ⟨"DIV", cols, constraints, inters⟩
 end Div
 
 
-/-! ## DRAIN: after a trap (`status = 2`) the operand stack is not returned; each DRAIN row consumes
-one leftover stack message (count `act · (status − 1)`, zero for a normal return). -/
+/-! ## DRAIN: at the end, each DRAIN row consumes one leftover channel message: memory bytes (space
+≠ 0) always, operand-stack messages (space 0) only after a trap (`status = 2`):
+`act · (1 − space·inv) · (status − 2) = 0`. -/
 namespace Drain
 def act : Nat := 0
-def slot : Nat := 1
-def tag : Nat := 2
-def val : Nat := 3   -- 3..6
-def tp : Nat := 7
-def cols : List String := ["act", "slot", "tag", "v0", "v1", "v2", "v3", "tp"]
+def space : Nat := 1
+def slot : Nat := 2
+def tag : Nat := 3
+def val : Nat := 4   -- 4..7
+def tp : Nat := 8
+def inv : Nat := 9
+def cols : List String := ["act", "space", "slot", "tag", "v0", "v1", "v2", "v3", "tp", "inv"]
 def table : Table :=
-  ⟨"DRAIN", cols, [bool (v act)],
-   [chRecv 0 (v slot) (v tag) (limbsOf val) (v tp) (v act * (pv Boundary.pubStatus - 1))]⟩
+  ⟨"DRAIN", cols,
+   [bool (v act), v act * (1 - v space * v inv) * (pv Boundary.pubStatus - 2)],
+   [chRecv (v space) (v slot) (v tag) (limbsOf val) (v tp) (v act)]⟩
 end Drain
+
+/-! ## LOAD: `i32/i64.load*` (12 integer loads, one-hot flags)
+
+The address `a` (2 limbs, from the stack) plus the static offset is the effective address
+`ea = e0 + 2^16·e1` (exact: `a0 + off0 = e0 + 2^16·c`, `e1 = a1 + off1 + c`, `e0 < 2^16`,
+`e1 < 2^11`).  The `w` bytes at `ea + i` are consumed and produced again (memory channel, space 3);
+the result limbs are the little-endian bytes, sign-extended from the top byte's bit `sbit` for the
+signed loads. -/
+namespace Load
+/-- `(opcode, width, signed, is64)` in flag order (`loadSpec`). -/
+def ops : List (Nat × Nat × Bool × Bool) :=
+  [(0x28, 4, false, false), (0x29, 8, false, true), (0x2C, 1, true, false), (0x2D, 1, false, false),
+   (0x2E, 2, true, false), (0x2F, 2, false, false), (0x30, 1, true, true), (0x31, 1, false, true),
+   (0x32, 2, true, true), (0x33, 2, false, true), (0x34, 4, true, true), (0x35, 4, false, true)]
+def fl (k : Nat) : Nat := 5 + k   -- 5..16
+def a : Nat := 17    -- 17, 18
+def ta : Nat := 19
+def ha : Nat := 20
+def off : Nat := 21  -- 21, 22
+def e : Nat := 23    -- 23, 24
+def cyE : Nat := 25
+def b : Nat := 26    -- 26..33
+def tb : Nat := 34   -- 34..41
+def hb : Nat := 42   -- 42..49
+def sbit : Nat := 50
+def low7 : Nat := 51
+def r : Nat := 52    -- 52..55
+def kSb : Nat := 56
+def kCid : Nat := 57
+def names (p : String) (n : Nat) : List String := (List.range n).map fun i => p ++ toString i
+def cols : List String := headerCols ++ names "f" 12 ++ ["a0", "a1", "ta", "ha", "off0", "off1", "e0", "e1", "cyE"] ++
+  names "b" 8 ++ names "tb" 8 ++ names "hb" 8 ++ ["sbit", "low7"] ++ names "r" 4 ++ frameCols
+/-- Sum of the flags of the ops satisfying `p`. -/
+def sumF (p : Nat × Nat × Bool × Bool → Bool) : Expr :=
+  ((List.range 12).filter fun k => p (ops.getD k default)).foldl (fun acc k => acc + v (fl k)) 0
+def act : Expr := sumF fun _ => true
+def is64 : Expr := sumF fun o => o.2.2.2
+def sgn : Expr := sumF fun o => o.2.2.1
+/-- byte `i` is accessed (`i < w`) -/
+def cnt (i : Nat) : Expr := sumF fun o => decide (i < o.2.1)
+/-- byte `i` is the top byte (`i = w − 1`) -/
+def lastE (i : Nat) : Expr := sumF fun o => decide (o.2.1 = i + 1)
+def op : Expr := (List.range 12).foldl (fun acc k => acc + Expr.c (ops.getD k default).1 * v (fl k)) 0
+def eaE : Expr := v e + 65536 * v (e + 1)
+def ext (i : Nat) : Expr := sgn * v sbit * 255 * (if i < 4 then 1 else is64)
+def B (i : Nat) : Expr := cnt i * v (b + i) + (1 - cnt i) * ext i
+def topB : Expr := (List.range 8).foldl (fun acc i => acc + lastE i * v (b + i)) 0
+def constraints : List Expr :=
+  (List.range 12).map (fun k => bool (v (fl k))) ++
+  [bool act, bool (v cyE), bool (v sbit),
+   v a + v off - v e - 65536 * v cyE,
+   v (e + 1) - v (a + 1) - v (off + 1) - v cyE,
+   topB - 128 * v sbit - v low7] ++
+  (List.range 4).map fun j => v (r + j) - (B (2 * j) + 256 * B (2 * j + 1))
+def inters : List Inter :=
+  stdState kSb kCid op [v off, v (off + 1), 0, 0] act ++
+  [stkRecv (v kSb + v cH - 1) 0 [v a, v (a + 1), 0, 0] (v ta) act] ++ timeChk (v cTs) (v ta) (v ha) act ++
+  [r16 (v e) act, r16 (32 * v (e + 1)) act, r16 (512 * v low7) act] ++
+  (List.range 8).flatMap (fun i =>
+    [chRecv 3 (eaE + Expr.c i) 0 [v (b + i), 0, 0, 0] (v (tb + i)) (cnt i)] ++
+    timeChk (v cTs) (v (tb + i)) (v (hb + i)) (cnt i) ++
+    [chSend 3 (eaE + Expr.c i) 0 [v (b + i), 0, 0, 0] (v cTs) (cnt i)]) ++
+  [stkSend (v kSb + v cH - 1) is64 (limbsOf r) (v cTs) act]
+def table : Table := ⟨"LOAD", cols, constraints, inters⟩
+end Load
+
+/-! ## STORE: `i32/i64.store*` (7 integer stores, one-hot flags)
+
+The value (top of the stack, tag `is64`) is split into bytes `vb` (byte-pair range lookups); the
+address and `ea` as in LOAD; the `w` old bytes at `ea + i` are consumed and the new ones
+(`vb_i`) produced. -/
+namespace Store
+/-- `(opcode, width, is64)` in flag order (`storeWidth`). -/
+def ops : List (Nat × Nat × Bool) :=
+  [(0x36, 4, false), (0x37, 8, true), (0x3A, 1, false), (0x3B, 2, false), (0x3C, 1, true), (0x3D, 2, true),
+   (0x3E, 4, true)]
+def fl (k : Nat) : Nat := 5 + k   -- 5..11
+def vl : Nat := 12   -- 12..15
+def tv : Nat := 16
+def hv : Nat := 17
+def vb : Nat := 18   -- 18..25
+def a : Nat := 26    -- 26, 27
+def ta : Nat := 28
+def ha : Nat := 29
+def off : Nat := 30  -- 30, 31
+def e : Nat := 32    -- 32, 33
+def cyE : Nat := 34
+def ob : Nat := 35   -- 35..42
+def tob : Nat := 43  -- 43..50
+def hob : Nat := 51  -- 51..58
+def kSb : Nat := 59
+def kCid : Nat := 60
+def cols : List String := headerCols ++ Load.names "f" 7 ++ Load.names "v" 4 ++ ["tv", "hv"] ++ Load.names "vb" 8 ++
+  ["a0", "a1", "ta", "ha", "off0", "off1", "e0", "e1", "cyE"] ++ Load.names "ob" 8 ++ Load.names "tob" 8 ++
+  Load.names "hob" 8 ++ frameCols
+def sumF (p : Nat × Nat × Bool → Bool) : Expr :=
+  ((List.range 7).filter fun k => p (ops.getD k default)).foldl (fun acc k => acc + v (fl k)) 0
+def act : Expr := sumF fun _ => true
+def is64 : Expr := sumF fun o => o.2.2
+def cnt (i : Nat) : Expr := sumF fun o => decide (i < o.2.1)
+def op : Expr := (List.range 7).foldl (fun acc k => acc + Expr.c (ops.getD k default).1 * v (fl k)) 0
+def eaE : Expr := v e + 65536 * v (e + 1)
+def constraints : List Expr :=
+  (List.range 7).map (fun k => bool (v (fl k))) ++
+  [bool act, bool (v cyE),
+   v a + v off - v e - 65536 * v cyE,
+   v (e + 1) - v (a + 1) - v (off + 1) - v cyE] ++
+  (List.range 4).map fun j => v (vl + j) - v (vb + 2 * j) - 256 * v (vb + 2 * j + 1)
+def inters : List Inter :=
+  stdState kSb kCid op [v off, v (off + 1), 0, 0] act ++
+  [stkRecv (v kSb + v cH - 1) is64 (limbsOf vl) (v tv) act] ++ timeChk (v cTs) (v tv) (v hv) act ++
+  [stkRecv (v kSb + v cH - 2) 0 [v a, v (a + 1), 0, 0] (v ta) act] ++ timeChk (v cTs) (v ta) (v ha) act ++
+  [r16 (v e) act, r16 (32 * v (e + 1)) act] ++
+  (List.range 4).map (fun j => byteQ 0 (v (vb + 2 * j)) (v (vb + 2 * j + 1)) 0 act) ++
+  (List.range 8).flatMap (fun i =>
+    [chRecv 3 (eaE + Expr.c i) 0 [v (ob + i), 0, 0, 0] (v (tob + i)) (cnt i)] ++
+    timeChk (v cTs) (v (tob + i)) (v (hob + i)) (cnt i) ++
+    [chSend 3 (eaE + Expr.c i) 0 [v (vb + i), 0, 0, 0] (v cTs) (cnt i)])
+def table : Table := ⟨"STORE", cols, constraints, inters⟩
+end Store
+
+/-! ## MEMINIT: one row per touched byte, producing its initial memory message (time 0).
+
+Active rows first; addresses strictly increasing (`ad' − ad − 1 = glo + 2^16·ghi`, `ghi < 2^11`),
+`ad < 2^27` and `ad < mem`; a byte in the data image (`zd = 0`) is looked up in DATA, a byte
+beyond it (`zd = 1`, `ad ≥ dataEnd`) is 0. -/
+namespace MemInit
+def act : Nat := 0
+def ad : Nat := 1
+def bv : Nat := 2
+def zd : Nat := 3
+def glo : Nat := 4
+def ghi : Nat := 5
+def alo : Nat := 6
+def ahi : Nat := 7
+def mlo : Nat := 8
+def mhi : Nat := 9
+def dlo : Nat := 10
+def dhi : Nat := 11
+def cols : List String := ["act", "ad", "bv", "zd", "glo", "ghi", "alo", "ahi", "mlo", "mhi", "dlo", "dhi"]
+def constraints : List Expr :=
+  [bool (v act), bool (v zd), v zd * v bv,
+   .trans * ((1 - v act) * nv act),
+   .trans * (nv act * (nv ad - v ad - 1 - nv glo - 65536 * nv ghi)),
+   v ad - v alo - 65536 * v ahi,
+   v act * (pv Boundary.pubMem - 1 - v ad - v mlo - 65536 * v mhi),
+   v act * v zd * (v ad - pv Boundary.pubDataEnd - v dlo - 65536 * v dhi)]
+def inters : List Inter :=
+  [chSend 3 (v ad) 0 [v bv, 0, 0, 0] 0 (v act),
+   r16 (v glo) (v act), r16 (32 * v ghi) (v act),
+   r16 (v alo) (v act), r16 (32 * v ahi) (v act),
+   r16 (v mlo) (v act), r16 (32 * v mhi) (v act),
+   r16 (v dlo) (v act * v zd), r16 (32 * v dhi) (v act * v zd),
+   ⟨busData, true, v act * (1 - v zd), [v ad, v bv]⟩]
+def table : Table := ⟨"MEMINIT", cols, constraints, inters⟩
+end MemInit
+
+/-! ## DATA: the data image `[addr, byte]` as a **cached** trace (columns 0, 1; multiplicity column
+2 in the common main), bound through the statement like CODE: records `(a, img[a])` for
+`a < dataEnd` in address order, padded by repeating the last record (`(0, 0)` if the image is
+empty). -/
+namespace Data
+def mult : Nat := 2
+def cachedWidth : Nat := 2
+def table : Table := ⟨"DATA", ["addr", "byte", "mult"], [], [⟨busData, false, v mult, [v 0, v 1]⟩]⟩
+end Data
 
 end Chips
 
 open Chips in
-/-- The AIR set `wasm-base-v2` for a function with `nloc` locals (the code size only sets the CODE
+/-- The AIR set `wasm-base-v3` for a function with `nloc` locals (the code size only sets the CODE
 height). -/
 def wasmBaseAir (nloc _ncode : Nat) : Air where
   tables := [Boundary.table nloc, Add.table, Bit.table, Mul.table, Shift.table, Cmp.table,
-    Const.table, Stack.table, Ctrl.table, Local.table, Div.table, Range16.table, Byte.table, Code.table,
-    Drain.table]
+    Const.table, Stack.table, Ctrl.table, Local.table, Div.table, Load.table, Store.table, Range16.table,
+    Byte.table, Code.table, Drain.table, MemInit.table, Data.table]
   numPub := Boundary.pubLoc + nloc
 
 end WasmBase

@@ -3,7 +3,9 @@
 A program is a dict {name, result: None|'i32'|'i64', locals: [types], body: [instr...]}; an
 instruction is a tuple ('i32.const', v), ('br', l), ('block', None|'i32'|'i64'), ('loop',),
 ('end',), ('local.get', i), or a bare mnemonic string ('i64.add').  The implicit final `end` of the
-body is appended.  Optional `memory`: emit a 1-page memory (nearcore requires none here).
+body is appended.  Optional `data`: a list of `(offset, bytes)` active data segments (a memory
+section with one page is emitted when `memory` or `data` is present).  Memory instructions are
+`('i32.load', offset)` etc. (natural alignment).
 """
 
 VT = {'i32': 0x7F, 'i64': 0x7E}
@@ -23,6 +25,15 @@ NUM = {
     'i64.xor': 0x85, 'i64.shl': 0x86, 'i64.shr_s': 0x87, 'i64.shr_u': 0x88, 'i64.rotl': 0x89,
     'i64.rotr': 0x8A,
     'drop': 0x1A, 'select': 0x1B, 'return': 0x0F, 'end': 0x0B, 'nop': 0x01,
+}
+
+
+MEM = {
+    'i32.load': (0x28, 2), 'i64.load': (0x29, 3), 'i32.load8_s': (0x2C, 0), 'i32.load8_u': (0x2D, 0),
+    'i32.load16_s': (0x2E, 1), 'i32.load16_u': (0x2F, 1), 'i64.load8_s': (0x30, 0), 'i64.load8_u': (0x31, 0),
+    'i64.load16_s': (0x32, 1), 'i64.load16_u': (0x33, 1), 'i64.load32_s': (0x34, 2), 'i64.load32_u': (0x35, 2),
+    'i32.store': (0x36, 2), 'i64.store': (0x37, 3), 'i32.store8': (0x3A, 0), 'i32.store16': (0x3B, 1),
+    'i64.store8': (0x3C, 0), 'i64.store16': (0x3D, 1), 'i64.store32': (0x3E, 2),
 }
 
 
@@ -69,6 +80,9 @@ def instr(i):
         return bytes([0x02 if op == 'block' else 0x03, 0x40 if bt is None else VT[bt]])
     if op in ('br', 'br_if'):
         return bytes([0x0C if op == 'br' else 0x0D]) + uleb(i[1])
+    if op in MEM:
+        code, align = MEM[op]
+        return bytes([code]) + uleb(align) + uleb(i[1] if len(i) > 1 else 0)
     if op in ('local.get', 'local.set', 'local.tee'):
         return bytes([{'local.get': 0x20, 'local.set': 0x21, 'local.tee': 0x22}[op]]) + uleb(i[1])
     raise ValueError(op)
@@ -95,6 +109,13 @@ def assemble(prog):
     body = vec([uleb(n) + bytes([VT[t]]) for n, t in groups])
     body += b''.join(instr(i) for i in prog['body']) + b'\x0B'
     name = prog.get('export', 'main').encode()
-    return (b'\x00asm\x01\x00\x00\x00' + section(1, vec([ftype])) + section(3, vec([uleb(0)])) +
+    data = prog.get('data', [])
+    mem = b''
+    if prog.get('memory') or data:
+        mem = section(5, vec([b'\x00' + uleb(1)]))
+    dsec = b''
+    if data:
+        dsec = section(11, vec([b'\x00\x41' + sleb(off) + b'\x0B' + uleb(len(bs)) + bytes(bs) for off, bs in data]))
+    return (b'\x00asm\x01\x00\x00\x00' + section(1, vec([ftype])) + section(3, vec([uleb(0)])) + mem +
             section(7, vec([uleb(len(name)) + name + b'\x00' + uleb(0)])) +
-            section(10, vec([uleb(len(body)) + body])))
+            section(10, vec([uleb(len(body)) + body])) + dsec)

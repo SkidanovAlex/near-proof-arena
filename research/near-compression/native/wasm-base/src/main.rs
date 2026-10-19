@@ -132,20 +132,25 @@ fn code_root(eng: &Sha384RefEngine, records: &[[u64; 8]]) -> <Sha384Config as op
     eng.device().commit(&[&cm]).expect("code root").0
 }
 
-/// The statement check V_d performs on a verified base proof: the proof's cached CODE commitment
-/// equals the code root recomputed from the contract code.
+/// `data_root` = commitment to the canonical DATA matrix (the initial-memory image).
+fn data_root(eng: &Sha384RefEngine, prep: &Prep) -> <Sha384Config as openvm_stark_backend::StarkProtocolConfig>::Digest {
+    let cm = ColMajorMatrix::from_row_major(&tracegen::data_matrix(prep));
+    eng.device().commit(&[&cm]).expect("data root").0
+}
+
+/// The statement check V_d performs on a verified base proof: the proof's cached CODE and DATA
+/// commitments equal the roots recomputed from the contract code.
 fn check_code_root(
     eng: &Sha384RefEngine,
     spec: &AirSpec,
     proof: &openvm_stark_backend::proof::Proof<Sha384Config>,
-    records: &[[u64; 8]],
+    prep: &Prep,
 ) -> bool {
-    let i = spec.index("CODE");
-    let want = code_root(eng, records);
-    match &proof.trace_vdata[i] {
+    let ok = |name: &str, want| match &proof.trace_vdata[spec.index(name)] {
         Some(v) => v.cached_commitments.len() == 1 && v.cached_commitments[0] == want,
         None => false,
-    }
+    };
+    ok("CODE", code_root(eng, &prep.records)) && ok("DATA", data_root(eng, prep))
 }
 
 fn hex(bytes: &[u8]) -> String {
@@ -305,7 +310,7 @@ fn cmd_prove(air_path: &str, prep_path: &str, which: &str) {
     println!("PROOF {}", census(&proof));
     // statement: code_hash (sha256 of the contract code, if given) and code_root, checked like V_d
     let prep = _prep;
-    assert!(check_code_root(&eng, &spec, &proof, &prep.records), "code_root mismatch");
+    assert!(check_code_root(&eng, &spec, &proof, &prep), "code_root mismatch");
     let root = code_root(&eng, &prep.records);
     let rb: Vec<u8> = root.iter().flat_map(|w| w.to_be_bytes()).collect();
     let code_hash = std::env::var("WASMBASE_WASM").ok().map(|p| {
@@ -341,7 +346,7 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
     let d_pk = eng.device().transport_pk_to_device(&pk);
     let honest = eng.prove(&d_pk, ctx(&eng, &spec, &g)).expect("prove honest");
     eng.verify(&vk, &honest).expect("honest verifies");
-    assert!(check_code_root(&eng, &spec, &honest, &prep.records), "honest code_root");
+    assert!(check_code_root(&eng, &spec, &honest, &prep), "honest code_root");
     println!("TAMPER honest proof verifies and its code_root matches");
     let tb = |n: &str| spec.index(n);
     let col = |t: usize, c: &str| spec.tables[t].col(c);
@@ -360,7 +365,9 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
         ("CTRL", "tgt"), ("STACK", "V1_0"), ("STACK", "A0"), ("ADD", "ta"), ("ADD", "h"), ("ADD", "fee"), ("CMP", "S"),
         ("DIV", "Q0"), ("DIV", "R0"), ("DIV", "tz"), ("DIV", "tov"), ("DIV", "res0"), ("DIV", "cy0"), ("DIV", "hbA"),
         ("DRAIN", "v0"), ("DRAIN", "act"), ("ADD", "fr_sb"), ("ADD", "fr_cid"), ("LOCAL", "fr_cid"),
-        ("LOCAL", "inv_sp"), ("CTRL", "fr_cid"), ("BOUNDARY", "sbf"), ("BOUNDARY", "cidf")] {
+        ("LOCAL", "inv_sp"), ("CTRL", "fr_cid"), ("BOUNDARY", "sbf"), ("BOUNDARY", "cidf"),
+        ("LOAD", "b0"), ("LOAD", "r0"), ("LOAD", "e0"), ("LOAD", "sbit"), ("LOAD", "tb0"), ("STORE", "vb0"),
+        ("STORE", "ob0"), ("STORE", "e1"), ("MEMINIT", "bv"), ("MEMINIT", "ad"), ("MEMINIT", "zd"), ("DRAIN", "space")] {
         let t = tb(name);
         if g.rows_per_table[t].1 == 0 {
             continue;
@@ -387,6 +394,16 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
     }
     cases.push(("pub.status 1<->2".into(), Box::new(|g: &mut Gen| g.pubs[8] = F::from_u64(3) - g.pubs[8])));
     cases.push(("CODE.op[0]+1".into(), cell(tcode, 0, col(tcode, "op"), plus1())));
+    let tdata = tb("DATA");
+    cases.push(("DATA.byte[0]+1 (data_root)".into(), cell(tdata, 0, col(tdata, "byte"), plus1())));
+    if g.rows_per_table[tb("MEMINIT")].1 >= 2 {
+        let tm = tb("MEMINIT");
+        let c = col(tm, "ad");
+        cases.push(("MEMINIT dup address".into(), Box::new(move |g: &mut Gen| {
+            let w = g.mats[tm].width;
+            g.mats[tm].values[w + c] = g.mats[tm].values[c];
+        })));
+    }
     cases.push(("CODE.h[0]+1".into(), cell(tcode, 0, col(tcode, "h"), plus1())));
     // a CODE row no instruction fetches (padding, multiplicity 0): the AIR and the proof are fine;
     // only the statement check (code_root vs the contract code) can catch it
@@ -415,7 +432,7 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
         };
         let verdict = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             match eng.prove(&d_pk, ctx(&eng, &spec, &gt)) {
-                Ok(p) => eng.verify(&vk, &p).is_err() || !check_code_root(&eng, &spec, &p, &prep.records),
+                Ok(p) => eng.verify(&vk, &p).is_err() || !check_code_root(&eng, &spec, &p, &prep),
                 Err(_) => true,
             }
         }));

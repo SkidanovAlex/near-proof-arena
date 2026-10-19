@@ -1,4 +1,4 @@
-import WasmBase.Main.Rows
+import WasmBase.Main.MemInit
 /-!
 # WasmBase.Main.Exec — from `Holds` to the abstract execution theorem
 
@@ -16,29 +16,30 @@ set_option linter.unusedSimpArgs false
 def chipT : Nat → Table
   | 1 => Add.table | 2 => Bit.table | 3 => Mul.table | 4 => Shift.table | 5 => Cmp.table
   | 6 => Const.table | 7 => Stack.table | 8 => Ctrl.table | 9 => Local.table | 10 => Div.table
+  | 11 => Load.table | 12 => Store.table
   | _ => default
 
-theorem chipT_eq (nloc ncode t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 10) :
+theorem chipT_eq (nloc ncode t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 12) :
     (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; omega) = chipT t := by
-  rcases (show t = 1 ∨ t = 2 ∨ t = 3 ∨ t = 4 ∨ t = 5 ∨ t = 6 ∨ t = 7 ∨ t = 8 ∨ t = 9 ∨ t = 10 by omega) with
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> rfl
+  rcases (show t = 1 ∨ t = 2 ∨ t = 3 ∨ t = 4 ∨ t = 5 ∨ t = 6 ∨ t = 7 ∨ t = 8 ∨ t = 9 ∨ t = 10 ∨ t = 11 ∨ t = 12
+    by omega) with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> rfl
 
 /-- Decidable shape facts of every instruction chip: one STATE receive (`inters[0]`), one STATE
 send (`inters[1]`) with the same count. -/
-theorem chip_state (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 10) :
+theorem chip_state (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 12) :
     (chipT t).inters.filter (fun i => i.bus = busState ∧ i.send = false) = [(chipT t).inters.getD 0 default] ∧
     (chipT t).inters.filter (fun i => i.bus = busState ∧ i.send = true) = [(chipT t).inters.getD 1 default] ∧
     ((chipT t).inters.getD 1 default).count = ((chipT t).inters.getD 0 default).count := by
-  rcases (show t = 1 ∨ t = 2 ∨ t = 3 ∨ t = 4 ∨ t = 5 ∨ t = 6 ∨ t = 7 ∨ t = 8 ∨ t = 9 ∨ t = 10 by omega) with
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> decide
+  rcases (show t = 1 ∨ t = 2 ∨ t = 3 ∨ t = 4 ∨ t = 5 ∨ t = 6 ∨ t = 7 ∨ t = 8 ∨ t = 9 ∨ t = 10 ∨ t = 11 ∨ t = 12
+    by omega) with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> decide
 
 /-- What each instruction chip provides (proven per chip in `WasmBase.Main.Row*`). -/
 structure ChipFacts (X : Ctx) (nloc ncode : Nat) (pub : List F) (tr : Trace) : Prop where
-  counts : ∀ t, 1 ≤ t → t ≤ 10 → ∀ r, r < tr.height t → ∀ i ∈ (chipT t).inters,
+  counts : ∀ t, 1 ≤ t → t ≤ 12 → ∀ r, r < tr.height t → ∀ i ∈ (chipT t).inters,
     (i.count.eval (tr.row pub t r)).toNat ≤ 1
-  inactive : ∀ t, 1 ≤ t → t ≤ 10 → ∀ r, r < tr.height t → ¬ rowAct (chipT t) tr pub t r →
+  inactive : ∀ t, 1 ≤ t → t ≤ 12 → ∀ r, r < tr.height t → ¬ rowAct (chipT t) tr pub t r →
     ∀ i ∈ (chipT t).inters, (i.count.eval (tr.row pub t r)).toNat ≠ 1
-  rows : Looks X nloc ncode pub tr → PubOK X nloc ncode pub → ∀ t, 1 ≤ t → t ≤ 10 → ∀ r, r < tr.height t →
+  rows : Looks X nloc ncode pub tr → PubOK X nloc ncode pub → ∀ t, 1 ≤ t → t ≤ 12 → ∀ r, r < tr.height t →
     rowAct (chipT t) tr pub t r →
     RowFacts2 X (rowIn (chipT t) tr pub t r) (rowOut (chipT t) tr pub t r) (rowCons (chipT t) tr pub t r)
       (rowProd (chipT t) tr pub t r)
@@ -56,7 +57,8 @@ theorem occ_bits {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   intro o ho hk
   obtain ⟨t, ht, r, hr, i, hi, rfl⟩ := occ_table ho
   simp only at hk ⊢
-  rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨h1, h9, -⟩
+  rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ |
+    ⟨rfl, hT⟩ | ⟨h1, h9, -⟩
   · rw [hT] at hi
     simp only [Boundary.table, Boundary.inters, List.mem_append, List.mem_cons, List.mem_nil_iff, or_false,
       List.mem_flatMap, List.mem_map, List.mem_range] at hi
@@ -89,33 +91,30 @@ theorem occ_bits {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   · rw [hT] at hi
     simp only [Code.table, List.mem_cons, List.mem_nil_iff, or_false] at hi
     subst hi; simp [busFetch, busState, busStk] at hk
-  · -- DRAIN: count `act · (status − 1)` with `act` a bit
-    have hT' := hT
+  · -- DRAIN: count `act`, a bit
     rw [hT] at hi
     simp only [Drain.table, List.mem_cons, List.mem_nil_iff, or_false] at hi
     subst hi
-    have hcon : ∀ e ∈ Drain.table.constraints, e.eval (natRow (rowNat tr 14 r) (tr.row pub 14 r)) = 0 :=
+    have hcon : ∀ e ∈ Drain.table.constraints, e.eval (natRow (rowNat tr 16 r) (tr.row pub 16 r)) = 0 :=
       table_constr H (by simp [air_len]) hr
     have hb := hcon (Chips.bool (v Drain.act)) (by simp [Drain.table])
     simp only [Chips.bool, v, Expr.eval_mul', Expr.eval_sub', Expr.eval_col, Expr.eval_ofNat', natRow,
       Drain.act] at hb
     have hb' := bool_nat (rowNat_lt _ _ _ _) hb
-    have hst := hpub.status
-    simp only [Boundary.pubStatus] at hst
-    simp only [chRecv, Expr.eval_mul', Expr.eval_sub', Expr.eval_col, Expr.eval_ofNat', Expr.eval_pub, pv, v,
-      Trace.row, Drain.act, Boundary.pubStatus, cell_cast]
-    rcases hst with hs | hs <;> rw [hs] <;> rcases hb' with h | h <;> rw [h]
-    all_goals first
-      | (rw [show ((0 : Nat) : F) * (((1 : Nat) : F) - ((1 : Nat) : F)) = ((0 : Nat) : F) by grind]; decide)
-      | (rw [show ((1 : Nat) : F) * (((1 : Nat) : F) - ((1 : Nat) : F)) = ((0 : Nat) : F) by grind]; decide)
-      | (rw [show ((0 : Nat) : F) * (((2 : Nat) : F) - ((1 : Nat) : F)) = ((0 : Nat) : F) by grind]; decide)
-      | (rw [show ((1 : Nat) : F) * (((2 : Nat) : F) - ((1 : Nat) : F)) = ((1 : Nat) : F) by grind]; decide)
+    simp only [chRecv, v, Expr.eval_col, Trace.row, Drain.act]
+    rw [cell_cast, Fp.toNat_cast_of_lt (rowNat_lt _ _ _ _)]; omega
   · rw [hT] at hi
     simp only [Range16.table, List.mem_cons, List.mem_nil_iff, or_false] at hi
     subst hi; simp [busR16, busState, busStk] at hk
   · rw [hT] at hi
     simp only [Byte.table, Byte.inters, List.mem_cons, List.mem_nil_iff, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl <;> simp [busByte, busState, busStk] at hk
+  · -- MEMINIT: counts `act`, `act · zd`, `act · (1 − zd)` with `act`, `zd` bits
+    rw [hT] at hi
+    exact meminit_counts H hr i hi
+  · rw [hT] at hi
+    simp only [Data.table, List.mem_cons, List.mem_nil_iff, or_false] at hi
+    subst hi; simp [busData, busState, busStk] at hk
   · have := chipT_eq nloc ncode t h1 h9
     rw [this] at hi
     exact CF.counts t h1 h9 r hr i hi
@@ -138,11 +137,11 @@ theorem air_flatMap {α : Type} (nloc ncode : Nat) (G : Table → Nat → List �
     ((wasmBaseAir nloc ncode).tables.zipIdx.flatMap fun x => G x.1 x.2) =
       G (Boundary.table nloc) 0 ++ (G (chipT 1) 1 ++ (G (chipT 2) 2 ++ (G (chipT 3) 3 ++ (G (chipT 4) 4 ++
         (G (chipT 5) 5 ++ (G (chipT 6) 6 ++ (G (chipT 7) 7 ++ (G (chipT 8) 8 ++ (G (chipT 9) 9 ++
-        (G (chipT 10) 10 ++ (G Range16.table 11 ++ (G Byte.table 12 ++ (G Code.table 13 ++
-        G Drain.table 14))))))))))))) := by
+        (G (chipT 10) 10 ++ (G (chipT 11) 11 ++ (G (chipT 12) 12 ++ (G Range16.table 13 ++ (G Byte.table 14 ++
+        (G Code.table 15 ++ (G Drain.table 16 ++ (G MemInit.table 17 ++ G Data.table 18))))))))))))))))) := by
   simp [wasmBaseAir, List.zipIdx_cons, chipT]
 
-theorem chip_state_true {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 10)
+theorem chip_state_true {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 12)
     (r : Nat) : rowMsgs (chipT t) tr pub t r busState true =
       if rowAct (chipT t) tr pub t r then [rowOut (chipT t) tr pub t r] else [] := by
   rw [rowMsgs_eq, (chip_state t h1 h9).2.1]
@@ -151,7 +150,7 @@ theorem chip_state_true {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h9
   unfold rowAct rowOut
   split <;> simp_all
 
-theorem chip_state_false {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 10)
+theorem chip_state_false {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 12)
     (r : Nat) : rowMsgs (chipT t) tr pub t r busState false =
       if rowAct (chipT t) tr pub t r then [rowIn (chipT t) tr pub t r] else [] := by
   rw [rowMsgs_eq, (chip_state t h1 h9).1]
@@ -160,7 +159,7 @@ theorem chip_state_false {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h
   split <;> simp_all
 
 theorem chip_ch_inactive {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
-    (CF : ChipFacts X nloc ncode pub tr) (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 10) (r : Nat) (hr : r < tr.height t)
+    (CF : ChipFacts X nloc ncode pub tr) (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 12) (r : Nat) (hr : r < tr.height t)
     (hna : ¬ rowAct (chipT t) tr pub t r) (b : Nat) (s : Bool) : rowMsgs (chipT t) tr pub t r b s = [] := by
   rw [rowMsgs_eq, List.filterMap_eq_nil_iff]
   intro i hi
@@ -307,7 +306,7 @@ def actRows (tr : Trace) (pub : List F) (t : Nat) : List Nat :=
 
 /-- The active instruction rows `(table, row)`. -/
 def actList (tr : Trace) (pub : List F) : List (Nat × Nat) :=
-  (List.range 10).flatMap fun k => (actRows tr pub (k + 1)).map fun r => (k + 1, r)
+  (List.range 12).flatMap fun k => (actRows tr pub (k + 1)).map fun r => (k + 1, r)
 
 theorem flatMap_range_first {α : Type} (h : Nat) (hh : 1 ≤ h) (L : List α) :
     ((List.range h).flatMap fun r => if r = 0 then L else []) = L := by
@@ -327,11 +326,19 @@ theorem flatMap_filter_of_nil {α β : Type} (l : List α) (p : α → Prop) [De
 
 theorem fixed_nil (tr : Trace) (pub : List F) (t r : Nat) (b : Nat) (hb : b = busState ∨ b = busStk) (s : Bool) :
     rowMsgs Range16.table tr pub t r b s = [] ∧ rowMsgs Byte.table tr pub t r b s = [] ∧
-      rowMsgs Code.table tr pub t r b s = [] := by
-  refine ⟨?_, ?_, ?_⟩ <;> rw [rowMsgs_eq] <;> rcases hb with rfl | rfl <;> cases s <;>
-    simp [Range16.table, Byte.table, Byte.inters, Code.table, busState, busStk, busR16, busByte, busFetch]
+      rowMsgs Code.table tr pub t r b s = [] ∧ rowMsgs Data.table tr pub t r b s = [] := by
+  refine ⟨?_, ?_, ?_, ?_⟩ <;> rw [rowMsgs_eq] <;> rcases hb with rfl | rfl <;> cases s <;>
+    simp [Range16.table, Byte.table, Byte.inters, Code.table, Data.table, busState, busStk, busR16, busByte,
+      busFetch, busData]
 
-theorem chip_part_true {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 10) :
+theorem meminit_nil (tr : Trace) (pub : List F) (t r : Nat) (b : Nat) (s : Bool) (h : b = busState ∨ s = false) :
+    rowMsgs MemInit.table tr pub t r b s = [] := by
+  rw [rowMsgs_eq]
+  rcases h with rfl | rfl
+  · cases s <;> simp [MemInit.table, MemInit.inters, chSend, r16, busState, busStk, busR16, busData]
+  · simp [MemInit.table, MemInit.inters, chSend, r16, busState, busStk, busR16, busData]
+
+theorem chip_part_true {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 12) :
     ((List.range (tr.height t)).flatMap fun r => rowMsgs (chipT t) tr pub t r busState true) =
       (actRows tr pub t).map (rowOut (chipT t) tr pub t) := by
   rw [show (fun r => rowMsgs (chipT t) tr pub t r busState true) =
@@ -339,7 +346,7 @@ theorem chip_part_true {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h9 
     funext (chip_state_true t h1 h9), flatMap_ite_single]
   rfl
 
-theorem chip_part_false {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 10) :
+theorem chip_part_false {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 12) :
     ((List.range (tr.height t)).flatMap fun r => rowMsgs (chipT t) tr pub t r busState false) =
       (actRows tr pub t).map (rowIn (chipT t) tr pub t) := by
   rw [show (fun r => rowMsgs (chipT t) tr pub t r busState false) =
@@ -348,7 +355,7 @@ theorem chip_part_false {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h9
   rfl
 
 theorem chip_part_ch {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (CF : ChipFacts X nloc ncode pub tr)
-    (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 10) (s : Bool) :
+    (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 12) (s : Bool) :
     ((List.range (tr.height t)).flatMap fun r => rowMsgs (chipT t) tr pub t r busStk s) =
       (actRows tr pub t).flatMap fun r => rowMsgs (chipT t) tr pub t r busStk s := by
   rw [actRows, ← flatMap_filter_of_nil]
@@ -357,48 +364,55 @@ theorem chip_part_ch {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (C
 
 theorem actList_flatMap {β : Type} (tr : Trace) (pub : List F) (f : Nat × Nat → List β) :
     (actList tr pub).flatMap f =
-      (actRows tr pub 1).flatMap (fun r => f (1, r)) ++ ((actRows tr pub 2).flatMap (fun r => f (2, r)) ++ ((actRows tr pub 3).flatMap (fun r => f (3, r)) ++ ((actRows tr pub 4).flatMap (fun r => f (4, r)) ++ ((actRows tr pub 5).flatMap (fun r => f (5, r)) ++ ((actRows tr pub 6).flatMap (fun r => f (6, r)) ++ ((actRows tr pub 7).flatMap (fun r => f (7, r)) ++ ((actRows tr pub 8).flatMap (fun r => f (8, r)) ++ ((actRows tr pub 9).flatMap (fun r => f (9, r)) ++ ((actRows tr pub 10).flatMap (fun r => f (10, r))))))))))) := by
+      (actRows tr pub 1).flatMap (fun r => f (1, r)) ++ ((actRows tr pub 2).flatMap (fun r => f (2, r)) ++ ((actRows tr pub 3).flatMap (fun r => f (3, r)) ++ ((actRows tr pub 4).flatMap (fun r => f (4, r)) ++ ((actRows tr pub 5).flatMap (fun r => f (5, r)) ++ ((actRows tr pub 6).flatMap (fun r => f (6, r)) ++ ((actRows tr pub 7).flatMap (fun r => f (7, r)) ++ ((actRows tr pub 8).flatMap (fun r => f (8, r)) ++ ((actRows tr pub 9).flatMap (fun r => f (9, r)) ++ ((actRows tr pub 10).flatMap (fun r => f (10, r)) ++ ((actRows tr pub 11).flatMap (fun r => f (11, r)) ++ ((actRows tr pub 12).flatMap (fun r => f (12, r))))))))))))) := by
   simp [actList, List.flatMap_assoc, List.range, List.range.loop, List.flatMap_map]
 
 theorem actList_map {β : Type} (tr : Trace) (pub : List F) (f : Nat × Nat → β) :
     (actList tr pub).map f =
-      (actRows tr pub 1).map (fun r => f (1, r)) ++ ((actRows tr pub 2).map (fun r => f (2, r)) ++ ((actRows tr pub 3).map (fun r => f (3, r)) ++ ((actRows tr pub 4).map (fun r => f (4, r)) ++ ((actRows tr pub 5).map (fun r => f (5, r)) ++ ((actRows tr pub 6).map (fun r => f (6, r)) ++ ((actRows tr pub 7).map (fun r => f (7, r)) ++ ((actRows tr pub 8).map (fun r => f (8, r)) ++ ((actRows tr pub 9).map (fun r => f (9, r)) ++ ((actRows tr pub 10).map (fun r => f (10, r))))))))))) := by
+      (actRows tr pub 1).map (fun r => f (1, r)) ++ ((actRows tr pub 2).map (fun r => f (2, r)) ++ ((actRows tr pub 3).map (fun r => f (3, r)) ++ ((actRows tr pub 4).map (fun r => f (4, r)) ++ ((actRows tr pub 5).map (fun r => f (5, r)) ++ ((actRows tr pub 6).map (fun r => f (6, r)) ++ ((actRows tr pub 7).map (fun r => f (7, r)) ++ ((actRows tr pub 8).map (fun r => f (8, r)) ++ ((actRows tr pub 9).map (fun r => f (9, r)) ++ ((actRows tr pub 10).map (fun r => f (10, r)) ++ ((actRows tr pub 11).map (fun r => f (11, r)) ++ ((actRows tr pub 12).map (fun r => f (12, r))))))))))))) := by
   simp only [actList, List.map_flatMap, List.range, List.range.loop, List.map_map, List.flatMap_cons,
     List.flatMap_nil, List.append_nil, Nat.reduceAdd, Nat.zero_add]
   simp only [List.map_append, List.map_map]; rfl
 
-def part (T : Table) (tr : Trace) (pub : List F) (t b : Nat) (s : Bool) : List (List F) :=
-  (List.range (tr.height t)).flatMap fun r => rowMsgs T tr pub t r b s
 
 theorem msgs_air (nloc ncode : Nat) (tr : Trace) (pub : List F) (b : Nat) (s : Bool) :
     msgs (wasmBaseAir nloc ncode) tr pub b s =
       part (Boundary.table nloc) tr pub 0 b s ++ (part (chipT 1) tr pub 1 b s ++ (part (chipT 2) tr pub 2 b s ++
       (part (chipT 3) tr pub 3 b s ++ (part (chipT 4) tr pub 4 b s ++ (part (chipT 5) tr pub 5 b s ++
       (part (chipT 6) tr pub 6 b s ++ (part (chipT 7) tr pub 7 b s ++ (part (chipT 8) tr pub 8 b s ++
-      (part (chipT 9) tr pub 9 b s ++ (part (chipT 10) tr pub 10 b s ++ (part Range16.table tr pub 11 b s ++
-      (part Byte.table tr pub 12 b s ++ (part Code.table tr pub 13 b s ++ part Drain.table tr pub 14 b s))))))))))))) := by
+      (part (chipT 9) tr pub 9 b s ++ (part (chipT 10) tr pub 10 b s ++ (part (chipT 11) tr pub 11 b s ++
+      (part (chipT 12) tr pub 12 b s ++ (part Range16.table tr pub 13 b s ++
+      (part Byte.table tr pub 14 b s ++ (part Code.table tr pub 15 b s ++ (part Drain.table tr pub 16 b s ++
+      (part MemInit.table tr pub 17 b s ++ part Data.table tr pub 18 b s))))))))))))))))) := by
   rw [msgs_flatMap]
   simp only [wasmBaseAir, List.zipIdx_cons, List.zipIdx_nil, List.flatMap_cons, List.flatMap_nil, List.append_nil,
     Nat.reduceAdd]
   rfl
 
 theorem part_fixed (tr : Trace) (pub : List F) (b : Nat) (hb : b = busState ∨ b = busStk) (s : Bool) :
-    part Range16.table tr pub 11 b s = [] ∧ part Byte.table tr pub 12 b s = [] ∧
-      part Code.table tr pub 13 b s = [] := by
-  refine ⟨?_, ?_, ?_⟩ <;> (unfold part; rw [List.flatMap_eq_nil_iff]; intro r _)
-  · exact (fixed_nil tr pub 11 r b hb s).1
-  · exact (fixed_nil tr pub 12 r b hb s).2.1
-  · exact (fixed_nil tr pub 13 r b hb s).2.2
+    part Range16.table tr pub 13 b s = [] ∧ part Byte.table tr pub 14 b s = [] ∧
+      part Code.table tr pub 15 b s = [] ∧ part Data.table tr pub 18 b s = [] := by
+  refine ⟨?_, ?_, ?_, ?_⟩ <;> (unfold part; rw [List.flatMap_eq_nil_iff]; intro r _)
+  · exact (fixed_nil tr pub 13 r b hb s).1
+  · exact (fixed_nil tr pub 14 r b hb s).2.1
+  · exact (fixed_nil tr pub 15 r b hb s).2.2.1
+  · exact (fixed_nil tr pub 18 r b hb s).2.2.2
+
+theorem part_meminit_nil (tr : Trace) (pub : List F) (b : Nat) (s : Bool) (h : b = busState ∨ s = false) :
+    part MemInit.table tr pub 17 b s = [] := by
+  unfold part; rw [List.flatMap_eq_nil_iff]; intro r _
+  exact meminit_nil tr pub 17 r b s h
 
 theorem part_drain_nil (tr : Trace) (pub : List F) (b : Nat) (s : Bool) (h : b = busState ∨ s = true) :
-    part Drain.table tr pub 14 b s = [] := by
+    part Drain.table tr pub 16 b s = [] := by
   unfold part; rw [List.flatMap_eq_nil_iff]; intro r _
   rw [rowMsgs_eq]
   rcases h with rfl | rfl
   · cases s <;> simp [Drain.table, chRecv, busState, busStk]
   · simp [Drain.table, chRecv, busStk]
 
-def drainRaw (tr : Trace) (pub : List F) : List (List F) := part Drain.table tr pub 14 busStk false
+def drainRaw (tr : Trace) (pub : List F) : List (List F) := part Drain.table tr pub 16 busStk false
+
 
 theorem msgs_state {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub) :
@@ -409,20 +423,22 @@ theorem msgs_state {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
         tr.cell 0 0 Boundary.sbf, tr.cell 0 0 Boundary.cidf] ::
         (actList tr pub).map (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2) := by
   have h0 : 1 ≤ tr.height 0 := by have := H.heightPos 0 (by simp [air_len]); omega
-  obtain ⟨n1, n2, n1'⟩ := part_fixed tr pub busState (Or.inl rfl) true
-  obtain ⟨n3, n4, n3'⟩ := part_fixed tr pub busState (Or.inl rfl) false
+  obtain ⟨n1, n2, n1', nd1⟩ := part_fixed tr pub busState (Or.inl rfl) true
+  obtain ⟨n3, n4, n3', nd2⟩ := part_fixed tr pub busState (Or.inl rfl) false
   have d1 := part_drain_nil tr pub busState true (Or.inl rfl)
   have d2 := part_drain_nil tr pub busState false (Or.inl rfl)
+  have m1 := part_meminit_nil tr pub busState true (Or.inl rfl)
+  have m2 := part_meminit_nil tr pub busState false (Or.inl rfl)
   constructor
-  · rw [msgs_air, n1, n2, n1', d1, actList_map]
+  · rw [msgs_air, n1, n2, n1', d1, m1, nd1, actList_map]
     have hb : part (Boundary.table nloc) tr pub 0 busState true = [stMsg 0 1 0 0 0 0] := by
       unfold part
       rw [show (fun r => rowMsgs (Boundary.table nloc) tr pub 0 r busState true) =
         (fun r => if r = 0 then [stMsg 0 1 0 0 0 0] else []) from funext fun r => (bnd_msgs hpub r).1]
       exact flatMap_range_first _ h0 _
     rw [hb]
-    simp only [part, chip_part_true 1 (by omega) (by omega), chip_part_true 2 (by omega) (by omega), chip_part_true 3 (by omega) (by omega), chip_part_true 4 (by omega) (by omega), chip_part_true 5 (by omega) (by omega), chip_part_true 6 (by omega) (by omega), chip_part_true 7 (by omega) (by omega), chip_part_true 8 (by omega) (by omega), chip_part_true 9 (by omega) (by omega), chip_part_true 10 (by omega) (by omega), List.append_nil, List.cons_append, List.nil_append]
-  · rw [msgs_air, n3, n4, n3', d2, actList_map]
+    simp only [part, chip_part_true 1 (by omega) (by omega), chip_part_true 2 (by omega) (by omega), chip_part_true 3 (by omega) (by omega), chip_part_true 4 (by omega) (by omega), chip_part_true 5 (by omega) (by omega), chip_part_true 6 (by omega) (by omega), chip_part_true 7 (by omega) (by omega), chip_part_true 8 (by omega) (by omega), chip_part_true 9 (by omega) (by omega), chip_part_true 10 (by omega) (by omega), chip_part_true 11 (by omega) (by omega), chip_part_true 12 (by omega) (by omega), List.append_nil, List.cons_append, List.nil_append]
+  · rw [msgs_air, n3, n4, n3', d2, m2, nd2, actList_map]
     have hb : part (Boundary.table nloc) tr pub 0 busState false =
         [[tr.cell 0 0 Boundary.pcf, pub.getD Boundary.pubN 0, pub.getD Boundary.pubS 0,
           pub.getD Boundary.pubStatus 0, tr.cell 0 0 Boundary.sbf, tr.cell 0 0 Boundary.cidf]] := by
@@ -433,30 +449,32 @@ theorem msgs_state {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
           from funext fun r => (bnd_msgs hpub r).2.1]
       exact flatMap_range_first _ h0 _
     rw [hb]
-    simp only [part, chip_part_false 1 (by omega) (by omega), chip_part_false 2 (by omega) (by omega), chip_part_false 3 (by omega) (by omega), chip_part_false 4 (by omega) (by omega), chip_part_false 5 (by omega) (by omega), chip_part_false 6 (by omega) (by omega), chip_part_false 7 (by omega) (by omega), chip_part_false 8 (by omega) (by omega), chip_part_false 9 (by omega) (by omega), chip_part_false 10 (by omega) (by omega), List.append_nil, List.cons_append, List.nil_append]
+    simp only [part, chip_part_false 1 (by omega) (by omega), chip_part_false 2 (by omega) (by omega), chip_part_false 3 (by omega) (by omega), chip_part_false 4 (by omega) (by omega), chip_part_false 5 (by omega) (by omega), chip_part_false 6 (by omega) (by omega), chip_part_false 7 (by omega) (by omega), chip_part_false 8 (by omega) (by omega), chip_part_false 9 (by omega) (by omega), chip_part_false 10 (by omega) (by omega), chip_part_false 11 (by omega) (by omega), chip_part_false 12 (by omega) (by omega), List.append_nil, List.cons_append, List.nil_append]
 
 theorem msgs_ch {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub) (CF : ChipFacts X nloc ncode pub tr) :
     msgs (wasmBaseAir nloc ncode) tr pub busStk true =
-      initRaw nloc pub ++ (actList tr pub).flatMap (fun ρ => rowMsgs (chipT ρ.1) tr pub ρ.1 ρ.2 busStk true) ∧
+      initRaw nloc pub ++ ((actList tr pub).flatMap (fun ρ => rowMsgs (chipT ρ.1) tr pub ρ.1 ρ.2 busStk true) ++
+        memRaw tr pub) ∧
     msgs (wasmBaseAir nloc ncode) tr pub busStk false =
       (((if X.ck.arity = 1 ∧ pub.getD Boundary.pubStatus 0 = ((1 : Nat) : F) then [resRaw pub tr] else []) ++
         finRaw nloc tr) ++
         (actList tr pub).flatMap (fun ρ => rowMsgs (chipT ρ.1) tr pub ρ.1 ρ.2 busStk false)) ++ drainRaw tr pub := by
   have h0 : 1 ≤ tr.height 0 := by have := H.heightPos 0 (by simp [air_len]); omega
-  obtain ⟨n1, n2, n1'⟩ := part_fixed tr pub busStk (Or.inr rfl) true
-  obtain ⟨n3, n4, n3'⟩ := part_fixed tr pub busStk (Or.inr rfl) false
+  obtain ⟨n1, n2, n1', nd1⟩ := part_fixed tr pub busStk (Or.inr rfl) true
+  obtain ⟨n3, n4, n3', nd2⟩ := part_fixed tr pub busStk (Or.inr rfl) false
   have d1 := part_drain_nil tr pub busStk true (Or.inr rfl)
+  have m2 := part_meminit_nil tr pub busStk false (Or.inr rfl)
   constructor
-  · rw [msgs_air, n1, n2, n1', d1, actList_flatMap]
+  · rw [msgs_air, n1, n2, n1', d1, nd1, actList_flatMap]
     have hb : part (Boundary.table nloc) tr pub 0 busStk true = initRaw nloc pub := by
       unfold part
       rw [show (fun r => rowMsgs (Boundary.table nloc) tr pub 0 r busStk true) =
         (fun r => if r = 0 then initRaw nloc pub else []) from funext fun r => (bnd_msgs hpub r).2.2.1]
       exact flatMap_range_first _ h0 _
     rw [hb]
-    simp only [part, chip_part_ch CF 1 (by omega) (by omega), chip_part_ch CF 2 (by omega) (by omega), chip_part_ch CF 3 (by omega) (by omega), chip_part_ch CF 4 (by omega) (by omega), chip_part_ch CF 5 (by omega) (by omega), chip_part_ch CF 6 (by omega) (by omega), chip_part_ch CF 7 (by omega) (by omega), chip_part_ch CF 8 (by omega) (by omega), chip_part_ch CF 9 (by omega) (by omega), chip_part_ch CF 10 (by omega) (by omega), List.append_nil]
-  · rw [msgs_air, n3, n4, n3', actList_flatMap]
+    simp only [part, chip_part_ch CF 1 (by omega) (by omega), chip_part_ch CF 2 (by omega) (by omega), chip_part_ch CF 3 (by omega) (by omega), chip_part_ch CF 4 (by omega) (by omega), chip_part_ch CF 5 (by omega) (by omega), chip_part_ch CF 6 (by omega) (by omega), chip_part_ch CF 7 (by omega) (by omega), chip_part_ch CF 8 (by omega) (by omega), chip_part_ch CF 9 (by omega) (by omega), chip_part_ch CF 10 (by omega) (by omega), chip_part_ch CF 11 (by omega) (by omega), chip_part_ch CF 12 (by omega) (by omega), List.append_nil, List.nil_append, memRaw, List.append_assoc]
+  · rw [msgs_air, n3, n4, n3', m2, nd2, actList_flatMap]
     have hb : part (Boundary.table nloc) tr pub 0 busStk false =
         (if X.ck.arity = 1 ∧ pub.getD Boundary.pubStatus 0 = ((1 : Nat) : F) then [resRaw pub tr] else []) ++
           finRaw nloc tr := by
@@ -466,15 +484,16 @@ theorem msgs_ch {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
           [resRaw pub tr] else []) ++ finRaw nloc tr else []) from funext fun r => (bnd_msgs hpub r).2.2.2]
       exact flatMap_range_first _ h0 _
     rw [hb]
-    simp only [part, chip_part_ch CF 1 (by omega) (by omega), chip_part_ch CF 2 (by omega) (by omega), chip_part_ch CF 3 (by omega) (by omega), chip_part_ch CF 4 (by omega) (by omega), chip_part_ch CF 5 (by omega) (by omega), chip_part_ch CF 6 (by omega) (by omega), chip_part_ch CF 7 (by omega) (by omega), chip_part_ch CF 8 (by omega) (by omega), chip_part_ch CF 9 (by omega) (by omega), chip_part_ch CF 10 (by omega) (by omega), List.append_nil, List.nil_append, drainRaw, List.append_assoc]
+    simp only [part, chip_part_ch CF 1 (by omega) (by omega), chip_part_ch CF 2 (by omega) (by omega), chip_part_ch CF 3 (by omega) (by omega), chip_part_ch CF 4 (by omega) (by omega), chip_part_ch CF 5 (by omega) (by omega), chip_part_ch CF 6 (by omega) (by omega), chip_part_ch CF 7 (by omega) (by omega), chip_part_ch CF 8 (by omega) (by omega), chip_part_ch CF 9 (by omega) (by omega), chip_part_ch CF 10 (by omega) (by omega), chip_part_ch CF 11 (by omega) (by omega), chip_part_ch CF 12 (by omega) (by omega), List.append_nil, List.nil_append, drainRaw, List.append_assoc]
 
 /-! ## The initial state (function entry with an empty operand stack) -/
 
 theorem init_rel {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X nloc ncode pub)
     {s0 : St} {f0 : Frame} (hfr : s0.frames = [f0]) (hfn : f0.fn = X.fn) (hpc : f0.pc = 0)
     (hlab : f0.labels = [rootLabel X.pf]) (hbase : f0.base = 0) (hloc : f0.locals = X.pf.locals.map Val.default)
-    (hstk : s0.stack = #[]) (hg : s0.gas.g = X.g0) :
-    RelW X ⟨0, 0, [], fun _ => False⟩ s0 f0 (fun _ => 0) (fun _ => 0) 1 0 0 (· ∈ (initRaw nloc pub).map decMsg) := by
+    (hstk : s0.stack = #[]) (hg : s0.gas.g = X.g0)
+    (M : List Msg) (hM3 : ∀ x ∈ M, x.space = 3) (hheap : HeapOK ⟨0, 0, [], (· ∈ M)⟩ s0 1) :
+    RelW X ⟨0, 0, [], (· ∈ M)⟩ s0 f0 (fun _ => 0) (fun _ => 0) 1 0 0 (· ∈ (initRaw nloc pub).map decMsg ++ M) := by
   have CF := X.facts
   have hP' := P_val
   have hcode : 0 < X.pf.code.size := by
@@ -489,7 +508,8 @@ theorem init_rel {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X nlo
     rw [Array.getElem?_eq_getElem hj]; simpa using this
   refine ⟨hfr, hfn, hpc, hcode, ⟨_, CF.l0, by rw [hlab]; exact (shiftLabels_zero _).symm⟩, hbase,
     Nat.zero_le _, by rw [hstk]; exact CF.h0, hnl, by simp [hg, Ctx.R], by simp [hstk], ?_, by simp [hstk],
-    fun _ _ => by decide, fun _ h => h.elim, fun _ => ⟨rfl, rfl⟩, by decide, by decide, ?_⟩
+    fun _ _ => by decide, fun x h => by have := hM3 x h; simp only [Env.lsp]; omega,
+    fun _ => ⟨rfl, rfl⟩, by show 0 < 2 ^ 28; decide, by show 0 < 2 ^ 28; decide, hheap, ?_⟩
   · intro j hj
     rw [hnl] at hj
     rw [hloc, Array.getElem?_map, Array.getElem?_eq_getElem hj]
@@ -497,9 +517,9 @@ theorem init_rel {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X nlo
     rcases hdef j hj with h | h <;> rw [Array.getElem?_eq_getElem hj] at h <;> simp only [Option.getD_some] at h <;>
       rw [h] <;> trivial
   · intro x
-    simp only [hstk, stackView, List.range_zero, List.map_nil, List.not_mem_nil, false_or, or_false,
-      Env.lsp, Nat.add_zero]
-    suffices e : (initRaw nloc pub).map decMsg = localView 16 f0.locals (fun _ => 0) by rw [e]; simp
+    suffices e : (initRaw nloc pub).map decMsg = localView 16 f0.locals (fun _ => 0) by
+      simp only [List.mem_append, e]
+      simp [hstk, stackView, Env.lsp]
     unfold initRaw localView
     rw [hnl, ← hpub.hnloc, List.map_map]
     apply List.map_congr_left
@@ -551,7 +571,7 @@ theorem chain_len {ρ : Type} [DecidableEq ρ] (act : List ρ) (inS outS : ρ �
 /-! ## The active rows -/
 
 theorem mem_actList {tr : Trace} {pub : List F} {ρ : Nat × Nat} (h : ρ ∈ actList tr pub) :
-    1 ≤ ρ.1 ∧ ρ.1 ≤ 10 ∧ ρ.2 < tr.height ρ.1 ∧ rowAct (chipT ρ.1) tr pub ρ.1 ρ.2 := by
+    1 ≤ ρ.1 ∧ ρ.1 ≤ 12 ∧ ρ.2 < tr.height ρ.1 ∧ rowAct (chipT ρ.1) tr pub ρ.1 ρ.2 := by
   simp only [actList, actRows, List.mem_flatMap, List.mem_range, List.mem_map, List.mem_filter,
     decide_eq_true_eq] at h
   obtain ⟨k, hk, r, ⟨hr, ha⟩, rfl⟩ := h
@@ -559,7 +579,7 @@ theorem mem_actList {tr : Trace} {pub : List F} {ρ : Nat × Nat} (h : ρ ∈ ac
 
 theorem actList_length {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : Holds (wasmBaseAir nloc ncode) pub tr) :
     (actList tr pub).length < 2 ^ 28 := by
-  have hb : ∀ t, 1 ≤ t → t ≤ 10 → (actRows tr pub t).length ≤ 2 ^ 24 := by
+  have hb : ∀ t, 1 ≤ t → t ≤ 12 → (actRows tr pub t).length ≤ 2 ^ 24 := by
     intro t h1 h9
     have := H.heightLe t (by simp [air_len]; omega)
     unfold maxLogHeight at this
@@ -570,7 +590,7 @@ theorem actList_length {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : Holds
   have := hb 1 (by omega) (by omega); have := hb 2 (by omega) (by omega); have := hb 3 (by omega) (by omega)
   have := hb 4 (by omega) (by omega); have := hb 5 (by omega) (by omega); have := hb 6 (by omega) (by omega)
   have := hb 7 (by omega) (by omega); have := hb 8 (by omega) (by omega); have := hb 9 (by omega) (by omega)
-  have := hb 10 (by omega) (by omega)
+  have := hb 10 (by omega) (by omega); have := hb 11 (by omega) (by omega); have := hb 12 (by omega) (by omega)
   omega
 
 theorem nodup_map_on {α β : Type} (f : α → β) : ∀ (l : List α), (∀ a ∈ l, ∀ b ∈ l, f a = f b → a = b) →
@@ -622,28 +642,48 @@ theorem vNum_lt64 (v : Val) : vNum v < 2 ^ 64 := by
   | i64 x => exact x.toNat_lt
   | ref _ => simp [vNum]
 
-theorem drain_nil_of_status1 {pub : List F} {tr : Trace}
-    (hs : pub.getD Boundary.pubStatus 0 = ((1 : Nat) : F)) : drainRaw tr pub = [] := by
-  unfold drainRaw part; rw [List.flatMap_eq_nil_iff]; intro r _
-  rw [rowMsgs_eq]
-  apply filterMap_none_of
-  intro i hi
-  rw [List.mem_filter] at hi
-  simp only [Drain.table, List.mem_cons, List.mem_nil_iff, or_false] at hi
-  rw [hi.1]
-  have z : ((Expr.mul (v Drain.act) (pv Boundary.pubStatus - 1)).eval (tr.row pub 14 r)).toNat ≠ 1 := by
-    simp only [Expr.eval, Expr.eval_sub', Expr.eval_ofNat', pv, Trace.row, hs]
-    rw [show ∀ x : F, x * (((1 : Nat) : F) - ((1 : Nat) : F)) = ((0 : Nat) : F) from fun x => by grind]
-    decide
-  simp only [chRecv]
-  exact ite_eq_right_iff.mpr (fun h => absurd h z)
+/-- After a normal return (status 1) DRAIN only consumes messages outside space 0 (memory). -/
+theorem drain_space_of_status1 {nloc ncode : Nat} {pub : List F} {tr : Trace}
+    (H : Holds (wasmBaseAir nloc ncode) pub tr)
+    (hs : pub.getD Boundary.pubStatus 0 = ((1 : Nat) : F)) : ∀ x ∈ (drainRaw tr pub).map decMsg, x.space ≠ 0 := by
+  intro x hx
+  obtain ⟨m, hm, rfl⟩ := List.mem_map.mp hx
+  unfold drainRaw part at hm
+  obtain ⟨r, hr, hm⟩ := List.mem_flatMap.mp hm
+  rw [List.mem_range] at hr
+  rw [rowMsgs_eq] at hm
+  have hfilt : Drain.table.inters.filter (fun i => i.bus = busStk ∧ i.send = false) = Drain.table.inters := by decide
+  rw [hfilt] at hm
+  simp only [Drain.table, chRecv, List.filterMap_cons, List.filterMap_nil] at hm
+  by_cases hc : ((v Drain.act).eval (tr.row pub 16 r)).toNat = 1
+  · rw [if_pos hc] at hm
+    simp only [List.mem_singleton] at hm
+    subst hm
+    have hcon : ∀ e ∈ Drain.table.constraints, e.eval (tr.row pub 16 r) = 0 := by
+      intro e he; exact H.constr 16 (by simp [air_len]) r hr e he
+    have h2 := hcon (v Drain.act * (1 - v Drain.space * v Drain.inv) * (pv Boundary.pubStatus - 2))
+      (by simp [Drain.table])
+    simp only [v, pv, Expr.eval_mul', Expr.eval_sub', Expr.eval_col, Expr.eval_pub, Expr.eval_ofNat', Trace.row,
+      Drain.act, Drain.space, Drain.inv, hs] at h2 hc
+    have ha : tr.cell 16 r 0 = 1 := by
+      have := Fp.cast_toNat (tr.cell 16 r 0); rw [hc] at this; rw [← this]; rfl
+    rw [ha] at h2
+    simp only [decMsg, List.getD_cons_zero, List.map_cons, List.append_assoc, List.cons_append,
+      v, Expr.eval_col, Trace.row, Drain.space]
+    intro h0
+    have hz : tr.cell 16 r 1 = 0 := by
+      have := Fp.cast_toNat (tr.cell 16 r 1); rw [h0] at this; rw [← this]; rfl
+    rw [hz] at h2
+    exact absurd (show (1 : F) = 0 by grind) (by decide)
+  · rw [if_neg hc] at hm; simp at hm
 
 theorem perm_swap3 {α : Type} (A C D : List α) : ((A ++ C) ++ D).Perm ((A ++ D) ++ C) := by
   rw [List.append_assoc, List.append_assoc]; exact List.Perm.append_left A List.perm_append_comm
 
-theorem final_stack {X : Ctx} {nloc : Nat} {pub : List F} {tr : Trace} {sN : St} {tps tpl : Nat → Nat}
+theorem final_stack {X : Ctx} {pub : List F} {tr : Trace} {sN : St} {tps tpl : Nat → Nat}
     {locs : Array Val} {G : Msg → Prop} (hG : ∀ x, G x → x.space ≠ 0 ∧ x.space ≠ 16)
-    (hfin : ∀ x, x ∈ (if X.ck.arity = 1 then [resRaw pub tr] else []).map decMsg ++ (finRaw nloc tr).map decMsg ↔
+    (Fs : List Msg) (hFs : ∀ x ∈ Fs, x.space ≠ 0)
+    (hfin : ∀ x, x ∈ (if X.ck.arity = 1 then [resRaw pub tr] else []).map decMsg ++ Fs ↔
       x ∈ stackView sN.stack tps ∨ x ∈ localView 16 locs tpl ∨ G x) :
     sN.stack.size = X.ck.arity ∧
       (X.ck.arity = 1 → ∃ v, sN.stack[0]? = some v ∧ vTag v = (pub.getD Boundary.pubTag 0).toNat ∧
@@ -651,10 +691,6 @@ theorem final_stack {X : Ctx} {nloc : Nat} {pub : List F} {tr : Trace} {sN : St}
           (pub.getD (Boundary.pubR + 2) 0).toNat (pub.getD (Boundary.pubR + 3) 0).toNat) := by
   have har := X.facts.results
   have harity := X.facts.arity
-  have hfinsp : ∀ x ∈ (finRaw nloc tr).map decMsg, x.space = 16 := by
-    intro x hx
-    simp only [finRaw, List.map_map, List.mem_map, List.mem_range] at hx
-    obtain ⟨j, _, rfl⟩ := hx; exact Fp.toNat_cast_of_lt (by rw [P_val]; omega)
   have hres : (decMsg (resRaw pub tr)).space = 0 ∧ (decMsg (resRaw pub tr)).slot = 0 := ⟨rfl, rfl⟩
   have hstk1 : ∀ i, i < sN.stack.size → X.ck.arity = 1 ∧ i = 0 ∧
       enc 0 i (sN.stack[i]?.getD default) (tps i) = decMsg (resRaw pub tr) := by
@@ -670,11 +706,11 @@ theorem final_stack {X : Ctx} {nloc : Nat} {pub : List F} {tr : Trace} {sN : St}
         refine ⟨ha, ?_, h⟩
         have := congrArg Msg.slot h; simp only [enc] at this; rw [this]; exact hres.2
       · simp only [ha, ite_false] at h; simp at h
-    · have := hfinsp _ h; simp [enc] at this
+    · exact absurd (by simp [enc]) (hFs _ h)
   by_cases ha : X.ck.arity = 1
   · -- the result message is a live stack message, at slot 0
-    have hm : decMsg (resRaw pub tr) ∈ (if X.ck.arity = 1 then [resRaw pub tr] else []).map decMsg ++
-        (finRaw nloc tr).map decMsg := by simp only [ha, ite_true]; simp
+    have hm : decMsg (resRaw pub tr) ∈ (if X.ck.arity = 1 then [resRaw pub tr] else []).map decMsg ++ Fs := by
+      simp only [ha, ite_true]; simp
     rcases (hfin _).mp hm with h | h
     · obtain ⟨i, hi, he⟩ := mem_stackView.mp h
       have hsz : sN.stack.size = 1 := by
@@ -716,7 +752,10 @@ theorem wasm_base_exec (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (hgas : X.R * (pub.getD Boundary.pubS 0).toNat ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     {s0 : St} {f0 : Frame} (hfr : s0.frames = [f0]) (hfn : f0.fn = X.fn) (hpc : f0.pc = 0)
     (hlab : f0.labels = [rootLabel X.pf]) (hbase : f0.base = 0) (hloc : f0.locals = X.pf.locals.map Val.default)
-    (hstk : s0.stack = #[]) (hg : s0.gas.g = X.g0) :
+    (hstk : s0.stack = #[]) (hg : s0.gas.g = X.g0) (hpok : PagesOK s0)
+    (hdata : DataOK s0 tr) (hM : pub.getD Boundary.pubMem 0 = ((memBytes s0 : Nat) : F))
+    (hMle : memBytes s0 ≤ 2 ^ 27) (hDE : (pub.getD Boundary.pubDataEnd 0).toNat ≤ 2 ^ 27)
+    (hzero : ∀ a, (pub.getD Boundary.pubDataEnd 0).toNat ≤ a → readByte s0 a = 0) :
     (pub.getD Boundary.pubStatus 0 = ((1 : Nat) : F) →
       ∃ sN, run X.cfg X.p ((pub.getD Boundary.pubN 0).toNat - 1) s0 = .fin sN ∧ sN.frames = [] ∧
         X.R * (pub.getD Boundary.pubS 0).toNat + sN.gas.g = X.g0 ∧
@@ -737,16 +776,39 @@ theorem wasm_base_exec (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have hchP := (msgs_perm H busStk (fun o ho hb => hbits o ho (Or.inr (Or.inr hb)))).map decMsg
   rw [mc1, mc2] at hchP
   simp only [List.map_append, List.map_flatMap] at hchP
-  -- move the drained messages next to the boundary's final messages
-  have hchP' := hchP.trans (perm_swap3 _ _ _)
+  -- initial memory messages next to the initial locals; drained messages next to the final ones
+  have hsend : ∀ o ∈ occs (wasmBaseAir nloc ncode) tr pub, o.2.1 = true → o.2.2.2 ≤ 1 :=
+    fun o ho hs => hbits o ho (Or.inl hs)
+  obtain ⟨mnd, mtp, mheap⟩ := meminit_init H L hdata hsend hM hMle hDE hzero hpok
+  have hL : ((initRaw nloc pub).map decMsg ++ ((actList tr pub).flatMap (fun a =>
+      (rowMsgs (chipT a.1) tr pub a.1 a.2 busStk true).map decMsg) ++ (memRaw tr pub).map decMsg)).Perm
+      (((initRaw nloc pub).map decMsg ++ (memRaw tr pub).map decMsg) ++ (actList tr pub).flatMap (fun a =>
+        (rowMsgs (chipT a.1) tr pub a.1 a.2 busStk true).map decMsg)) := by
+    rw [List.append_assoc]; exact List.Perm.append_left _ List.perm_append_comm
+  have hchP' := hL.symm.trans (hchP.trans (perm_swap3 _ _ _))
   have hrows : ∀ ρ ∈ actList tr pub, RowFacts2 X (rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
       (rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) (rowCons (chipT ρ.1) tr pub ρ.1 ρ.2) (rowProd (chipT ρ.1) tr pub ρ.1 ρ.2) := by
     intro ρ hρ
     obtain ⟨h1, h9, hr, ha⟩ := mem_actList hρ
     exact CF.rows L hpub ρ.1 h1 h9 ρ.2 hr ha
   have hlen := actList_length H
-  obtain ⟨hnd, htp⟩ := init_facts hpub
-  have h0 := init_rel hpub hfr hfn hpc hlab hbase hloc hstk hg
+  obtain ⟨hnd0, htp0⟩ := init_facts hpub
+  have hsp16 : ∀ x ∈ (initRaw nloc pub).map decMsg, x.space = 16 := by
+    intro x hx
+    simp only [initRaw, List.map_map, List.mem_map, List.mem_range] at hx
+    obtain ⟨j, _, rfl⟩ := hx; exact Fp.toNat_cast_of_lt (by rw [P_val]; omega)
+  have hnd : ((initRaw nloc pub).map decMsg ++ (memRaw tr pub).map decMsg).Nodup := by
+    rw [List.nodup_append]
+    refine ⟨hnd0, mnd, fun x hx y hy hxy => ?_⟩
+    subst hxy
+    have := hsp16 x hx; have := (mtp x hy).2; omega
+  have htp : ∀ x ∈ (initRaw nloc pub).map decMsg ++ (memRaw tr pub).map decMsg, x.tp = 0 := by
+    intro x hx
+    rcases List.mem_append.mp hx with h | h
+    · exact htp0 x h
+    · exact (mtp x h).1
+  have h0 := init_rel hpub hfr hfn hpc hlab hbase hloc hstk hg ((memRaw tr pub).map decMsg)
+    (fun x hx => (mtp x hx).2) mheap
   have run_eq : ∀ r, run X.cfg X.p (actList tr pub).length s0 = r →
       (actList tr pub).length + 1 = (pub.getD Boundary.pubN 0).toNat →
       run X.cfg X.p ((pub.getD Boundary.pubN 0).toNat - 1) s0 = r := by
@@ -760,13 +822,19 @@ theorem wasm_base_exec (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     obtain ⟨-, h1, -⟩ := exec_of_rows X (actList tr pub) (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
       (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) (fun ρ => rowCons (chipT ρ.1) tr pub ρ.1 ρ.2)
       (fun ρ => rowProd (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ _ 1 (Or.inl rfl) hrows _ _ hstP hchP' hnd htp hlen hfee
-      hgas hg64 ⟨rfl, rfl⟩ h0
+      hgas hg64 (by exact ⟨rfl, rfl⟩) h0
     obtain ⟨sN, tps, tpl, locs, hrun, hfrN, hgasN, G, hG, hfin⟩ := h1 rfl
     refine ⟨sN, run_eq _ hrun hN, hfrN, hgasN, ?_⟩
-    have hdr : drainRaw tr pub = [] := drain_nil_of_status1 hs
-    rw [hdr, List.map_nil, List.append_nil] at hfin
-    simp only [hs, and_true] at hfin
-    exact final_stack hG hfin
+    have hdr := drain_space_of_status1 H hs
+    simp only [hs, and_true, List.append_assoc] at hfin
+    refine final_stack hG ((finRaw nloc tr).map decMsg ++ (drainRaw tr pub).map decMsg) ?_ hfin
+    intro x hx
+    rcases List.mem_append.mp hx with h | h
+    · have : x.space = 16 := by
+        simp only [finRaw, List.map_map, List.mem_map, List.mem_range] at h
+        obtain ⟨j, _, rfl⟩ := h; exact Fp.toNat_cast_of_lt (by rw [P_val]; omega)
+      omega
+    · exact hdr x h
   · intro hs
     rw [hs] at hstP
     have hN := chain_len (actList tr pub) (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
@@ -775,7 +843,7 @@ theorem wasm_base_exec (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     obtain ⟨-, -, h2⟩ := exec_of_rows X (actList tr pub) (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
       (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) (fun ρ => rowCons (chipT ρ.1) tr pub ρ.1 ρ.2)
       (fun ρ => rowProd (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ _ 2 (Or.inr rfl) hrows _ _ hstP hchP' hnd htp hlen hfee
-      hgas hg64 ⟨rfl, rfl⟩ h0
+      hgas hg64 (by exact ⟨rfl, rfl⟩) h0
     obtain ⟨sN, e, hrun, hgasN⟩ := h2 rfl
     exact ⟨sN, e, run_eq _ hrun hN, hgasN⟩
 

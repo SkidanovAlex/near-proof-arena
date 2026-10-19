@@ -66,7 +66,11 @@ theorem recordOf_spec {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : Li
        (∃ tg, kindOf ls ins = some (.jump tg) ∧ op = Ctrl.opJump ∧ [x0, x1, x2, x3] = [tg, 0, 0, 0]) ∨
        (∃ tg, kindOf ls ins = some (.jumpIf tg) ∧ op = Ctrl.opJif ∧ [x0, x1, x2, x3] = [tg, 0, 0, 0]) ∨
        (kindOf ls ins = some .halt ∧ op = Ctrl.opHalt ∧ [x0, x1, x2, x3] = [0, 0, 0, 0]) ∨
-       (kindOf ls ins = some .haltIf ∧ op = Ctrl.opHif ∧ [x0, x1, x2, x3] = [0, 0, 0, 0])) := by
+       (kindOf ls ins = some .haltIf ∧ op = Ctrl.opHif ∧ [x0, x1, x2, x3] = [0, 0, 0, 0]) ∨
+       (∃ al off, ins = .load op al off ∧ (0x28 ≤ op ∧ op ≤ 0x35) ∧ isLoadOp op = true ∧ off < 2 ^ 32 ∧
+          [x0, x1, x2, x3] = [off % 65536, off / 65536, 0, 0]) ∨
+       (∃ al off, ins = .store op al off ∧ (0x36 ≤ op ∧ op ≤ 0x3E) ∧ isStoreOp op = true ∧ off < 2 ^ 32 ∧
+          [x0, x1, x2, x3] = [off % 65536, off / 65536, 0, 0])) := by
   unfold recordOf at hr
   split at hr
   · simp only [Option.some.injEq] at hr; subst hr
@@ -87,7 +91,25 @@ theorem recordOf_spec {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : Li
     · simp only [Option.some.injEq] at hr; subst hr
       exact ⟨_, _, _, _, _, rfl, Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨rfl, ‹_›, rfl⟩)))))))⟩
     · simp at hr
-  · rename_i hk1 hk2 hk3 hk4 hk5 hk6 hk7 hk8
+  · split at hr
+    · rename_i op' al' off' hc
+      simp only [Option.some.injEq] at hr; subst hr
+      have hr : 0x28 ≤ op' ∧ op' ≤ 0x35 := by
+        have := hc.1; simp only [isLoadOp, Bool.or_eq_true, beq_iff_eq, Bool.and_eq_true, decide_eq_true_eq] at this
+        omega
+      exact ⟨_, _, _, _, _, rfl, Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+        (Or.inr (Or.inr (Or.inr (Or.inl ⟨_, _, rfl, hr, hc.1, hc.2, rfl⟩)))))))))))))⟩
+    · simp at hr
+  · split at hr
+    · rename_i op' al' off' hc
+      simp only [Option.some.injEq] at hr; subst hr
+      have hr : 0x36 ≤ op' ∧ op' ≤ 0x3E := by
+        have := hc.1; simp only [isStoreOp, Bool.or_eq_true, beq_iff_eq, Bool.and_eq_true, decide_eq_true_eq] at this
+        omega
+      exact ⟨_, _, _, _, _, rfl, Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+        (Or.inr (Or.inr (Or.inr (Or.inr ⟨_, _, rfl, hr, hc.1, hc.2, rfl⟩)))))))))))))⟩
+    · simp at hr
+  · rename_i hk1 hk2 hk3 hk4 hk5 hk6 hk7 hk8 hk9 hk10
     split at hr <;> simp only [Option.some.injEq, reduceCtorEq] at hr <;> subst hr
     · exact ⟨_, _, _, _, _, rfl, Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
         (Or.inl ⟨‹_›, rfl, rfl⟩))))))))⟩
@@ -98,7 +120,7 @@ theorem recordOf_spec {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : Li
     · exact ⟨_, _, _, _, _, rfl, Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
         (Or.inr (Or.inr (Or.inr (Or.inl ⟨‹_›, rfl, rfl⟩)))))))))))⟩
     · exact ⟨_, _, _, _, _, rfl, Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-        (Or.inr (Or.inr (Or.inr (Or.inr ⟨‹_›, rfl, rfl⟩)))))))))))⟩
+        (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨‹_›, rfl, rfl⟩))))))))))))⟩
 
 theorem fetch_rec {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (_hpub : PubOK X nloc ncode pub)
     (L : Looks X nloc ncode pub tr) {m : List F}
@@ -233,7 +255,7 @@ theorem recordOf_op_lt {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : L
   obtain ⟨op, x0, x1, x2, x3, rfl, hc⟩ := recordOf_spec hr
   simp only [List.getD_cons_succ, List.getD_cons_zero]
   rcases hc with ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ |
-    ⟨_, _, h, _⟩ | ⟨_, hf, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ <;>
-  first | (subst h; decide) | (have := isFamilyNum_le hf; omega)
+    ⟨_, _, h, _⟩ | ⟨_, hf, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, _, hmem, _⟩ <;>
+  first | (subst h; decide) | (have := isFamilyNum_le hf; omega) | omega
 
 end WasmBase
