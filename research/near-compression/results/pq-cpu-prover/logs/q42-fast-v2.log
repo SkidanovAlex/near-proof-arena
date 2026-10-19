@@ -1,0 +1,62 @@
+[1;32mINFO    [0m ｉ [info]: FibonacciAir         | Constraint Deg = 2  | Prep Cols = 0  | Main Cols = [2]      |    5 Constraints |   0 Interactions
+[1;32mINFO    [0m ｉ [info]: Actual max constraint degree across all AIRs (2) does not match configured max constraint degree (4)
+[1;32mINFO    [0m stark_prove_excluding_trace [ 317ms | 0.00% / 100.00% ] phase: "prover"
+[1;32mINFO    [0m ┝━ ｉ [info]:  | num_airs_present: 1
+[1;32mINFO    [0m ┝━ prover.main_trace_commit [ 2.84ms | 0.00% / 0.90% ] phase: "prover"
+[1;32mINFO    [0m │  ┕━ trace_commit_cpu [ 2.84ms | 0.63% / 0.89% ]
+[1;32mINFO    [0m │     ┕━ stacked_commit_odd [ 834µs | 0.00% / 0.26% ]
+[1;32mINFO    [0m │        ┝━ rs_code_matrix [ 396µs | 0.12% ]
+[1;32mINFO    [0m │        ┕━ merkle_tree [ 426µs | 0.13% ]
+[1;32mINFO    [0m ┝━ prove_zerocheck_and_logup [ 693µs | 0.06% / 0.22% ]
+[1;32mINFO    [0m │  ┝━ fractional_sumcheck_with [ 441ns | 0.00% ]
+[1;32mINFO    [0m │  ┝━ sumcheck_uni_round0_polys [ 108µs | 0.03% ]
+[1;32mINFO    [0m │  ┝━ fold_ple_evals_fast [ 109µs | 0.03% ]
+[1;32mINFO    [0m │  ┕━ prover.batch_constraints.mle_rounds [ 302µs | 0.10% ] phase: "prover"
+[1;32mINFO    [0m ┕━ prover.openings [ 313ms | 55.05% / 98.88% ] phase: "prover"
+[1;32mINFO    [0m    ┝━ prove_stacked_opening_reduction [ 112ms | 35.47% ]
+[1;32mINFO    [0m    ┝━ merkle_tree [ 13.1ms | 4.15% ]
+[1;32mINFO    [0m    ┕━ merkle_tree [ 13.4ms | 4.22% ]
+NVL_PARAMS l_skip=2 n_stack=15 k=4 log_blowup=1 queries=[106, 87, 50, 36] pow(mu,fold,query,logup)=(0,0,0,0)
+[1;32mINFO    [0m ｉ [info]: NvAir                | Constraint Deg = 9  | Prep Cols = 0  | Main Cols = [77]     |  591 Constraints |  51 Interactions
+[1;32mINFO    [0m ｉ [info]: Sha512Air4           | Constraint Deg = 9  | Prep Cols = 0  | Main Cols = [83]     |  177 Constraints |  17 Interactions
+[1;32mINFO    [0m ｉ [info]: TableAir4            | Constraint Deg = 8  | Prep Cols = 0  | Main Cols = [9]      |   21 Constraints |   2 Interactions
+[1;32mINFO    [0m ｉ [info]: ByteAir              | Constraint Deg = 3  | Prep Cols = 0  | Main Cols = [5]      |    9 Constraints |   1 Interactions
+NV_PHASE before_dag 1174
+NV_DAG air=0 nodes=21 rows_so_far=1224
+NV_PHASE after_dag 1237
+NV_PHASE after_stacking 1545
+NV_QCOST round=0 queries=10 rows=2160 per_query=216 nbits=8 k=3 merkle_nodes=80
+NV_QCOST round=1 queries=4 rows=864 per_query=216 nbits=7 k=3 merkle_nodes=108
+NV_QCOST round=2 queries=2 rows=418 per_query=209 nbits=6 k=3 merkle_nodes=120
+NV_PHASE end 7514
+[1;32mINFO    [0m stark_prove_excluding_trace [ 110s | 0.00% / 100.00% ] phase: "prover"
+[1;32mINFO    [0m ┝━ ｉ [info]:  | num_airs_present: 4
+[1;32mINFO    [0m ┝━ prover.main_trace_commit [ 18.1s | 0.00% / 16.42% ] phase: "prover"
+[1;32mINFO    [0m │  ┕━ trace_commit_cpu [ 18.1s | 0.09% / 16.42% ]
+[1;32mINFO    [0m │     ┕━ stacked_commit_odd [ 18.0s | 7.62% / 16.33% ]
+[1;32mINFO    [0m │        ┕━ rs_code_matrix_odd [ 9.60s | 8.71% ]
+[1;32mINFO    [0m ┝━ prove_zerocheck_and_logup [ 27.0s | 0.09% / 24.50% ]
+[1;32mINFO    [0m │  ┝━ fill_input_layer [ 290ms | 0.26% ]
+[1;32mINFO    [0m │  ┝━ fill_input_layer [ 12.0ms | 0.01% ]
+[1;32mINFO    [0m │  ┝━ fill_input_layer [ 124ms | 0.11% ]
+[1;32mINFO    [0m │  ┝━ fill_input_layer [ 7.92ms | 0.01% ]
+[1;32mINFO    [0m │  ┝━ fractional_sumcheck_fast [ 12.4s | 11.29% ]
+[1;32mINFO    [0m │  ┝━ sumcheck_uni_round0_polys [ 2.43s | 0.03% / 2.20% ]
+[1;32mINFO    [0m │  │  ┝━ round0 [ 1.57s | 1.42% ]
+[1;32mINFO    [0m │  │  ┝━ round0 [ 92.0ms | 0.08% ]
+[1;32mINFO    [0m │  │  ┝━ round0 [ 735ms | 0.67% ]
+[1;32mINFO    [0m │  │  ┕━ round0 [ 312µs | 0.00% ]
+[1;32mINFO    [0m │  ┝━ fold_ple_evals_fast [ 641ms | 0.58% ]
+[1;32mINFO    [0m │  ┕━ prover.batch_constraints.mle_rounds [ 11.0s | 9.95% ] phase: "prover"
+[1;32mINFO    [0m ┕━ prover.openings [ 65.1s | 41.06% / 59.08% ] phase: "prover"
+[1;32mINFO    [0m    ┕━ prove_stacked_opening_reduction [ 19.9s | 18.02% ]
+NVL_AIR 0 h=16384 w=77 int/row=51 deg=9
+NVL_AIR 1 h=65536 w=83 int/row=17 deg=9
+NVL_AIR 2 h=128 w=9 int/row=2 deg=8
+NVL_AIR 3 h=65536 w=5 int/row=1 deg=3
+NVL_PROOF_SHA256 1df5e391a5eda143875475bb3ff2dcee4cca9a7bcc6902d23d303a0721bf91b2
+NVL_SUMMARY wall_s=110.9 (keygen+tracegen+prove+verify) peak_rss_gb=1.58 cells=7029888 (2^22.75) program_rows=7514 proof_bytes=353447
+
+real	1m51.512s
+user	1m13.112s
+sys	0m1.002s

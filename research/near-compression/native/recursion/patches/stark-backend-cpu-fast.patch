@@ -1,10 +1,535 @@
+diff --git a/crates/cpu-backend/src/fast/gkr.rs b/crates/cpu-backend/src/fast/gkr.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/cpu-backend/src/fast/gkr.rs
+@@ -0,0 +1,518 @@
++//! [pq-cpu-prover] Fractional-sum GKR (LogUp) prover, byte-identical to
++//! `fractional_sumcheck_with`.
++//!
++//! Differences from the original, none of which changes a transcript value:
++//! * the input layer keeps the numerators in the base field (`p` are trace counts), so its tree
++//!   level and its first sumcheck use Ext12 × base products;
++//! * layers are stored separately (no 2N segment tree plus a copy of the input, no per-layer
++//!   column copy): a layer's first sumcheck round reads the stored layer directly and writes the
++//!   folded table at half size;
++//! * the eq factor is split off (Gruen): `s(X) = A · eq(ξ_i, X) · t(X)` with
++//!   `t(X) = Σ_y eq(ξ_{>i}, y) g(X, y)` of degree 2, so per pair only `t(0), t(1), t(2)` are
++//!   evaluated, no eq column is interpolated or folded, and `s(1..3)` follow exactly;
++//! * interpolation at X = 1, 2 uses additions only;
++//! * all Ext12 arithmetic runs 16 pairs at a time in packed SoA form.
++
++use openvm_stark_backend::{
++    proof::GkrLayerClaims,
++    prover::{
++        error::LogupZerocheckError,
++        fractional_sumcheck_gkr::FracSumcheckProof,
++    },
++    FiatShamirTranscript, StarkProtocolConfig,
++};
++use p3_field::{ExtensionField, Field, PackedField, PackedValue, PrimeCharacteristicRing};
++use p3_maybe_rayon::prelude::*;
++
++use super::pext::{coeffs, from_coeffs, PreMul, PE};
++
++/// Base-field-numerator input layer: `(p[i], q[i])`, `q` already includes `alpha`.
++pub struct InputLayer<F, EF> {
++    pub p: Vec<F>,
++    pub q: Vec<EF>,
++}
++
++#[derive(Clone, Copy, Default)]
++struct FracE<EF> {
++    p: EF,
++    q: EF,
++}
++
++#[inline(always)]
++fn gather<F: Field, EF: ExtensionField<F>, Q: PackedField<Scalar = F>>(f: impl Fn(usize) -> EF) -> PE<Q> {
++    let vals: Vec<EF> = (0..Q::WIDTH).map(&f).collect();
++    PE(core::array::from_fn(|j| Q::from_fn(|l| coeffs::<F, EF>(&vals[l])[j])))
++}
++
++#[inline(always)]
++fn scatter<F: Field, EF: ExtensionField<F>, Q: PackedField<Scalar = F>>(v: &PE<Q>, mut f: impl FnMut(usize, EF)) {
++    for l in 0..Q::WIDTH {
++        f(l, from_coeffs::<F, EF>(&v.lane(l)));
++    }
++}
++
++/// One tree level above the input: out[x] = in[2x] + in[2x+1].
++fn level_from_input<F: Field, EF: ExtensionField<F>>(inp: &InputLayer<F, EF>, w: F) -> Vec<FracE<EF>> {
++    let n = inp.p.len() / 2;
++    let mut out = vec![FracE::<EF>::default(); n];
++    let lanes = <F::Packing as PackedValue>::WIDTH;
++    if n >= lanes && n % lanes == 0 {
++        out.par_chunks_mut(lanes).enumerate().for_each(|(b, o)| {
++            let x0 = b * lanes;
++            let q0: PE<F::Packing> = gather(|l| inp.q[2 * (x0 + l)]);
++            let q1: PE<F::Packing> = gather(|l| inp.q[2 * (x0 + l) + 1]);
++            let p0 = F::Packing::from_fn(|l| inp.p[2 * (x0 + l)]);
++            let p1 = F::Packing::from_fn(|l| inp.p[2 * (x0 + l) + 1]);
++            let p = q1.mul_base(p0).add(&q0.mul_base(p1));
++            let q = q0.mul(&q1, w);
++            scatter(&p, |l, v: EF| o[l].p = v);
++            scatter(&q, |l, v: EF| o[l].q = v);
++        });
++    } else {
++        for x in 0..n {
++            let (p0, p1, q0, q1) = (inp.p[2 * x], inp.p[2 * x + 1], inp.q[2 * x], inp.q[2 * x + 1]);
++            out[x] = FracE { p: q1 * p0 + q0 * p1, q: q0 * q1 };
++        }
++    }
++    out
++}
++
++fn level_up<F: Field, EF: ExtensionField<F>>(lay: &[FracE<EF>], w: F) -> Vec<FracE<EF>> {
++    let n = lay.len() / 2;
++    let mut out = vec![FracE::<EF>::default(); n];
++    let lanes = <F::Packing as PackedValue>::WIDTH;
++    if n >= lanes && n % lanes == 0 {
++        out.par_chunks_mut(lanes).enumerate().for_each(|(b, o)| {
++            let x0 = b * lanes;
++            let p0: PE<F::Packing> = gather(|l| lay[2 * (x0 + l)].p);
++            let q0: PE<F::Packing> = gather(|l| lay[2 * (x0 + l)].q);
++            let p1: PE<F::Packing> = gather(|l| lay[2 * (x0 + l) + 1].p);
++            let q1: PE<F::Packing> = gather(|l| lay[2 * (x0 + l) + 1].q);
++            let p = p0.mul(&q1, w).add(&q0.mul(&p1, w));
++            let q = q0.mul(&q1, w);
++            scatter(&p, |l, v: EF| o[l].p = v);
++            scatter(&q, |l, v: EF| o[l].q = v);
++        });
++    } else {
++        for x in 0..n {
++            let (a, b) = (lay[2 * x], lay[2 * x + 1]);
++            // Frac add: p = a.p * b.q + a.q * b.p
++            out[x] = FracE { p: a.p * b.q + a.q * b.p, q: a.q * b.q };
++        }
++    }
++    out
++}
++
++/// eq(ξ_{lo..}, y) for y over `xi.len()` bits, bit k <-> xi[k].
++fn eq_table<EF: Field>(xi: &[EF]) -> Vec<EF> {
++    let mut out = vec![EF::ZERO; 1 << xi.len()];
++    out[0] = EF::ONE;
++    for (i, &x) in xi.iter().enumerate() {
++        let (lo, hi) = out[..2 << i].split_at_mut(1 << i);
++        lo.par_iter_mut().zip(hi.par_iter_mut()).for_each(|(l, h)| {
++            *h = *l * x;
++            *l *= EF::ONE - x;
++        });
++    }
++    out
++}
++
++/// Values of the four columns (p0, q0, p1, q1) at the pair (2y, 2y+1) for 16 (or 1) y's, as
++/// packed values. `p` may be base-field (input layer).
++enum PVal<Q: PackedField> {
++    B(Q),
++    E(PE<Q>),
++}
++
++impl<Q: PackedField> PVal<Q> {
++    #[inline(always)]
++    fn mul_e(&self, q: &PE<Q>, w: Q::Scalar) -> PE<Q> {
++        match self {
++            PVal::B(b) => q.mul_base(*b),
++            PVal::E(e) => e.mul(q, w),
++        }
++    }
++    #[inline(always)]
++    fn interp2(lo: &Self, hi: &Self) -> Self {
++        // value at X = 2: 2 hi - lo
++        match (lo, hi) {
++            (PVal::B(a), PVal::B(b)) => PVal::B(b.double() - *a),
++            (PVal::E(a), PVal::E(b)) => PVal::E(b.add(b).sub(a)),
++            _ => unreachable!(),
++        }
++    }
++    #[inline(always)]
++    fn to_pe(&self) -> PE<Q> {
++        match self {
++            PVal::B(b) => {
++                let mut r = PE::zero();
++                r.0[0] = *b;
++                r
++            }
++            PVal::E(e) => *e,
++        }
++    }
++}
++
++/// Table source of a sumcheck round.
++enum Tab<'a, F, EF> {
++    /// first round of the input layer
++    Input(&'a InputLayer<F, EF>),
++    /// first round of a stored layer
++    Layer(&'a [FracE<EF>]),
++    /// folded table, entries (p0, q0, p1, q1) per x
++    Folded(&'a [[EF; 4]]),
++}
++
++impl<F: Field, EF: ExtensionField<F>> Tab<'_, F, EF> {
++    fn len(&self) -> usize {
++        match self {
++            Tab::Input(i) => i.p.len() / 2,
++            Tab::Layer(l) => l.len() / 2,
++            Tab::Folded(f) => f.len(),
++        }
++    }
++    /// (p0, q0, p1, q1) at x for lanes x = x_of(l)
++    #[inline(always)]
++    fn load<Q: PackedField<Scalar = F>>(&self, x_of: impl Fn(usize) -> usize) -> [PVal<Q>; 4] {
++        match self {
++            Tab::Input(i) => [
++                PVal::B(Q::from_fn(|l| i.p[2 * x_of(l)])),
++                PVal::E(gather(|l| i.q[2 * x_of(l)])),
++                PVal::B(Q::from_fn(|l| i.p[2 * x_of(l) + 1])),
++                PVal::E(gather(|l| i.q[2 * x_of(l) + 1])),
++            ],
++            Tab::Layer(lay) => [
++                PVal::E(gather(|l| lay[2 * x_of(l)].p)),
++                PVal::E(gather(|l| lay[2 * x_of(l)].q)),
++                PVal::E(gather(|l| lay[2 * x_of(l) + 1].p)),
++                PVal::E(gather(|l| lay[2 * x_of(l) + 1].q)),
++            ],
++            Tab::Folded(f) => core::array::from_fn(|c| PVal::E(gather(|l| f[x_of(l)][c]))),
++        }
++    }
++}
++
++/// One sumcheck round over the table: returns (Σ_y E(y) pp(X,y), Σ_y E(y) qq(X,y)) for X = 0,1,2
++/// and the folded table at `r` (computed in a second pass once `r` is known).
++fn round_sums<F: Field, EF: ExtensionField<F>>(tab: &Tab<'_, F, EF>, e: &[EF], w: F) -> [[EF; 2]; 3] {
++    let npairs = tab.len() / 2;
++    debug_assert_eq!(e.len(), npairs);
++    fn run<F: Field, EF: ExtensionField<F>, Q: PackedField<Scalar = F>>(
++        tab: &Tab<'_, F, EF>,
++        e: &[EF],
++        w: F,
++        nblk: usize,
++    ) -> [[EF; 2]; 3] {
++        let wl = Q::WIDTH;
++        let acc = (0..nblk)
++            .into_par_iter()
++            .with_min_len(16)
++            .fold(
++                || [PE::<Q>::zero(); 6],
++                |mut acc, b| {
++                    let y0 = b * wl;
++                    let lo = tab.load::<Q>(|l| 2 * (y0 + l));
++                    let hi = tab.load::<Q>(|l| 2 * (y0 + l) + 1);
++                    let ev: PE<Q> = gather(|l| e[y0 + l]);
++                    for xx in 0..3 {
++                        let v: [PVal<Q>; 4] = match xx {
++                            0 => lo.each_ref().map(|v| match v {
++                                PVal::B(b) => PVal::B(*b),
++                                PVal::E(x) => PVal::E(*x),
++                            }),
++                            1 => hi.each_ref().map(|v| match v {
++                                PVal::B(b) => PVal::B(*b),
++                                PVal::E(x) => PVal::E(*x),
++                            }),
++                            _ => core::array::from_fn(|c| PVal::interp2(&lo[c], &hi[c])),
++                        };
++                        let q0 = v[1].to_pe();
++                        let q1 = v[3].to_pe();
++                        let pp = v[0].mul_e(&q1, w).add(&v[2].mul_e(&q0, w));
++                        let qq = q0.mul(&q1, w);
++                        acc[2 * xx].add_assign(&ev.mul(&pp, w));
++                        acc[2 * xx + 1].add_assign(&ev.mul(&qq, w));
++                    }
++                    acc
++                },
++            )
++            .reduce(
++                || [PE::<Q>::zero(); 6],
++                |mut a, b| {
++                    for i in 0..6 {
++                        a[i].add_assign(&b[i]);
++                    }
++                    a
++                },
++            );
++        core::array::from_fn(|xx| core::array::from_fn(|k| from_coeffs::<F, EF>(&acc[2 * xx + k].hsum())))
++    }
++    let lanes = <F::Packing as PackedValue>::WIDTH;
++    if npairs >= lanes && npairs % lanes == 0 {
++        run::<F, EF, F::Packing>(tab, e, w, npairs / lanes)
++    } else {
++        run::<F, EF, F>(tab, e, w, npairs)
++    }
++}
++
++fn fold_tab<F: Field, EF: ExtensionField<F>>(tab: &Tab<'_, F, EF>, r: EF, w: F) -> Vec<[EF; 4]> {
++    let nout = tab.len() / 2;
++    let mut out = vec![[EF::ZERO; 4]; nout];
++    let lanes = <F::Packing as PackedValue>::WIDTH;
++    if nout >= lanes && nout % lanes == 0 {
++        let rp = PreMul::<F::Packing>::new(coeffs::<F, EF>(&r), w);
++        out.par_chunks_mut(lanes).enumerate().for_each(|(b, o)| {
++            let y0 = b * lanes;
++            let lo = tab.load::<F::Packing>(|l| 2 * (y0 + l));
++            let hi = tab.load::<F::Packing>(|l| 2 * (y0 + l) + 1);
++            for c in 0..4 {
++                let (a, bb) = (lo[c].to_pe(), hi[c].to_pe());
++                let v = a.add(&rp.mul(&bb.sub(&a)));
++                scatter(&v, |l, x: EF| o[l][c] = x);
++            }
++        });
++    } else {
++        for y in 0..nout {
++            let lo = tab.load::<F>(|_| 2 * y);
++            let hi = tab.load::<F>(|_| 2 * y + 1);
++            for c in 0..4 {
++                let a: EF = from_coeffs::<F, EF>(&lo[c].to_pe().lane(0));
++                let b: EF = from_coeffs::<F, EF>(&hi[c].to_pe().lane(0));
++                out[y][c] = a + (b - a) * r;
++            }
++        }
++    }
++    out
++}
++
++#[inline(always)]
++fn eq1<EF: Field>(xi: EF, x: EF) -> EF {
++    // eq(xi, x) = (1 - xi)(1 - x) + xi x
++    (EF::ONE - xi) * (EF::ONE - x) + xi * x
++}
++
++/// Byte-identical replacement of `fractional_sumcheck_with` for a base-numerator input layer.
++#[tracing::instrument(level = "info", skip_all)]
++pub fn fractional_sumcheck_fast<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
++    transcript: &mut TS,
++    input: InputLayer<SC::F, SC::EF>,
++    assert_zero: bool,
++    gruen: bool,
++    w: SC::F,
++) -> Result<(FracSumcheckProof<SC>, Vec<SC::EF>), LogupZerocheckError> {
++    type EF<SC> = <SC as StarkProtocolConfig>::EF;
++    let n_in = input.p.len();
++    let total_rounds = p3_util::log2_strict_usize(n_in);
++    assert!(total_rounds >= 1);
++    // layers[k] has 2^k entries, k = 0..total_rounds-1 (the input is layer total_rounds)
++    let mut layers: Vec<Vec<FracE<EF<SC>>>> = vec![vec![]; total_rounds];
++    layers[total_rounds - 1] = level_from_input(&input, w);
++    for k in (0..total_rounds - 1).rev() {
++        layers[k] = level_up(&layers[k + 1], w);
++    }
++    openvm_stark_backend::prover::stream_pcs::memprof("gkr.layers_built");
++    let frac_sum = layers[0][0];
++    if assert_zero {
++        if frac_sum.p != EF::<SC>::ZERO {
++            return Err(LogupZerocheckError::NonZeroRootSum);
++        }
++    } else {
++        transcript.observe_ext(frac_sum.p);
++    }
++    transcript.observe_ext(frac_sum.q);
++
++    let mut claims_per_layer: Vec<GkrLayerClaims<SC>> = Vec::with_capacity(total_rounds);
++    let mut sumcheck_polys: Vec<Vec<[EF<SC>; 3]>> = Vec::with_capacity(total_rounds);
++    let l1 = if total_rounds == 1 {
++        // layer 1 is the input itself
++        let e = |i: usize| FracE { p: EF::<SC>::from(input.p[i]), q: input.q[i] };
++        vec![e(0), e(1)]
++    } else {
++        layers[1].clone()
++    };
++    claims_per_layer.push(GkrLayerClaims::<SC> {
++        p_xi_0: l1[0].p,
++        q_xi_0: l1[0].q,
++        p_xi_1: l1[1].p,
++        q_xi_1: l1[1].q,
++    });
++    transcript.observe_ext(claims_per_layer[0].p_xi_0);
++    transcript.observe_ext(claims_per_layer[0].q_xi_0);
++    transcript.observe_ext(claims_per_layer[0].p_xi_1);
++    transcript.observe_ext(claims_per_layer[0].q_xi_1);
++    let mu_1 = transcript.sample_ext();
++    let mut xi_prev = vec![mu_1];
++    // layers 0 and 1 are no longer needed
++    layers[0] = vec![];
++    if total_rounds > 1 {
++        layers[1] = vec![];
++    }
++
++    for round in 1..total_rounds {
++        let lambda = transcript.sample_ext();
++        let n = round;
++        let seg_layer = round + 1;
++        let mut round_polys_eval = Vec::with_capacity(n);
++        let mut r_vec = Vec::with_capacity(n);
++        let mut folded: Vec<[EF<SC>; 4]> = vec![];
++        let seg = if seg_layer < total_rounds { std::mem::take(&mut layers[seg_layer]) } else { vec![] };
++        let mut a_acc = EF::<SC>::ONE;
++        for sr in 0..n {
++            let tab: Tab<'_, SC::F, EF<SC>> = if sr == 0 {
++                if seg_layer == total_rounds {
++                    Tab::Input(&input)
++                } else {
++                    Tab::Layer(&seg)
++                }
++            } else {
++                Tab::Folded(&folded)
++            };
++            let xi = xi_prev[sr];
++            let e = eq_table(&xi_prev[sr + 1..]);
++            let sums = round_sums(&tab, &e, w);
++            drop(e);
++            let t: [EF<SC>; 3] = core::array::from_fn(|k| sums[k][0] + lambda * sums[k][1]);
++            let t3 = t[0] - t[1].double() - t[1] + t[2].double() + t[2];
++            let tv = [t[1], t[2], t3];
++            let mut s_evals: [EF<SC>; 3] =
++                core::array::from_fn(|k| a_acc * eq1(xi, EF::<SC>::from_usize(k + 1)) * tv[k]);
++            if gruen {
++                s_evals[2] = EF::<SC>::ZERO;
++            }
++            for &eval in &s_evals[..if gruen { 2 } else { 3 }] {
++                transcript.observe_ext(eval);
++            }
++            round_polys_eval.push(s_evals);
++            let r_round = transcript.sample_ext();
++            let new_folded = fold_tab(&tab, r_round, w);
++            drop(tab);
++            folded = new_folded;
++            a_acc *= eq1(xi, r_round);
++            r_vec.push(r_round);
++        }
++        drop(seg);
++        debug_assert_eq!(folded.len(), 1);
++        let c = folded[0];
++        claims_per_layer.push(GkrLayerClaims::<SC> { p_xi_0: c[0], q_xi_0: c[1], p_xi_1: c[2], q_xi_1: c[3] });
++        transcript.observe_ext(claims_per_layer[round].p_xi_0);
++        transcript.observe_ext(claims_per_layer[round].q_xi_0);
++        transcript.observe_ext(claims_per_layer[round].p_xi_1);
++        transcript.observe_ext(claims_per_layer[round].q_xi_1);
++        let mu = transcript.sample_ext();
++        xi_prev = [vec![mu], r_vec].concat();
++        sumcheck_polys.push(round_polys_eval);
++    }
++    drop(input);
++    Ok((
++        FracSumcheckProof { fractional_sum: (frac_sum.p, frac_sum.q), claims_per_layer, sumcheck_polys },
++        xi_prev,
++    ))
++}
++
++/// Placement of one interaction's column in the stacked LogUp input: rows `[row_idx, row_idx+len)`
++/// hold the trace's values repeated cyclically (len / height times), numerators scaled by `norm`.
++pub struct Placement<F> {
++    pub interaction: usize,
++    pub row_idx: usize,
++    pub len: usize,
++    pub norm: F,
++}
++
++struct SyncPtr<T>(*mut T);
++unsafe impl<T> Send for SyncPtr<T> {}
++unsafe impl<T> Sync for SyncPtr<T> {}
++impl<T> SyncPtr<T> {
++    #[inline(always)]
++    fn get(&self) -> *mut T {
++        self.0
++    }
++}
++
++/// The LogUp input layer from the traces (`eval_interactions` per row, written in stacked order),
++/// `q += alpha` everywhere, packed over rows. `prog` has functionals `[raw count_i, denom_i]` per
++/// interaction i (see `gkr_input_specs`).
++#[tracing::instrument(level = "info", skip_all)]
++pub fn fill_input_layer<F: Field, EF: ExtensionField<F>>(
++    layer: &mut InputLayer<F, EF>,
++    prog: &super::zc::Program<F, EF>,
++    mats: &[(&p3_matrix::dense::RowMajorMatrix<F>, bool)],
++    height: usize,
++    placements: &[Placement<F>],
++) {
++    type P<F> = <F as Field>::Packing;
++    let wl = <P<F> as PackedValue>::WIDTH;
++    assert!(height % wl == 0);
++    let nb = height / wl;
++    let inputs = prog.inputs();
++    let nf = prog.num_funcs();
++    let pp = SyncPtr(layer.p.as_mut_ptr());
++    let qp = SyncPtr(layer.q.as_mut_ptr());
++    let konst: Vec<PE<P<F>>> = prog.konst.iter().map(|k| PE::broadcast(coeffs::<F, EF>(k))).collect();
++    let heights: Vec<usize> = mats.iter().map(|(m, _)| m.values.len() / m.width).collect();
++    (0..nb).into_par_iter().for_each_init(
++        || (vec![P::<F>::ZERO; prog.n_slots()], vec![PE::<P<F>>::zero(); nf], vec![P::<F>::ZERO; nf]),
++        |(slots, fsum, raw), b| {
++            let r0 = b * wl;
++            for (i, &(t, c)) in inputs.iter().enumerate() {
++                slots[i] = if t == 0 {
++                    P::<F>::from_fn(|l| {
++                        let row = r0 + l;
++                        F::from_bool(match c {
++                            0 => row == 0,
++                            1 => row != height - 1,
++                            _ => row == height - 1,
++                        })
++                    })
++                } else {
++                    let (m, rot) = mats[t - 1];
++                    let h = heights[t - 1];
++                    let off = usize::from(rot);
++                    P::<F>::from_fn(|l| m.values[((r0 + l + off) % h) * m.width + c])
++                };
++            }
++            fsum.copy_from_slice(&konst);
++            prog.run_base(slots, fsum, raw);
++            for &(f, v) in &prog.raw_const {
++                raw[f] = P::<F>::from(v);
++            }
++            for pl in placements {
++                let pv = raw[2 * pl.interaction] * pl.norm;
++                let dv = &fsum[2 * pl.interaction + 1];
++                for l in 0..wl {
++                    let pval = pv.as_slice()[l];
++                    let qval: EF = from_coeffs::<F, EF>(&dv.lane(l));
++                    let mut pos = pl.row_idx + r0 + l;
++                    while pos < pl.row_idx + pl.len {
++                        // SAFETY: placements are disjoint row ranges; each position is written by
++                        // exactly one (block, lane, repetition).
++                        unsafe {
++                            *pp.get().add(pos) = pval;
++                            let q = &mut *qp.get().add(pos);
++                            *q += qval;
++                        }
++                        pos += height;
++                    }
++                }
++            }
++        },
++    );
++}
++
++/// Functionals of the LogUp input: `[count_i (raw), Σ_j β^j msg_ij + β^len (bus_i + 1)]`.
++pub fn gkr_input_specs<F: Field, EF: ExtensionField<F>>(
++    interactions: &[openvm_stark_backend::interaction::Interaction<usize>],
++    beta_pows: &[EF],
++) -> Vec<super::zc::FuncSpec<EF>> {
++    let mut v = vec![];
++    for int in interactions {
++        v.push(super::zc::FuncSpec { terms: vec![(int.count, EF::ONE)], konst: EF::ZERO, raw: true });
++        let b = F::from_u32(int.bus_index as u32 + 1);
++        v.push(super::zc::FuncSpec {
++            terms: int.message.iter().enumerate().map(|(j, &m)| (m, beta_pows[j])).collect(),
++            konst: beta_pows[int.message.len()] * b,
++            raw: false,
++        });
++    }
++    v
++}
 diff --git a/crates/cpu-backend/src/fast/mod.rs b/crates/cpu-backend/src/fast/mod.rs
 new file mode 100644
 --- /dev/null
 +++ b/crates/cpu-backend/src/fast/mod.rs
-@@ -0,0 +1,5 @@
+@@ -0,0 +1,7 @@
 +//! [pq-cpu-prover] Fast CPU prover paths (byte-identical to the original code; see each module).
++pub mod gkr;
 +pub mod pext;
++pub mod round0;
 +pub mod zc;
 +
 +pub use pext::{detect_w, fast_enabled};
@@ -23,7 +548,7 @@ new file mode 100644
 +//! (products summed in u64 before one Montgomery reduction), which are exact: every function here
 +//! returns the field-exact result, so its output is bit-identical to p3's generic arithmetic.
 +
-+use p3_field::{BasedVectorSpace, ExtensionField, Field, PackedField, PackedValue, PrimeCharacteristicRing};
++use p3_field::{BasedVectorSpace, ExtensionField, Field, PackedField};
 +
 +pub const D: usize = 12;
 +
@@ -196,11 +721,180 @@ new file mode 100644
 +    static ON: OnceLock<bool> = OnceLock::new();
 +    *ON.get_or_init(|| std::env::var("NEARPROOF_CPU_FAST").map(|v| v != "0").unwrap_or(true))
 +}
+diff --git a/crates/cpu-backend/src/fast/round0.rs b/crates/cpu-backend/src/fast/round0.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/cpu-backend/src/fast/round0.rs
+@@ -0,0 +1,164 @@
++//! [pq-cpu-prover] Univariate-skip round 0 of zerocheck + LogUp in packed base-field arithmetic.
++//!
++//! The original code (`sumcheck_uni_round0_zerocheck_packed`, `sumcheck_uni_round0_batch`) walks
++//! the hypercube point by point: per point it extracts and iDFTs a block of `2^l_skip` rows,
++//! coset-DFTs it, evaluates the constraint DAG packed over the `2^l_skip` skip points only, then
++//! re-evaluates every interaction as an expression tree, per point, per coset. Here the lanes run
++//! over hypercube points `x`, the coset values come from one precomputed Lagrange matrix per coset
++//! (`L_z(s ω^z')`, lazy dot products), and a single compiled DAG pass gives the zerocheck and both
++//! LogUp functionals. The evaluations are the same field elements at the same coset points, so
++//! the round-0 polynomials are identical.
++
++use p3_field::{ExtensionField, Field, PackedValue, PrimeCharacteristicRing, TwoAdicField};
++use p3_matrix::dense::RowMajorMatrix;
++use p3_maybe_rayon::prelude::*;
++
++use super::{
++    pext::{coeffs, from_coeffs, PE},
++    zc::{lanes, Program},
++};
++
++type P<F> = <F as Field>::Packing;
++
++pub struct Round0Out<EF> {
++    /// `[z * d_zc + ci]`, Σ_x eq(x) Σ λ^i C_i at `g^(ci+1) ω^z` (no zerofier factor)
++    pub zc: Vec<EF>,
++    /// `[z * d_lg + ci]`
++    pub num: Vec<EF>,
++    pub den: Vec<EF>,
++}
++
++/// Number of hypercube points needed for the packed path.
++pub fn min_points<F: Field>() -> usize {
++    lanes::<F>()
++}
++
++/// `tables[0]` is the selector matrix, `tables[1..]` the AIR's row-major matrices (with rotation
++/// flags) in `view_mats_rowmaj` order. `eq_xi[x]` for `x < 2^n_lift`.
++#[tracing::instrument(level = "info", skip_all)]
++pub fn round0<F: TwoAdicField, EF: ExtensionField<F>>(
++    prog: &Program<F, EF>,
++    l_skip: usize,
++    n_lift: usize,
++    tables: &[(&RowMajorMatrix<F>, bool)],
++    eq_xi: &[EF],
++    d_zc: usize,
++    d_lg: usize,
++) -> Round0Out<EF> {
++    let wl = lanes::<F>();
++    let npts = 1usize << n_lift;
++    debug_assert!(npts >= wl);
++    let nb = npts / wl;
++    let sk = 1usize << l_skip;
++    let n_cos = d_zc.max(if prog.used[1] { d_lg } else { 0 });
++    let g = F::GENERATOR;
++    let omega = F::two_adic_generator(l_skip);
++    let om: Vec<F> = omega.powers().take(sk).collect();
++    let n_inv = F::from_usize(sk).inverse();
++    // m[ci][z'][z] = L_z(s ω^z') = ω^z (s^N - 1) / (N (s ω^z' - ω^z))
++    let mut m: Vec<Vec<Vec<P<F>>>> = Vec::with_capacity(n_cos);
++    let mut s = F::ONE;
++    for _ in 0..n_cos {
++        s *= g;
++        let sn1 = s.exp_power_of_2(l_skip) - F::ONE;
++        m.push(
++            (0..sk)
++                .map(|zp| {
++                    (0..sk)
++                        .map(|z| P::<F>::from(om[z] * sn1 * n_inv * (s * om[zp] - om[z]).inverse()))
++                        .collect()
++                })
++                .collect(),
++        );
++    }
++    let inputs = prog.inputs();
++    let n_in = inputs.len();
++    let nf = prog.num_funcs();
++    let heights: Vec<usize> = tables.iter().map(|(t, _)| t.values.len() / t.width).collect();
++    let konst: Vec<PE<P<F>>> = prog.konst.iter().map(|k| PE::broadcast(coeffs::<F, EF>(k))).collect();
++    struct St<Q> {
++        v: Vec<Q>,
++        slots: Vec<Q>,
++        raw: Vec<Q>,
++        fsum: Vec<PE<Q>>,
++        zc: Vec<PE<Q>>,
++        num: Vec<PE<Q>>,
++        den: Vec<PE<Q>>,
++    }
++    let new_st = || St::<P<F>> {
++        v: vec![P::<F>::ZERO; n_in * sk],
++        slots: vec![P::<F>::ZERO; prog.n_slots()],
++        raw: vec![P::<F>::ZERO; nf],
++        fsum: vec![PE::zero(); nf],
++        zc: vec![PE::zero(); sk * d_zc],
++        num: vec![PE::zero(); sk * d_lg],
++        den: vec![PE::zero(); sk * d_lg],
++    };
++    let used = prog.used.clone();
++    let fold_blk = |mut st: St<P<F>>, b: usize| -> St<P<F>> {
++        for (i, &(t, c)) in inputs.iter().enumerate() {
++            let (mat, rot) = tables[t];
++            let h = heights[t];
++            let w = mat.width;
++            let off = usize::from(rot);
++            for z in 0..sk {
++                st.v[i * sk + z] = P::<F>::from_fn(|l| {
++                    let x = b * wl + l;
++                    mat.values[(((x << l_skip) + z + off) % h) * w + c]
++                });
++            }
++        }
++        let eq: PE<P<F>> = PE(core::array::from_fn(|j| {
++            P::<F>::from_fn(|l| coeffs::<F, EF>(&eq_xi[b * wl + l])[j])
++        }));
++        for ci in 0..n_cos {
++            for zp in 0..sk {
++                let row = &m[ci][zp];
++                for i in 0..n_in {
++                    let vi = &st.v[i * sk..i * sk + sk];
++                    st.slots[i] = if sk == 4 {
++                        P::<F>::dot_product::<4>(vi.try_into().unwrap(), row[..4].try_into().unwrap())
++                    } else {
++                        let mut a = P::<F>::ZERO;
++                        for z in 0..sk {
++                            a += vi[z] * row[z];
++                        }
++                        a
++                    };
++                }
++                st.fsum.copy_from_slice(&konst);
++                prog.run_base(&mut st.slots, &mut st.fsum, &mut st.raw);
++                if ci < d_zc && used[0] {
++                    let v = eq.mul(&st.fsum[0], prog.w());
++                    st.zc[zp * d_zc + ci].add_assign(&v);
++                }
++                if ci < d_lg && used[1] {
++                    let v = eq.mul(&st.fsum[1], prog.w());
++                    st.num[zp * d_lg + ci].add_assign(&v);
++                    let v = eq.mul(&st.fsum[2], prog.w());
++                    st.den[zp * d_lg + ci].add_assign(&v);
++                }
++            }
++        }
++        st
++    };
++    let st = (0..nb)
++        .into_par_iter()
++        .with_min_len(2)
++        .fold(new_st, fold_blk)
++        .reduce(new_st, |mut a, b| {
++            for (x, y) in a.zc.iter_mut().zip(&b.zc) {
++                x.add_assign(y);
++            }
++            for (x, y) in a.num.iter_mut().zip(&b.num) {
++                x.add_assign(y);
++            }
++            for (x, y) in a.den.iter_mut().zip(&b.den) {
++                x.add_assign(y);
++            }
++            a
++        });
++    let h = |v: &[PE<P<F>>]| v.iter().map(|x| from_coeffs::<F, EF>(&x.hsum())).collect::<Vec<EF>>();
++    Round0Out { zc: h(&st.zc), num: h(&st.num), den: h(&st.den) }
++}
++
 diff --git a/crates/cpu-backend/src/fast/zc.rs b/crates/cpu-backend/src/fast/zc.rs
 new file mode 100644
 --- /dev/null
 +++ b/crates/cpu-backend/src/fast/zc.rs
-@@ -0,0 +1,556 @@
+@@ -0,0 +1,660 @@
 +//! [pq-cpu-prover] Zerocheck + LogUp MLE rounds on struct-of-arrays Ext12 tables.
 +//!
 +//! After the univariate round the trace tables are Ext12. The original code evaluates the
@@ -357,7 +1051,19 @@ new file mode 100644
 +    /// c - a
 +    CSub { d: u32, a: u32, c: F },
 +    /// F[f] += coef[k] * slot[a]
-+    Acc { f: u8, a: u32, k: u32 },
++    Acc { f: u32, a: u32, k: u32 },
++    /// raw[f] = slot[a] (base-field evaluation only)
++    Raw { f: u32, a: u32 },
++}
++
++/// A linear functional of DAG node values: `konst + Σ coef * node`. With `raw`, the functional is
++/// the single node's value itself (base-field evaluation; the node must be non-constant or the
++/// constant is reported through `konst`).
++#[derive(Clone, Debug)]
++pub struct FuncSpec<EF> {
++    pub terms: Vec<(usize, EF)>,
++    pub konst: EF,
++    pub raw: bool,
 +}
 +
 +#[derive(Clone, Copy, Debug)]
@@ -373,9 +1079,12 @@ new file mode 100644
 +    n_slots: usize,
 +    ins: Vec<Ins<F>>,
 +    coefs: Vec<PreMul<P<F>>>,
++    coef_scalars: Vec<[F; D]>,
 +    /// constant term of each functional
-+    konst: [EF; 3],
-+    used: [bool; 3],
++    pub konst: Vec<EF>,
++    pub used: Vec<bool>,
++    /// raw functional whose node folded to a constant: (functional, value)
++    pub raw_const: Vec<(usize, F)>,
 +    w: F,
 +    pub stats: String,
 +}
@@ -400,9 +1109,36 @@ new file mode 100644
 +    }
 +}
 +
++/// The three functionals of a zerocheck/LogUp round: Σ λ^i C_i, Σ eq3b_i count_i, Σ eq3b_i denom_i.
++pub fn zc_logup_specs<F: Field, EF: ExtensionField<F>>(
++    dag: &SymbolicExpressionDag<F>,
++    interactions: &[Interaction<usize>],
++    lambda_pows: &[EF],
++    eq3b: &[EF],
++    beta_pows: &[EF],
++) -> Vec<FuncSpec<EF>> {
++    let zc = FuncSpec {
++        terms: dag.constraint_idx.iter().enumerate().map(|(i, &n)| (n, lambda_pows[i])).collect(),
++        konst: EF::ZERO,
++        raw: false,
++    };
++    let mut num = FuncSpec { terms: vec![], konst: EF::ZERO, raw: false };
++    let mut den = FuncSpec { terms: vec![], konst: EF::ZERO, raw: false };
++    if !eq3b.is_empty() {
++        for (i, int) in interactions.iter().enumerate() {
++            num.terms.push((int.count, eq3b[i]));
++            let b = F::from_u32(int.bus_index as u32 + 1);
++            den.konst += eq3b[i] * beta_pows[int.message.len()] * b;
++            for (j, &m) in int.message.iter().enumerate() {
++                den.terms.push((m, eq3b[i] * beta_pows[j]));
++            }
++        }
++    }
++    vec![zc, num, den]
++}
++
 +impl<F: Field, EF: ExtensionField<F>> Program<F, EF> {
-+    /// `lambda_pows[i]` weights constraint `constraint_idx[i]`; `eq3b[i]` weights interaction i;
-+    /// `beta_pows` as in `eval_interactions`.
++    /// Zerocheck + LogUp program (`zc_logup_specs`).
 +    pub fn compile(
 +        dag: &SymbolicExpressionDag<F>,
 +        interactions: &[Interaction<usize>],
@@ -413,33 +1149,46 @@ new file mode 100644
 +        beta_pows: &[EF],
 +        w: F,
 +    ) -> Self {
++        let specs = zc_logup_specs(dag, interactions, lambda_pows, eq3b, beta_pows);
++        let mut p = Self::compile_specs(dag, public_values, layout, &specs, w);
++        p.used = vec![!dag.constraint_idx.is_empty(), !eq3b.is_empty(), !eq3b.is_empty()];
++        p
++    }
++
++    pub fn compile_specs(
++        dag: &SymbolicExpressionDag<F>,
++        public_values: &[F],
++        layout: &Layout,
++        specs: &[FuncSpec<EF>],
++        w: F,
++    ) -> Self {
 +        let nodes = &dag.nodes;
 +        let n = nodes.len();
-+        // output coefficients per node per functional
-+        let mut outc: Vec<[Option<EF>; 3]> = vec![[None, None, None]; n];
-+        let mut konst = [EF::ZERO; 3];
-+        let mut add_out = |outc: &mut Vec<[Option<EF>; 3]>, node: usize, f: usize, c: EF| {
-+            let e = &mut outc[node][f];
-+            *e = Some(e.unwrap_or(EF::ZERO) + c);
-+        };
-+        for (i, &node) in dag.constraint_idx.iter().enumerate() {
-+            add_out(&mut outc, node, 0, lambda_pows[i]);
-+        }
-+        if !eq3b.is_empty() {
-+            for (i, int) in interactions.iter().enumerate() {
-+                add_out(&mut outc, int.count, 1, eq3b[i]);
-+                let b = F::from_u32(int.bus_index as u32 + 1);
-+                konst[2] += eq3b[i] * beta_pows[int.message.len()] * b;
-+                for (j, &m) in int.message.iter().enumerate() {
-+                    add_out(&mut outc, m, 2, eq3b[i] * beta_pows[j]);
++        let nf = specs.len();
++        // output coefficients per node: (functional, coef), duplicates merged
++        let mut outc: Vec<Vec<(usize, EF)>> = vec![vec![]; n];
++        let mut konst: Vec<EF> = specs.iter().map(|s| s.konst).collect();
++        let mut raw_of: Vec<Vec<usize>> = vec![vec![]; n];
++        for (f, sp) in specs.iter().enumerate() {
++            if sp.raw {
++                assert_eq!(sp.terms.len(), 1);
++                raw_of[sp.terms[0].0].push(f);
++                continue;
++            }
++            for &(node, c) in &sp.terms {
++                if let Some(e) = outc[node].iter_mut().find(|(g, _)| *g == f) {
++                    e.1 += c;
++                } else {
++                    outc[node].push((f, c));
 +                }
 +            }
 +        }
-+        let used = [!dag.constraint_idx.is_empty(), !eq3b.is_empty(), !eq3b.is_empty()];
++        let used: Vec<bool> = specs.iter().map(|s| !s.terms.is_empty()).collect();
++        let mut raw_const = vec![];
 +        // reachability
 +        let mut need = vec![false; n];
 +        for i in 0..n {
-+            if outc[i].iter().any(|c| c.is_some()) {
++            if !outc[i].is_empty() || !raw_of[i].is_empty() {
 +                need[i] = true;
 +            }
 +        }
@@ -511,8 +1260,9 @@ new file mode 100644
 +        let mut n_slots = n_in;
 +        let mut ins = vec![];
 +        let mut coefs = vec![];
++        let mut coef_scalars = vec![];
 +        let (mut n_mul, mut n_mulc, mut n_lin) = (0usize, 0usize, 0usize);
-+        let mut alloc = |free: &mut Vec<u32>, n_slots: &mut usize| -> u32 {
++        let alloc = |free: &mut Vec<u32>, n_slots: &mut usize| -> u32 {
 +            free.pop().unwrap_or_else(|| {
 +                *n_slots += 1;
 +                (*n_slots - 1) as u32
@@ -600,15 +1350,20 @@ new file mode 100644
 +                _ => [usize::MAX, usize::MAX],
 +            };
 +            // outputs of this node
-+            for f in 0..3 {
-+                if let Some(c) = outc[i][f] {
-+                    match val[i].unwrap() {
-+                        Val::C(v) => konst[f] += c * v,
-+                        Val::S(a) => {
-+                            coefs.push(PreMul::new(coeffs::<F, EF>(&c), w));
-+                            ins.push(Ins::Acc { f: f as u8, a, k: (coefs.len() - 1) as u32 });
-+                        }
++            for &(f, c) in &outc[i] {
++                match val[i].unwrap() {
++                    Val::C(v) => konst[f] += c * v,
++                    Val::S(a) => {
++                        coefs.push(PreMul::new(coeffs::<F, EF>(&c), w));
++                        coef_scalars.push(coeffs::<F, EF>(&c).try_into().unwrap());
++                        ins.push(Ins::Acc { f: f as u32, a, k: (coefs.len() - 1) as u32 });
 +                    }
++                }
++            }
++            for &f in &raw_of[i] {
++                match val[i].unwrap() {
++                    Val::C(v) => raw_const.push((f, v)),
++                    Val::S(a) => ins.push(Ins::Raw { f: f as u32, a }),
 +                }
 +            }
 +            let mut freed = [u32::MAX; 2];
@@ -635,11 +1390,53 @@ new file mode 100644
 +            "nodes={n} inputs={n_in} slots={n_slots} mulEE={n_mul} mulEC={n_mulc} lin={n_lin} outputs={}",
 +            coefs.len()
 +        );
-+        Self { inputs, n_slots, ins, coefs, konst, used, w, stats }
++        let _ = nf;
++        Self { inputs, n_slots, ins, coefs, coef_scalars, konst, used, raw_const, w, stats }
++    }
++
++    pub fn w(&self) -> F {
++        self.w
++    }
++
++    pub fn num_funcs(&self) -> usize {
++        self.konst.len()
++    }
++
++    /// Base-field evaluation (packed over lanes): `fsum[f] += Σ coef * node`, `raw[f] = node`.
++    #[inline(always)]
++    pub fn run_base(&self, slots: &mut [P<F>], fsum: &mut [PE<P<F>>], raw: &mut [P<F>]) {
++        for ins in &self.ins {
++            match *ins {
++                Ins::Mul { d, a, b } => slots[d as usize] = slots[a as usize] * slots[b as usize],
++                Ins::Add { d, a, b } => slots[d as usize] = slots[a as usize] + slots[b as usize],
++                Ins::Sub { d, a, b } => slots[d as usize] = slots[a as usize] - slots[b as usize],
++                Ins::Neg { d, a } => slots[d as usize] = -slots[a as usize],
++                Ins::MulC { d, a, c } => slots[d as usize] = slots[a as usize] * c,
++                Ins::AddC { d, a, c } => slots[d as usize] = slots[a as usize] + c,
++                Ins::SubC { d, a, c } => slots[d as usize] = slots[a as usize] - c,
++                Ins::CSub { d, a, c } => slots[d as usize] = P::<F>::from(c) - slots[a as usize],
++                Ins::Acc { f, a, k } => {
++                    let v = slots[a as usize];
++                    let c = &self.coef_scalars[k as usize];
++                    let acc = &mut fsum[f as usize];
++                    for j in 0..D {
++                        acc.0[j] += v * c[j];
++                    }
++                }
++                Ins::Raw { f, a } => raw[f as usize] = slots[a as usize],
++            }
++        }
++    }
++
++    pub fn inputs(&self) -> &[(usize, usize)] {
++        &self.inputs
++    }
++    pub fn n_slots(&self) -> usize {
++        self.n_slots
 +    }
 +
 +    #[inline(always)]
-+    fn run(&self, slots: &mut [PE<P<F>>], fsum: &mut [PE<P<F>>; 3]) {
++    fn run(&self, slots: &mut [PE<P<F>>], fsum: &mut [PE<P<F>>]) {
 +        let w = self.w;
 +        for ins in &self.ins {
 +            match *ins {
@@ -679,6 +1476,7 @@ new file mode 100644
 +                    let v = self.coefs[k as usize].mul(&slots[a as usize]);
 +                    fsum[f as usize].add_assign(&v);
 +                }
++                Ins::Raw { .. } => unreachable!("raw outputs are base-field only"),
 +            }
 +        }
 +    }
@@ -800,7 +1598,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
                      interactions: symbolic_constraints.interactions,
                      public_values,
                      preprocessed_trace,
-@@ -989,6 +997,13 @@ where
+@@ -989,9 +997,17 @@ where
              prev_s_eval: SC::EF::ZERO,
              eq_ns: Vec::with_capacity(n_max + 1),
              eq_sharp_ns: Vec::with_capacity(n_max + 1),
@@ -814,7 +1612,116 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
          }
      }
  
-@@ -1151,6 +1166,9 @@ where
++    #[instrument(level = "info", skip_all)]
+     pub fn sumcheck_uni_round0_polys(
+         &mut self,
+         ctx: &ProvingContext<CpuBackend<SC>>,
+@@ -1058,6 +1074,42 @@ where
+             })
+             .collect_vec();
+ 
++        // [pq-cpu-prover] compile the per-AIR programs (also used by the MLE rounds) and run the
++        // packed round 0 where the trace has enough hypercube points.
++        let fast_r0: Vec<Option<crate::fast::round0::Round0Out<SC::EF>>> = if let Some(w) = self.fast_w {
++            self.compile_programs(w);
++            self.eval_helpers
++                .iter()
++                .enumerate()
++                .map(|(trace_idx, helper)| {
++                    let trace_ctx = &ctx.per_trace[trace_idx].1;
++                    let n_lift = log2_strict_usize(trace_ctx.height()).saturating_sub(l_skip);
++                    if (1usize << n_lift) < crate::fast::round0::min_points::<SC::F>()
++                        || helper.constraint_degree == 0
++                    {
++                        return None;
++                    }
++                    let mut tables = vec![(&self.sels_per_trace_base[trace_idx], false)];
++                    tables.extend(helper.view_mats_rowmaj(trace_ctx));
++                    let eq_xi = &self.eq_xi_per_trace[trace_idx][(1 << n_lift) - 1..(2 << n_lift) - 1];
++                    let deg = helper.constraint_degree as usize;
++                    Some(crate::fast::round0::round0(
++                        self.progs[trace_idx].as_ref().unwrap(),
++                        l_skip,
++                        n_lift,
++                        &tables,
++                        eq_xi,
++                        deg - 1,
++                        deg,
++                    ))
++                })
++                .collect()
++        } else {
++            vec![]
++        };
++        let xi = &self.xi;
++        let _ = xi;
++
+         // Zerocheck round 0 — uses batch DFT from row-major data
+         let sp_0_zerochecks = self
+             .eval_helpers
+@@ -1075,7 +1127,26 @@ where
+                     return UnivariatePoly::new(vec![]);
+                 }
+                 let num_cosets = constraint_deg - 1;
+-                let q = sumcheck_uni_round0_zerocheck_packed::<SC>(
++                let q = if let Some(Some(r0)) = fast_r0.get(trace_idx) {
++                    if num_cosets == 0 {
++                        UnivariatePoly::new(vec![])
++                    } else {
++                        let g = SC::F::GENERATOR;
++                        let zinv: Vec<SC::F> = g
++                            .powers()
++                            .skip(1)
++                            .take(num_cosets)
++                            .map(|s| (s.exp_power_of_2(l_skip) - SC::F::ONE).inverse())
++                            .collect();
++                        let vals: Vec<SC::EF> =
++                            r0.zc.iter().enumerate().map(|(k, &v)| v * zinv[k % num_cosets]).collect();
++                        UnivariatePoly::from_geometric_cosets_evals_idft(
++                            RowMajorMatrix::new(vals, num_cosets),
++                            g,
++                            g,
++                        )
++                    }
++                } else { sumcheck_uni_round0_zerocheck_packed::<SC>(
+                     l_skip,
+                     n_lift,
+                     num_cosets,
+@@ -1084,7 +1155,7 @@ where
+                     helper,
+                     eq_xi,
+                     &self.lambda_pows,
+-                );
++                ) };
+                 let sp_0_deg = sumcheck_round0_deg(l_skip, constraint_deg);
+                 let coeffs = (0..=sp_0_deg)
+                     .map(|i| {
+@@ -1124,6 +1195,24 @@ where
+                 let norm_factor_denom = 1 << l_skip.saturating_sub(log_height);
+                 let norm_factor = SC::F::from_usize(norm_factor_denom).inverse();
+ 
++                if let Some(Some(r0)) = fast_r0.get(trace_idx) {
++                    let d = helper.constraint_degree as usize;
++                    let g = SC::F::GENERATOR;
++                    let mut numer = UnivariatePoly::from_geometric_cosets_evals_idft(
++                        RowMajorMatrix::new(r0.num.clone(), d),
++                        g,
++                        g,
++                    );
++                    let denom = UnivariatePoly::from_geometric_cosets_evals_idft(
++                        RowMajorMatrix::new(r0.den.clone(), d),
++                        g,
++                        g,
++                    );
++                    for p in numer.coeffs_mut() {
++                        *p *= norm_factor;
++                    }
++                    return [numer, denom];
++                }
+                 let [mut numer, denom] = sumcheck_uni_round0_batch::<SC::F, SC::EF, _, 2>(
+                     l_skip,
+                     n_lift,
+@@ -1151,6 +1240,9 @@ where
      /// Reads directly from row-major matrices via barycentric interpolation,
      /// avoiding the O(n*m) transpose to col-major (saves ~3s for keccakf).
      pub fn fold_ple_evals(&mut self, ctx: &ProvingContext<CpuBackend<SC>>, r_0: SC::EF) {
@@ -824,14 +1731,15 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
          let l_skip = self.l_skip;
          self.mat_evals_per_trace = self
              .eval_helpers
-@@ -1179,9 +1197,114 @@ where
+@@ -1179,9 +1271,116 @@ where
          });
      }
  
 +    /// [pq-cpu-prover] `fold_ple_evals` writing SoA tables for traces tall enough, and compiling
 +    /// each AIR's MLE-round program.
++    #[instrument(level = "info", skip_all)]
 +    fn fold_ple_evals_fast(&mut self, ctx: &ProvingContext<CpuBackend<SC>>, r_0: SC::EF, w: SC::F) {
-+        use crate::fast::zc::{min_height, Layout, Program, SoaTable};
++        use crate::fast::zc::{min_height, SoaTable};
 +        let l_skip = self.l_skip;
 +        let skip_sz = 1usize << l_skip;
 +        let omega = SC::F::two_adic_generator(l_skip);
@@ -872,35 +1780,9 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +                sels_aos.push(fold_ple_evals_rowmajor(l_skip, &sels_base[t], false, r_0));
 +            }
 +        }
-+        self.progs = self
-+            .eval_helpers
-+            .par_iter()
-+            .zip(&soa)
-+            .enumerate()
-+            .map(|(t, (helper, tabs))| {
-+                tabs.as_ref().map(|_| {
-+                    let layout = Layout {
-+                        has_pre: helper.has_preprocessed(),
-+                        needs_next: helper.needs_next,
-+                    };
-+                    let p = Program::compile(
-+                        helper.constraints_dag,
-+                        helper.dag_interactions,
-+                        &helper.public_values,
-+                        &layout,
-+                        &self.lambda_pows,
-+                        &self.eq_3b_per_trace[t],
-+                        &self.beta_pows,
-+                        w,
-+                    );
-+                    debug!(trace = t, program = %p.stats);
-+                    if std::env::var("NEARPROOF_CPU_FAST_STATS").is_ok() {
-+                        println!("CPU_FAST_PROGRAM trace={t} {}", p.stats);
-+                    }
-+                    p
-+                })
-+            })
-+            .collect();
++        if self.progs.len() != num {
++            self.compile_programs(w);
++        }
 +        self.soa = soa;
 +        self.mat_evals_per_trace = mats_aos;
 +        self.sels_per_trace = sels_aos;
@@ -913,6 +1795,33 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +                eq.truncate(eq.len() / 2);
 +            }
 +        });
++    }
++
++    /// [pq-cpu-prover] compile every AIR's zerocheck/LogUp program (needs lambda, eq3b, beta).
++    fn compile_programs(&mut self, w: SC::F) {
++        use crate::fast::zc::{Layout, Program};
++        self.progs = self
++            .eval_helpers
++            .par_iter()
++            .enumerate()
++            .map(|(t, helper)| {
++                let layout = Layout { has_pre: helper.has_preprocessed(), needs_next: helper.needs_next };
++                let p = Program::compile(
++                    helper.constraints_dag,
++                    helper.dag_interactions,
++                    &helper.public_values,
++                    &layout,
++                    &self.lambda_pows,
++                    &self.eq_3b_per_trace[t],
++                    &self.beta_pows,
++                    w,
++                );
++                if std::env::var("NEARPROOF_CPU_FAST_STATS").is_ok() {
++                    println!("CPU_FAST_PROGRAM trace={t} {}", p.stats);
++                }
++                Some(p)
++            })
++            .collect();
 +    }
 +
 +    /// [pq-cpu-prover] fast round evaluations for traces held in SoA form.
@@ -939,7 +1848,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
          let sp_zerocheck_evals: Vec<Vec<SC::EF>> = izip!(
              &self.eval_helpers,
              &mut self.zerocheck_tilde_evals,
-@@ -1190,8 +1313,12 @@ where
+@@ -1190,8 +1389,12 @@ where
              &self.sels_per_trace,
              &self.eq_xi_per_trace
          )
@@ -953,7 +1862,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
              if round > n_lift {
                  if round == n_lift + 1 {
                      // Height is 1 — extract single row as Vec
-@@ -1235,13 +1362,21 @@ where
+@@ -1235,13 +1438,21 @@ where
              &self.eq_xi_per_trace,
              &self.eq_3b_per_trace
          )
@@ -976,7 +1885,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
              if round > n_lift {
                  if round == n_lift + 1 {
                      // Height is 1 — extract single row as Vec
-@@ -1298,6 +1433,21 @@ where
+@@ -1298,6 +1509,21 @@ where
              .collect_vec();
          self.sels_per_trace =
              crate::row_major_ops::batch_fold_mle_evals_rm(take(&mut self.sels_per_trace), r_round);
@@ -998,3 +1907,118 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
          self.eq_xi_per_trace.par_iter_mut().for_each(|eq| {
              if eq.len() > 1 {
                  eq.truncate(eq.len() / 2);
+@@ -1411,6 +1637,59 @@ where
+ 
+     // GKR: compute logup input layer using row-major access
+     let has_interactions = !prover.interactions_layout.sorted_cols.is_empty();
++    // [pq-cpu-prover] fast input layer (base numerators, packed DAG pass) + fast GKR
++    let fast_gkr = prover.fast_w.filter(|_| {
++        has_interactions
++            && ctx.per_trace.iter().zip(&prover.eval_helpers).all(|((_, t), h)| {
++                h.interactions.is_empty()
++                    || MatrixDimensions::height(&t.common_main)
++                        % <<SC::F as p3_field::Field>::Packing as PackedValue>::WIDTH
++                        == 0
++            })
++    });
++    if let Some(w) = fast_gkr {
++        use crate::fast::gkr::{fill_input_layer, fractional_sumcheck_fast, gkr_input_specs, InputLayer, Placement};
++        use crate::fast::zc::{Layout, Program};
++        let n_total = 1usize << (l_skip + n_logup);
++        let mut layer = InputLayer::<SC::F, SC::EF> {
++            p: vec![SC::F::ZERO; n_total],
++            q: vec![alpha_logup; n_total],
++        };
++        for (trace_idx, helper) in prover.eval_helpers.iter().enumerate() {
++            if helper.interactions.is_empty() {
++                continue;
++            }
++            let trace_ctx = &ctx.per_trace[trace_idx].1;
++            let height = MatrixDimensions::height(&trace_ctx.common_main);
++            let placements: Vec<Placement<SC::F>> = prover
++                .interactions_layout
++                .sorted_cols
++                .iter()
++                .filter(|(t, _, _)| *t == trace_idx)
++                .map(|&(_, i, s)| Placement {
++                    interaction: i,
++                    row_idx: s.row_idx,
++                    len: s.len(0),
++                    norm: SC::F::from_usize(s.len(0) / height).inverse(),
++                })
++                .collect();
++            let specs = gkr_input_specs(helper.dag_interactions, &prover.beta_pows);
++            let layout = Layout { has_pre: helper.has_preprocessed(), needs_next: helper.needs_next };
++            let prog = Program::compile_specs(helper.constraints_dag, &helper.public_values, &layout, &specs, w);
++            let mats = helper.view_mats_rowmaj(trace_ctx);
++            fill_input_layer(&mut layer, &prog, &mats, height, &placements);
++        }
++        openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.gkr_input");
++        let (frac_sum_proof, xi) = fractional_sumcheck_fast::<SC, _>(
++            transcript,
++            layer,
++            true,
++            mpk.params.whir.levers.gruen_gkr,
++            w,
++        )?;
++        openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.after_gkr");
++        return finish_zerocheck_and_logup(transcript, mpk, ctx, prover, frac_sum_proof, xi, logup_pow_witness, n_max, n_logup);
++    }
+     let gkr_input_evals = if !has_interactions {
+         vec![]
+     } else {
+@@ -1462,7 +1741,7 @@ where
+     };
+ 
+     openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.gkr_input");
+-    let (frac_sum_proof, mut xi) =
++    let (frac_sum_proof, xi) =
+         fractional_sumcheck_with::<SC, _>(
+             transcript,
+             &gkr_input_evals,
+@@ -1471,6 +1750,30 @@ where
+         )?;
+ 
+     openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.after_gkr");
++    finish_zerocheck_and_logup(transcript, mpk, ctx, prover, frac_sum_proof, xi, logup_pow_witness, n_max, n_logup)
++}
++
++/// The part of `prove_zerocheck_and_logup` after the GKR (split out so the fast GKR can share it).
++fn finish_zerocheck_and_logup<SC: StarkProtocolConfig, TS>(
++    transcript: &mut TS,
++    mpk: &DeviceMultiStarkProvingKey<CpuBackend<SC>>,
++    ctx: &ProvingContext<CpuBackend<SC>>,
++    mut prover: LogupZerocheckRowMajor<'_, SC>,
++    frac_sum_proof: openvm_stark_backend::prover::fractional_sumcheck_gkr::FracSumcheckProof<SC>,
++    mut xi: Vec<SC::EF>,
++    logup_pow_witness: SC::F,
++    n_max: usize,
++    n_logup: usize,
++) -> Result<(GkrProof<SC>, BatchConstraintProof<SC>, Vec<SC::EF>), LogupZerocheckError>
++where
++    TS: FiatShamirTranscript<SC>,
++    SC::F: TwoAdicField,
++    SC::EF: TwoAdicField + ExtensionField<SC::F>,
++    CpuBackend<SC>: ProverBackend<Val = SC::F, Matrix = RowMajorMatrix<SC::F>>,
++{
++    let l_skip = mpk.params.l_skip;
++    let constraint_degree = mpk.max_constraint_degree;
++    let num_traces = ctx.per_trace.len();
+     let n_global = max(n_max, n_logup);
+     debug!(%n_global);
+     while xi.len() != l_skip + n_global {
+diff --git a/crates/stark-backend/src/prover/mod.rs b/crates/stark-backend/src/prover/mod.rs
+--- a/crates/stark-backend/src/prover/mod.rs
++++ b/crates/stark-backend/src/prover/mod.rs
+@@ -190,9 +190,11 @@ where
+                 .prove_rap_constraints(transcript, mpk, &ctx, &common_main_pcs_data)?;
+         stream_pcs::memprof("prove.after_rap_constraints");
+ 
++        let _openings_span = info_span!("prover.openings", phase = "prover").entered();
+         let opening_proof =
+             self.device
+                 .prove_openings(transcript, mpk, ctx, common_main_pcs_data, r.into())?;
++        drop(_openings_span);
+ 
+         stream_pcs::memprof("prove.after_openings");
+         let (gkr_proof, batch_constraint_proof) = constraints_proof.into();

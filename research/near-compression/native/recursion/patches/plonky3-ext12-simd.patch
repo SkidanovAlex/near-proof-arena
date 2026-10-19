@@ -16,7 +16,44 @@
  
 --- a/p3-monty-31/src/extension.rs
 +++ b/p3-monty-31/src/extension.rs
-@@ -51,7 +51,14 @@
+@@ -29,12 +29,30 @@
+             5 => quintic_mul_packed(a, b, res),
+             8 => octic_mul_packed(a, b, res),
+             12 => {
+-                res.fill(Self::ZERO);
+-                for i in 0..WIDTH {
+-                    for j in 0..WIDTH {
+-                        let product = a[i] * b[j];
+-                        if i+j < WIDTH { res[i+j] += product; }
+-                        else { res[i+j-WIDTH] += product*w; }
++                // [pq-cpu-prover] res_k = sum_i a_i b_{k-i} (+ w b_{k-i+12}): 12 lazy-reduction dot
++                // products (u64/u128 sums, one Montgomery reduction each). Exact, so equal to the
++                // schoolbook loop it replaces.
++                type Pk<FP> = <MontyField31<FP> as p3_field::Field>::Packing;
++                let wl = <Pk<FP> as p3_field::PackedValue>::WIDTH;
++                let mut ext = [Self::ZERO; 23 + 16];
++                for j in 0..12 {
++                    ext[11 + j] = b[j];
++                }
++                for m in 0..11 {
++                    ext[m] = b[m + 1] * w;
++                }
++                if wl >= 12 && wl <= 16 {
++                    // lanes = output coefficients: res = sum_i a_i * ext[11 - i ..][lane]
++                    use p3_field::PackedValue;
++                    let lhs: [Pk<FP>; 12] = core::array::from_fn(|i| Pk::<FP>::from(a[i]));
++                    let rhs: [Pk<FP>; 12] =
++                        core::array::from_fn(|i| *Pk::<FP>::from_slice(&ext[11 - i..11 - i + wl]));
++                    let r = Pk::<FP>::dot_product::<12>(&lhs, &rhs);
++                    res.copy_from_slice(&r.as_slice()[..12]);
++                } else {
++                    let a_rev: [Self; 12] = core::array::from_fn(|t| a[11 - t]);
++                    for k in 0..12 {
++                        res[k] = Self::dot_product::<12>(&a_rev, ext[k..k + 12].try_into().unwrap());
+                     }
+                 }
+             },
+@@ -51,7 +69,14 @@
              let b: &[u32; WIDTH] = &*(b.as_ptr() as *const [u32; WIDTH]);
              let res: &mut [u32; WIDTH] = &mut *(res.as_mut_ptr() as *mut [u32; WIDTH]);
  
@@ -32,7 +69,7 @@
          }
          res
      }
-@@ -65,7 +72,14 @@
+@@ -65,7 +90,14 @@
              let b: &[u32; WIDTH] = &*(b.as_ptr() as *const [u32; WIDTH]);
              let res: &mut [u32; WIDTH] = &mut *(res.as_mut_ptr() as *mut [u32; WIDTH]);
  
@@ -65,12 +102,18 @@
  }
 --- a/p3-monty-31/src/x86_64_avx512/packing.rs
 +++ b/p3-monty-31/src/x86_64_avx512/packing.rs
-@@ -1663,6 +1663,11 @@
+@@ -1663,6 +1663,17 @@
  
              res.copy_from_slice(&out);
          }
 -        _ => panic!("Unsupported binomial extension degree: {}", WIDTH),
-+        // [pq-cpu-prover] other degrees (Ext12): coefficient-wise product
++        // [pq-cpu-prover] other degrees (Ext12): coefficient-wise product, one vector op
++        9..=16 => {
++            let mut buf = [MontyField31::<FP>::ZERO; 16];
++            buf[..WIDTH].copy_from_slice(&a);
++            let v = PackedMontyField31AVX512::<FP>(buf) * PackedMontyField31AVX512::<FP>::from(b);
++            res.copy_from_slice(&v.0[..WIDTH]);
++        }
 +        _ => {
 +            for i in 0..WIDTH {
 +                res[i] = a[i] * b;
