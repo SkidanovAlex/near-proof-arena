@@ -559,6 +559,28 @@ So under the domain constraint, the certified, realizable penultimate gives the 
 the current (infeasible, Johnson) figure. The −752 B is available only if a 15·2²⁸ domain were
 realizable, which it is not over BabyBear.
 
-**Lean.** The 44 new entries: `#eval!` gives `CurveVerification` true for 44 / 44, with E and list
-exactly equal to the JSON. Kernel proofs: `lean/DKTCertsO2_6.lean` and `lean/DKTCertsO2_7.lean`
-(keys in `lean/DKTCertsO2_6.keys`): running at this commit.
+**Lean.** The 44 new entries (keys in `lean/DKTCertsO2_6.keys`):
+* **`#eval!`**: `CurveVerification` is true for 44 / 44, and E and list are exactly equal to the
+  JSON.
+* **Kernel, 35 / 44 pass.** These are the 35 entries with B_jet ≤ 8,845
+  (`lean/DKTCertsO2_small.keys`), checked in `lean/DKTCertsO2_6.lean` and `lean/DKTCertsO2_7.lean`.
+  Both exit 0 with no errors, and 64 theorems depend only on the standard axioms. Wall times were
+  11 and 17 min, peak 12.1 GB.
+* **Kernel blocked for 9 / 44** (`lean/DKTCertsO2_big.keys`): the round-3 codes
+  (k = 2¹⁰ → 2⁶, all sub-codes) of the two h20 k1 2 shapes.
+  * Their supports are inherently large. A minimum-B_jet re-search, now stored, still needs
+    B_jet 22,444–39,411; the earlier picks went up to 41,382.
+  * A single certificate at B_jet 38,199 was OOM-killed at the 24 GB cgroup cap after 7 min. The
+    first 22-certificate slice also hit the cap.
+  * These 9 are checked by the authors' engine (`--check`) and by ArkLib's checker under `#eval!`
+    (exact), but **not by kernel proof**. A kernel check would need a larger memory cap
+    (probably 32–48 GB). That is the user's decision, so it was not attempted.
+
+**Kernel-backed coverage.**
+* b8 h19 is kernel-backed in full.
+* For b7 h20, rounds 0–2 are kernel-backed. Round 3 is engine and `#eval!` only. With round 3 on
+  J64 (q 22 → 23, no certificate needed), b7 h20 is fully kernel-backed. That costs about 0 B in
+  the model: 1 query is about 330 NvAir rows, against the 6.4k-row margin under 2¹⁸.
+* For the infeasible b8 h20, round 3 is J64 anyway.
+
+All 173 entries pass the engine re-evaluation, and 164 have kernel proofs.
