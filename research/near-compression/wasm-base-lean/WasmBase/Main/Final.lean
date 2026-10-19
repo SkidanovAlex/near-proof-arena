@@ -53,14 +53,15 @@ theorem chipFacts (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
 
 /-- **Base-faithful soundness of `wasmBaseAir` (instruction family F1 + locals).**
 
-If `check` accepts the function (domain D1–D5), the AIR relation enforced by the SWIRL PIOP holds for
+If `check` accepts the function (domain D1–D5), the cached CODE table is the checked code (`CodeOK`:
+V_d's `code_root` check), the AIR relation enforced by the SWIRL PIOP holds for
 `wasmBaseAir` with the public inputs the verifier derives from the checker output, and the explicit
 statement-level conditions hold (`N · (maxFee + 1) < p`, `R · S ≤ g0`, `g0 < 2^64`), then from
 function entry (empty operand stack, zero-initialised locals, gas `g0`) the spec interpreter
 `NearSpecV3.Wasm.run` finishes after exactly `N - 1` steps, having charged `R · S` gas, with the
 operand stack equal to the public result. -/
 theorem wasm_base_sound (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
-    (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub)
+    (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub) (hcode : CodeOK X tr)
     (hfeeN : (pub.getD Boundary.pubN 0).toNat * (X.ck.maxFee + 1) < P)
     (hgas : X.R * (pub.getD Boundary.pubS 0).toNat ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     {s0 : St} {f0 : Frame} (hfr : s0.frames = [f0]) (hfn : f0.fn = X.fn) (hpc : f0.pc = 0)
@@ -72,6 +73,6 @@ theorem wasm_base_sound (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
       (X.ck.arity = 1 → ∃ v, sN.stack[0]? = some v ∧ vTag v = (pub.getD Boundary.pubTag 0).toNat ∧
         vNum v = val4 (pub.getD (Boundary.pubR + 0) 0).toNat (pub.getD (Boundary.pubR + 1) 0).toNat
           (pub.getD (Boundary.pubR + 2) 0).toNat (pub.getD (Boundary.pubR + 3) 0).toNat) :=
-  wasm_base_exec X H hpub (chipFacts X H) hfeeN hgas hg64 hfr hfn hpc hlab hbase hloc hstk hg
+  wasm_base_exec X H hpub (chipFacts X H) hcode hfeeN hgas hg64 hfr hfn hpc hlab hbase hloc hstk hg
 
 end WasmBase

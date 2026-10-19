@@ -570,7 +570,6 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     let result = stack.last().map(|e| (e.tag, e.val));
 
     // BOUNDARY
-    let nloc = prep.local_tags.len();
     let bspec = t("BOUNDARY");
     let mut bnd = Tab::new(bspec);
     {
@@ -579,9 +578,6 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
         for (j, e) in locals.iter().enumerate() {
             r.u(&format!("ftag{j}"), e.tag).limbs(&format!("fv{j}_"), limbs(e.val)).u(&format!("ftp{j}"), e.tp);
         }
-        for (j, m) in fetch.iter().enumerate() {
-            r.u(&format!("m{j}"), *m);
-        }
     }
     // public values
     let mut pubs = vec![fe(ts), fe(s), fe(prep.arity)];
@@ -589,9 +585,6 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     pubs.push(fe(rtag));
     pubs.extend(limbs(rval).map(fe));
     pubs.extend(prep.local_tags.iter().map(|&x| fe(x)));
-    for rec in &prep.records {
-        pubs.extend(rec.iter().map(|&x| fe(x)));
-    }
     assert_eq!(pubs.len(), air.num_pub);
 
     // RANGE16 / BYTE
@@ -611,8 +604,19 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
         }
     }
 
+    // CODE: the canonical record matrix (cached) + multiplicities
+    let mut code = Tab::new(t("CODE"));
+    let crows = code_rows(&prep.records);
+    for (j, rec) in crows.iter().enumerate() {
+        let mut r = code.row();
+        for (k, name) in ["pc", "op", "h", "fee", "x0", "x1", "x2", "x3"].iter().enumerate() {
+            r.u(name, rec[k]);
+        }
+        r.u("mult", if j < fetch.len() { fetch[j] } else { 0 });
+    }
+
     let mut tabs: HashMap<String, Tab> = HashMap::new();
-    for tb in [bnd, add, bit, mul, shift, cmp, cnst, stk, ctrl, loc, rng, byt] {
+    for tb in [bnd, add, bit, mul, shift, cmp, cnst, stk, ctrl, loc, rng, byt, code] {
         tabs.insert(tb.spec.name.clone(), tb);
     }
     let mut mats = vec![];
@@ -628,6 +632,22 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
         mats.push(RowMajorMatrix::new(data, w));
     }
     Gen { mats, pubs, rows_per_table, result, steps, s_units: s }
+}
+
+/// The canonical CODE rows: the records in pc order, padded to a power of two (≥ 4) by repeating the
+/// last record.  `code_root` (a statement component, recomputed by V_d from the contract code) is the
+/// commitment to exactly this matrix.
+pub fn code_rows(records: &[[u64; 8]]) -> Vec<[u64; 8]> {
+    let h = records.len().max(4).next_power_of_two();
+    let mut rows = records.to_vec();
+    let last = *records.last().expect("non-empty code");
+    rows.resize(h, last);
+    rows
+}
+
+pub fn code_matrix(records: &[[u64; 8]]) -> RowMajorMatrix<F> {
+    let rows = code_rows(records);
+    RowMajorMatrix::new(rows.iter().flat_map(|r| r.iter().map(|&x| fe(x))).collect(), 8)
 }
 
 /// Check every constraint of every table on every row with the interpreter (cheap pre-check).

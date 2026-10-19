@@ -35,8 +35,7 @@ def rowAct (T : Table) (tr : Trace) (pub : List F) (t r : Nat) : Prop :=
 structure PubOK (X : Ctx) (nloc ncode : Nat) (pub : List F) : Prop where
   hnloc : nloc = X.pf.locals.size
   hncode : ncode = X.pf.code.size
-  len : pub.length = Boundary.pubRec nloc + Boundary.recWidth * ncode
-  recs : ∀ j, j < ncode → pubRecord nloc pub j = (X.ck.records[j]?.getD []).map fun x => ((x : Nat) : F)
+  len : pub.length = Boundary.pubLoc + nloc
   locTags : ∀ j, j < nloc → pub.getD (Boundary.pubLoc + j) 0 = ((X.ck.localTags.getD j 0 : Nat) : F)
   nres : pub.getD Boundary.pubNres 0 = ((X.ck.arity : Nat) : F)
   rtag : pub.getD Boundary.pubTag 0 = ((X.ck.resTag : Nat) : F)
@@ -100,19 +99,17 @@ theorem recordOf_spec {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : Li
     · exact ⟨_, _, _, _, _, rfl, Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
         (Or.inr (Or.inr (Or.inr (Or.inr ⟨‹_›, rfl, rfl⟩)))))))))))⟩
 
-theorem fetch_rec {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (hpub : PubOK X nloc ncode pub)
-    (L : Looks nloc ncode pub tr) {m : List F}
+theorem fetch_rec {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (_hpub : PubOK X nloc ncode pub)
+    (L : Looks X nloc ncode pub tr) {m : List F}
     (ho : (busFetch, true, m, 1) ∈ occs (wasmBaseAir nloc ncode) tr pub) {pc : Nat}
     (hpc : m.getD 0 0 = ((pc : Nat) : F)) (hpcl : pc < X.pf.code.size) :
     ∃ ins fee rec, X.pf.code[pc]? = some ins ∧ feeUnits X.cfg X.pf.gas[pc]? = some fee ∧ fee ≤ X.ck.maxFee ∧
       recordOf (X.ck.labels[pc]?.getD []) (X.ck.heights[pc]?.getD 0) fee pc ins = some rec ∧
       m = rec.map fun x => ((x : Nat) : F) := by
   have hP' := P_val
-  obtain ⟨j, hj, hm⟩ := L.fetch _ ho rfl rfl rfl
-  simp only at hm
-  rw [hpub.recs j hj] at hm
+  obtain ⟨j, hjc, hm⟩ := L.fetch _ ho rfl rfl rfl
+  simp only [codeRec] at hm
   have CF := X.facts
-  have hjc : j < X.pf.code.size := hpub.hncode ▸ hj
   obtain ⟨ins, fee, hins, hfee, hfl, hrec⟩ := CF.recs j hjc
   have hsz : j < X.ck.records.size := by rw [CF.records]; exact hjc
   rw [Array.getElem?_eq_getElem hsz] at hrec hm
@@ -126,7 +123,7 @@ theorem fetch_rec {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (hpub
 
 /-- A channel time check `[r16 (ts - tp - 1 - 2^16 hi), r16 (4 hi)]` with count 1 bounds the
 producer time: `tp + 1 + n = ts` with `n < 2^30 + 2^16`. -/
-theorem time_chk {nloc ncode : Nat} {pub : List F} {tr : Trace} (L : Looks nloc ncode pub tr)
+theorem time_chk {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (L : Looks X nloc ncode pub tr)
     {ts tp hi : F}
     (h1 : (busR16, true, [ts - tp - ((1 : Nat) : F) - ((65536 : Nat) : F) * hi], 1) ∈ occs (wasmBaseAir nloc ncode) tr pub)
     (h2 : (busR16, true, [((4 : Nat) : F) * hi], 1) ∈ occs (wasmBaseAir nloc ncode) tr pub) :
@@ -182,15 +179,13 @@ theorem feeUnits_lt {cfg : NearCfg} {g : Option (Option (IK × Fee))} {fee : Nat
   · simp at h
 
 /-- The pc of any FETCH query is a code index. -/
-theorem fetch_pc {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (hpub : PubOK X nloc ncode pub)
-    (L : Looks nloc ncode pub tr) {m : List F}
+theorem fetch_pc {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (_hpub : PubOK X nloc ncode pub)
+    (L : Looks X nloc ncode pub tr) {m : List F}
     (ho : (busFetch, true, m, 1) ∈ occs (wasmBaseAir nloc ncode) tr pub) :
     ∃ pc, pc < X.pf.code.size ∧ m.getD 0 0 = ((pc : Nat) : F) := by
-  obtain ⟨j, hj, hm⟩ := L.fetch _ ho rfl rfl rfl
-  simp only at hm
-  rw [hpub.recs j hj] at hm
+  obtain ⟨j, hjc, hm⟩ := L.fetch _ ho rfl rfl rfl
+  simp only [codeRec] at hm
   have CF := X.facts
-  have hjc : j < X.pf.code.size := hpub.hncode ▸ hj
   obtain ⟨ins, fee, hins, hfee, hfl, hrec⟩ := CF.recs j hjc
   have hsz : j < X.ck.records.size := by rw [CF.records]; exact hjc
   rw [Array.getElem?_eq_getElem hsz] at hrec hm

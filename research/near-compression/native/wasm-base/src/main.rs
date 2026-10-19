@@ -20,7 +20,7 @@ use openvm_stark_backend::{
     codec::Encode,
     interaction::LogUpSecurityParameters,
     keygen::types::MultiStarkVerifyingKey,
-    prover::{AirProvingContext, ColMajorMatrix, CpuColMajorBackend, DeviceDataTransporter, ProvingContext},
+    prover::{AirProvingContext, ColMajorMatrix, CommittedTraceData, CpuColMajorBackend, DeviceDataTransporter, ProvingContext, TraceCommitter},
 };
 use p3_field::{PrimeCharacteristicRing, PrimeField32};
 use p3_matrix::dense::RowMajorMatrix;
@@ -87,17 +87,69 @@ fn airs(spec: &AirSpec) -> Vec<AirRef<Sha384Config>> {
         .collect()
 }
 
-fn ctx(spec: &AirSpec, g: &Gen) -> ProvingContext<CpuColMajorBackend<Sha384Config>> {
+/// Split a row-major matrix into its first `c` columns and the rest.
+fn split_cols(m: &RowMajorMatrix<F>, c: usize) -> (RowMajorMatrix<F>, RowMajorMatrix<F>) {
+    let w = m.width;
+    let (mut a, mut b) = (vec![], vec![]);
+    for row in m.values.chunks(w) {
+        a.extend_from_slice(&row[..c]);
+        b.extend_from_slice(&row[c..]);
+    }
+    (RowMajorMatrix::new(a, c), RowMajorMatrix::new(b, w - c))
+}
+
+fn ctx(eng: &Sha384RefEngine, spec: &AirSpec, g: &Gen) -> ProvingContext<CpuColMajorBackend<Sha384Config>> {
     ProvingContext::new(
         g.mats
             .iter()
             .enumerate()
             .map(|(i, m)| {
                 let pv = if JsonAir::reads_pub(&spec.tables[i]) { g.pubs.clone() } else { vec![] };
-                (i, AirProvingContext::simple(ColMajorMatrix::from_row_major(m), pv))
+                let c = spec.tables[i].cached;
+                if c == 0 {
+                    (i, AirProvingContext::simple(ColMajorMatrix::from_row_major(m), pv))
+                } else {
+                    let (cm, rest) = split_cols(m, c);
+                    let cm = ColMajorMatrix::from_row_major(&cm);
+                    let (commitment, data) = eng.device().commit(&[&cm]).expect("commit cached");
+                    let cached = CommittedTraceData { commitment, trace: cm, data: Arc::new(data) };
+                    (i, AirProvingContext {
+                        cached_mains: vec![cached],
+                        common_main: ColMajorMatrix::from_row_major(&rest),
+                        public_values: pv,
+                    })
+                }
             })
             .collect(),
     )
+}
+
+/// **V_d side of the statement**: `code_root` = commitment to the canonical CODE matrix of the
+/// checked code under the base shape's parameters (a deterministic function of the contract code,
+/// precomputable per `code_hash`).
+fn code_root(eng: &Sha384RefEngine, records: &[[u64; 8]]) -> <Sha384Config as openvm_stark_backend::StarkProtocolConfig>::Digest {
+    let cm = ColMajorMatrix::from_row_major(&tracegen::code_matrix(records));
+    eng.device().commit(&[&cm]).expect("code root").0
+}
+
+/// The statement check V_d performs on a verified base proof: the proof's cached CODE commitment
+/// equals the code root recomputed from the contract code.
+fn check_code_root(
+    eng: &Sha384RefEngine,
+    spec: &AirSpec,
+    proof: &openvm_stark_backend::proof::Proof<Sha384Config>,
+    records: &[[u64; 8]],
+) -> bool {
+    let i = spec.index("CODE");
+    let want = code_root(eng, records);
+    match &proof.trace_vdata[i] {
+        Some(v) => v.cached_commitments.len() == 1 && v.cached_commitments[0] == want,
+        None => false,
+    }
+}
+
+fn hex(bytes: &[u8]) -> String {
+    bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
 
 fn cells(g: &Gen) -> usize {
@@ -227,7 +279,7 @@ fn cmd_prove(air_path: &str, prep_path: &str, which: &str) {
         );
     }
     if std::env::var("WASMBASE_DEBUG").is_ok() {
-        eng.debug(&airs, &ctx(&spec, &g));
+        eng.debug(&airs, &ctx(&eng, &spec, &g));
         println!("DEBUG OK");
     }
     let b = openvm_stark_backend::soundness::SoundnessCalculator::calculate_from_vk(&vk);
@@ -237,12 +289,23 @@ fn cmd_prove(air_path: &str, prep_path: &str, which: &str) {
     );
     let d_pk = eng.device().transport_pk_to_device(&pk);
     let t2 = Instant::now();
-    let proof = eng.prove(&d_pk, ctx(&spec, &g)).expect("prove");
+    let proof = eng.prove(&d_pk, ctx(&eng, &spec, &g)).expect("prove");
     let t_prove = t2.elapsed().as_secs_f64();
     let t3 = Instant::now();
     eng.verify(&vk, &proof).expect("verify");
     let t_verify = t3.elapsed().as_secs_f64();
     println!("PROOF {}", census(&proof));
+    // statement: code_hash (sha256 of the contract code, if given) and code_root, checked like V_d
+    let prep = _prep;
+    assert!(check_code_root(&eng, &spec, &proof, &prep.records), "code_root mismatch");
+    let root = code_root(&eng, &prep.records);
+    let rb: Vec<u8> = root.iter().flat_map(|w| w.to_be_bytes()).collect();
+    let code_hash = std::env::var("WASMBASE_WASM").ok().map(|p| {
+        use sha2::Digest;
+        hex(&sha2::Sha256::digest(std::fs::read(p).unwrap()))
+    });
+    println!("STATEMENT code_root {} code_hash {} (V_d: recomputed root matches the proof's cached CODE commitment)",
+        hex(&rb), code_hash.unwrap_or_else(|| "-".into()));
     println!(
         "TIME tracegen {t_gen:.3}s keygen {t_keygen:.3}s prove {t_prove:.3}s verify {t_verify:.4}s threads {} peak_rss_kib {}",
         std::env::var("RAYON_NUM_THREADS").unwrap_or_default(),
@@ -268,9 +331,10 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
     let airs = airs(&spec);
     let (pk, vk) = eng.keygen(&airs);
     let d_pk = eng.device().transport_pk_to_device(&pk);
-    let honest = eng.prove(&d_pk, ctx(&spec, &g)).expect("prove honest");
+    let honest = eng.prove(&d_pk, ctx(&eng, &spec, &g)).expect("prove honest");
     eng.verify(&vk, &honest).expect("honest verifies");
-    println!("TAMPER honest proof verifies");
+    assert!(check_code_root(&eng, &spec, &honest, &prep.records), "honest code_root");
+    println!("TAMPER honest proof verifies and its code_root matches");
     let tb = |n: &str| spec.index(n);
     let col = |t: usize, c: &str| spec.tables[t].col(c);
     type Mut = Box<dyn Fn(&mut Gen)>;
@@ -300,17 +364,21 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
     }
     // a free witness that does not change the statement (inv of a zero condition) is NOT a
     // soundness issue; recorded as such rather than counted
-    let tb_b = tb("BOUNDARY");
-    cases.push(("BOUNDARY.m0+1".into(), cell(tb_b, 0, col(tb_b, "m0"), plus1())));
+    let tcode = tb("CODE");
+    cases.push(("CODE.mult[0]+1".into(), cell(tcode, 0, col(tcode, "mult"), plus1())));
     cases.push(("RANGE16.v[5]+1".into(), cell(tb("RANGE16"), 5, 0, plus1())));
     cases.push(("BYTE.x0[1] flip".into(), cell(tb("BYTE"), 1, 0, Box::new(|v| F::ONE - v))));
     cases.push(("pub.N+1".into(), Box::new(|g: &mut Gen| g.pubs[0] += F::ONE)));
     cases.push(("pub.S+1".into(), Box::new(|g: &mut Gen| g.pubs[1] += F::ONE)));
     cases.push(("pub.result+1".into(), Box::new(|g: &mut Gen| g.pubs[4] += F::ONE)));
-    let rec_op = 8 + prep.local_tags.len() + 1;
-    cases.push(("pub.record0.op+1".into(), Box::new(move |g: &mut Gen| g.pubs[rec_op] += F::ONE)));
-    let rec_h = 8 + prep.local_tags.len() + 2;
-    cases.push(("pub.record0.h+1".into(), Box::new(move |g: &mut Gen| g.pubs[rec_h] += F::ONE)));
+    cases.push(("CODE.op[0]+1".into(), cell(tcode, 0, col(tcode, "op"), plus1())));
+    cases.push(("CODE.h[0]+1".into(), cell(tcode, 0, col(tcode, "h"), plus1())));
+    // a CODE row no instruction fetches (padding, multiplicity 0): the AIR and the proof are fine;
+    // only the statement check (code_root vs the contract code) can catch it
+    let ncode = prep.records.len();
+    if ncode < g.mats[tcode].values.len() / g.mats[tcode].width {
+        cases.push((format!("CODE[pad row {ncode}].x0+1 (code_root)"), cell(tcode, ncode, col(tcode, "x0"), plus1())));
+    }
     // swap two ADD rows' timestamps (reorders execution)
     let ta = tb("ADD");
     if g.rows_per_table[ta].1 >= 2 {
@@ -331,8 +399,8 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
             _ => "PRECHECK PASSES".into(),
         };
         let verdict = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            match eng.prove(&d_pk, ctx(&spec, &gt)) {
-                Ok(p) => eng.verify(&vk, &p).is_err(),
+            match eng.prove(&d_pk, ctx(&eng, &spec, &gt)) {
+                Ok(p) => eng.verify(&vk, &p).is_err() || !check_code_root(&eng, &spec, &p, &prep.records),
                 Err(_) => true,
             }
         }));
@@ -346,14 +414,15 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
     assert_eq!(rejected, total);
 }
 
-fn dag_eval(vk: &MultiStarkVerifyingKey<Sha384Config>, ai: usize, cur: &[F], nxt: &[F], pubs: &[F], sel: [F; 3]) -> (Vec<F>, Vec<(u16, F, Vec<F>)>) {
+fn dag_eval(vk: &MultiStarkVerifyingKey<Sha384Config>, ai: usize, cached: usize, cur: &[F], nxt: &[F], pubs: &[F], sel: [F; 3]) -> (Vec<F>, Vec<(u16, F, Vec<F>)>) {
     let dag = &vk.inner.per_air[ai].symbolic_constraints;
     let mut val: Vec<F> = Vec::with_capacity(dag.constraints.nodes.len());
     for n in &dag.constraints.nodes {
         let v = match n {
             SymbolicExpressionNode::Variable(var) => match var.entry {
-                Entry::Main { offset: 0, .. } => cur[var.index],
-                Entry::Main { offset: 1, .. } => nxt[var.index],
+                // partitioned main: part 0 = the cached columns, part 1 = the common main after them
+                Entry::Main { offset: 0, part_index } => cur[if cached > 0 && part_index > 0 { cached + var.index } else { var.index }],
+                Entry::Main { offset: 1, part_index } => nxt[if cached > 0 && part_index > 0 { cached + var.index } else { var.index }],
                 Entry::Public => pubs[var.index],
                 e => panic!("unexpected entry {e:?}"),
             },
@@ -397,7 +466,7 @@ fn cmd_difftest(air_path: &str, points_out: &str, rust_out: &str, n: usize) {
             let pubs: Vec<F> = (0..np).map(|_| next()).collect();
             let j = |v: &[F]| v.iter().map(|x| x.as_canonical_u32().to_string()).collect::<Vec<_>>().join(" ");
             pts.push_str(&format!("{} {} | {} | {} | {}\n", ti, j(&sel), j(&cur), j(&nxt), j(&pubs)));
-            let (cons, ints) = dag_eval(&vk, ti, &cur, &nxt, &pubs, sel);
+            let (cons, ints) = dag_eval(&vk, ti, spec.tables[ti].cached, &cur, &nxt, &pubs, sel);
             let cj: Vec<String> = cons.iter().map(|x| x.as_canonical_u32().to_string()).collect();
             let ij: Vec<String> = ints
                 .iter()

@@ -29,8 +29,11 @@ def WasmBase.Expr.toJson : WasmBase.Expr → String
 def interJson (i : Inter) : String :=
   s!"\{\"bus\":{i.bus},\"send\":{i.send},\"count\":{Expr.toJson i.count},\"msg\":{jList (i.msg.map Expr.toJson)}}"
 
+/-- Number of leading columns committed as a separate cached trace (CODE: the records). -/
+def cachedCols (T : Table) : Nat := if T.name = "CODE" then Chips.Code.cachedWidth else 0
+
 def tableJson (T : Table) : String :=
-  s!"\{\"name\":{jStr T.name},\"cols\":{jList (T.cols.map jStr)},\"degree\":{(T.constraints ++ T.inters.flatMap (fun i => i.count :: i.msg)).foldl (fun m e => max m e.degree) 0},\"constraints\":{jList (T.constraints.map Expr.toJson)},\"inters\":{jList (T.inters.map interJson)}}"
+  s!"\{\"name\":{jStr T.name},\"cached\":{cachedCols T},\"cols\":{jList (T.cols.map jStr)},\"degree\":{(T.constraints ++ T.inters.flatMap (fun i => i.count :: i.msg)).foldl (fun m e => max m e.degree) 0},\"constraints\":{jList (T.constraints.map Expr.toJson)},\"inters\":{jList (T.inters.map interJson)}}"
 
 def airJson (A : Air) : String :=
   s!"\{\"numPub\":{A.numPub},\"tables\":{jList (A.tables.map tableJson)}}"

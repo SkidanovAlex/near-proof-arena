@@ -13,7 +13,7 @@ set_option linter.unusedSimpArgs false
 messages (slots `h-2`, `h-1`, same tag), one produced message (slot `h-2`), a FETCH of a binary
 opcode, two channel time checks, and the chip's local semantic guarantee `sem`. -/
 theorem mul_binop_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
-    (L : Looks nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
+    (L : Looks X nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
     (c : Nat → Nat) (hcP : ∀ i, c i < P) (op tag : Nat) (A B Rr : Nat → Nat) (ta ha tb hb : Nat)
     {inS outS : List F} {cons prod : List Msg}
     (hIn : inS = [((c 0 : Nat) : F), ((c 1 : Nat) : F), ((c 2 : Nat) : F), ((0 : Nat) : F)])
@@ -116,7 +116,7 @@ theorem mul_binop_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Tra
       have := sem (by simpa [Msg.ok] using oka) (by simpa [Msg.ok] using okb)
       exact ⟨by simpa [Msg.ok] using this.1, by simpa [Msg.val] using this.2⟩)
 
-theorem mul_pair {nloc ncode : Nat} {pub : List F} {tr : Trace} (L : Looks nloc ncode pub tr) {a b : Nat}
+theorem mul_pair {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (L : Looks X nloc ncode pub tr) {a b : Nat}
     (ha : a < P) (hb : b < P)
     (ho : (busByte, true, [((0 : Nat) : F), ((a : Nat) : F), ((b : Nat) : F), ((0 : Nat) : F)], 1) ∈
       occs (wasmBaseAir nloc ncode) tr pub) : a < 256 ∧ b < 256 := by
@@ -126,7 +126,7 @@ theorem mul_pair {nloc ncode : Nat} {pub : List F} {tr : Trace} (L : Looks nloc 
   obtain ⟨-, e1, e2, -⟩ := hm
   exact ⟨by rw [natEq e1 ha (by omega)]; exact hx, by rw [natEq e2 hb (by omega)]; exact hy⟩
 
-theorem mul_r16 {nloc ncode : Nat} {pub : List F} {tr : Trace} (L : Looks nloc ncode pub tr) {a : Nat}
+theorem mul_r16 {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (L : Looks X nloc ncode pub tr) {a : Nat}
     (ha : a < P) (ho : (busR16, true, [((a : Nat) : F)], 1) ∈ occs (wasmBaseAir nloc ncode) tr pub) :
     a < 65536 := by
   obtain ⟨x, hx, hl⟩ := L.r16 _ ho rfl rfl rfl
@@ -138,7 +138,7 @@ theorem mul_limb_cast (a b : Nat) :
   simp only [Lean.Grind.Semiring.natCast_add, Lean.Grind.Semiring.natCast_mul]
 
 theorem mul_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
-    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
+    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks X nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
     {r : Nat} (hr : r < tr.height 3) (hact : rowAct Mul.table tr pub 3 r) :
     RowFacts X (rowIn Mul.table tr pub 3 r) (rowOut Mul.table tr pub 3 r)
       (rowCons Mul.table tr pub 3 r) (rowProd Mul.table tr pub 3 r) := by

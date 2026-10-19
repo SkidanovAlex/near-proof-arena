@@ -57,7 +57,7 @@ theorem add_rnToNat (tr : Trace) (t r i : Nat) : (((rowNat tr t r i : Nat) : F))
 theorem add_zeroToNat : (((0 : Nat) : F)).toNat = 0 := Fp.toNat_cast_of_lt (by rw [P_val]; omega)
 
 theorem add_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
-    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
+    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks X nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
     {r : Nat} (hr : r < tr.height 1) (hact : rowAct Add.table tr pub 1 r) :
     RowFacts X (rowIn Add.table tr pub 1 r) (rowOut Add.table tr pub 1 r)
       (rowCons Add.table tr pub 1 r) (rowProd Add.table tr pub 1 r) := by

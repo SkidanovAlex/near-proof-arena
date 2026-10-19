@@ -9,7 +9,7 @@ open NearSpecV3.Wasm hiding P
 set_option linter.unusedSimpArgs false
 
 theorem const_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
-    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
+    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks X nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
     {r : Nat} (hr : r < tr.height 6) (hact : rowAct Const.table tr pub 6 r) :
     RowFacts X (rowIn Const.table tr pub 6 r) (rowOut Const.table tr pub 6 r)
       (rowCons Const.table tr pub 6 r) (rowProd Const.table tr pub 6 r) := by

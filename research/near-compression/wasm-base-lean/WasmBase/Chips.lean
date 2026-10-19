@@ -1,13 +1,13 @@
 import WasmBase.Air
 /-!
-# WasmBase.Chips — the AIR set `wasm-base-v1` (instruction family F1)
+# WasmBase.Chips — the AIR set `wasm-base-v2` (instruction family F1)
 
-Twelve AIRs (≤ 32), max degree 8, no preprocessed or cached traces.  Buses:
+Thirteen AIRs (≤ 32), max degree 8, no preprocessed or cached traces.  Buses:
 
 | bus | name | message | role |
 |---|---|---|---|
 | 0 | STATE | `[pc, ts, S, halted]` | execution-state chain: each instruction row receives once, sends once |
-| 1 | FETCH | `[pc, op, h, fee, x0, x1, x2, x3]` | code records; queried by instruction rows, answered by BOUNDARY |
+| 1 | FETCH | `[pc, op, h, fee, x0, x1, x2, x3]` | code records; queried by instruction rows, answered by the cached CODE table |
 | 2 | CH | `[space, slot, tag, v0, v1, v2, v3, tp]` | value channel: operand stack (space 0) and locals (space 1); producer → consumer (P-PERF-5) |
 | 3 | R16 | `[v]` | 16-bit range lookups into RANGE16 |
 | 4 | BYTE | `[kind, x, y, z]` | byte-pair range (kind 0) / and (1) / or (2) / xor (3) into BYTE |
@@ -491,38 +491,45 @@ def inters : List Inter :=
 def table : Table := ⟨"LOCAL", cols, constraints, inters⟩
 end Local
 
-/-! ## BOUNDARY (height 4): initial / final state, final stack value, code records (public). -/
+/-! ## BOUNDARY (height 4): initial / final state, final stack value, initial / final locals. -/
 namespace Boundary
 def pcf : Nat := 0
 def tpr : Nat := 1
 /-- per local `j`: final tag, value limbs, producer time (6 columns from `2 + 6 j`) -/
 def fin (j : Nat) : Nat := 2 + 6 * j
-def mult (nloc j : Nat) : Nat := 2 + 6 * nloc + j
-/-- Public values: `[N, S_final, nres, rtag, r0, r1, r2, r3]`, then one tag per local, then 8 per
-code record.  The first instruction row has `ts = 1`; initial locals are produced at time 0. -/
+/-- Public values: `[N, S_final, nres, rtag, r0, r1, r2, r3]`, then one tag per local.  The code is
+not public: it is the cached CODE table, whose commitment is a statement component (`code_root`).
+The first instruction row has `ts = 1`; initial locals are produced at time 0. -/
 def pubN : Nat := 0
 def pubS : Nat := 1
 def pubNres : Nat := 2
 def pubTag : Nat := 3
 def pubR : Nat := 4
 def pubLoc : Nat := 8
-def pubRec (nloc : Nat) : Nat := 8 + nloc
 def recWidth : Nat := 8
-def cols (nloc ncode : Nat) : List String := ["pcf", "tpr"] ++
-  ((List.range nloc).flatMap fun j => [s!"ftag{j}", s!"fv{j}_0", s!"fv{j}_1", s!"fv{j}_2", s!"fv{j}_3", s!"ftp{j}"]) ++
-  (List.range ncode).map fun j => s!"m{j}"
-def inters (nloc ncode : Nat) : List Inter :=
+def cols (nloc : Nat) : List String := ["pcf", "tpr"] ++
+  ((List.range nloc).flatMap fun j => [s!"ftag{j}", s!"fv{j}_0", s!"fv{j}_1", s!"fv{j}_2", s!"fv{j}_3", s!"ftp{j}"])
+def inters (nloc : Nat) : List Inter :=
   [stateOut 0 1 0 0 .first,
    ⟨busState, false, .first, [v pcf, pv pubN, pv pubS, 1]⟩,
    stkRecv 0 (pv pubTag) ((List.range 4).map fun i => pv (pubR + i)) (v tpr) (.first * pv pubNres)] ++
   ((List.range nloc).flatMap fun j =>
     [chSend 1 (Expr.c j) (pv (pubLoc + j)) zeros4 0 .first,
-     chRecv 1 (Expr.c j) (v (fin j)) ((List.range 4).map fun i => v (fin j + 1 + i)) (v (fin j + 5)) .first]) ++
-  (List.range ncode).map fun j =>
-    ⟨busFetch, false, .first * v (mult nloc j),
-      (List.range recWidth).map fun k => pv (pubRec nloc + recWidth * j + k)⟩
-def table (nloc ncode : Nat) : Table := ⟨"BOUNDARY", cols nloc ncode, [], inters nloc ncode⟩
+     chRecv 1 (Expr.c j) (v (fin j)) ((List.range 4).map fun i => v (fin j + 1 + i)) (v (fin j + 5)) .first])
+def table (nloc : Nat) : Table := ⟨"BOUNDARY", cols nloc, [], inters nloc⟩
 end Boundary
+
+/-! ## CODE: the code records `[pc, op, h, fee, x0..x3]` as a **cached** trace (columns 0..7; the
+multiplicity column 8 is in the common main).  Its commitment `code_root` is exposed by L1 and
+checked by V_d against the contract's code (`code_hash`): the canonical CODE matrix is a
+deterministic function of the code (records in pc order, padded by repeating the last record). -/
+namespace Code
+def mult : Nat := 8
+def cachedWidth : Nat := 8
+def cols : List String := ["pc", "op", "h", "fee", "x0", "x1", "x2", "x3", "mult"]
+def table : Table :=
+  ⟨"CODE", cols, [], [⟨busFetch, false, v mult, (List.range 8).map v⟩]⟩
+end Code
 
 /-! ## RANGE16: the committed, derived table `v = row index`, height exactly `2^16`. -/
 namespace Range16
@@ -565,10 +572,11 @@ end Byte
 end Chips
 
 open Chips in
-/-- The AIR set `wasm-base-v1` for a function with `nloc` locals and `ncode` code records. -/
-def wasmBaseAir (nloc ncode : Nat) : Air where
-  tables := [Boundary.table nloc ncode, Add.table, Bit.table, Mul.table, Shift.table, Cmp.table,
-    Const.table, Stack.table, Ctrl.table, Local.table, Range16.table, Byte.table]
-  numPub := Boundary.pubRec nloc + Boundary.recWidth * ncode
+/-- The AIR set `wasm-base-v2` for a function with `nloc` locals (the code size only sets the CODE
+height). -/
+def wasmBaseAir (nloc _ncode : Nat) : Air where
+  tables := [Boundary.table nloc, Add.table, Bit.table, Mul.table, Shift.table, Cmp.table,
+    Const.table, Stack.table, Ctrl.table, Local.table, Range16.table, Byte.table, Code.table]
+  numPub := Boundary.pubLoc + nloc
 
 end WasmBase

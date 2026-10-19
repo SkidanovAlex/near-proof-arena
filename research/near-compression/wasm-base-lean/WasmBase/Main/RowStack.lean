@@ -19,7 +19,7 @@ theorem stack_enc_reslot (m : Msg) (hm : m.ok) (sp sl tp : Nat) :
   exact e
 
 theorem stack_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
-    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
+    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks X nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
     {r : Nat} (hr : r < tr.height 7) (hact : rowAct Stack.table tr pub 7 r) :
     RowFacts X (rowIn Stack.table tr pub 7 r) (rowOut Stack.table tr pub 7 r)
       (rowCons Stack.table tr pub 7 r) (rowProd Stack.table tr pub 7 r) := by

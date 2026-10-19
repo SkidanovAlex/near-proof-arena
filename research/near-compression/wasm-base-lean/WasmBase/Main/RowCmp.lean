@@ -144,7 +144,7 @@ theorem cmp_enc_b2 (sl tp : Nat) (b : Bool) :
 
 set_option maxHeartbeats 4000000 in
 theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
-    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
+    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks X nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
     {r : Nat} (hr : r < tr.height 5) (hact : rowAct Cmp.table tr pub 5 r) :
     RowFacts X (rowIn Cmp.table tr pub 5 r) (rowOut Cmp.table tr pub 5 r)
       (rowCons Cmp.table tr pub 5 r) (rowProd Cmp.table tr pub 5 r) := by

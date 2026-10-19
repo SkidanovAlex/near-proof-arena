@@ -27,7 +27,7 @@ theorem local_filterP :
          (v Local.fGet + v Local.fTee)] := by decide
 
 theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
-    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
+    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks X nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
     {r : Nat} (hr : r < tr.height 9) (hact : rowAct Local.table tr pub 9 r) :
     RowFacts X (rowIn Local.table tr pub 9 r) (rowOut Local.table tr pub 9 r)
       (rowCons Local.table tr pub 9 r) (rowProd Local.table tr pub 9 r) := by

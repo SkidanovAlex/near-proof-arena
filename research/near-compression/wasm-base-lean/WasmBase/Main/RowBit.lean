@@ -79,7 +79,7 @@ theorem bit_byteF_lt {K x y : Nat} (hx : x < 256) (hy : y < 256) : byteF K x y <
       · omega
 
 theorem bit_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
-    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
+    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks X nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
     {r : Nat} (hr : r < tr.height 2) (hact : rowAct Bit.table tr pub 2 r) :
     RowFacts X (rowIn Bit.table tr pub 2 r) (rowOut Bit.table tr pub 2 r)
       (rowCons Bit.table tr pub 2 r) (rowProd Bit.table tr pub 2 r) := by

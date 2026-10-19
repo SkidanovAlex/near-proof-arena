@@ -5,7 +5,7 @@
 //! `AirBuilder` / `InteractionBuilder` interface, so the SWIRL keygen's symbolic DAG is built from
 //! exactly the Lean expressions.  Nothing in this file is specific to the Wasm chips; the column
 //! layout is only used by the trace generator, by name.
-use openvm_stark_backend::{PartitionedBaseAir, interaction::InteractionBuilder};
+use openvm_stark_backend::{PartitionedBaseAir, air_builders::PartitionedAirBuilder, interaction::InteractionBuilder};
 use p3_air::{Air, AirBuilderWithPublicValues, BaseAir, BaseAirWithPublicValues};
 use p3_field::PrimeCharacteristicRing;
 use p3_matrix::Matrix;
@@ -86,6 +86,8 @@ pub struct Inter {
 #[derive(Clone, Debug)]
 pub struct TableSpec {
     pub name: String,
+    /// Leading columns committed as a separate cached trace (CODE: the records); 0 otherwise.
+    pub cached: usize,
     pub cols: Vec<String>,
     pub degree: usize,
     pub constraints: Vec<E>,
@@ -115,6 +117,7 @@ impl AirSpec {
             .iter()
             .map(|t| TableSpec {
                 name: t["name"].as_str().unwrap().to_string(),
+                cached: t["cached"].as_u64().unwrap_or(0) as usize,
                 cols: t["cols"]
                     .as_array()
                     .unwrap()
@@ -171,7 +174,14 @@ impl<F> BaseAir<F> for JsonAir {
         self.spec.cols.len()
     }
 }
-impl<F> PartitionedBaseAir<F> for JsonAir {}
+impl<F> PartitionedBaseAir<F> for JsonAir {
+    fn cached_main_widths(&self) -> Vec<usize> {
+        if self.spec.cached > 0 { vec![self.spec.cached] } else { vec![] }
+    }
+    fn common_main_width(&self) -> usize {
+        self.spec.cols.len() - self.spec.cached
+    }
+}
 impl<F> BaseAirWithPublicValues<F> for JsonAir {
     fn num_public_values(&self) -> usize {
         self.num_pub
@@ -199,11 +209,21 @@ fn build<AB: AirBuilderWithPublicValues>(
     }
 }
 
-impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for JsonAir {
+impl<AB: AirBuilderWithPublicValues + InteractionBuilder + PartitionedAirBuilder> Air<AB> for JsonAir {
     fn eval(&self, b: &mut AB) {
-        let main = b.main();
-        let l: Vec<AB::Expr> = main.row_slice(0).unwrap().iter().map(|&v| v.into()).collect();
-        let n: Vec<AB::Expr> = main.row_slice(1).unwrap().iter().map(|&v| v.into()).collect();
+        // column space = cached columns (if any) followed by the common main
+        let mut l: Vec<AB::Expr> = vec![];
+        let mut n: Vec<AB::Expr> = vec![];
+        if self.spec.cached > 0 {
+            l.extend(b.cached_mains()[0].row_slice(0).unwrap().iter().map(|&v| v.into()));
+            n.extend(b.cached_mains()[0].row_slice(1).unwrap().iter().map(|&v| v.into()));
+            l.extend(b.common_main().row_slice(0).unwrap().iter().map(|&v| v.into()));
+            n.extend(b.common_main().row_slice(1).unwrap().iter().map(|&v| v.into()));
+        } else {
+            let main = b.main();
+            l.extend(main.row_slice(0).unwrap().iter().map(|&v| v.into()));
+            n.extend(main.row_slice(1).unwrap().iter().map(|&v| v.into()));
+        }
         let p: Vec<AB::Expr> = b.public_values().iter().map(|&v| v.into()).collect();
         for c in &self.spec.constraints {
             let e = build(b, c, &l, &n, &p);

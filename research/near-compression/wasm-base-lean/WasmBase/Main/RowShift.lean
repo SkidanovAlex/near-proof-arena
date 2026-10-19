@@ -26,7 +26,7 @@ theorem shift_rbyte_eval (c : Nat → Nat) (rw : Row) (h10 : c 10 ≤ 1) (j : Na
 
 
 theorem shift_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
-    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
+    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks X nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
     {r : Nat} (hr : r < tr.height 4) (hact : rowAct Shift.table tr pub 4 r) :
     RowFacts X (rowIn Shift.table tr pub 4 r) (rowOut Shift.table tr pub 4 r)
       (rowCons Shift.table tr pub 4 r) (rowProd Shift.table tr pub 4 r) := by

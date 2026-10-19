@@ -127,7 +127,7 @@ theorem ctrl_filterC :
 theorem ctrl_filterP : Ctrl.inters.filter (fun i => decide (i.bus = busStk ∧ i.send = true)) = [] := by decide
 
 theorem ctrl_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
-    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
+    (H : Holds (wasmBaseAir nloc ncode) pub tr) (L : Looks X nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
     {r : Nat} (hr : r < tr.height 8) (hact : rowAct Ctrl.table tr pub 8 r) :
     RowFacts X (rowIn Ctrl.table tr pub 8 r) (rowOut Ctrl.table tr pub 8 r)
       (rowCons Ctrl.table tr pub 8 r) (rowProd Ctrl.table tr pub 8 r) := by

@@ -37,7 +37,7 @@ structure ChipFacts (X : Ctx) (nloc ncode : Nat) (pub : List F) (tr : Trace) : P
     (i.count.eval (tr.row pub t r)).toNat ≤ 1
   inactive : ∀ t, 1 ≤ t → t ≤ 9 → ∀ r, r < tr.height t → ¬ rowAct (chipT t) tr pub t r →
     ∀ i ∈ (chipT t).inters, (i.count.eval (tr.row pub t r)).toNat ≠ 1
-  rows : Looks nloc ncode pub tr → PubOK X nloc ncode pub → ∀ t, 1 ≤ t → t ≤ 9 → ∀ r, r < tr.height t →
+  rows : Looks X nloc ncode pub tr → PubOK X nloc ncode pub → ∀ t, 1 ≤ t → t ≤ 9 → ∀ r, r < tr.height t →
     rowAct (chipT t) tr pub t r →
     RowFacts X (rowIn (chipT t) tr pub t r) (rowOut (chipT t) tr pub t r) (rowCons (chipT t) tr pub t r)
       (rowProd (chipT t) tr pub t r)
@@ -54,11 +54,11 @@ theorem occ_bits {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   intro o ho hk
   obtain ⟨t, ht, r, hr, i, hi, rfl⟩ := occ_table ho
   simp only at hk ⊢
-  rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨h1, h9, -⟩
+  rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨h1, h9, -⟩
   · rw [hT] at hi
     simp only [Boundary.table, Boundary.inters, List.mem_append, List.mem_cons, List.mem_nil_iff, or_false,
       List.mem_flatMap, List.mem_map, List.mem_range] at hi
-    rcases hi with ((rfl | rfl | rfl) | ⟨j, _, rfl | rfl⟩) | ⟨j, _, rfl⟩
+    rcases hi with (rfl | rfl | rfl) | ⟨j, _, rfl | rfl⟩
     · exact first_le tr pub 0 r
     · exact first_le tr pub 0 r
     · -- the result receive: count `first · nres` with `nres = arity ≤ 1`
@@ -74,7 +74,9 @@ theorem occ_bits {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
         rw [show (0 : F) * ((X.pf.type.results.size : Nat) : F) = ((0 : Nat) : F) by grind]; decide
     · exact first_le tr pub 0 r
     · exact first_le tr pub 0 r
-    · simp [busFetch, busState, busStk] at hk
+  · rw [hT] at hi
+    simp only [Code.table, List.mem_cons, List.mem_nil_iff, or_false] at hi
+    subst hi; simp [busFetch, busState, busStk] at hk
   · rw [hT] at hi
     simp only [Range16.table, List.mem_cons, List.mem_nil_iff, or_false] at hi
     subst hi; simp [busR16, busState, busStk] at hk
@@ -101,9 +103,9 @@ theorem flatMap_ite_single {α β : Type} (l : List α) (p : α → Prop) [Decid
 
 theorem air_flatMap {α : Type} (nloc ncode : Nat) (G : Table → Nat → List α) :
     ((wasmBaseAir nloc ncode).tables.zipIdx.flatMap fun x => G x.1 x.2) =
-      G (Boundary.table nloc ncode) 0 ++ (G (chipT 1) 1 ++ (G (chipT 2) 2 ++ (G (chipT 3) 3 ++ (G (chipT 4) 4 ++
+      G (Boundary.table nloc) 0 ++ (G (chipT 1) 1 ++ (G (chipT 2) 2 ++ (G (chipT 3) 3 ++ (G (chipT 4) 4 ++
         (G (chipT 5) 5 ++ (G (chipT 6) 6 ++ (G (chipT 7) 7 ++ (G (chipT 8) 8 ++ (G (chipT 9) 9 ++
-        (G Range16.table 10 ++ G Byte.table 11)))))))))) := by
+        (G Range16.table 10 ++ (G Byte.table 11 ++ G Code.table 12))))))))))) := by
   simp [wasmBaseAir, List.zipIdx_cons, chipT]
 
 theorem chip_state_true {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 9)
@@ -138,31 +140,19 @@ theorem flatMap_single {α β : Type} (f : α → β) (l : List α) : (l.flatMap
   | nil => rfl
   | cons a l ih => simp [ih]
 
-theorem bnd_fetchPart (nloc ncode b : Nat) (s : Bool) (hb : b ≠ busFetch) :
-    ((List.range ncode).map fun j => (⟨busFetch, false, .first * v (Boundary.mult nloc j),
-      (List.range Boundary.recWidth).map fun k => pv (Boundary.pubRec nloc + Boundary.recWidth * j + k)⟩ : Inter)).filter
-      (fun i => i.bus = b ∧ i.send = s) = [] := by
-  rw [List.filter_eq_nil_iff]
-  intro i hi
-  simp only [List.mem_map] at hi
-  obtain ⟨j, _, rfl⟩ := hi
-  simp only [decide_eq_true_eq, not_and]
-  intro h; exact absurd h.symm hb
-
-theorem bnd_filters (nloc ncode : Nat) :
-    (Boundary.inters nloc ncode).filter (fun i => i.bus = busState ∧ i.send = true) = [stateOut 0 1 0 0 .first] ∧
-    (Boundary.inters nloc ncode).filter (fun i => i.bus = busState ∧ i.send = false) =
+theorem bnd_filters (nloc : Nat) :
+    (Boundary.inters nloc).filter (fun i => i.bus = busState ∧ i.send = true) = [stateOut 0 1 0 0 .first] ∧
+    (Boundary.inters nloc).filter (fun i => i.bus = busState ∧ i.send = false) =
       [⟨busState, false, .first, [v Boundary.pcf, pv Boundary.pubN, pv Boundary.pubS, 1]⟩] ∧
-    (Boundary.inters nloc ncode).filter (fun i => i.bus = busStk ∧ i.send = true) =
+    (Boundary.inters nloc).filter (fun i => i.bus = busStk ∧ i.send = true) =
       (List.range nloc).map (fun j => chSend 1 (Expr.c j) (pv (Boundary.pubLoc + j)) zeros4 0 .first) ∧
-    (Boundary.inters nloc ncode).filter (fun i => i.bus = busStk ∧ i.send = false) =
+    (Boundary.inters nloc).filter (fun i => i.bus = busStk ∧ i.send = false) =
       stkRecv 0 (pv Boundary.pubTag) ((List.range 4).map fun i => pv (Boundary.pubR + i)) (v Boundary.tpr)
         (.first * pv Boundary.pubNres) ::
       (List.range nloc).map (fun j => chRecv 1 (Expr.c j) (v (Boundary.fin j))
         ((List.range 4).map fun i => v (Boundary.fin j + 1 + i)) (v (Boundary.fin j + 5)) .first) := by
   refine ⟨?_, ?_, ?_, ?_⟩ <;> unfold Boundary.inters <;>
-    rw [List.filter_append, List.filter_append, bnd_fetchPart nloc ncode _ _ (by decide), List.append_nil,
-      List.filter_flatMap] <;>
+    rw [List.filter_append, List.filter_flatMap] <;>
     simp [stateOut, chSend, chRecv, stkRecv, busState, busStk, flatMap_single]
 
 def initRaw (nloc : Nat) (pub : List F) : List (List F) :=
@@ -199,14 +189,14 @@ theorem filterMap_none_of {α β : Type} (g : α → Option β) (l : List α)
   rw [List.filterMap_eq_nil_iff]; exact h
 
 theorem bnd_msgs {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (hpub : PubOK X nloc ncode pub) (r : Nat) :
-    rowMsgs (Boundary.table nloc ncode) tr pub 0 r busState true = (if r = 0 then [stMsg 0 1 0 0] else []) ∧
-    rowMsgs (Boundary.table nloc ncode) tr pub 0 r busState false =
+    rowMsgs (Boundary.table nloc) tr pub 0 r busState true = (if r = 0 then [stMsg 0 1 0 0] else []) ∧
+    rowMsgs (Boundary.table nloc) tr pub 0 r busState false =
       (if r = 0 then [[tr.cell 0 0 Boundary.pcf, pub.getD Boundary.pubN 0, pub.getD Boundary.pubS 0, ((1 : Nat) : F)]]
        else []) ∧
-    rowMsgs (Boundary.table nloc ncode) tr pub 0 r busStk true = (if r = 0 then initRaw nloc pub else []) ∧
-    rowMsgs (Boundary.table nloc ncode) tr pub 0 r busStk false =
+    rowMsgs (Boundary.table nloc) tr pub 0 r busStk true = (if r = 0 then initRaw nloc pub else []) ∧
+    rowMsgs (Boundary.table nloc) tr pub 0 r busStk false =
       (if r = 0 then (if X.ck.arity = 1 then [resRaw pub tr] else []) ++ finRaw nloc tr else []) := by
-  obtain ⟨f1, f2, f3, f4⟩ := bnd_filters nloc ncode
+  obtain ⟨f1, f2, f3, f4⟩ := bnd_filters nloc
   have hfe := first_eval tr pub 0 r
   have h0 : r = 0 → (Expr.first.eval (tr.row pub 0 r)).toNat = 1 := hfe.mpr
   have h1 : r ≠ 0 → ¬ (Expr.first.eval (tr.row pub 0 r)).toNat = 1 := fun h e => h (hfe.mp e)
@@ -293,9 +283,10 @@ theorem flatMap_filter_of_nil {α β : Type} (l : List α) (p : α → Prop) [De
     · simp [ha, h a List.mem_cons_self ha, ih']
 
 theorem fixed_nil (tr : Trace) (pub : List F) (t r : Nat) (b : Nat) (hb : b = busState ∨ b = busStk) (s : Bool) :
-    rowMsgs Range16.table tr pub t r b s = [] ∧ rowMsgs Byte.table tr pub t r b s = [] := by
-  constructor <;> rw [rowMsgs_eq] <;> rcases hb with rfl | rfl <;> cases s <;>
-    simp [Range16.table, Byte.table, Byte.inters, busState, busStk, busR16, busByte]
+    rowMsgs Range16.table tr pub t r b s = [] ∧ rowMsgs Byte.table tr pub t r b s = [] ∧
+      rowMsgs Code.table tr pub t r b s = [] := by
+  refine ⟨?_, ?_, ?_⟩ <;> rw [rowMsgs_eq] <;> rcases hb with rfl | rfl <;> cases s <;>
+    simp [Range16.table, Byte.table, Byte.inters, Code.table, busState, busStk, busR16, busByte, busFetch]
 
 theorem chip_part_true {pub : List F} {tr : Trace} (t : Nat) (h1 : 1 ≤ t) (h9 : t ≤ 9) :
     ((List.range (tr.height t)).flatMap fun r => rowMsgs (chipT t) tr pub t r busState true) =
@@ -346,20 +337,23 @@ def part (T : Table) (tr : Trace) (pub : List F) (t b : Nat) (s : Bool) : List (
 
 theorem msgs_air (nloc ncode : Nat) (tr : Trace) (pub : List F) (b : Nat) (s : Bool) :
     msgs (wasmBaseAir nloc ncode) tr pub b s =
-      part (Boundary.table nloc ncode) tr pub 0 b s ++ (part (chipT 1) tr pub 1 b s ++ (part (chipT 2) tr pub 2 b s ++
+      part (Boundary.table nloc) tr pub 0 b s ++ (part (chipT 1) tr pub 1 b s ++ (part (chipT 2) tr pub 2 b s ++
       (part (chipT 3) tr pub 3 b s ++ (part (chipT 4) tr pub 4 b s ++ (part (chipT 5) tr pub 5 b s ++
       (part (chipT 6) tr pub 6 b s ++ (part (chipT 7) tr pub 7 b s ++ (part (chipT 8) tr pub 8 b s ++
-      (part (chipT 9) tr pub 9 b s ++ (part Range16.table tr pub 10 b s ++ part Byte.table tr pub 11 b s)))))))))) := by
+      (part (chipT 9) tr pub 9 b s ++ (part Range16.table tr pub 10 b s ++ (part Byte.table tr pub 11 b s ++
+      part Code.table tr pub 12 b s))))))))))) := by
   rw [msgs_flatMap]
   simp only [wasmBaseAir, List.zipIdx_cons, List.zipIdx_nil, List.flatMap_cons, List.flatMap_nil, List.append_nil,
     Nat.reduceAdd]
   rfl
 
 theorem part_fixed (tr : Trace) (pub : List F) (b : Nat) (hb : b = busState ∨ b = busStk) (s : Bool) :
-    part Range16.table tr pub 10 b s = [] ∧ part Byte.table tr pub 11 b s = [] := by
-  constructor <;> (unfold part; rw [List.flatMap_eq_nil_iff]; intro r _)
+    part Range16.table tr pub 10 b s = [] ∧ part Byte.table tr pub 11 b s = [] ∧
+      part Code.table tr pub 12 b s = [] := by
+  refine ⟨?_, ?_, ?_⟩ <;> (unfold part; rw [List.flatMap_eq_nil_iff]; intro r _)
   · exact (fixed_nil tr pub 10 r b hb s).1
-  · exact (fixed_nil tr pub 11 r b hb s).2
+  · exact (fixed_nil tr pub 11 r b hb s).2.1
+  · exact (fixed_nil tr pub 12 r b hb s).2.2
 
 theorem msgs_state {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub) :
@@ -369,13 +363,13 @@ theorem msgs_state {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       [tr.cell 0 0 Boundary.pcf, pub.getD Boundary.pubN 0, pub.getD Boundary.pubS 0, ((1 : Nat) : F)] ::
         (actList tr pub).map (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2) := by
   have h0 : 1 ≤ tr.height 0 := by have := H.heightPos 0 (by simp [air_len]); omega
-  obtain ⟨n1, n2⟩ := part_fixed tr pub busState (Or.inl rfl) true
-  obtain ⟨n3, n4⟩ := part_fixed tr pub busState (Or.inl rfl) false
+  obtain ⟨n1, n2, n1'⟩ := part_fixed tr pub busState (Or.inl rfl) true
+  obtain ⟨n3, n4, n3'⟩ := part_fixed tr pub busState (Or.inl rfl) false
   constructor
-  · rw [msgs_air, n1, n2, actList_map]
-    have hb : part (Boundary.table nloc ncode) tr pub 0 busState true = [stMsg 0 1 0 0] := by
+  · rw [msgs_air, n1, n2, n1', actList_map]
+    have hb : part (Boundary.table nloc) tr pub 0 busState true = [stMsg 0 1 0 0] := by
       unfold part
-      rw [show (fun r => rowMsgs (Boundary.table nloc ncode) tr pub 0 r busState true) =
+      rw [show (fun r => rowMsgs (Boundary.table nloc) tr pub 0 r busState true) =
         (fun r => if r = 0 then [stMsg 0 1 0 0] else []) from funext fun r => (bnd_msgs hpub r).1]
       exact flatMap_range_first _ h0 _
     rw [hb]
@@ -384,11 +378,11 @@ theorem msgs_state {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       chip_part_true 5 (by omega) (by omega), chip_part_true 6 (by omega) (by omega),
       chip_part_true 7 (by omega) (by omega), chip_part_true 8 (by omega) (by omega),
       chip_part_true 9 (by omega) (by omega), List.append_nil, List.cons_append, List.nil_append]
-  · rw [msgs_air, n3, n4, actList_map]
-    have hb : part (Boundary.table nloc ncode) tr pub 0 busState false =
+  · rw [msgs_air, n3, n4, n3', actList_map]
+    have hb : part (Boundary.table nloc) tr pub 0 busState false =
         [[tr.cell 0 0 Boundary.pcf, pub.getD Boundary.pubN 0, pub.getD Boundary.pubS 0, ((1 : Nat) : F)]] := by
       unfold part
-      rw [show (fun r => rowMsgs (Boundary.table nloc ncode) tr pub 0 r busState false) =
+      rw [show (fun r => rowMsgs (Boundary.table nloc) tr pub 0 r busState false) =
         (fun r => if r = 0 then [[tr.cell 0 0 Boundary.pcf, pub.getD Boundary.pubN 0, pub.getD Boundary.pubS 0,
           ((1 : Nat) : F)]] else []) from funext fun r => (bnd_msgs hpub r).2.1]
       exact flatMap_range_first _ h0 _
@@ -407,13 +401,13 @@ theorem msgs_ch {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       ((if X.ck.arity = 1 then [resRaw pub tr] else []) ++ finRaw nloc tr) ++
         (actList tr pub).flatMap (fun ρ => rowMsgs (chipT ρ.1) tr pub ρ.1 ρ.2 busStk false) := by
   have h0 : 1 ≤ tr.height 0 := by have := H.heightPos 0 (by simp [air_len]); omega
-  obtain ⟨n1, n2⟩ := part_fixed tr pub busStk (Or.inr rfl) true
-  obtain ⟨n3, n4⟩ := part_fixed tr pub busStk (Or.inr rfl) false
+  obtain ⟨n1, n2, n1'⟩ := part_fixed tr pub busStk (Or.inr rfl) true
+  obtain ⟨n3, n4, n3'⟩ := part_fixed tr pub busStk (Or.inr rfl) false
   constructor
-  · rw [msgs_air, n1, n2, actList_flatMap]
-    have hb : part (Boundary.table nloc ncode) tr pub 0 busStk true = initRaw nloc pub := by
+  · rw [msgs_air, n1, n2, n1', actList_flatMap]
+    have hb : part (Boundary.table nloc) tr pub 0 busStk true = initRaw nloc pub := by
       unfold part
-      rw [show (fun r => rowMsgs (Boundary.table nloc ncode) tr pub 0 r busStk true) =
+      rw [show (fun r => rowMsgs (Boundary.table nloc) tr pub 0 r busStk true) =
         (fun r => if r = 0 then initRaw nloc pub else []) from funext fun r => (bnd_msgs hpub r).2.2.1]
       exact flatMap_range_first _ h0 _
     rw [hb]
@@ -422,11 +416,11 @@ theorem msgs_ch {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       chip_part_ch CF 5 (by omega) (by omega), chip_part_ch CF 6 (by omega) (by omega),
       chip_part_ch CF 7 (by omega) (by omega), chip_part_ch CF 8 (by omega) (by omega),
       chip_part_ch CF 9 (by omega) (by omega), List.append_nil]
-  · rw [msgs_air, n3, n4, actList_flatMap]
-    have hb : part (Boundary.table nloc ncode) tr pub 0 busStk false =
+  · rw [msgs_air, n3, n4, n3', actList_flatMap]
+    have hb : part (Boundary.table nloc) tr pub 0 busStk false =
         (if X.ck.arity = 1 then [resRaw pub tr] else []) ++ finRaw nloc tr := by
       unfold part
-      rw [show (fun r => rowMsgs (Boundary.table nloc ncode) tr pub 0 r busStk false) =
+      rw [show (fun r => rowMsgs (Boundary.table nloc) tr pub 0 r busStk false) =
         (fun r => if r = 0 then (if X.ck.arity = 1 then [resRaw pub tr] else []) ++ finRaw nloc tr else []) from
         funext fun r => (bnd_msgs hpub r).2.2.2]
       exact flatMap_range_first _ h0 _
@@ -596,7 +590,7 @@ hold, then the spec `run` from function entry finishes after exactly `N - 1` ste
 `R · S` charged, and the operand stack equal to the public result (if the function has one). -/
 theorem wasm_base_exec (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub)
-    (CF : ChipFacts X nloc ncode pub tr)
+    (CF : ChipFacts X nloc ncode pub tr) (hcode : CodeOK X tr)
     (hfeeN : (pub.getD Boundary.pubN 0).toNat * (X.ck.maxFee + 1) < P)
     (hgas : X.R * (pub.getD Boundary.pubS 0).toNat ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     {s0 : St} {f0 : Frame} (hfr : s0.frames = [f0]) (hfn : f0.fn = X.fn) (hpc : f0.pc = 0)
@@ -610,7 +604,7 @@ theorem wasm_base_exec (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
           (pub.getD (Boundary.pubR + 2) 0).toNat (pub.getD (Boundary.pubR + 3) 0).toNat) := by
   have hP' := P_val
   have hbits := occ_bits hpub CF
-  have L := looks_of H (fun o ho hs => hbits o ho (Or.inl hs))
+  have L := looks_of H hcode (fun o ho hs => hbits o ho (Or.inl hs))
   obtain ⟨ms1, ms2⟩ := msgs_state H hpub
   have hstP := msgs_perm H busState (fun o ho hb => hbits o ho (Or.inr (Or.inl hb)))
   rw [ms1, ms2] at hstP

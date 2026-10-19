@@ -14,13 +14,21 @@ open ZkFormal.Algebra Chips Local
 set_option linter.unusedSimpArgs false
 set_option maxRecDepth 4000
 
-/-- Public code record `j` (bus FETCH table side). -/
-def pubRecord (nloc : Nat) (pub : List F) (j : Nat) : List F :=
-  (List.range Boundary.recWidth).map fun k => pub.getD (Boundary.pubRec nloc + Boundary.recWidth * j + k) 0
+/-- Code record `j` of the checked function, as field elements. -/
+def codeRec (X : Ctx) (j : Nat) : List F := (X.ck.records[j]?.getD []).map fun x => ((x : Nat) : F)
+
+/-- **Statement binding of the cached CODE table.**  V_d recomputes `code_root` from the contract code
+(`code_hash`) as the commitment to the canonical CODE matrix (the records in pc order, padded by
+repeating the last record) and checks it equals the cached commitment the proof carries; so, under
+the binding of the commitment, every CODE row's record columns are a record of the checked code.
+This is the one hypothesis the commitment contributes. -/
+def CodeOK (X : Ctx) (tr : Trace) : Prop :=
+  ∀ r, r < tr.height 12 → ∃ j, j < X.pf.code.size ∧
+    (List.range Boundary.recWidth).map (fun k => tr.cell 12 r k) = codeRec X j
 
 /-! ## Which tables receive on the lookup buses (decidable) -/
 
-theorem recv_only_boundary_fetch :
+theorem recv_only_code_fetch :
     ∀ T ∈ [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table,
       Local.table, Range16.table, Byte.table], ∀ i ∈ T.inters, i.bus = busFetch → i.send = true := by
   simp only [List.mem_cons, List.mem_nil_iff, or_false]
@@ -35,9 +43,9 @@ theorem recv_only_boundary_fetch :
 
 theorem recv_only_range16 :
     ∀ T ∈ [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table,
-      Local.table, Byte.table], ∀ i ∈ T.inters, i.bus = busR16 → i.send = true := by
+      Local.table, Byte.table, Code.table], ∀ i ∈ T.inters, i.bus = busR16 → i.send = true := by
   simp only [List.mem_cons, List.mem_nil_iff, or_false]
-  rintro T (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;>
+  rintro T (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;>
   · intro i hi
     have := List.all_eq_true.mp (show (List.all _ fun i : Inter => i.bus != busR16 || i.send) = true by decide) i hi
     intro hb
@@ -48,9 +56,9 @@ theorem recv_only_range16 :
 
 theorem recv_only_byte :
     ∀ T ∈ [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table,
-      Local.table, Range16.table], ∀ i ∈ T.inters, i.bus = busByte → i.send = true := by
+      Local.table, Range16.table, Code.table], ∀ i ∈ T.inters, i.bus = busByte → i.send = true := by
   simp only [List.mem_cons, List.mem_nil_iff, or_false]
-  rintro T (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;>
+  rintro T (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;>
   · intro i hi
     have := List.all_eq_true.mp (show (List.all _ fun i : Inter => i.bus != busByte || i.send) = true by decide) i hi
     intro hb
@@ -59,39 +67,28 @@ theorem recv_only_byte :
     · exact absurd hb h
     · exact h
 
-theorem boundary_no_r16_byte (nloc ncode : Nat) :
-    ∀ i ∈ Boundary.inters nloc ncode, i.bus ≠ busR16 ∧ i.bus ≠ busByte := by
+theorem boundary_lookups (nloc : Nat) :
+    ∀ i ∈ Boundary.inters nloc, i.bus ≠ busR16 ∧ i.bus ≠ busByte ∧ i.bus ≠ busFetch := by
   intro i hi
   simp only [Boundary.inters, List.mem_append, List.mem_cons, List.mem_nil_iff, or_false, List.mem_flatMap,
     List.mem_map, List.mem_range] at hi
-  rcases hi with ((rfl | rfl | rfl) | ⟨j, _, rfl | rfl⟩) | ⟨j, _, rfl⟩ <;>
+  rcases hi with (rfl | rfl | rfl) | ⟨j, _, rfl | rfl⟩ <;>
     simp [stateOut, chSend, chRecv, stkRecv, busState, busStk, busR16, busByte, busFetch]
-
-theorem boundary_fetch_msg (nloc ncode : Nat) :
-    ∀ i ∈ Boundary.inters nloc ncode, i.bus = busFetch →
-      ∃ j, j < ncode ∧ i.msg = (List.range Boundary.recWidth).map fun k => pv (Boundary.pubRec nloc + Boundary.recWidth * j + k) := by
-  intro i hi hb
-  simp only [Boundary.inters, List.mem_append, List.mem_cons, List.mem_nil_iff, or_false, List.mem_flatMap,
-    List.mem_map, List.mem_range] at hi
-  rcases hi with ((rfl | rfl | rfl) | ⟨j, _, rfl | rfl⟩) | ⟨j, hj, rfl⟩
-  all_goals first
-    | exact ⟨j, hj, rfl⟩
-    | (exfalso; simp [stateOut, chSend, chRecv, stkRecv, busState, busStk, busFetch] at hb)
 
 /-! ## Lookup consequences -/
 
 /-- The occurrence list splits by table index. -/
 theorem occ_table {nloc ncode : Nat} {tr : Trace} {pub : List F} {o : Occ}
     (ho : o ∈ occs (wasmBaseAir nloc ncode) tr pub) :
-    ∃ t, ∃ ht : t < 12, ∃ r, r < tr.height t ∧
+    ∃ t, ∃ ht : t < 13, ∃ r, r < tr.height t ∧
       ∃ i ∈ ((wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht)).inters,
         o = (i.bus, i.send, i.msg.map (·.eval (tr.row pub t r)), (i.count.eval (tr.row pub t r)).toNat) := by
   obtain ⟨t, ht, r, hr, i, hi, rfl⟩ := mem_occs.mp ho
   exact ⟨t, by simpa [air_len] using ht, r, hr, i, hi, rfl⟩
 
-structure Looks (nloc ncode : Nat) (pub : List F) (tr : Trace) : Prop where
+structure Looks (X : Ctx) (nloc ncode : Nat) (pub : List F) (tr : Trace) : Prop where
   fetch : ∀ o ∈ occs (wasmBaseAir nloc ncode) tr pub, o.1 = busFetch → o.2.1 = true → o.2.2.2 = 1 →
-    ∃ j, j < ncode ∧ o.2.2.1 = pubRecord nloc pub j
+    ∃ j, j < X.pf.code.size ∧ o.2.2.1 = codeRec X j
   r16 : ∀ o ∈ occs (wasmBaseAir nloc ncode) tr pub, o.1 = busR16 → o.2.1 = true → o.2.2.2 = 1 →
     ∃ x : F, o.2.2.1 = [x] ∧ x.toNat < 65536
   byte : ∀ o ∈ occs (wasmBaseAir nloc ncode) tr pub, o.1 = busByte → o.2.1 = true → o.2.2.2 = 1 →
@@ -164,13 +161,14 @@ theorem byte_row_msgs {A : Air} {pub : List F} {tr : Trace} (H : Holds A pub tr)
 def instrTables : List Table :=
   [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table, Local.table]
 
-theorem table_class (nloc ncode t : Nat) (ht : t < 12) :
-    (t = 0 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Boundary.table nloc ncode) ∨
+theorem table_class (nloc ncode t : Nat) (ht : t < 13) :
+    (t = 0 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Boundary.table nloc) ∨
+    (t = 12 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Code.table) ∨
     (t = 10 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Range16.table) ∨
     (t = 11 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Byte.table) ∨
     (1 ≤ t ∧ t ≤ 9 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) ∈ instrTables) := by
   rcases (show t = 0 ∨ t = 1 ∨ t = 2 ∨ t = 3 ∨ t = 4 ∨ t = 5 ∨ t = 6 ∨ t = 7 ∨ t = 8 ∨ t = 9 ∨ t = 10 ∨ t = 11
-    by omega) with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    ∨ t = 12 by omega) with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
   simp [wasmBaseAir, instrTables]
 
 theorem instr_sub1 (T : Table) (h : T ∈ instrTables) :
@@ -181,41 +179,47 @@ theorem instr_sub1 (T : Table) (h : T ∈ instrTables) :
 
 theorem instr_sub2 (T : Table) (h : T ∈ instrTables) :
     T ∈ [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table,
-      Local.table, Byte.table] := by
+      Local.table, Byte.table, Code.table] := by
   simp only [instrTables, List.mem_cons, List.mem_nil_iff, or_false] at h ⊢
   rcases h with h | h | h | h | h | h | h | h | h <;> simp [h]
 
 theorem instr_sub3 (T : Table) (h : T ∈ instrTables) :
     T ∈ [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table,
-      Local.table, Range16.table] := by
+      Local.table, Range16.table, Code.table] := by
   simp only [instrTables, List.mem_cons, List.mem_nil_iff, or_false] at h ⊢
   rcases h with h | h | h | h | h | h | h | h | h <;> simp [h]
 
-theorem looks_of {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : Holds (wasmBaseAir nloc ncode) pub tr)
+theorem looks_of {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : Holds (wasmBaseAir nloc ncode) pub tr)
+    (hcode : CodeOK X tr)
     (hsend : ∀ o ∈ occs (wasmBaseAir nloc ncode) tr pub, o.2.1 = true → o.2.2.2 ≤ 1) :
-    Looks nloc ncode pub tr := by
+    Looks X nloc ncode pub tr := by
   have hP' := P_val
   refine ⟨fun o ho hb hs hc => ?_, fun o ho hb hs hc => ?_, fun o ho hb hs hc => ?_⟩
-  · refine lookup_sound H busFetch (fun m => ∃ j, j < ncode ∧ m = pubRecord nloc pub j) ?_
+  · refine lookup_sound H busFetch (fun m => ∃ j, j < X.pf.code.size ∧ m = codeRec X j) ?_
       (fun o' ho' _ hs' => hsend o' ho' hs') ho hb hs hc
     intro o' ho' hb' hs' _
     obtain ⟨t, ht, r, hr, i, hi, rfl⟩ := occ_table ho'
     simp only at hb' hs' ⊢
-    rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨_, _, hT⟩
+    rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨_, _, hT⟩
+    · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc i hi).2.2
     · rw [hT] at hi
-      obtain ⟨j, hj, hm⟩ := boundary_fetch_msg nloc ncode i hi hb'
+      simp only [Code.table, List.mem_cons, List.mem_nil_iff, or_false] at hi
+      subst hi
+      obtain ⟨j, hj, he⟩ := hcode r hr
       refine ⟨j, hj, ?_⟩
-      rw [hm]; simp [pubRecord, List.map_map, Function.comp, Expr.eval, Trace.row, pv]
-    · rw [hT] at hi; exact absurd (recv_only_boundary_fetch _ (by simp) i hi hb') (by simp [hs'])
-    · rw [hT] at hi; exact absurd (recv_only_boundary_fetch _ (by simp) i hi hb') (by simp [hs'])
-    · exact absurd (recv_only_boundary_fetch _ (instr_sub1 _ hT) i hi hb') (by simp [hs'])
+      rw [← he]
+      simp [List.map_map, Function.comp, v, Expr.eval_col, Trace.row, Boundary.recWidth]
+    · rw [hT] at hi; exact absurd (recv_only_code_fetch _ (by simp) i hi hb') (by simp [hs'])
+    · rw [hT] at hi; exact absurd (recv_only_code_fetch _ (by simp) i hi hb') (by simp [hs'])
+    · exact absurd (recv_only_code_fetch _ (instr_sub1 _ hT) i hi hb') (by simp [hs'])
   · refine lookup_sound H busR16 (fun m => ∃ x : F, m = [x] ∧ x.toNat < 65536) ?_
       (fun o' ho' _ hs' => hsend o' ho' hs') ho hb hs hc
     intro o' ho' hb' hs' _
     obtain ⟨t, ht, r, hr, i, hi, rfl⟩ := occ_table ho'
     simp only at hb' hs' ⊢
-    rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨_, _, hT⟩
-    · rw [hT] at hi; exact absurd hb' (boundary_no_r16_byte nloc ncode i hi).1
+    rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨_, _, hT⟩
+    · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc i hi).1
+    · rw [hT] at hi; exact absurd (recv_only_range16 _ (by simp) i hi hb') (by simp [hs'])
     · have hT' := hT
       rw [hT] at hi
       simp only [Range16.table, List.mem_cons, List.mem_nil_iff, or_false] at hi
@@ -234,8 +238,9 @@ theorem looks_of {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : Holds (wasm
     intro o' ho' hb' hs' _
     obtain ⟨t, ht, r, hr, i, hi, rfl⟩ := occ_table ho'
     simp only at hb' hs' ⊢
-    rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨_, _, hT⟩
-    · rw [hT] at hi; exact absurd hb' (boundary_no_r16_byte nloc ncode i hi).2
+    rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨_, _, hT⟩
+    · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc i hi).2.1
+    · rw [hT] at hi; exact absurd (recv_only_byte _ (by simp) i hi hb') (by simp [hs'])
     · rw [hT] at hi; exact absurd (recv_only_byte _ (by simp) i hi hb') (by simp [hs'])
     · have hT' := hT
       rw [hT] at hi
