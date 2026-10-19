@@ -29,23 +29,24 @@ being equal (`nat_inj_of_lt`).
 * `countFGo_eq_multNat`, `countF_eq_multNat` — the LogUp field count `Σₖ 2^k·bₖ` is the cast of
   the classical natural multiplicity `Interaction.multNat`, for `0/1` bits of length `≤ 25`
   (the `Air` bound); this is what makes the LogUp fraction the classical count;
-* `rowSum_eq`, `rowSum_eq_sub` — a row's signed field sum is its send count minus its receive
-  count, and both are bounded naturals;
-* `tableSum_eq`, `tableSum_side` — a table's field sum on a bus and message is the cast of its
-  natural `tableBusCount` on the same side (with the bus-id shift), for either side;
+* `rowSum_eq_sub`, `rowSide_eq`, `tableSide_eq`, `tableSide_sub`, `tablesSum_eq_sides` — a row's
+  signed field sum is its send count minus its receive count, and the whole-AIR sum is the
+  difference of the two side counts (with the bus-id shift);
+* `balance_step`, `eq_of_field` — the LogUp balance plus TAPE's `netF` and the `< p` bounds give
+  the classical two-sided balance;
+* `busCount_eq_tables`, `tableBusCount_congr` — the translated AIR's `busCount` is the sum over
+  tables of the per-table counts, with `pv`/`pub` agreement;
 * `tableBusCount_le_side`, `busCount_le_multBound` — every trace side count is `≤ Air.multBound`
   when heights respect `maxLog`, so `multBoundP AP < P` bounds it;
 * `nearAirV3_multBoundP_lt` and `nearAirV3D1_multBoundP_lt` — the kernel-checked P2 facts.
 
-## The remaining step (documented, not assumed away)
+## The bridge is complete
 
-The final composition `holdsP_of_swirl` needs one more aggregation: the per-table identity above
-must be summed over all tables, the send/receive difference taken, and the result matched with
-`HoldsP.balance` after replacing TAPE's contribution by `netF` (`VdChecks.tape`).  The pieces are
-all proved; the aggregation is the "4–6 agent-days" P1 item of
-`research/near-compression/results/pq-d1-envelope/README.md` §4.  We do **not** state it with
-`sorry`: see `holdsP_of_swirl_of_tables` below for the exact remaining obligation, which is a pure
-list-sum rearrangement (`fsum_swap` already proves the row/interaction commute).
+`holdsP_of_swirl` is proved, with no `sorry`: given `SwirlRel` (assumption P5), `VdChecks`, the
+multiplicity bound `multBoundP AP < p`, the fitting segments and the static `mult.length ≤ 25`
+bound, the classical `HoldsP AP pub tr` follows.  The aggregation is
+`rowSide_eq` → `tableSide_eq` → `tableSide_sub` → `tablesSum_eq_sides` → `balance_step`, and the
+mod-p⇒ℕ step is `eq_of_field` / `nat_eq_of_cast_sub`.
 -/
 
 namespace ZkFormal.PQ.StatePort
@@ -344,4 +345,448 @@ theorem busCount_le_multBound (A : Air) (tr : Trace Fp) (pub : List Fp)
 the static public bound.  This is the P2 shape: `multBoundP AP < P`. -/
 theorem multBoundP_lt_of {AP : AirP} (h : AP.multBoundP < P) : AP.multBoundP < P := h
 
+
+
+/-! ## The P1 aggregation: per-row, per-table and whole-AIR sums -/
+
+theorem fsum_eq_natCast_sum {α : Type} (l : List α) (f : α → Nat) :
+    fsum (l.map fun a => ((f a : Nat) : Fp)) = (((l.map f).sum : Nat) : Fp) :=
+  fsum_map_natCast l f
+theorem rowSide_eq (is : List Interaction) (tr : Trace Fp) (t r : Nat)
+    (pv : List Fp) (bc : Nat) (m : List Fp) (send : Bool)
+    (hbits : ∀ i ∈ is, ∀ x ∈ i.mult, x.eval tr t r pv = 0 ∨ x.eval tr t r pv = 1)
+    (hlen : ∀ i ∈ is, i.mult.length ≤ 25) :
+    fsum (is.map fun i => if i.bus = bc ∧ i.send = send ∧ i.msgVal tr t r pv = m
+        then countF i tr t r pv else 0)
+      = (((is.map fun i => if i.bus = bc ∧ i.send = send ∧ i.msgVal tr t r pv = m
+          then i.multNat tr t r pv else 0).sum : Nat) : Fp) := by
+  rw [← fsum_eq_natCast_sum is]
+  apply fsum_congr_map
+  intro i hi
+  by_cases hkey : i.bus = bc ∧ i.send = send ∧ i.msgVal tr t r pv = m
+  · rw [if_pos hkey, if_pos hkey, countF_eq_multNat i tr t r pv (hbits i hi) (hlen i hi)]
+  · rw [if_neg hkey, if_neg hkey]
+    rfl
+theorem tableSide_eq (is : List Interaction) (tr : Trace Fp) (t : Nat)
+    (pv : List Fp) (bc : Nat) (m : List Fp) (send : Bool)
+    (hbits : ∀ r, r < tr.height t → ∀ i ∈ is, ∀ x ∈ i.mult,
+      x.eval tr t r pv = 0 ∨ x.eval tr t r pv = 1)
+    (hlen : ∀ i ∈ is, i.mult.length ≤ 25) :
+    fsum ((List.range (tr.height t)).map fun r =>
+        fsum (is.map fun i => if i.bus = bc ∧ i.send = send ∧ i.msgVal tr t r pv = m
+          then countF i tr t r pv else 0))
+      = ((tableBusCount is tr t pv bc send m : Nat) : Fp) := by
+  rw [tableBusCount_eq, ← fsum_eq_natCast_sum]
+  apply fsum_congr_map
+  intro r hr
+  rw [List.mem_range] at hr
+  exact rowSide_eq is tr t r pv bc m send (fun i hi => hbits r hr i hi) hlen
+
+theorem rowSum_eq_side_sub (off : Nat) (is : List Interaction) (tr : Trace Fp) (t r : Nat)
+    (pv : List Fp) (bc : Nat) (m : List Fp)
+    (hbits : ∀ i ∈ is, ∀ x ∈ i.mult, x.eval tr t r pv = 0 ∨ x.eval tr t r pv = 1)
+    (hlen : ∀ i ∈ is, i.mult.length ≤ 25) :
+    rowSum off is tr t r pv (off + bc) m
+      = (((is.map fun i => if i.bus = bc ∧ i.send = true ∧ i.msgVal tr t r pv = m
+            then i.multNat tr t r pv else 0).sum : Nat) : Fp)
+        - (((is.map fun i => if i.bus = bc ∧ i.send = false ∧ i.msgVal tr t r pv = m
+            then i.multNat tr t r pv else 0).sum : Nat) : Fp) := by
+  rw [rowSum_eq_sub]
+  have hshift : ∀ i : Interaction, (off + i.bus = off + bc) ↔ (i.bus = bc) := by
+    intro i; omega
+  have hsq : ∀ send : Bool,
+      fsum (is.map fun i => if off + i.bus = off + bc ∧ i.msgVal tr t r pv = m ∧ i.send = send
+          then countF i tr t r pv else 0)
+      = (((is.map fun i => if i.bus = bc ∧ i.send = send ∧ i.msgVal tr t r pv = m
+            then i.multNat tr t r pv else 0).sum : Nat) : Fp) := by
+    intro send
+    have hform : fsum (is.map fun i => if off + i.bus = off + bc ∧ i.msgVal tr t r pv = m ∧ i.send = send
+          then countF i tr t r pv else 0)
+        = fsum (is.map fun i => if i.bus = bc ∧ i.send = send ∧ i.msgVal tr t r pv = m
+          then countF i tr t r pv else 0) := by
+      apply fsum_congr_map
+      intro i _
+      by_cases hb : i.bus = bc
+      · have h1 : off + i.bus = off + bc := by omega
+        by_cases hs : i.send = send
+        · by_cases hm : i.msgVal tr t r pv = m
+          · rw [if_pos ⟨h1, hm, hs⟩, if_pos ⟨hb, hs, hm⟩]
+          · rw [if_neg (fun hc => hm hc.2.1), if_neg (fun hc => hm hc.2.2)]
+        · rw [if_neg (fun hc => hs hc.2.2), if_neg (fun hc => hs hc.2.1)]
+      · have h1 : ¬(off + i.bus = off + bc) := by omega
+        rw [if_neg (fun hc => h1 hc.1), if_neg (fun hc => h1 (by omega))]
+    rw [hform]
+    exact rowSide_eq is tr t r pv bc m send hbits hlen
+  exact hsq true ▸ hsq false ▸ rfl
+
+theorem tablesSum_split (off : Nat) (AP : AirP) (tr : Trace Fp) (pv : Nat → List Fp)
+    (bc : Nat) (m : List Fp) :
+    tablesSum off AP tr pv (off + bc) m
+      = fsum ((List.range AP.tables.length).map fun t =>
+          fsum ((List.range (tr.height t)).map fun r =>
+            fsum ((tableAt AP t).interactions.map fun i =>
+              if off + i.bus = off + bc ∧ i.msgVal tr t r (pv t) = m
+              then signed i.send (countF i tr t r (pv t)) else 0))) :=
+  tablesSum_eq_flat off AP tr pv (off + bc) m
+
+theorem tableSide_sub (off : Nat) (is : List Interaction) (tr : Trace Fp) (t : Nat)
+    (pv : List Fp) (bc : Nat) (m : List Fp)
+    (hbits : ∀ r, r < tr.height t → ∀ i ∈ is, ∀ x ∈ i.mult,
+      x.eval tr t r pv = 0 ∨ x.eval tr t r pv = 1)
+    (hlen : ∀ i ∈ is, i.mult.length ≤ 25) :
+    fsum ((List.range (tr.height t)).map fun r =>
+        fsum (is.map fun i => if off + i.bus = off + bc ∧ i.msgVal tr t r pv = m
+          then signed i.send (countF i tr t r pv) else 0))
+      = ((tableBusCount is tr t pv bc true m : Nat) : Fp)
+        - ((tableBusCount is tr t pv bc false m : Nat) : Fp) := by
+  have hrow : ∀ r, fsum (is.map fun i => if off + i.bus = off + bc ∧ i.msgVal tr t r pv = m
+          then signed i.send (countF i tr t r pv) else 0)
+      = fsum (is.map fun i => if i.bus = bc ∧ i.send = true ∧ i.msgVal tr t r pv = m
+            then countF i tr t r pv else 0)
+        - fsum (is.map fun i => if i.bus = bc ∧ i.send = false ∧ i.msgVal tr t r pv = m
+            then countF i tr t r pv else 0) := by
+    intro r
+    show fsum (is.map fun i => if off + i.bus = off + bc ∧ i.msgVal tr t r pv = m
+          then signed i.send (countF i tr t r pv) else 0) = _
+    rw [show fsum (is.map fun i => if off + i.bus = off + bc ∧ i.msgVal tr t r pv = m
+          then signed i.send (countF i tr t r pv) else 0)
+        = fsum (is.map fun i => (if off + i.bus = off + bc ∧ i.msgVal tr t r pv = m ∧ i.send = true
+            then countF i tr t r pv else 0)
+          - (if off + i.bus = off + bc ∧ i.msgVal tr t r pv = m ∧ i.send = false
+            then countF i tr t r pv else 0)) by
+      apply fsum_congr_map
+      intro i _
+      by_cases hk : off + i.bus = off + bc ∧ i.msgVal tr t r pv = m
+      · rw [if_pos hk]
+        cases hs : i.send
+        · rw [signed_eq]
+          simp only [hs, if_true, reduceIte, Bool.false_eq_true]
+          grind
+        · rw [signed_eq]
+          simp only [hs, reduceIte, Bool.true_eq_false]
+          grind
+      · rw [if_neg hk]
+        by_cases h1 : off + i.bus = off + bc ∧ i.msgVal tr t r pv = m ∧ i.send = true
+        · exact absurd ⟨h1.1, h1.2.1⟩ hk
+        · by_cases h2 : off + i.bus = off + bc ∧ i.msgVal tr t r pv = m ∧ i.send = false
+          · exact absurd ⟨h2.1, h2.2.1⟩ hk
+          · rw [if_neg h1, if_neg h2]; grind]
+    rw [fsum_sub_map]
+    have hshift : ∀ i : Interaction, (off + i.bus = off + bc) ↔ (i.bus = bc) := by
+      intro i; omega
+    have hsq : ∀ send : Bool,
+        fsum (is.map fun i => if off + i.bus = off + bc ∧ i.msgVal tr t r pv = m ∧ i.send = send
+            then countF i tr t r pv else 0)
+        = fsum (is.map fun i => if i.bus = bc ∧ i.send = send ∧ i.msgVal tr t r pv = m
+            then countF i tr t r pv else 0) := by
+      intro send
+      apply fsum_congr_map
+      intro i _
+      by_cases hb : i.bus = bc
+      · have h1 : off + i.bus = off + bc := by omega
+        by_cases hs : i.send = send
+        · by_cases hm : i.msgVal tr t r pv = m
+          · rw [if_pos ⟨h1, hm, hs⟩, if_pos ⟨hb, hs, hm⟩]
+          · rw [if_neg (fun hc => hm hc.2.1), if_neg (fun hc => hm hc.2.2)]
+        · rw [if_neg (fun hc => hs hc.2.2), if_neg (fun hc => hs hc.2.1)]
+      · have h1 : ¬(off + i.bus = off + bc) := by omega
+        rw [if_neg (fun hc => h1 hc.1), if_neg (fun hc => h1 (by omega))]
+    congr 1
+    · exact hsq true
+    · exact hsq false
+  rw [fsum_congr_map (g := fun r =>
+      fsum (is.map fun i => if i.bus = bc ∧ i.send = true ∧ i.msgVal tr t r pv = m
+            then countF i tr t r pv else 0)
+      - fsum (is.map fun i => if i.bus = bc ∧ i.send = false ∧ i.msgVal tr t r pv = m
+            then countF i tr t r pv else 0))]
+  · rw [fsum_sub_map]
+    congr 1
+    · exact tableSide_eq is tr t pv bc m true hbits hlen
+    · exact tableSide_eq is tr t pv bc m false hbits hlen
+  · intro r _
+    exact hrow r
+
+theorem tablesSum_eq_sides (off : Nat) (AP : AirP) (tr : Trace Fp) (pv : Nat → List Fp)
+    (bc : Nat) (m : List Fp)
+    (hbits : ∀ t (ht : t < AP.tables.length), ∀ r, r < tr.height t →
+      ∀ i ∈ (tableAt AP t).interactions, ∀ x ∈ i.mult,
+        x.eval tr t r (pv t) = 0 ∨ x.eval tr t r (pv t) = 1)
+    (hlen : ∀ t (ht : t < AP.tables.length), ∀ i ∈ (tableAt AP t).interactions,
+      i.mult.length ≤ 25) :
+    tablesSum off AP tr pv (off + bc) m
+      = fsum ((List.range AP.tables.length).map fun t =>
+          ((tableBusCount (tableAt AP t).interactions tr t (pv t) bc true m : Nat) : Fp))
+        - fsum ((List.range AP.tables.length).map fun t =>
+          ((tableBusCount (tableAt AP t).interactions tr t (pv t) bc false m : Nat) : Fp)) := by
+  rw [tablesSum_eq_flat]
+  have hper : ∀ (t : Nat) (ht : t < AP.tables.length), fsum ((List.range (tr.height t)).map fun r =>
+        fsum ((tableAt AP t).interactions.map fun i =>
+          if off + i.bus = off + bc ∧ i.msgVal tr t r (pv t) = m
+          then signed i.send (countF i tr t r (pv t)) else 0))
+      = ((tableBusCount (tableAt AP t).interactions tr t (pv t) bc true m : Nat) : Fp)
+        - ((tableBusCount (tableAt AP t).interactions tr t (pv t) bc false m : Nat) : Fp) := by
+    intro t ht
+    apply tableSide_sub off (tableAt AP t).interactions tr t (pv t) bc m
+    · intro r hr i hi
+      exact hbits t ht r hr i hi
+    · intro i hi
+      exact hlen t ht i hi
+  rw [fsum_congr_map (g := fun t =>
+      ((tableBusCount (tableAt AP t).interactions tr t (pv t) bc true m : Nat) : Fp)
+      - ((tableBusCount (tableAt AP t).interactions tr t (pv t) bc false m : Nat) : Fp))]
+  · rw [fsum_sub_map]
+  · intro t ht
+    rw [List.mem_range] at ht
+    exact hper t ht
+
+theorem sum_congr_list {α : Type} (l : List α) {f g : α → Nat} (h : ∀ x ∈ l, f x = g x) :
+    (l.map f).sum = (l.map g).sum := by
+  induction l with
+  | nil => rfl
+  | cons a l ih =>
+    rw [List.map_cons, List.map_cons, List.sum_cons, List.sum_cons]
+    congr 1
+    · exact h a (by simp)
+    · exact ih (fun x hx => h x (by simp [hx]))
+theorem multNat_go_congr (tr : Trace Fp) (t r : Nat) {pv pub : List Fp} :
+    ∀ (bs : List Expr) (k : Nat), (∀ e ∈ bs, e.eval tr t r pv = e.eval tr t r pub) →
+      Interaction.multNat.go tr t r pv bs k = Interaction.multNat.go tr t r pub bs k
+  | [], k, _ => rfl
+  | b :: bs, k, h => by
+    rw [Interaction.multNat.go, Interaction.multNat.go, h b (by simp),
+      multNat_go_congr tr t r bs (k+1) (fun e he => h e (by simp [he]))]
+theorem multNat_congr (i : Interaction) (tr : Trace Fp) (t r : Nat) {pv pub : List Fp}
+    (h : ∀ e ∈ i.mult, e.eval tr t r pv = e.eval tr t r pub) :
+    i.multNat tr t r pv = i.multNat tr t r pub := by
+  unfold Interaction.multNat
+  exact multNat_go_congr tr t r i.mult 0 h
+theorem tableExprAgree (T : Air.Table) (tr : Trace Fp) (t : Nat) {pv pub : List Fp}
+    (h : ∀ i, i < tablePubBound T → pv.getD i 0 = pub.getD i 0)
+    {e : Expr} (he : e ∈ T.exprs) (r : Nat) :
+    e.eval tr t r pv = e.eval tr t r pub := by
+  apply eval_eq_of_agree e tr t r
+  intro i hi
+  apply h i
+  unfold tablePubBound
+  exact Nat.lt_of_lt_of_le hi (ZkFormal.Udr.Np.le_foldr_max (List.mem_map_of_mem he))
+theorem tableBusCount_congr (T : Air.Table) (tr : Trace Fp) (t : Nat) {pv pub : List Fp}
+    (h : ∀ i, i < tablePubBound T → pv.getD i 0 = pub.getD i 0)
+    (b : Nat) (send : Bool) (m : List Fp) :
+    tableBusCount T.interactions tr t pv b send m
+      = tableBusCount T.interactions tr t pub b send m := by
+  rw [tableBusCount_eq, tableBusCount_eq]
+  have hrow : ∀ r ∈ List.range (tr.height t),
+      (T.interactions.map fun i => if i.bus = b ∧ i.send = send ∧ i.msgVal tr t r pv = m
+        then i.multNat tr t r pv else 0).sum
+      = (T.interactions.map fun i => if i.bus = b ∧ i.send = send ∧ i.msgVal tr t r pub = m
+        then i.multNat tr t r pub else 0).sum := by
+    intro r _
+    apply sum_congr_list
+    intro i hi
+    have hmult : ∀ e ∈ i.mult, e.eval tr t r pv = e.eval tr t r pub := by
+      intro e he
+      exact tableExprAgree T tr t h (List.mem_append_right _ (List.mem_flatMap.mpr
+        ⟨i, hi, List.mem_append_left _ he⟩)) r
+    have hmsg : i.msgVal tr t r pv = i.msgVal tr t r pub := by
+      unfold Interaction.msgVal
+      apply List.map_congr_left
+      intro e he
+      exact tableExprAgree T tr t h (List.mem_append_right _ (List.mem_flatMap.mpr
+        ⟨i, hi, List.mem_append_right _ he⟩)) r
+    rw [hmsg, multNat_congr i tr t r hmult]
+  exact sum_congr_list (List.range (tr.height t)) hrow
+
+theorem cast_add_eq_of_lt {a b : Nat} (h : a + b < P) :
+    ((a : Nat) : Fp) + ((b : Nat) : Fp) = ((a + b : Nat) : Fp) := by
+  change Fp.ofNat a + Fp.ofNat b = Fp.ofNat (a + b)
+  rw [ZkFormal.Near.ofNat_add']
+theorem nat_eq_of_cast_sub {A B C D : Nat}
+    (h1 : A + D < P) (h2 : C + B < P)
+    (h : ((A : Nat) : Fp) - ((B : Nat) : Fp) = ((C : Nat) : Fp) - ((D : Nat) : Fp)) :
+    A + D = C + B := by
+  have h' : ((A : Nat) : Fp) + ((D : Nat) : Fp) = ((C : Nat) : Fp) + ((B : Nat) : Fp) := by
+    grind
+  rw [cast_add_eq_of_lt h1, cast_add_eq_of_lt h2] at h'
+  exact nat_inj_of_lt h1 h2 h'
+theorem nat_eq_of_cast_sub_le {A B C D N : Nat}
+    (hN : N < P) (h1 : A + D ≤ N) (h2 : C + B ≤ N)
+    (h : ((A : Nat) : Fp) - ((B : Nat) : Fp) = ((C : Nat) : Fp) - ((D : Nat) : Fp)) :
+    A + D = C + B :=
+  nat_eq_of_cast_sub (by omega) (by omega) h
+
+/-- A natural `n < p` casts back through `toNat`. -/
+theorem toNat_cast_of_lt {n : Nat} (h : n < P) : (((n : Nat) : Fp)).toNat = n := by
+  change (Fp.ofNat n).toNat = n
+  rw [Fp.toNat_ofNat, Nat.mod_eq_of_lt h]
+
+
+/-- `tableAt` is the AIR's table on in-range indices. -/
+theorem tableAt_eq (AP : AirP) {t : Nat} (ht : t < AP.tables.length) :
+    tableAt AP t = AP.tables[t] := by
+  unfold tableAt
+  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht]
+  rfl
+
+theorem tableOf_toAir_eq (AP : AirP) {t : Nat} (ht : t < AP.tables.length) :
+    ZkFormal.Udr.Np.tableOf AP.toAir t = AP.tables[t] := by
+  unfold ZkFormal.Udr.Np.tableOf
+  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht]
+  rfl
+
+/-- `busCount` over the translated AIR equals the sum of the per-table counts at `pv t`, because
+public-value agreement makes the `pub` and `pv t` evaluations equal. -/
+theorem busCount_eq_tables (AP : AirP) (tr : Trace Fp) (pv : Nat → List Fp) (pub : List Fp)
+    (bc : Nat) (send : Bool) (m : List Fp)
+    (hagree : ∀ t (ht : t < AP.tables.length), ∀ i, i < tablePubBound AP.tables[t] →
+      (pv t).getD i 0 = pub.getD i 0) :
+    busCount AP.toAir tr pub bc send m
+      = ((List.range AP.tables.length).map fun t =>
+          tableBusCount (tableAt AP t).interactions tr t (pv t) bc send m).sum := by
+  rw [ZkFormal.Udr.Np.busCount_eq]
+  apply congrArg List.sum
+  apply List.map_congr_left
+  intro t ht
+  rw [List.mem_range] at ht
+  rw [tableOf_toAir_eq AP ht, tableAt_eq AP ht]
+  exact (tableBusCount_congr AP.tables[t] tr t (hagree t ht) bc send m).symm
+
+theorem pubCount_le_pubBound (AP : AirP) (pub : List Fp) (hfit : pubFit AP pub = true)
+    (hw : ∀ s ∈ AP.pubSegs, 1 ≤ s.width) (b : Nat) (send : Bool) (m : List Fp) :
+    pubCount AP pub b send m ≤ AP.pubBound := by
+  refine Nat.le_trans (List.length_filter_le _ _) ?_
+  exact ZkFormal.V2.Np.pubMsgs_length_le (AP := AP) hfit hw
+
+/-- `netF` is the difference of the two public casts. -/
+theorem netF_eq (AP : AirP) (pub : List Fp) (bc : Nat) (m : List Fp) :
+    netF AP pub bc m
+      = ((pubCount AP pub bc true m : Nat) : Fp)
+        - ((pubCount AP pub bc false m : Nat) : Fp) := rfl
+
+/-- `HoldsP`'s two-sided balance, from the field equation with all four counts `< p`. -/
+theorem eq_of_field {A B C D : Nat}
+    (hac : A + C < P) (hbd : B + D < P)
+    (h : ((A:Nat):Fp) - ((B:Nat):Fp) + (((C:Nat):Fp) - ((D:Nat):Fp)) = 0) :
+    A + C = B + D := by
+  have h' : ((A:Nat):Fp) + ((C:Nat):Fp) = ((B:Nat):Fp) + ((D:Nat):Fp) := by grind
+  rw [cast_add_eq_of_lt hac, cast_add_eq_of_lt hbd] at h'
+  exact nat_inj_of_lt hac hbd h'
+
+
+/-- **The balance step**: the LogUp balance, TAPE's net multiplicities, the tables' side identity
+and the bound `< p` on both sides give the classical two-sided balance. -/
+theorem balance_step (off : Nat) (AP : AirP) (pub : List Fp) (pv : Nat → List Fp)
+    (tr : Trace Fp) (tape : Tape) (bc : Nat) (m : List Fp)
+    (hbound : ∀ send, busCount AP.toAir tr pub bc send m + pubCount AP pub bc send m < P)
+    (hb : tablesSum off AP tr pv (off + bc) m + tapeSum tape (off + bc) m = 0)
+    (hnet : tapeSum tape (off + bc) m = netF AP pub bc m)
+    (hsides : tablesSum off AP tr pv (off + bc) m
+      = ((busCount AP.toAir tr pub bc true m : Nat) : Fp)
+        - ((busCount AP.toAir tr pub bc false m : Nat) : Fp)) :
+    busCount AP.toAir tr pub bc true m + pubCount AP pub bc true m
+      = busCount AP.toAir tr pub bc false m + pubCount AP pub bc false m := by
+  have hzero : ((busCount AP.toAir tr pub bc true m : Nat) : Fp)
+      - ((busCount AP.toAir tr pub bc false m : Nat) : Fp)
+      + (((pubCount AP pub bc true m : Nat) : Fp) - ((pubCount AP pub bc false m : Nat) : Fp)) = 0 := by
+    have e1 : ((busCount AP.toAir tr pub bc true m : Nat) : Fp)
+        - ((busCount AP.toAir tr pub bc false m : Nat) : Fp) = tablesSum off AP tr pv (off + bc) m :=
+      hsides.symm
+    have e2 : (((pubCount AP pub bc true m : Nat) : Fp) - ((pubCount AP pub bc false m : Nat) : Fp))
+        = tapeSum tape (off + bc) m := by
+      rw [show ((pubCount AP pub bc true m : Nat) : Fp) - ((pubCount AP pub bc false m : Nat) : Fp)
+          = netF AP pub bc m from (netF_eq AP pub bc m).symm, hnet]
+    rw [e1, e2]
+    exact hb
+  exact eq_of_field (hbound true) (hbound false) hzero
+
+
+/-- A side count is at most `multBoundP` when the heights respect the caps. -/
+theorem busCount_le_multBoundP (AP : AirP) (tr : Trace Fp) (pub : List Fp)
+    (hlog : ∀ t (ht : t < AP.tables.length), tr.log t ≤ AP.tables[t].maxLog)
+    (bc : Nat) (send : Bool) (m : List Fp) :
+    busCount AP.toAir tr pub bc send m ≤ AP.multBoundP :=
+  Nat.le_trans (busCount_le_multBound AP.toAir tr pub hlog bc send m) AP.multBound_le
+
+/-- **P1: the SWIRL relation implies `HoldsP`.**
+
+Given the SWIRL PIOP relation (`SwirlRel`, assumption P5), the light verifier's checks
+(`VdChecks`), the multiplicity bound `multBoundP AP < p`, and fitting public segments, the
+classical `HoldsP AP pub tr` holds.  Every step is proved: the constraints and bits transfer
+because they are the same expressions evaluated at agreeing public values; the balance transfers
+because both sides are bounded by `multBoundP < p`, so the mod-p LogUp equality is an equality of
+naturals.
+
+The only hypothesis that is not a theorem is `SwirlRel` itself — that is SWIRL's soundness (P5),
+shared with every PQ AIR and not formalised for any of them. -/
+theorem holdsP_of_swirl (off : Nat) (AP : AirP) (pub : List Fp) (pv : Nat → List Fp)
+    (tr : Trace Fp) (tape : Tape)
+    (hmult : AP.multBoundP < P)
+    (hs : SwirlRel off AP pv tr tape)
+    (hv : VdChecks off AP pub pv tr tape)
+    (hfitW : ∀ s ∈ AP.pubSegs, 1 ≤ s.width)
+    (hlen25 : ∀ t (ht : t < AP.tables.length), ∀ i ∈ AP.tables[t].interactions,
+      i.mult.length ≤ 25) :
+    HoldsP AP pub tr := by
+  have hagree : ∀ t (ht : t < AP.tables.length),
+      ∀ i, i < tablePubBound AP.tables[t] → (pv t).getD i 0 = pub.getD i 0 :=
+    fun t ht => hv.pvAgree t ht
+  have hlog : ∀ t (ht : t < AP.tables.length), tr.log t ≤ AP.tables[t].maxLog :=
+    fun t ht => hv.logCap t ht
+  have hbitsP : ∀ t (ht : t < AP.tables.length), ∀ r, r < tr.height t →
+      ∀ i ∈ (tableAt AP t).interactions, ∀ x ∈ i.mult,
+        x.eval tr t r (pv t) = 0 ∨ x.eval tr t r (pv t) = 1 := by
+    intro t ht r hr i hi x hx
+    rw [tableAt_eq AP ht] at hi
+    exact bits_of_swirl hs t ht r hr i hi x hx
+  refine ⟨?_, ?_, ?_, hv.pubFit, ?_⟩
+  · -- heights: `SwirlRel` gives `2 ≤ log`, `VdChecks` gives the cap
+    intro t ht
+    exact ⟨by have := (hs.logBound t ht).1; omega, hv.logCap t ht⟩
+  · -- constraints: same expressions, agreeing public values
+    intro t ht r hr e he
+    rw [← eval_eq_of_agree e tr t r (pv := pv t) (fun i hi => hagree t ht i (by
+      unfold tablePubBound
+      exact Nat.lt_of_lt_of_le hi (ZkFormal.Udr.Np.le_foldr_max (List.mem_map_of_mem
+        (List.mem_append_left _ he)))))]
+    exact hs.constr t ht r hr e (List.mem_append_left _ he)
+  · -- bits: booleanity constraints in `allConstraints`, evaluated at `pub`
+    intro t ht r hr i hi b hb
+    have hb0 := bits_of_swirl hs t ht r hr i hi b hb
+    have hbpub := hb0
+    have hag := eval_eq_of_agree b tr t r (pv := pv t) (pub := pub) (fun k hk => hagree t ht k (by
+      unfold tablePubBound
+      exact Nat.lt_of_lt_of_le hk (ZkFormal.Udr.Np.le_foldr_max (List.mem_map_of_mem
+        (List.mem_append_right _ (List.mem_flatMap.mpr ⟨i, hi, List.mem_append_left _ hb⟩))))))
+    rw [hag] at hbpub
+    exact hbpub
+  · -- balance: mod-p ⇒ ℕ
+    intro b m
+    have hb := hs.balance (off + b) m
+    have hnet := hv.tape b m
+    have hsides0 := tablesSum_eq_sides off AP tr pv b m hbitsP
+      (fun t ht i hi => hlen25 t ht i (by rwa [tableAt_eq AP ht] at hi))
+    -- the two `fsum` heads are casts of the AIR's `busCount` on each side
+    have bcT := busCount_eq_tables AP tr pv pub b true m (fun t ht => hv.pvAgree t ht)
+    have bcF := busCount_eq_tables AP tr pv pub b false m (fun t ht => hv.pvAgree t ht)
+    have hT : fsum ((List.range AP.tables.length).map fun t =>
+        ((tableBusCount (tableAt AP t).interactions tr t (pv t) b true m : Nat) : Fp))
+        = ((busCount AP.toAir tr pub b true m : Nat) : Fp) := by
+      rw [fsum_eq_natCast_sum]
+      exact congrArg (fun n => ((n : Nat) : Fp)) bcT.symm
+    have hF : fsum ((List.range AP.tables.length).map fun t =>
+        ((tableBusCount (tableAt AP t).interactions tr t (pv t) b false m : Nat) : Fp))
+        = ((busCount AP.toAir tr pub b false m : Nat) : Fp) := by
+      rw [fsum_eq_natCast_sum]
+      exact congrArg (fun n => ((n : Nat) : Fp)) bcF.symm
+    have hsides : tablesSum off AP tr pv (off + b) m
+        = ((busCount AP.toAir tr pub b true m : Nat) : Fp)
+          - ((busCount AP.toAir tr pub b false m : Nat) : Fp) := by
+      rw [hsides0, hT, hF]
+    have hbound : ∀ send, busCount AP.toAir tr pub b send m + pubCount AP pub b send m < P := by
+      intro send
+      have h1 := busCount_le_multBound AP.toAir tr pub hlog b send m
+      have h2 := pubCount_le_pubBound AP pub hv.pubFit hfitW b send m
+      have h3 : AP.multBound + AP.pubBound < P := hmult
+      unfold AirP.multBoundP at h3
+      omega
+    exact balance_step off AP pub pv tr tape b m hbound hb hnet hsides
 end ZkFormal.PQ.StatePort

@@ -302,6 +302,7 @@ import ZkFormal.NearV3.Spec.TrieOps
 import ZkFormal.PQ.StatePort.Swirl
 import ZkFormal.PQ.StatePort.Bridge
 import ZkFormal.PQ.StatePort.Bounds
+import ZkFormal.PQ.StatePort.D0a
 -- v3 ChaCha20 / RNG / shuffle tables (docs/zk-formal/STATUS-V3-CHACHA.md)
 import ZkFormal.Chacha.Bus
 import ZkFormal.Chacha.Complete.All

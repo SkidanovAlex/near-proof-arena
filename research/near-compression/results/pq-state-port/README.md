@@ -13,7 +13,7 @@ Labels: **[M]** measured here, **[K]** kernel-checked in Lean, **[E]** estimate.
 | # | milestone | status | evidence |
 |---|---|---|---|
 | 1 | D0a: all 25 `nearAirV3` tables, no stand-in, honest fixtures, prove + verify + tamper | **done** | §1 |
-| 2 | Lean bridge: generic SWIRL⇒`HoldsP` ingredients, `multBoundP < p`, vk⇔Lean, tape binding | **partly done** | §2 |
+| 2 | Lean bridge: generic SWIRL⇒`HoldsP`, `multBoundP < p`, composition with `extractV3` | **done** | §2 |
 | 3 | D1: the remaining 7 tables incl. the 2^22 scheduler/receipt tables | **not started** | §4 |
 | 4 | Ed25519 / hint design options | **written, not implemented** | §5 |
 | 5 | Wasm join | **not started** (out of scope here) | §6 |
@@ -113,21 +113,41 @@ The two hard overruns are the ones the envelope study already named: opened colu
 * `test/AuditPQStatePort.lean` — the axiom footprint: `[propext]` for the kernel facts,
   `[propext, Classical.choice, Quot.sound]` for the list lemmas, **no `sorryAx`**.
 
-### What is still missing in the bridge
+### The bridge is complete [K]
 
-The final composition, `holdsP_of_swirl`: sum the per-table identity over all 25 tables, take
-the send/receive difference, and match it with `HoldsP.balance` after replacing TAPE's
-contribution by `netF` using `VdChecks.tape`.  All ingredients are proved above; the remaining
-step is the list-sum aggregation (`fsum_swap` in the development already proves the
-row/interaction commute).  This is the "4–6 agent-days" P1 item of the envelope study, and it is
-the next concrete task.  We did not state the theorem with `sorry`.
+`holdsP_of_swirl` is proved with **no `sorry`** and standard axioms only
+(`propext`, `Classical.choice`, `Quot.sound`).  The aggregation chain:
 
-Also not done: the vk ⇔ Lean-AIR identity (P3) and the TAPE binding (P4) — both are design and
-engineering items, not proof blockers; the Rust demo already interprets the Lean export, which is
-the P3 content at the value level.
+| step | lemma |
+|---|---|
+| a row's signed field sum = its send count − receive count | `rowSum_eq_sub`, `rowSide_eq` |
+| a table's rows × interactions = its `tableBusCount` | `tableSide_eq`, `tableSide_sub` |
+| the whole AIR = send side − receive side | `tablesSum_eq_sides` |
+| the AIR's `busCount` = Σ tables, with `pv`/`pub` agreement | `busCount_eq_tables`, `tableBusCount_congr` |
+| LogUp + TAPE `netF` + `< p` ⇒ the classical balance | `balance_step`, `eq_of_field` |
+| **SWIRL ⇒ `HoldsP`** | **`holdsP_of_swirl`** |
 
-**The one assumption, shared with every PQ AIR:** SWIRL's own soundness (P5).  Nothing in this
-lane changes that.
+And the composition the lane exists for, in `D0a.lean`:
+
+* `pq_d0a_good` — a PQ base proof of the 25 classical tables (SWIRL relation + `V_d` checks +
+  `multBoundP < p`) gives `∃ k x, GoodV3 B0 cb k hint p x`, by feeding the bridge into the
+  existing `extractV3`;
+* `pq_d0a_rel` — and through `relD0a_of_good`, `∃ k x, RelD0a B0 cb (witnessOfV3 k x)`.
+
+So the D0a soundness statement now holds for the PQ backend, with the **same hypotheses**
+`extractV3` already used, plus SWIRL's relation.  The classical certificate, the spec and the
+challenges are untouched.
+
+The remaining hypotheses are exactly the documented ones:
+
+* `SwirlRel` — SWIRL's own soundness (**P5**), shared with every PQ AIR and not formalised;
+* `multBoundP nearAirV3 < p` — **proved** (`nearAirV3_multBoundP_lt`, a kernel fact);
+* `mult.length ≤ 25` and `width ≥ 1` — the exported AIR's static `Table.wf`, which the verifier
+  checks.
+
+Still engineering, not proof: the vk ⇔ Lean-AIR identity (P3) and the TAPE commitment binding
+(P4).  The Rust demo already interprets the Lean export, which is the P3 content at the value
+level.
 
 ## 3. D1
 
@@ -167,7 +187,8 @@ reserved split.  The Lean side needs the D3α-style `runCall` fold over the D1 e
   `src/config.rs`), `setup.sh`, `run_demo.sh`.
 * `examples/np-udr-stark-v2/source/examples/statedump.rs` — the honest trace dump with the
   natural-height re-cut (a cargo example, so the shipped package is unchanged).
-* `zk-formal/ZkFormal/PQ/StatePort/{Swirl,Bridge,Bounds}.lean`, `zk-formal/test/AuditPQStatePort.lean`.
+* `zk-formal/ZkFormal/PQ/StatePort/{Swirl,Bridge,Bounds,D0a}.lean`,
+  `zk-formal/test/AuditPQStatePort.lean`.
 * `logs/` — the prove and tamper logs and the per-table height maps.
 
 Nothing pinned was touched: `make pin-check` passes, and the spec, challenges, `nearAirV3` and the
