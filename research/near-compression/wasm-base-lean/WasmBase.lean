@@ -26,3 +26,4 @@ import WasmBase.Local.Shift
 import WasmBase.Main.Lookups
 import WasmBase.Main.Rows
 import WasmBase.Main.RowConst
+import WasmBase.Main.Final
