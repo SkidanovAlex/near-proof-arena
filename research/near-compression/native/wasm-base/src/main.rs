@@ -461,6 +461,58 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
             cases.push((format!("DRAIN[global row {r}].act=0"), cell(td, r, col(td, "act"), Box::new(|_| F::ZERO))));
         }
     }
+    // calls (family 4): forged callee, shape, charge, prologue, params, local types, budget, frames
+    let tcall = tb("CALL");
+    if g.rows_per_table[tcall].1 > 0 {
+        let get = |c: &str| g.mats[tcall].values[col(tcall, c)].as_canonical_u32() as u64;
+        let (np, nl) = (get("shape") % 128, get("shape") / 128);
+        for c in ["entry", "shape", "charge", "pro", "m0", "n0", "n1", "r0", "tpb", "sbn0", "ts0", "fr_sb", "fr_cid", "S",
+            "fee"] {
+            cases.push((format!("CALL.{c}+1"), cell(tcall, 0, col(tcall, c), plus1())));
+        }
+        if np > 0 {
+            for c in ["P0_0", "tP0"] {
+                cases.push((format!("CALL.{c}+1"), cell(tcall, 0, col(tcall, c), plus1())));
+            }
+            cases.push(("CALL.tagP0 flip".into(), cell(tcall, 0, col(tcall, "tagP0"), Box::new(|v| F::ONE - v))));
+            cases.push((format!("CALL.pf{} (drop a param)", np - 1), cell(tcall, 0, col(tcall, &format!("pf{}", np - 1)),
+                Box::new(|_| F::ZERO))));
+        }
+        if np < 8 && np < nl {
+            cases.push((format!("CALL.pf{np} (extra param)"), cell(tcall, 0, col(tcall, &format!("pf{np}")), Box::new(|_| F::ONE))));
+        }
+        if nl > np {
+            cases.push((format!("CALL.tg{np} flip (declared local type)"), cell(tcall, 0, col(tcall, &format!("tg{np}")),
+                Box::new(|v| F::ONE - v))));
+        }
+        if nl < 64 {
+            cases.push((format!("CALL.af{nl} (extra local)"), cell(tcall, 0, col(tcall, &format!("af{nl}")), Box::new(|_| F::ONE))));
+        }
+        cases.push(("CALL.act=0".into(), cell(tcall, 0, col(tcall, "act"), Box::new(|_| F::ZERO))));
+        let tf = tb("FUNC");
+        cases.push(("FUNC.charge[0]+1 (func_root)".into(), cell(tf, 0, col(tf, "charge"), plus1())));
+        cases.push(("FUNC.mult[0]+1".into(), cell(tf, 0, col(tf, "mult"), plus1())));
+    }
+    let tret = tb("RET");
+    if let Some(r) = find(tret, "f_ret", 1) {
+        for c in ["retpc", "sbc", "cidc", "charge", "tpr", "n0", "r0", "tpb", "invc", "fr_cid", "fr_sb"] {
+            cases.push((format!("RET[row {r}].{c}+1"), cell(tret, r, col(tret, c), plus1())));
+        }
+        cases.push((format!("RET[row {r}].f_ret=0"), cell(tret, r, col(tret, "f_ret"), Box::new(|_| F::ZERO))));
+    }
+    if let Some(r) = find(tret, "f_rif", 1) {
+        cases.push((format!("RET[rif row {r}].c0+1"), cell(tret, r, col(tret, "c0"), plus1())));
+    }
+    let td = tb("DRAIN");
+    for (sp, what) in [(5u64, "budget"), (4, "call record")] {
+        if let Some(r) = find(td, "space", sp) {
+            cases.push((format!("DRAIN[{what} row {r}].v0+1"), cell(td, r, col(td, "v0"), plus1())));
+        }
+    }
+    if let Some(r) = (0..g.rows_per_table[td].1).find(|&r| g.mats[td].values[r * g.mats[td].width + col(td, "space")].as_canonical_u32() > 16) {
+        cases.push((format!("DRAIN[callee local row {r}].act=0"), cell(td, r, col(td, "act"), Box::new(|_| F::ZERO))));
+        cases.push((format!("DRAIN[callee local row {r}].tp+1"), cell(td, r, col(td, "tp"), plus1())));
+    }
     // swap two ADD rows' timestamps (reorders execution)
     let ta = tb("ADD");
     if g.rows_per_table[ta].1 >= 2 {

@@ -228,6 +228,55 @@ def globkat(n):
             'globals': [('i32', True, 0x80000001), ('i64', True, -3), ('i64', False, 0x123456789), ('i64', True, 7)]}
 
 
+def callkat(n):
+    """Calls: params of both types, declared locals of both types (zero-initialised), nested
+    calls, a void callee writing a global, `return` from inside a block, a call in a loop."""
+    mix = {'params': ['i32', 'i64'], 'result': 'i64', 'locals': ['i64', 'i32'],
+           'body': [('local.get', 2), 'i64.eqz', ('local.get', 3), 'i32.eqz', 'i32.and', ('local.set', 3),
+                    ('local.get', 1), ('i64.const', 5), 'i64.add', ('local.set', 2),
+                    ('local.get', 0), ('call', 2), ('local.get', 3), 'i32.add', ('local.set', 3),
+                    ('local.get', 2), ('local.get', 3), ('i32.const', 7), 'i32.and', 'i32.eqz', ('br_if', 0), 'drop',
+                    ('block', 'i64'), ('local.get', 2), ('local.get', 3), ('i32.const', 3), 'i32.and', ('br_if', 0),
+                    'drop', ('local.get', 2), ('i64.const', 1), 'i64.add', 'return', ('end',),
+                    ('i64.const', 0x100000001B3), 'i64.mul', ('local.get', 1), 'i64.xor']}
+    sq = {'params': ['i32'], 'result': 'i32', 'locals': [],
+          'body': [('local.get', 0), ('local.get', 0), 'i32.mul', ('i32.const', 0x9E3779B9), 'i32.xor']}
+    bump = {'params': ['i64'], 'result': None, 'locals': [],
+            'body': [('global.get', 0), ('local.get', 0), 'i64.add', ('global.set', 0)]}
+    i, h = 0, 1
+    b = [('i64.const', 3), ('local.set', h),
+         ('loop',),
+           ('local.get', i), ('local.get', h), ('call', 1), ('local.tee', h), ('call', 3),
+           ('local.get', i), ('i32.const', 1), 'i32.add', ('local.tee', i),
+           ('i32.const', n), 'i32.lt_u', ('br_if', 0),
+         ('end',),
+         ('local.get', h), ('global.get', 0), 'i64.add']
+    return {'name': f'callkat{n}', 'result': 'i64', 'locals': ['i32', 'i64'], 'body': b,
+            'globals': [('i64', True, 5)], 'funcs': [mix, sq, bump]}
+
+
+def fib(n):
+    """Recursion: naive Fibonacci (depth n, ~2 fib(n) calls)."""
+    f = {'params': ['i32'], 'result': 'i32', 'locals': [],
+         'body': [('block',), ('local.get', 0), ('i32.const', 2), 'i32.ge_u', ('br_if', 0),
+                  ('local.get', 0), 'return', ('end',),
+                  ('local.get', 0), ('i32.const', 1), 'i32.sub', ('call', 1),
+                  ('local.get', 0), ('i32.const', 2), 'i32.sub', ('call', 1), 'i32.add']}
+    return {'name': f'fib{n}', 'result': 'i32', 'locals': [], 'body': [('i32.const', n), ('call', 1)],
+            'funcs': [f]}
+
+
+def calltrap():
+    """A trap two frames deep (callee divides by zero after a few calls succeeded)."""
+    d = {'params': ['i32', 'i32'], 'result': 'i32', 'locals': ['i64'],
+         'body': [('local.get', 0), ('local.get', 1), 'i32.div_u']}
+    w = {'params': ['i32'], 'result': 'i32', 'locals': ['i32'],
+         'body': [('i32.const', 100), ('local.get', 0), ('call', 1), ('local.tee', 1), ('local.get', 1), 'i32.add']}
+    b = [('i32.const', 5), ('call', 2), ('i32.const', 0), ('call', 2), 'i32.add']
+    return {'name': 'calltrap', 'result': 'i32', 'locals': ['i32'], 'body': b,
+            'funcs': [d, w]}
+
+
 def main():
     out = sys.argv[1]
     iters = [int(a) for a in sys.argv[2:]] or [8, 64]
@@ -238,6 +287,7 @@ def main():
     progs += [ctrl()] + [hashloop(n) for n in iters] + [divloop(n) for n in iters]
     progs += [memkat()] + [memloop(n) for n in iters]
     progs += [globkat(n) for n in iters]
+    progs += [callkat(n) for n in iters] + [fib(n) for n in (1, 10)] + [calltrap()]
     for p in progs:
         res, steps = run(p)
         with open(os.path.join(out, p['name'] + '.wasm'), 'wb') as f:

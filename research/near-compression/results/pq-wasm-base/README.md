@@ -361,8 +361,8 @@ model; the univariate estimate is 667. This is the costliest chip. The levers:
   per-chip row lemmas carry over.
 * SHIFT/CMP (and now DIV) optimisation.
 
-Update: refactor R is done (§10.1), family 2 (§11) and family 3 (§12) are done; family 4 (calls) is
-next.
+Update: refactor R is done (§10.1), and families 2 (§11), 3 (§12) and 4 (§13.1) are done. The
+DIV/SHIFT/CMP optimisation is next.
 
 
 ## 10. Design note: the simulation relation for families 2–4 (refactor R)
@@ -610,7 +610,7 @@ Mutability is the spec's business: an immutable `global.set` is rejected by vali
   `select` row for this case (in `hashloop8` and `memkat`, row 0 was already a `select`).
 * Tool: `prep` prints `ngl` and `globals`; `air <nloc> <ngl>`.
 
-## 13. Family 4: calls — design (in progress)
+## 13. Family 4: calls — design (written before the implementation; see §13.1 for what was built)
 
 Written before the implementation, as §10 was, so another agent can continue it.
 
@@ -683,3 +683,72 @@ Written before the implementation, as §10 was, so another agent can continue it
 2. The relation's caller chain, and `step_call` / `step_return`.
 3. CALL / RET chips and their row lemmas; `Exec`/`Final`.
 4. Rust, KAT (calls, recursion, params, locals, dead-activation drain), difftest, tamper.
+
+### 13.1 As implemented (2026-10-19)
+
+**Differences from the design above.**
+* **No header pseudo-record.** The callee's static data comes from a second cached table, FUNC
+  (table 21, bus 6). It holds one row per checked function:
+  `[entry, np + 128·nl, charge, prologue, m0, m1, m2, m3]`, where `nl` counts the params too and
+  `m_q` are the 16-bit limbs of the 64-bit local type mask. FUNC is bound through the statement
+  like CODE (`func_root`, a deterministic function of the code; padded by repeating the last row).
+  The call record is `[pc, 0x10, h, fee, entry, 0, 0, 0]`.
+* **CALL state out** is `(entry, ts+1, S + fee + prologue, 0, sb + h − np, ts)`. The call record in
+  channel space 4 is `[4, ts, 0, pc+1, sb, cid, charge, ts]`.
+* **Range checks.** The new budget `n = r − charge` is checked as canonical limbs: `r16(n0)`, `r16(n1)`
+  and `r16(4·n1)`, so `n < 2^30`. `r16(4·n1)` alone leaves `n1` free modulo p; the Lean proof caught
+  this. `sb + h − np` and `ts` each get `r16(lo)`, `r16(hi)` and `r16(16·hi)`, so each is `< 2^28`.
+* **RET** handles every HALT/HALTIF record at `cid ≠ 0` (`act·(cid·invc − 1)`), including an untaken
+  `br_if`. CTRL still forbids halts at `cid ≠ 0`.
+* **Extra explicit domain conditions in `wasm_base_sound`:**
+  * `FuncOK`: the FUNC table is the checker's function table;
+  * `BudOK`: `stackRem < 2^30`, and its limbs are the last two public values
+    (`numPub = pubLoc + nloc + 5·ngl + 2`).
+
+**Lean.** Everything below has no `sorry`, and the axioms are unchanged.
+* The checker is module-level (`checkModule`, `ModFacts`, `Ctx`).
+* Relation:
+  * `RelW.calls : CallsOK`, the caller chain `Chain`, with its call records and saved local views;
+  * `chainMsgs`, holding spaces 4 and `≥ 16` besides the current frame's locals; everything else is
+    dead activations;
+  * the budget register `budMsg`.
+* Steps (`StepCall`): `step_call`, `step_return` and `step_returnIf`.
+* Rows:
+  * `Local/Call.call_sound` (the mask and count decoding);
+  * `Main/RowCall.call_rowfacts` and `Main/RowRet.ret_rowfacts`;
+  * `Lookups.FuncOK` with `instr_func`.
+
+**Rust / Python.**
+* `tracegen.rs` keeps a frame stack (`sb`, `cid`, return pc, charge, locals) and sets `fr_sb`/`fr_cid`
+  on every row. LOCAL uses `inv_sp = (16 + cid)⁻¹`. The static height check is `h = len − sb`.
+* CALL rows move params and zero the declared locals by mask type, emit the call record, and handle
+  the budget, range and time checks and the FUNC multiplicities. RET rows cover taken and untaken
+  returns.
+* DRAIN takes:
+  * the dead callee locals (at the end);
+  * the final budget register;
+  * after a trap: the operand stack, plus every live callee frame's call record and locals. The
+    entry frame's locals still go to BOUNDARY, whose `sbf`/`cidf` are the trapping frame's.
+* `wasmasm.py`: type, function and code sections for several functions, `('call', i)`, params.
+  `refinterp.py`: recursive per-function execution with a shared step counter.
+
+**Evidence.**
+* KAT 73/73 (python reference = Lean spec run = Rust trace + full constraint/bus pre-check) (`logs/kat.log`). The new
+  programs are:
+  * `callkat8` and `callkat64`: i32 and i64 params, declared locals of both types read before being
+    written, nested calls, a void callee writing a global, `return` from inside a block, a callee
+    `br_if` to the function label (taken and not taken), and calls in a loop;
+  * `fib1` and `fib10`: recursion, 177 calls;
+  * `calltrap`: a division by zero two frames deep, after a successful call.
+* difftest `wasmBaseAir 2 1`, `0 0` and `4 2`: 176 points each. Constraint values and interactions all
+  agree (`logs/difftest-calls.log`).
+* Tamper suites on `callkat8`, `calltrap` and `fib10` (`logs/tamper-<prog>.log`; running at this commit, results in the next commit). The
+  call cases are:
+  * CALL: forged `entry`, `shape`, `charge`, `pro`, mask limb, budget limbs and producer time, the
+    `sb + h − np` and `ts` limbs, frame columns, `S` and `fee`, param value, time and tag, a dropped
+    or extra param, a flipped declared-local type, an extra local, and `act = 0`;
+  * FUNC: `charge` (caught by `func_root`) and the multiplicity;
+  * RET: `retpc`, `sbc`, `cidc`, `charge`, `tpr`, budget limbs and time, `invc`, frame columns, a
+    deleted row, and the condition of an untaken `br_if`;
+  * DRAIN: the budget, the call record after a trap, and a callee-local row's `act` and `tp`.
+

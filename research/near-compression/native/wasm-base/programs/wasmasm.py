@@ -88,6 +88,8 @@ def instr(i):
         return bytes([{'local.get': 0x20, 'local.set': 0x21, 'local.tee': 0x22}[op]]) + uleb(i[1])
     if op in ('global.get', 'global.set'):
         return bytes([0x23 if op == 'global.get' else 0x24]) + uleb(i[1])
+    if op == 'call':
+        return b'\x10' + uleb(i[1])
     raise ValueError(op)
 
 
@@ -99,10 +101,8 @@ def vec(items):
     return uleb(len(items)) + b''.join(items)
 
 
-def assemble(prog):
-    res = [] if prog.get('result') is None else [VT[prog['result']]]
-    ftype = b'\x60' + vec([]) + vec([bytes([r]) for r in res])
-    locs = prog.get('locals', [])
+def func_body(f):
+    locs = f.get('locals', [])
     groups = []
     for t in locs:
         if groups and groups[-1][1] == t:
@@ -110,7 +110,17 @@ def assemble(prog):
         else:
             groups.append([1, t])
     body = vec([uleb(n) + bytes([VT[t]]) for n, t in groups])
-    body += b''.join(instr(i) for i in prog['body']) + b'\x0B'
+    body += b''.join(instr(i) for i in f['body']) + b'\x0B'
+    return uleb(len(body)) + body
+
+
+def assemble(prog):
+    """Function 0 is `prog` (exported); `prog['funcs']` are functions 1, 2, ..."""
+    funcs = [prog] + prog.get('funcs', [])
+    types = []
+    for f in funcs:
+        res = [] if f.get('result') is None else [VT[f['result']]]
+        types.append(b'\x60' + vec([bytes([VT[t]]) for t in f.get('params', [])]) + vec([bytes([r]) for r in res]))
     name = prog.get('export', 'main').encode()
     data = prog.get('data', [])
     mem = b''
@@ -123,6 +133,6 @@ def assemble(prog):
     dsec = b''
     if data:
         dsec = section(11, vec([b'\x00\x41' + sleb(off) + b'\x0B' + uleb(len(bs)) + bytes(bs) for off, bs in data]))
-    return (b'\x00asm\x01\x00\x00\x00' + section(1, vec([ftype])) + section(3, vec([uleb(0)])) + mem + gsec +
-            section(7, vec([uleb(len(name)) + name + b'\x00' + uleb(0)])) +
-            section(10, vec([uleb(len(body)) + body])) + dsec)
+    return (b'\x00asm\x01\x00\x00\x00' + section(1, vec(types)) + section(3, vec([uleb(k) for k in range(len(funcs))])) +
+            mem + gsec + section(7, vec([uleb(len(name)) + name + b'\x00' + uleb(0)])) +
+            section(10, vec([func_body(f) for f in funcs])) + dsec)

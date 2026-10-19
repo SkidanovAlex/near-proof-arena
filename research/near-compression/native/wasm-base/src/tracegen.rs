@@ -100,6 +100,16 @@ struct Ent {
     tp: u64,
 }
 
+/// An activation: its stack base `sb`, id `cid` (= the CALL row's time; 0 for the entry frame), its
+/// locals (channel space `16 + cid`), and its call record's return pc and charge.
+struct Frame {
+    sb: u64,
+    cid: u64,
+    retpc: u64,
+    charge: u64,
+    locals: Vec<Ent>,
+}
+
 pub fn limbs(x: u64) -> [u64; 4] {
     [x & 0xffff, (x >> 16) & 0xffff, (x >> 32) & 0xffff, x >> 48]
 }
@@ -308,16 +318,27 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     let mut div = Tab::new(t("DIV"));
     let mut ld = Tab::new(t("LOAD"));
     let mut sto = Tab::new(t("STORE"));
-    let call = Tab::new(t("CALL"));
-    let ret = Tab::new(t("RET"));
-    let func_calls: Vec<u64> = vec![0; prep.funcs.len()];
+    let mut call = Tab::new(t("CALL"));
+    let mut ret = Tab::new(t("RET"));
+    let mut func_calls: Vec<u64> = vec![0; prep.funcs.len()];
+    // dead callee locals `(space, slot, entry)`, left over in the channel after their frame returned
+    let mut dead: Vec<(u64, u64, Ent)> = vec![];
     let mut mem = Mem { prep, cur: Default::default(), init: Default::default() };
     let mut trapped = false;
     let mut st = St { r16: vec![0; 65536], byte: vec![vec![0; 65536]; 4] };
     let mut fetch = vec![0u64; prep.records.len()];
 
     let mut stack: Vec<Ent> = vec![];
-    let mut locals: Vec<Ent> = prep.local_tags.iter().map(|&tag| Ent { tag, val: 0, tp: 0 }).collect();
+    let mut frames = vec![Frame {
+        sb: 0,
+        cid: 0,
+        retpc: 0,
+        charge: 0,
+        locals: prep.local_tags.iter().map(|&tag| Ent { tag, val: 0, tp: 0 }).collect(),
+    }];
+    // the stack-budget register (space 5), produced by BOUNDARY at time 0
+    assert!(prep.stack_rem < 1 << 30, "stackRem >= 2^30 is outside the domain (BudOK)");
+    let mut budget = Ent { tag: 0, val: prep.stack_rem, tp: 0 };
     let mut globals: Vec<Ent> = prep
         .globals
         .iter()
@@ -329,14 +350,103 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
         let rec = prep.records[pc as usize];
         assert_eq!(rec[0], pc);
         let (op, h, fee) = (rec[1], rec[2], rec[3]);
-        assert_eq!(h as usize, stack.len(), "static height mismatch at pc {pc}");
+        let (sb, cid) = (frames.last().unwrap().sb, frames.last().unwrap().cid);
+        assert_eq!(h + sb, stack.len() as u64, "static height mismatch at pc {pc}");
         fetch[pc as usize] += 1;
         let hdr = |r: &mut Row| {
-            r.u("pc", pc).u("ts", ts).u("S", s).u("h", h).u("fee", fee);
+            r.u("pc", pc).u("ts", ts).u("S", s).u("h", h).u("fee", fee).u("fr_sb", sb).u("fr_cid", cid);
         };
         let mut next = pc + 1;
         let mut halted = false;
+        let mut extra = 0u64;
         match op {
+            0x10 => {
+                // call: params -> callee locals (space 16 + ts), declared locals zeroed, call record
+                // (space 4, slot ts), budget decremented by the callee's charge
+                let entry = rec[4];
+                let k = prep.funcs.iter().position(|f| f[0] == entry).expect("callee in the function table");
+                func_calls[k] += 1;
+                let fr = prep.funcs[k];
+                let (shape, charge, pro) = (fr[1], fr[2], fr[3]);
+                let (np, nl) = (shape % 128, shape / 128);
+                assert!(np <= 8 && np <= nl && nl <= 64);
+                let mask = fr[4] | (fr[5] << 16) | (fr[6] << 32) | (fr[7] << 48);
+                let sbn = sb + h - np;
+                let params = stack.split_off(sbn as usize);
+                assert!(budget.val >= charge, "stack budget exhausted: the trap is not provable");
+                let n = budget.val - charge;
+                let hb = st.tchk(ts, budget.tp);
+                for x in [n & 0xffff, n >> 16, 4 * (n >> 16), sbn & 0xffff, sbn >> 16, 16 * (sbn >> 16), ts & 0xffff,
+                    ts >> 16, 16 * (ts >> 16)] {
+                    st.r16(x);
+                }
+                let mut r = call.row();
+                hdr(&mut r);
+                r.u("act", 1).u("entry", entry).u("shape", shape).u("charge", charge).u("pro", pro);
+                for q in 0..4 {
+                    r.u(&format!("m{q}"), fr[4 + q]);
+                }
+                for j in 0..8u64 {
+                    r.u(&format!("pf{j}"), (j < np) as u64);
+                }
+                for j in 0..64u64 {
+                    r.u(&format!("af{j}"), (j < nl) as u64).u(&format!("tg{j}"), (mask >> j) & 1);
+                }
+                let mut locs = vec![];
+                for (j, p) in params.iter().enumerate() {
+                    assert_eq!(p.tag, (mask >> j) & 1, "param type");
+                    let hp = st.tchk(ts, p.tp);
+                    r.u(&format!("tagP{j}"), p.tag).limbs(&format!("P{j}_"), limbs(p.val)).u(&format!("tP{j}"), p.tp)
+                        .u(&format!("hP{j}"), hp);
+                    locs.push(Ent { tag: p.tag, val: p.val, tp: ts });
+                }
+                for j in np..nl {
+                    locs.push(Ent { tag: (mask >> j) & 1, val: 0, tp: ts });
+                }
+                r.u("r0", budget.val & 0xffff).u("r1", budget.val >> 16).u("tpb", budget.tp).u("hb", hb);
+                r.u("n0", n & 0xffff).u("n1", n >> 16).u("sbn0", sbn & 0xffff).u("sbn1", sbn >> 16);
+                r.u("ts0", ts & 0xffff).u("ts1", ts >> 16);
+                frames.push(Frame { sb: sbn, cid: ts, retpc: pc + 1, charge, locals: locs });
+                budget = Ent { tag: 0, val: n, tp: ts };
+                next = entry;
+                extra = pro;
+            }
+            OP_HALT | OP_HIF if cid != 0 => {
+                // end / return / br(_if) to the function label in a callee: RET
+                let mut r = ret.row();
+                hdr(&mut r);
+                r.u(if op == OP_HALT { "f_ret" } else { "f_rif" }, 1).s("invc", fe(cid).inverse());
+                let mut taken = true;
+                if op == OP_HIF {
+                    let c = stack.pop().unwrap();
+                    assert_eq!(c.tag, 0);
+                    let hc = st.tchk(ts, c.tp);
+                    let cl = limbs(c.val);
+                    let cz = cl[0] + cl[1];
+                    r.u("c0", cl[0]).u("c1", cl[1]).u("tc", c.tp).u("hc", hc);
+                    r.s("inv", if cz == 0 { F::ZERO } else { fe(cz).inverse() });
+                    taken = c.val != 0;
+                }
+                if taken {
+                    let f = frames.pop().unwrap();
+                    let caller = frames.last().unwrap();
+                    let hr = st.tchk(ts, f.cid);
+                    let hb = st.tchk(ts, budget.tp);
+                    let n = budget.val + f.charge;
+                    st.r16(n & 0xffff);
+                    st.r16(n >> 16);
+                    st.r16(4 * (n >> 16));
+                    r.u("retpc", f.retpc).u("sbc", caller.sb).u("cidc", caller.cid).u("charge", f.charge);
+                    r.u("tpr", f.cid).u("hr", hr);
+                    r.u("r0", budget.val & 0xffff).u("r1", budget.val >> 16).u("tpb", budget.tp).u("hb", hb);
+                    r.u("n0", n & 0xffff).u("n1", n >> 16);
+                    budget = Ent { tag: 0, val: n, tp: ts };
+                    for (j, e) in f.locals.into_iter().enumerate() {
+                        dead.push((16 + f.cid, j as u64, e));
+                    }
+                    next = f.retpc;
+                }
+            }
             0x41 | 0x42 => {
                 let is64 = op - 0x41;
                 let v = from_limbs(&[rec[4], rec[5], rec[6], rec[7]]);
@@ -609,7 +719,7 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                 // local.get/set/tee (0x20..0x22) and global.get/set (0x23, 0x24): one LOCAL row
                 let x = rec[4] as usize;
                 let is_g = op >= 0x23;
-                let vars = if is_g { &mut globals } else { &mut locals };
+                let vars = if is_g { &mut globals } else { &mut frames.last_mut().unwrap().locals };
                 let old = vars[x];
                 let hl = st.tchk(ts, old.tp);
                 let mut r = loc.row();
@@ -617,8 +727,8 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                 r.u("f_get", (op == 0x20) as u64).u("f_set", (op == 0x21) as u64).u("f_tee", (op == 0x22) as u64);
                 r.u("f_gget", (op == 0x23) as u64).u("f_gset", (op == 0x24) as u64);
                 r.u("idx", x as u64).u("tagL", old.tag).limbs("L", limbs(old.val)).u("tL", old.tp).u("hL", hl);
-                // channel space: `16 + cid` for locals (the entry frame has cid = 0: no calls yet), 2 for globals
-                r.s("inv_sp", fe(if is_g { 2 } else { 16 }).inverse());
+                // channel space: `16 + cid` for locals, 2 for globals
+                r.s("inv_sp", fe(if is_g { 2 } else { 16 + cid }).inverse());
                 if op == 0x20 || op == 0x23 {
                     vars[x] = Ent { tag: old.tag, val: old.val, tp: ts };
                     stack.push(Ent { tag: old.tag, val: old.val, tp: ts });
@@ -868,7 +978,7 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
             }
             _ => panic!("unknown op {op:#x}"),
         }
-        s += fee;
+        s += fee + extra;
         ts += 1;
         if halted || trapped {
             halt_pc = if trapped { pc + 1 } else { pc };
@@ -884,15 +994,31 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     let result = if trapped { None } else { stack.last().map(|e| (e.tag, e.val)) };
     // after a trap the leftover operand stack goes to DRAIN rows
     let mut drn = Tab::new(t("DRAIN"));
+    let (sbf, cidf) = (frames.last().unwrap().sb, frames.last().unwrap().cid);
     if trapped {
         for (i, e) in stack.iter().enumerate() {
             drn.row().u("act", 1).u("space", 0).u("slot", i as u64).u("tag", e.tag).limbs("v", limbs(e.val)).u("tp", e.tp);
         }
+        // the frames still live at the trap: their call records (space 4) and locals (space 16 + cid)
+        for k in 1..frames.len() {
+            let (f, c) = (&frames[k], &frames[k - 1]);
+            drn.row().u("act", 1).u("space", 4).u("slot", f.cid).u("tag", 0)
+                .limbs("v", [f.retpc, c.sb, c.cid, f.charge]).u("tp", f.cid).s("inv", fe(4).inverse());
+            for (j, e) in f.locals.iter().enumerate() {
+                dead.push((16 + f.cid, j as u64, *e));
+            }
+        }
+    } else {
+        assert_eq!(frames.len(), 1, "halted outside the entry frame");
     }
-    // the stack-budget register is left over at the end (space 5; no calls yet: produced at time 0)
-    assert!(prep.stack_rem < 1 << 30, "stackRem >= 2^30 is outside the domain (BudOK)");
+    // dead callee locals
+    for &(sp, j, e) in dead.iter() {
+        drn.row().u("act", 1).u("space", sp).u("slot", j).u("tag", e.tag).limbs("v", limbs(e.val)).u("tp", e.tp)
+            .s("inv", fe(sp).inverse());
+    }
+    // the stack-budget register is left over at the end (space 5)
     drn.row().u("act", 1).u("space", 5).u("slot", 0).u("tag", 0)
-        .limbs("v", [prep.stack_rem & 0xffff, prep.stack_rem >> 16, 0, 0]).u("tp", 0).s("inv", fe(5).inverse());
+        .limbs("v", [budget.val & 0xffff, budget.val >> 16, 0, 0]).u("tp", budget.tp).s("inv", fe(5).inverse());
     // every global is left over at the end (space 2)
     for (g, e) in globals.iter().enumerate() {
         drn.row().u("act", 1).u("space", 2).u("slot", g as u64).u("tag", e.tag).limbs("v", limbs(e.val)).u("tp", e.tp)
@@ -938,7 +1064,8 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     {
         let mut r = bnd.row();
         r.u("pcf", halt_pc).u("tpr", if trapped { 0 } else { stack.last().map(|e| e.tp).unwrap_or(0) });
-        for (j, e) in locals.iter().enumerate() {
+        r.u("sbf", sbf).u("cidf", cidf);
+        for (j, e) in frames[0].locals.iter().enumerate() {
             r.u(&format!("ftag{j}"), e.tag).limbs(&format!("fv{j}_"), limbs(e.val)).u(&format!("ftp{j}"), e.tp);
         }
     }
