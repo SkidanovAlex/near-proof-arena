@@ -1,7 +1,7 @@
 # NV-faithful: the narrow verifier circuit arithmetises the native SWIRL verifier
 
-Lane `lane/pq-nv-circuit-soundness`, 2026-10-18. **Audited version: lane/pq-recursion-sha384 @
-3c9d479ab** (patch `native/recursion/patches/openvm-recursion-sha384.patch`, unified backend
+Lane `lane/pq-nv-circuit-soundness`, 2026-10-18. **Audited versions: lane/pq-recursion-sha384 @
+3c9d479ab (§0–§7), re-audited @ 95c08894c / head 7cdc8c90e (§R)** (patch `native/recursion/patches/openvm-recursion-sha384.patch`, unified backend
 `stark-backend-unified.patch`). The fixes below are on this branch only (not merged into
 lane/pq-recursion-sha384). Target statement: Lemma 7.1 (F1–F6) of
 `lane/pq-final-soundness` `final-soundness/PROOF.md` @ ae0ae8a7b.
@@ -12,7 +12,280 @@ counts), `faithful_sha_tests.rs` (SHA/GLUE), `faithful_tr_tests.rs` (transcript/
 Scripts: `scripts/sha_carry_bounds.py` (exact carry/residual bounds, 1,319 checks),
 `scripts/run_faithful.sh` (everything; 48 B and 42 B + coset-leaf modes).
 
-## 0. Result
+## R. Re-audit at lane/pq-recursion-sha384 @ 95c08894c (head 7cdc8c90e), then 2bf42f573 (§R.7), 2026-10-18
+
+**This section supersedes §0, §1.1 (public values), §2(b) B-2, §2(d)(vi) and §6/§7 where they
+differ.** The circuit at 7cdc8c90e is the one at 95c08894c. Later commits (9be29d65b, a647370c2,
+54700fd7a, e0c7e7d71, 6af52d94f, 7cdc8c90e) touch only README, models and logs, not the
+patch. What changed since 3c9d479ab:
+
+* 32fb63327: unpadded program; Acc2/Acc at fixed early rows.
+* 46b7e62e2: T\* (counter-mode squeeze blocks, PoW blocks, op_q rows, the chain bus); NvAir 70 → 74
+  columns.
+* 95c08894c:
+  * B1–B6 re-applied by hand;
+  * B5 extended to PoW-run blocks;
+  * the statement passthrough: op PvD (31), tag-8 digest, `check_statement`;
+  * the final-layer hash domain (`new_final`).
+
+**Verdict: no new soundness bug.** All fixes B1–B6 are present and their tests pass. Lemma
+NV-faithful (§0) now holds with these changes:
+* (F1) is stated for the **T\*** transcript;
+* (F3) holds in full: level, app flag and the base-statement digest.
+
+The additive error becomes ε_LogUp ≤ ℓ·N²/(2|F|) + 2N/|F| ≈ **2^−317.4**:
+* ℓ = 20: the longest message is now the chain bus, 19 fields + bus;
+* N ≤ 2^25.11: NvAir has 55 interactions per row; 2^24.11 at the 2^18 shape (`nv_logup_counts`).
+
+One harness defect was fixed (D1, below). It did not hide anything.
+
+### R.1 Tests on the new head
+
+| run | result |
+|---|---|
+| all `nv_` tests except `nv_chain` / `nv_app_binding` (48 B; T\* default on) | 42 / 42 pass (incl. B1–B6 tests, `nv_tstar_tamper`, `nv_statement_digest`, `nv_opening_formula`) |
+| the same, 42 B + coset leaves | 42 / 42 pass |
+| `nv_statement_passthrough` (new): level 2 over a proved level-1 NV proof re-exposes the child's statement; 5 tampered limbs rejected | pass, 3.0 GB peak |
+| DOF, every cell, 4 fixtures × 2 digest modes | 0 unexpected undetected cells; Sha512Air/TableAir 0 undetected; memory-coupled pass 0 accepted (table R.4) |
+| DOF on the level-2 passthrough trace (≤ 1,000 rows per role, 8.6M cells, after fix D1) | 0 unexpected |
+
+### R.2 Program binding with the unpadded program (§2(b) B-2, revised)
+
+The program now has length n: even, n ≤ 2^prog_log, no padding. Acc sits at a fixed address
+s1 and Acc2 at s2 = s1 − 1, right after the reserved and data rows. Acc has P0 = n − 2; Acc2
+has P0 = |T_app| − 2. Argument:
+
+1. P[s1] ≠ 0, so ka = 1 there (C4). Stage is monotone (C5), so every row < s1 is an ALU row.
+2. Acc (op bound to P1 by A-2) receives `(acc_total, y2_last)` from the unique last BIND row and
+   asserts y2_last = n − 2. BIND steps by 2 from 0 (B1–B3), so it has exactly n/2 rows.
+3. These rows receive `(y, pc)` for every y < n on the bind permutation bus. The only senders
+   are ALU rows, with their own row index y (C2). So every row of [0, n) is an ALU row with
+   pc = P[y].
+4. An ALU row ≥ n would send an unmatched `(y, 0)`. So the ALU region is exactly [0, n).
+5. Rows ≥ n are not ALU rows, so P = 0 there (C4).
+
+The kernel (B-4): E2 still has 2^prog_log / 512 entries, and acc_total = Σ_{y<n} w_r(y)·ptau(P[y]).
+The child's opening sums over all rows. By Schwartz–Zippel, equality forces child P = own P on
+[0, n) and 0 elsewhere, which is the zero-extended table P_NV.
+
+App binding: T_app is now the **whole** level-1 program, including its Acc row, so
+app_extra = 0. The argument is the same with (bind2, acc2) and the Data region
+[app_base, app_base + |T_app|).
+
+Deferred check: `defer_acc_check` reads the fixed addresses (s2, s1) instead of
+(L − 2, L − 1). It is unchanged otherwise.
+
+### R.3 Transcript under T\* (§2(d) under T\*)
+
+**Native T\*** (`ShaTranscript`, tstar on):
+* Absorb: flush σ' = H(3, σ‖felts); commit σ' = H(4, σ‖digest).
+* A sample run after an absorb: κ = σ; blocks B_j = H(5, κ‖le32(j)) for j = 1, 2, …; candidates
+  are read from word 0 on. The state after the run is the last block consumed.
+* PoW: B_1 = H(7, σ‖w‖le32(1)); the first z bits of B_1 must be zero. Challenges that follow
+  come from B_1's words 1..5, then from B_j = H(7, σ‖w‖le32(j)), j ≥ 2, read from word 0.
+  The state afterwards is the last block.
+* z = 0: the witness must be 0 (G-11).
+
+**HASH rows** (`Hash2Cols`, 63 columns; pool 63, NvAir 74):
+* one-hot op ∈ {f, c, s, p, q};
+* `state_in[18]`, now explicit, received on the **chain bus**, keyed by job, from the predecessor
+  row (`nxt` = next job);
+* counter `ctr`, witness count `nwit`, `scnt` (samples read from B_1), `rd`, `nsq`, `ns`.
+
+**Invariant D\*.** In a satisfying trace, the HASH rows in order are exactly the native T\*
+oracle calls on the event log E\* of the ALU's units. Every emitted sample equals the native
+sample at its tidx. Proof, by row k (assumptions A1–A5 as in §2(d)(ii)):
+
+1. *Unique ids.* Static ids are pinned by anchors (one per program job). Squeeze and PoW-run
+   ids are `TJOB_SQUEEZE_BASE + ns`, with ns incremented by `op_s + op_q`
+   (`sq·(job − 2^25 − ns) = 0`, `is_first·ns = 0`). This is B5 extended to op_q: in 46b7e62e2
+   alone, op_q ids were free, which main found and fixed in 95c08894c; `nv_tr_squeeze_id_collision`
+   covers it. The id ranges are disjoint, so the chain, unit, word and digest messages of
+   different rows cannot be exchanged.
+2. *State links.* Each non-first row k receives `(job_k, state_in_k)` once, and row k−1 sends
+   `(nxt_{k−1} = job_k, x)` once, so state_in_k = x. Here x = state_in_{k−1} when
+   keep = nsq·(op_s+op_p+op_q) = 1, i.e. the next row continues a run (op_s after op_s, or op_q
+   after op_p/op_q): the run's key κ or σ. Otherwise x = state_out_{k−1}: after an absorb, after
+   the last block of a run, and before any absorb or PoW. Row 0 has state_in = H(2, ∅) constants.
+   This is exactly the native rule "same key within a run, last block afterwards".
+3. *Run structure* (transition constraints):
+   * op_s follows an absorb (ctr = 1) or a fully read op_s (ctr + 1);
+   * op_q follows a fully read op_p or op_q (ctr + 1, nwit inherited);
+   * op_p has ctr = 1 and nwit = cnt (anchored);
+   * op_s never follows op_p/op_q, and op_q never follows f/c/s;
+   * `rej` (last read candidate rejected) forces a continuation block.
+
+   These are native's block sequence and counters.
+4. *Messages.* GLUE hashes `prefix‖tag‖(48,0)‖state_in‖(len,0)‖payload` (A1), where
+   * tag = 3 / 4 / 5 / 7 / 7 for f / c / s / p / q;
+   * len = 4·cnt, the digest width, 4, or 4(nwit+1);
+   * the payload is the ALU units (flush, commit), le32(ctr) at unit 16 (squeeze), or the
+     witness units 16.. followed by le32(ctr) at 16 + nwit (p and q; the q witness units are
+     ALU `Unit1` rows of the **same** LoadF witness cells).
+
+   Its digest is state_out (A2).
+5. *Reads.* op_s/op_q rows read from word 0 (rdw[0] = 1); op_p reads from word 1
+   (rdw[0] = 0, prefix from rdw[1]). The read interval starts at t_start + op_p·cnt. Then
+   n.t_start = t_start + cnt + scnt.
+   * If op_p does not read (rd = 0), scnt is unconstrained locally. But the next static row's
+     t_start is pinned by its anchor, so any non-zero scnt leaves ALU sample tidx's that no SAMP
+     run serves (SAMP runs are tied to their hash row's interval on the t.sample bus), and the
+     slot bus fails. So scnt equals native's count.
+   * The acceptance gadget and the split-limb argument are unchanged (§2(d)(ii).4, .6).
+6. *PoW.* B_1's word-0 limbs are sent on chan 3 to PowChk (op_p only). The LoadF l0 (B3) and
+   the LoadBit recomposition prove that the first z bits are zero (z ≤ 43, asserted). The
+   z = 0 path asserts that the witness is 0.
+
+Tests: `nv_tstar_tamper` (main; wrong counter, old-chain PoW, PoW-word challenges, key limb),
+`nv_tr_*` (all pass under T\*), and the DOF runs, now with every T\* HASH column named.
+
+**The §2(d)(vi) checklist is now implemented.** The remaining proof debt is the same as before:
+GKR, batch-constraint and stacking port fidelity rests on differential tests.
+
+### R.4 Statement passthrough (F3)
+
+NvAir public values: pv0 = level, pv1..pv18 = statement digest limbs (lo cell → pv1..12, hi cell
+→ pv13..18). Op **PvD** (31) copies a into c, constrains `P2 ∈ {0,1}`, and constrains
+`a_k = (1 − P2)·pv_{1+k} + P2·[k<6]·pv_{13+k}`. So the hi cell's c6..c11 are 0. The program
+emits PvD(lo, P2 = 0) and PvD(hi, P2 = 1) exactly once each (`pv_digest`). The rows are fixed
+by P_i, so the public values are pinned by the cells.
+
+* **Level 1** (`bind = child_nv = false`): the cells are `Dig` of a tag-8 ALU job whose felt
+  units are `[#airs, |pv_a| …, pv values]`. The program lengths are constants; the pv values
+  are the **same** LoadF cells that are observed into the child's transcript (B3: base field).
+  GLUE/SHA give digest = truncated SHA-384 of `hash_parts(8, statement_values(pvs))`, which is
+  native `statement_digest` (42-B truncation included: tag-8 jobs carry the Merkle/truncation
+  flag in both the trace generator and the ALU `Job` message). So pv1..18 = digest(x_0's
+  public values).
+* **Level ≥ 2** (`bind` or `child_nv`): the child's pv cells 1..18 are LoadF cells observed
+  into the transcript. They equal the child proof's public values by the transcript argument
+  (§2(d)): the observed felts are hashed into the chain. They are packed as lo = Σ_k x_k·X^k
+  and hi with Mul-by-constant and Add (ALU semantics), and PvD exposes them. So
+  pv1..18(x_i) = pv1..18(x_{i−1}). (F3) holds by induction. The native final verifier checks
+  level = d and `check_statement(pv, chunk public values)`.
+* Opcode space: 0..31 are all defined, so no undefined-op relabel remains (§2(a) A-2).
+* Tests:
+  * `nv_statement_digest` (main): level 1, 4 limbs, and a changed app public value;
+  * `nv_statement_passthrough` (new): level 2 re-exposes the child's digest and
+    `check_statement` holds on it; tampering any of limbs 1, 7, 12, 13, 18 is rejected.
+
+**Final-layer domain (`new_final`).** The final proof π_d uses a separate transcript init
+H(2,['F']) and node prefix 'F'. It is verified only natively, so no circuit constraint changes;
+the in-circuit initial state and node prefix stay the inner-layer constants. This is consistent
+with Lemma 7.1, since every V_{i−1} that NV_i arithmetises is an inner-layer verifier.
+
+### R.5 DOF on the new head (every cell)
+
+| fixture | digests | cells | constraint | bus | undetected | unexpected | mem-coupled accepted |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Fib | 48 B | 10,781,504 | 9,942,282 | 597,157 | 242,065 | 0 | 0 / 17,292 |
+| interactions + Gruen, derived claims, next-mask, WHIR-Y | 48 B | 10,781,504 | 9,902,267 | 627,068 | 252,169 | 0 | 0 / 17,592 |
+| Fib + k1, keep-domain, multiproof, wide PoW, WHIR-Y, ×15 | 48 B | 7,979,840 | 7,383,264 | 422,529 | 174,047 | 0 | 0 / 15,648 |
+| Fib + synthetic app table | 48 B | 10,781,504 | 9,936,446 | 600,305 | 244,753 | 0 | 0 / 17,400 |
+| Fib | 42 B + coset leaf | 7,979,840 | 7,318,155 | 462,622 | 199,063 | 0 | 0 / 15,780 |
+| interactions + levers | 42 B + coset leaf | 7,979,840 | 7,278,127 | 492,402 | 209,311 | 0 | 0 / 16,080 |
+| ×15 + WHIR levers | 42 B + coset leaf | 7,979,840 | 7,423,014 | 392,525 | 164,301 | 0 | 0 / 14,400 |
+| app table | 42 B + coset leaf | 7,979,840 | 7,312,319 | 465,770 | 201,751 | 0 | 0 / 15,888 |
+| level 2 over a level-1 NV proof (passthrough), ≤ 1,000 rows per role | 48 B | 8,629,797 | 7,460,214 | 778,967 | 390,616 | 0 | — |
+
+New don't-care classes (T\*; each tag carries the HASH op, so these rules cannot match other
+ops):
+* `nwit` on flush, commit and squeeze rows: it is read only on PoW rows (len, the counter unit
+  index, op_q inheritance).
+* `ctr` on flush and commit rows: it is read only by the counter unit and the run counters
+  (op_s/op_p/op_q).
+
+**Harness defect D1 (fixed).** `nv_col_names` labelled unnamed columns inside a role's view
+`poolNN`, the same label as columns beyond the view, which are don't-care. So an undetected
+unnamed column would have been silently allowed. At 3c9d479ab every Hash2Cols field was named,
+so the earlier results stand. Under T\* the six new HASH fields were unnamed, and ctr/nwit
+showed up as undetected only after the fix. They are the benign classes above. The fix labels
+in-view columns `v<i>` and names every T\* HASH field.
+
+### R.6 Status of the open items (replaces §6 where different)
+
+* **G1: closed** (R.4).
+* **T\*: implemented and audited** (R.3).
+* **Still open:**
+  * GKR, batch-constraint and stacking port fidelity, including the tight-heights kernel,
+    rests on differential tests only.
+  * lo6 is pinned only by its consumers.
+  * The carry bounds are computed for k = 3 only.
+  * `nv_app_binding` (17 GB) was not re-run under the 16 GB cap; main's log
+    `nvp2e-app.log` reports honest ok and tamper rejected.
+* **Landed and audited:** the O-2 agreement table (§R.7). **Not landed yet:**
+  "4 program rows per binding row". The latter changes BIND (B1–B4: the pair step, the
+  `ya/2` byte check, the E1 reads); §2(b)/R.2 and `nv_bind_tamper` must be redone.
+
+
+### R.7 Re-audit of 2bf42f573 (O-2 agreement table; sampled words from GLUE digest rows)
+
+**Sampled-word source.** The HASH → SAMP word bus (t.word) is gone, which brings NvAir from
+55 to 49 interactions per row. The words now come from GLUE.
+
+* *GLUE side.* A digest row (last block, q ∈ {4, 5, 6}) holds output words 2(q−4) and
+  2(q−4)+1, pinned by the compression's iface output pair. It may send each of its two words
+  once more on the digest bus as `(job, 8 + w, l0, l1, l2, 0, 0, 0)`, with count `dx[h]`, where:
+  * `dx` is boolean;
+  * `dx = 0` off digest rows;
+  * `dx = 0` on truncated jobs (`tr = 1`: leaf, node, statement).
+* *SAMP side.* Each SAMP row receives `(job, wi + 8, limbs(b), 0, 0, 0)`. A run starts at
+  `wi = w0`, w0 is constant in the run, and the run summary on t.sample now carries w0. The HASH
+  row receives that summary with `w0 = op_p`: B_1 is read from word 1, every other block from
+  word 0. The rdw prefix still fixes last_word and `full`.
+* *Soundness.* Word keys 8..13 are disjoint from digest-pair keys: GLUE/HASH pairs use 0..2,
+  ALU `Dig` uses P3 + h ≤ 3. Job ids are unique (R.3.1), and the SAMP job is pinned to its HASH
+  row through t.sample.
+
+  So for every (job, w), the number of SAMP rows reading it equals GLUE's dx ∈ {0, 1}. That
+  means each word of the hash row's output is read at most once, and the run structure (start
+  w0, consecutive words, last_word from HASH) fixes exactly which words are read. The limbs are
+  the GLUE state pair, i.e. the SHA output (§2(c) C8) and HASH's state_out (pairs on the same
+  bus). Truncated jobs cannot feed samples (`dx·tr = 0`), so samples come only from the full
+  48-byte transcript blocks.
+
+  Invariant D\* (R.3) step 5 therefore holds with "word bus" replaced by "digest bus, key
+  8 + w".
+* *Tests.* `nv_sample_word_source_tamper` (main): a run starting at word 1, a dropped word send
+  and an extra word send are all rejected. Added here: the DOF runs below, with the new columns
+  (GLUE dx, SAMP w0) unnamed. Unnamed columns now count as in-view, so any undetected one would
+  fail.
+
+**O-2 agreement table.**
+* The WHIR query counts are derived from a per-round table in `WhirConfig`, which is bound into
+  the vk pre-hash. The native verifier checks that the table is canonical; the NV program checks
+  it at generation (`check_agreement`).
+* For NV this is a change of program constants only (F2: vk_{i−1}'s params are constants of
+  P_i), not of the constraints. The per-round query counts that the program unrolls are the
+  table's (`o2_agreement_table`: NV debug-accepts an O-2 child; altered or weaker tables are
+  rejected natively and change the pre-hash).
+* The soundness of the table's query counts belongs to the protocol proof.
+
+**ε_LogUp** with 49 interactions per row: N ≤ 2^24.98 at the 2^19 shape (2^23.98 at 2^18;
+`nv_logup_counts`), and ℓ = 20, so ε ≤ 2^−317.6.
+
+**Verdict: no new soundness bug.**
+
+Run on 2bf42f573 (merged as f9bffb304): every `nv_` test except `nv_chain` / `nv_app_binding`
+passes. That is 44 / 44 in 48 B (incl. `o2_agreement_table`, `nv_sample_word_source_tamper`,
+`nv_statement_passthrough`, the B1–B6 tests) and 43 / 43 in 42 B + coset (passthrough skipped
+there). The DOF covers every cell:
+
+| fixture | digests | cells | constraint | bus | undetected | unexpected | mem-coupled accepted |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Fib | 48 B | 10,781,504 | 9,950,626 | 597,157 | 233,721 | 0 | 0 / 17,292 |
+| interactions + levers | 48 B | 10,781,504 | 9,911,216 | 627,068 | 243,220 | 0 | 0 / 17,592 |
+| ×15 + WHIR levers | 48 B | 7,979,840 | 7,388,431 | 422,529 | 168,880 | 0 | 0 / 15,648 |
+| app table | 48 B | 10,781,504 | 9,944,790 | 600,305 | 236,409 | 0 | 0 / 17,400 |
+| Fib | 42 B + coset leaf | 7,979,840 | 7,323,150 | 462,622 | 194,068 | 0 | 0 / 15,780 |
+| interactions + levers | 42 B + coset leaf | 7,979,840 | 7,283,717 | 492,402 | 203,721 | 0 | 0 / 16,080 |
+| ×15 + WHIR levers | 42 B + coset leaf | 7,979,840 | 7,427,477 | 392,525 | 159,838 | 0 | 0 / 14,400 |
+| app table | 42 B + coset leaf | 7,979,840 | 7,317,314 | 465,770 | 196,756 | 0 | 0 / 15,888 |
+
+Still to land: "4 program rows per binding row". It changes BIND, so §2(b), R.2 and
+`nv_bind_tamper` must be redone.
+
+## 0. Result (audit of 3c9d479ab; see §R for the current head)
 
 **Lemma NV-faithful(i) (proved here for the branch head, modulo §6).** Let vk_i be NV_i's key,
 P_i its program table (P_1 = app-verifier program, P_i = P_NV for i ≥ 2). Let T be a trace of
@@ -31,7 +304,7 @@ value pv0. Define
 Then:
 
 * **(F1)** V′_{i−1}^{SHA-384}(vk_{i−1}, x_{i−1}, π_{i−1}) = 1, for the native verifier of the
-  unified backend with the **current** transcript (not yet T\*, §2(d)(vi)), WHIR-Y, the ×15
+  unified backend with the T\* transcript at the current head (§R.3; at 3c9d479ab: the chain transcript), WHIR-Y, the ×15
   sampler, multiproof, coset leaves, 42-B digests and PoW, run with vk_{i−1}'s constants; every
   SHA-384 output used equals the true SHA-384 output (§2(c)). Exception: with the multiproof
   lever, re-encoding fails only if T itself contains a Merkle-compression collision, which is
@@ -40,8 +313,8 @@ Then:
   program/app binding check against P_NV (child level ≥ 2) or P_1 (child level 1) is ordinary
   ALU code of P_i (§2(b) B-4).
 * **(F3)** level(x_i) = level(x_{i−1}) + 1 and the app-mode flag = [level(x_{i−1}) ≠ 1]
-  (levels ≥ 2; level 1 exposes the constant 1). **The base-statement digest is not passed
-  through: NV has one public value (gap G1, §6).**
+  (levels ≥ 2; level 1 exposes the constant 1). The base-statement digest is passed
+  through at the current head (§R.4; at 3c9d479ab it was not: gap G1).
 * **(F4)** mod-p balance gives the intended multiset / subset semantics (§2(f)).
 * **(F5)** all-zero rows satisfy every constraint and emit no interaction (§2(c), §1.1, §4).
 * **(F6)** every SHA-384 evaluation that (F1) uses is a GLUE job whose compressions are 43-row
@@ -101,7 +374,8 @@ Constraints (every row, wrap-around window (h−1, 0) has `is_transition = 0`):
   [−6, 6] and the product forces it into {0..6}: stage is non-decreasing, so the roles occupy
   contiguous regions in the order ALU < BIND < APPB < GLUE < HASH < SAMP < padding.
 
-Public values: **one**, `pv0 = level` (§5, gap G1).
+Public values: at 3c9d479ab **one**, `pv0 = level` (gap G1); at the current head pv0 = level and
+pv1..18 = the statement digest limbs (§R.4).
 
 Interactions: each role's interactions are collected separately and merged into shared slots
 per bus (`merge_push`): message = Σ_role flag·message_role, count = Σ_role count_role (every
@@ -1093,6 +1367,9 @@ Program words change (LoadF, UnitWT, anchor tags), so P_NV changes; column count
 
 ## 7. Later commits on lane/pq-recursion-sha384 to re-audit
 
+*(Done: 32fb63327, 46b7e62e2 and 95c08894c were re-audited in §R; the later commits through
+7cdc8c90e do not touch the circuit.)*
+
 One commit after 3c9d479ab touches the circuit (as of 2026-10-18 03:xx UTC):
 
 * **32fb63327** "NV: unpadded program (ACC2/ACC at fixed early rows, even length), whole L1
@@ -1110,3 +1387,310 @@ One commit after 3c9d479ab touches the circuit (as of 2026-10-18 03:xx UTC):
 Any later change to `nv/{uair,glue,transcript2,builder,verifier,isa}.rs` or
 `sha384/compress2_*` must be re-checked against §2 and must keep the fixes; re-run
 `scripts/run_faithful.sh` (the DOF test fails on any new undetected class).
+
+## V. Audit of SHA AIR v4 (lane/pq-sha384-air3 @ 34a427692, FAITHFUL-v4.md)
+
+Target: `Sha512Air4` (83 columns, degree 9, 17 interactions; two base-4 words per row, 128 rows
+per compression) and `TableAir4` (128 × 9). Native crate: `native/sha384-air4/`. The NV copy
+`compress4_air.rs` is generated by `port_nv.py` and the GLUE stride is `ROWS = 128`.
+FAITHFUL-v4 replaces §1(c)/§2(c) items C1–C8 for v4; C9 (GLUE) stays.
+
+**Verdict: the argument of FAITHFUL-v4 is correct. I found no soundness bug.** Two
+presentation points (V.6) need no code change. The NV-port sweep waits on the merge into
+lane/pq-recursion-sha384 (V.7).
+
+### V.1 Carry bounds (independent re-derivation)
+
+`scripts/air4_carry_check.py` (new) recomputes every residual interval from `air.rs`; it does not
+use `carry_bounds_v4.py`. Each cell is replaced by the integer value of its sender expression:
+* word and sign-form limbs: [0, 2^w − 1];
+* sums of two limbs (h + K from the K lookup, the forward d + W, L = Σ1 + Ch, V = W16 + σ0):
+  [0, 2(2^w − 1)];
+* Y = Σ0 + Maj − d: [−(2^w − 1), 2(2^w − 1)];
+* carries: [0, 7] (A checks: stored with offset 4).
+
+| check | worst limb | range of E | max\|E\|/p |
+|---|---|---|---:|
+| A out / A in (R3) | 2 | [−29,360,128, 20,971,522] | 0.0146 |
+| E out / E in (R4, R5) | 2 | [−25,165,825, 33,554,431] | 0.0167 |
+| W (R6) | 2 | [−16,777,219, 33,554,431] | 0.0167 |
+| FF (R7) | 2 | [−33,554,431, 8,388,613] | 0.0167 |
+
+* Worst max|E|/p = 0.0167. This agrees with FAITHFUL-v4 and with its script's output (rerun:
+  OK).
+* Every check is a residual against **one** sender: the bus counts are ±1, and S1 of E40 has
+  count 2 with two receivers, each matched separately. So E_i ≡ 0 (mod p) with |E_i| < p gives
+  E_i = 0 over Z.
+* The limb equations telescope to out + 2^64·c_top = Σ operands. The 64-bit outputs are
+  canonical (base-4 digits), so out = the sum mod 2^64.
+* No false carry solution exists. A carry outside [0, 8) cannot be substituted either, because
+  the range polynomial ∏(c − m) has exactly the roots 0..7 (p > 8).
+
+### V.2 Digits and bit signs
+
+* `(u² − 1/4)(u² − 9/4)` with u = v − 3/2 has the four distinct roots ±1/2, ±3/2 (2 and 3 are
+  invertible). So v ∈ {0, 1, 2, 3}, and the 32 digits give a unique 64-bit integer. Its limbs
+  (split inside digit 10 by the bit (1 − σ)/2) are its canonical 21/21/22-bit limbs.
+* Both bit signs of a digit, (1, −1, 1, −1) and (1, 1, −1, −1) on u = −3/2..3/2, are odd in u.
+  So the two-parameter cubic u(α + βu²) interpolates them exactly. `sign_coefs` solves for
+  α, β, and `sign_polynomials_exact` passes.
+* Σ/σ are products of three signs, Ch and Maj use their sign identities, and the shifts in σ0/σ1
+  drop the wrapped factor (`rx(.., shr)`). The FIPS forms are checked on random words by the
+  native test.
+
+### V.3 Lookback bus matching
+
+* Senders send `(g, tag, …)` with their own row index g. Each kind sends at most one interaction
+  per tag (`roles`), so (g, tag) names one interaction.
+* Every receive uses `g + o` with a per-kind constant (o, tag), and the kind is pinned to r by
+  the ctl lookup (C2).
+* I checked by hand, against the `roles()` table, that every receive lands on a sender of its
+  own segment with the right tag and count:
+  * R3 at A_j hits E_{j+1};
+  * R1 of A0/E0 hits A40/E40, and of A41/E41 hits A1/E1;
+  * R7 of A0, A41, E0, E41 hits O_1, O_0, O_3, O_2;
+  * R2 pairs A_j ↔ W_j;
+  * R6 hits the W row 3 back, and R1 (TV) hits the one 7 back.
+  * E40's pair is sent with count 2, received by A39's R3 and E0's R1.
+* This is `bus_map_consistent`, rerun: pass.
+* Messages of different arity share the lb bus only under different tags, so their fingerprints
+  cannot coincide.
+* Each stored aux group used by a check is pinned by exactly one interaction, or is zero by the
+  unused-aux rule:
+  * X[0..6] by R1, or by the previous window's K lookup (E1..E40);
+  * X[12..15] by R2;
+  * X[6..12] are range-checked carries, free by design.
+
+### V.4 TableAir4, padding, interface (GLUE change)
+
+* **TableAir4.** The bits start at 0 and step by binary increment, so row i holds i mod 128. The
+  offered fields are multilinear extensions evaluated at Boolean points, so they are exactly
+  `ctl_entry` / `k_entry`. A height other than 128 can only repeat or drop entries: dropping
+  costs completeness, repeating changes nothing. The kind codes (4,3) and (4,4) and every
+  r ≥ 128 are not entries, so the ctl lookup rejects them. In the NV circuit the table height is
+  a fixed shape constant (128, replacing v2.1's 64).
+* **Padding.** k1 = 0 ⇒ pad = 1 ⇒ all digits, aux, r, g and k2 are zero. Every count is a sum of
+  real-kind selectors, or `real = 1 − L_0(k1)`, so all vanish. `pad·k1' = 0` makes the real rows
+  a prefix, and `k1·pad'·(r − 127) = 0` plus the last-row rule make it whole segments. An
+  all-zero row satisfies every constraint, so tight heights stay sound.
+* **Interface and GLUE.**
+  * cid = g − r (+ `cid_offset` = 0 in NV) = 128·s, so the cids are distinct per segment.
+  * idx 0..15 are each sent once per segment: A1, A0, E1, E0 → 0..3; W_0..W_7 → 4..11;
+    O_0..O_3 → 12..15.
+  * GLUE's chaining key `cid − (1 − q2)·ROWS` uses `compress4_air::ROWS = 128`.
+  * §2(c) C8 then gives the bijection segments ↔ GLUE compressions with equal
+    (H_in, B, H_out). The proof only needs cid uniqueness and the stride, both re-checked here.
+* **The NV port.** `port_nv.py` applies fixed textual substitutions and fails on a missing
+  pattern: buses become fields, a `cid_offset` is added, the AIR bound becomes plain
+  `AirBuilder`, and the test consumer is dropped. No constraint changes.
+* **LogUp.**
+  * Sha512Air4 adds 17 interactions per row at 2^20 rows. N stays < 2^26 ≪ p, so (F4) is
+    unchanged in form.
+  * The lb count-2 send stays inside the bound: per message, Σ|count| ≤ 2·14·2^20 < p.
+  * ℓ_msg ≤ 20 (lb messages: 8 fields + bus).
+
+### V.5 Perturbation sweep, standalone crate (`scripts/air4_dof.rs`, subcommand `dof`)
+
+Every cell of Sha512Air4, TableAir4 and the harness consumer was perturbed, with exact
+multiset bus deltas as in §4:
+
+| compressions | Sha512Air4 rows | cells | constraint | bus | undetected |
+|---:|---:|---:|---:|---:|---:|
+| 3 (+ 128 padding rows, 16 harness padding rows) | 512 | 44,224 | 40,288 | 3,808 | 128 |
+| 8 (no padding) | 1,024 | 87,296 | 77,568 | 9,728 | 0 |
+
+The 128 undetected cells are all in the test harness's own padding rows (multiplicity 0, columns
+0–7). The harness is not part of the NV circuit, where GLUE is the consumer. **Sha512Air4 and
+TableAir4: 0 undetected cells**, including all 128 padding rows of the first run. The honest
+traces pass the evaluator's global check (0 constraints, 0 unbalanced messages).
+
+### V.6 Presentation points (no code change)
+
+* FAITHFUL-v4's C6 table lists one "min E" per equation. That is the limb-0/1 minimum; the
+  limb-2 minima are −29,360,128 (A), −25,165,825 (E), −16,777,219 (W) and −33,554,431 (FF). The
+  max|E|/p column is still right (it is computed from both ends), and the worst case stays 0.0167.
+* C3 says TableAir4 rows "hold the bits of i mod 128". The table has no last-row constraint, so
+  its content is pinned only modulo the height. That is fine because extra rows only repeat
+  entries; it should say so, as V.4 does.
+
+### V.7 NV port (merged as f59bc0770; my branch 2c77ea4e8)
+
+* **The port is a pure regeneration.** Running `port_nv.py` on `air.rs` @ 34a427692
+  reproduces the NV tree's `compress4_air.rs` and `compress4_trace.rs` byte for byte.
+* **GLUE uses the new stride.** It imports `compress4_air::ROWS`: the job continuation is
+  `n.cid = cid + q7·128`, and chaining uses `cid − (1 − q2)·128`. Uniqueness of the cids
+  across jobs comes from the segment side (cid = 128·s, each pair sent once), as in C8.
+* **Tests (8 threads, 24 GB cap).** Every `nv_` test except `nv_chain` and `nv_app_binding`
+  passes:
+  * 44 / 44 in 48 B, including the B1–B6 tests, `nv_faithful_fake_and_reordered_segments`
+    (now with the 128-row stride), `nv_statement_passthrough`, `nv_sample_word_source_tamper`
+    and `o2_agreement_table`;
+  * 43 / 43 in 42 B + coset leaves.
+* **Perturbation sweep, every cell** (NvAir 2^16 × 74, Sha512Air4 2^16 × 83, TableAir4
+  128 × 9, ByteAir):
+
+| fixture | digests | cells | of which Sha512Air4 | undetected Sha512Air4 / TableAir4 | undetected total (all don't-care) | unexpected | mem-coupled accepted |
+|---|---|---:|---:|---|---:|---:|---:|
+| Fib | 48 B | 10,617,984 | 5,439,488 | 0 / 0 | 233,721 | 0 | 0 / 17,292 |
+| interactions + levers | 48 B | 16,057,472 | 10,878,976 | 0 / 0 | 243,220 | 0 | 0 / 17,592 |
+| ×15 + WHIR levers | 48 B | 10,617,984 | 5,439,488 | 0 / 0 | 168,880 | 0 | 0 / 15,648 |
+| app table | 48 B | 10,617,984 | 5,439,488 | 0 / 0 | 236,409 | 0 | 0 / 17,400 |
+| Fib | 42 B + coset leaf | 10,617,984 | 5,439,488 | 0 / 0 | 194,068 | 0 | 0 / 15,780 |
+| interactions + levers | 42 B + coset leaf | 10,617,984 | 5,439,488 | 0 / 0 | 203,721 | 0 | 0 / 16,080 |
+| ×15 + WHIR levers | 42 B + coset leaf | 10,617,984 | 5,439,488 | 0 / 0 | 159,838 | 0 | 0 / 14,400 |
+| app table | 42 B + coset leaf | 10,617,984 | 5,439,488 | 0 / 0 | 196,756 | 0 | 0 / 15,888 |
+
+  All undetected cells are NvAir cells in the classes of §4 / §R.5. The NvAir counts are the
+  same as before the v4 merge.
+* **LogUp term.** Sha512Air4 has 17 interactions per row, and the longest message has 9 fields
+  (`nv_logup_counts`). With 128 rows per compression the SHA AIR is about 3× taller than v2.1's.
+  At NvAir 2^18 and Sha512Air4 2^20: N = 49·2^18 + 17·2^20 + 2·128 + 2^16 ≈ 2^24.87 (2^25.38
+  with NvAir at 2^19). So ε_LogUp ≤ 20·N²/(2|F|) + 2N/|F| ≈ **2^−316.8**.
+  * `nv_logup_counts` still assumes equal NvAir and SHA heights (2^24.05 / 2^25.05).
+  * The bound is < p either way.
+  * The interaction-count limit 2^28 holds.
+
+**§V verdict: SHA AIR v4 and its NV integration are faithful. I found no soundness bug.**
+
+## W. Re-audit: program cut (bfad906ec milestone 1, 8d34fdf70 milestone 2, head 3c4324e8c)
+
+Merged into this branch as 324bde53d. **Verdict: no soundness bug.** One hardening fix was
+added: `assert_horner_chains` (W.2). The program-binding argument (§2(b), §R.2) is unchanged.
+
+### W.1 Op binding and the new ops (§2(a))
+
+* **40 ops** fill the 8 × 5 selector grid (OP_HI = 5). P1 = B + op·2^20 < 40·2^20 < p, and the
+  B-field range is still the pair check `(rz, 16 rz)` (B1). So A-2 holds unchanged: op =
+  ⌊P1/2^20⌋. There is no undefined code left, so no undefined-op relabel exists.
+* **SibWS4 / SibWS2** (32, 33):
+  * c is a free witness (the sibling), and SibWS2 has c6..c11 = 0.
+  * B is the path bit's address (`reads_b`); A is not read.
+  * The units are word units of c for job P2, at key `P3 + 2k + 12(1 − b0)` (k < 4 resp. 2).
+  * These are exactly the messages of the old `Load` + `one_minus` + `UnitWS*(1 − b)` sequence.
+    GLUE range-checks every word unit, so the sibling is canonical.
+* **DigWS4 / DigWS2** (34, 35):
+  * c is received on the digest bus: `(P0, h, c[6h..6h+6])` for h = 0, 1 (DigWS4), or
+    `(P0, 2, c[0..6])` with c6..c11 = 0 (DigWS2).
+  * P0 is the child job id and is not read as an address (not in `reads_a`).
+  * The units are word units of c for job P2 at `P3 + 2k + 12·b0`.
+  * GLUE sends each job's digest pairs once, so each child digest is consumed by exactly one
+    op, as it was with `Dig`. The root is still `Dig` plus the equality with the commitment
+    cells.
+* **Merkle level (5 rows: NodeJob, DigWS4, DigWS2, SibWS4, SibWS2):** the parent job's 24 word
+  units are the child digest on side b and the free sibling on side 1 − b. Every row reads the
+  same LoadBit cell. Claim E (§2(e)) carries over unchanged: the authentication path recomputes
+  the observed root with the direction bits taken from the canonical index decomposition.
+* **Horn2** (39): c = (a·b + w1)·b + w2, degree 3, so NvAir is degree 9 (= SHA v4).
+  * w1 = `wit` and w2 = `wit2` are pushed as felt units P3 + 1 and P3 of job P2 (k = 1, 0).
+  * The same witness cells are hashed into the leaf and folded, as with `Horn`.
+  * The unit order against native is pinned by honest acceptance (the leaf digest must match
+    the Merkle root) and by `nv_horn2_tamper`.
+* **Fold butterfly and factorised eq:** program-level algebraic identities with no AIR change.
+  The eq factorisation's inverses of 1 − α_m are `Load` cells checked by `x·inv = 1`.
+
+### W.2 Horner chains: soundness requires complete chains
+
+Constraints:
+* `HornS`: c = a (copy) and **transition** n.c = a.
+* `HornR`: own c free, transition n.c = c·b + a.
+* `HornE`: own c free.
+
+So a HornR or HornE row's c is pinned **only** by the previous row's transition. An isolated
+HornR or HornE would be a free witness.
+
+**Lemma (chain completeness).** In every program P_i, each HornR/HornE row is directly preceded
+by HornS or HornR, and each HornS/HornR row is directly followed by HornR or HornE.
+
+*Proof.* The only emitter is `Builder::horner_chain`, which pushes HornS, then n − 1 HornR, then
+HornE, by consecutive `push` calls with no other emission in between: `push` appends one row,
+and constants are created before the chain (`coeffs`, `x` are inputs). No other code path emits
+these ops (grep). The program is fixed and bound (§2(b)), so the trace's rows are exactly these.
+Hence, by induction along a chain:
+* HornS's next c is the top coefficient a_{n−1};
+* each HornR turns the incoming c into c·x + a_i;
+* HornE holds Σ a_i x^i.
+
+This is the Horner value the native verifier computes.
+
+*Hardening (this branch).* `assert_horner_chains` runs in `Builder::finish`, so a program with a
+broken chain is never generated. It also excludes a chain op as the last program row: that row's
+transition would read BIND's first row, whose accumulator positions are the moved c columns.
+Test `nv_horner_chain_shape`: the honest programs pass, and a HornR without a predecessor or a
+chain without HornE is rejected.
+
+* **Moved result columns.** c now sits at pool 36..48, which is also BIND's acc. A `const`
+  assertion pins the offsets. Transitions are gated by the local row's ALU selector, so they
+  never fire on BIND rows. The next-row mask comes from keygen's DAG, so it contains these
+  columns (PROOF S-11).
+
+### W.3 x15 query index (new decomposition)
+
+x = low + 2^m(15q + a), where:
+* low has m LoadBits;
+* q has 27 − m LoadBits;
+* a has 4 LoadBits with AND(a) = 0, i.e. a ≠ 15.
+
+The maximum is (2^m − 1) + 2^m(15(2^{27−m} − 1) + 14) = 15·2^27 − 1 = p − 2 < p. So the
+recomposition is an integer, equal to the canonical x. x = p − 1 has no representation and is
+rejected (native re-samples; completeness only, ≤ q/p), and the mixed-radix representation is
+unique. index = low + 2^m·a = x mod 15·2^m, which is native `sample_index_exact`. Test:
+`nv_tr_x15_hook_tamper` (a = 15 with q − 1, swap, other leaf).
+
+### W.4 O-2 round-0 multi-commitment rule
+
+This is native and proof-shape only: round 0 uses Johnson when a layer can have more than one
+stacked commitment, and the regime is bound in the vk. NV layers have exactly one commitment
+(`build_verifier` asserts no preprocessed or cached traces), so the NV constraints are
+untouched. The child's table is a vk constant of the program (F2).
+
+### W.5 §2(b) / §R.2 / `nv_bind_tamper` redone
+
+BIND, APPB, Acc/Acc2 and the deferred check are byte-identical in logic. Only the ALU view moved
+(c → pool 36..48), and the test helpers address fields through the struct (`AbCols` offsets). So
+R.2 holds as written:
+* the Acc row at its fixed address forces [0, n) to be ALU rows;
+* BIND has n/2 rows, pinned by Acc's P0 = n − 2;
+* the bind permutation bus gives pc = P;
+* the (ya, yb) split is unique;
+* the kernel and SZ argument are unchanged.
+
+`nv_bind_tamper` passes on the new head: the alternative split, the premature bl and the APPB
+word are all rejected.
+
+### W.6 Tests and sweep on the new head (8 threads, 24 GB cap)
+
+**Tests.** Every `nv_` and `o2_` test except `nv_chain` and `nv_app_binding` passes:
+* 49 / 49 in 48 B (`nv_program_probe` is ignored by design);
+* 46 / 46 in 42 B + coset leaves (passthrough skipped there).
+
+These include:
+* B1–B6: `nv_alu_relabel_*`, `nv_alu_base_load_pow`, the `nv_tr_*` tests,
+  `nv_faithful_tail_framing_unique`;
+* `nv_bind_tamper`, `nv_statement_passthrough`;
+* upstream's `nv_merkle_op_tamper`, `nv_horn2_tamper`, `o2_round0_multi_commit`,
+  `o2_agreement_table`;
+* the new `nv_horner_chain_shape` and `nv_dof_horn2`.
+
+**Perturbation sweep, every cell.** In the harness, `wit2` is now named. A don't-care `wit` cell
+is allowed only off Horn and Horn2 rows, and a don't-care `wit2` cell only off Horn2 rows.
+
+| fixture | digests | cells | constraint | bus | undetected Sha512Air4 / TableAir4 | undetected total (all don't-care) | unexpected | mem-coupled accepted |
+|---|---|---:|---:|---:|---|---:|---:|---:|
+| Fib | 48 B | 10,617,984 | 9,476,600 | 934,547 | 0 / 0 | 206,837 | 0 | 0 / 20,184 |
+| interactions + levers | 48 B | 16,057,472 | 14,850,969 | 990,495 | 0 / 0 | 216,008 | 0 | 0 / 20,832 |
+| ×15 + WHIR levers | 48 B | 10,617,984 | 9,869,830 | 610,560 | 0 / 0 | 137,594 | 0 | 0 / 16,020 |
+| app table | 48 B | 10,617,984 | 9,470,828 | 937,695 | 0 / 0 | 209,461 | 0 | 0 / 20,292 |
+| Fib, n_stack 3 (Horn2 rows) | 48 B | 10,617,984 | 9,972,733 | 525,200 | 0 / 0 | 120,051 | 0 | 0 / 13,512 |
+| Fib | 42 B + coset leaf | 10,617,984 | 9,802,584 | 647,862 | 0 / 0 | 167,538 | 0 | 0 / 15,984 |
+| interactions + levers | 42 B + coset leaf | 10,617,984 | 9,738,168 | 702,953 | 0 / 0 | 176,863 | 0 | 0 / 16,632 |
+| ×15 + WHIR levers | 42 B + coset leaf | 10,617,984 | 9,941,298 | 548,256 | 0 / 0 | 128,430 | 0 | 0 / 14,580 |
+| app table | 42 B + coset leaf | 10,617,984 | 9,796,812 | 651,010 | 0 / 0 | 170,162 | 0 | 0 / 16,092 |
+| Fib, n_stack 3 (Horn2 rows) | 42 B + coset leaf | 6,538,368 | 6,105,574 | 337,463 | 0 / 0 | 95,331 | 0 | 0 / 9,912 |
+
+The new ops appear in the swept traces: HornS, HornR, HornE, SibWS4/2 and DigWS4/2 in every
+fixture, and Horn2 in the n_stack-3 fixture. Their only undetected cells are pool columns
+beyond the ALU view and operands the op does not read. In particular every Horn2 `wit`/`wit2`
+cell and every HornR/HornE `c` cell is detected: on single cells, by the previous row's
+transition or the memory key.
+
+**LogUp:** unchanged from §V.7 (49 NvAir interactions per row, Sha512Air4 17; ε ≈ 2^−316.8).
