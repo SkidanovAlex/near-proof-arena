@@ -2123,10 +2123,10 @@ index 0000000..97a491e
 +}
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..b3c04aa
+index 0000000..f4ac463
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
-@@ -0,0 +1,261 @@
+@@ -0,0 +1,272 @@
 +//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
 +use std::{collections::HashMap, sync::Arc};
 +
@@ -2220,8 +2220,11 @@ index 0000000..b3c04aa
 +    pub heights: Option<Vec<usize>>,
 +    /// app-verifier table (the level-1 program words, rows [0, n)), checked by level 2
 +    pub app: Option<Vec<[u32; 4]>>,
-+    /// the child is an NV proof: pass its statement digest through (implied by `bind`)
++    /// the child is an NV proof: pass its statement digest through and bind its program
 +    pub child_nv: bool,
++    /// TEST ONLY: passthrough without program binding (child of a different size)
++    #[cfg(test)]
++    pub test_no_bind: bool,
 +}
 +
 +impl NvCircuit {
@@ -2239,6 +2242,8 @@ index 0000000..b3c04aa
 +            heights: None,
 +            app: None,
 +            child_nv: false,
++            #[cfg(test)]
++            test_no_bind: false,
 +        }
 +    }
 +
@@ -2284,7 +2289,13 @@ index 0000000..b3c04aa
 +    ) -> (Vec<RowMajorMatrix<F>>, Builder) {
 +        // program binding is on whenever the child is an NV proof (G1 / V_d: the program is
 +        // pinned, so every NV child's program must be bound to this level's)
-+        let (bind, child_nv) = (self.bind || self.child_nv, self.child_nv);
++        #[allow(unused_mut)]
++        let mut bind = self.bind || self.child_nv;
++        #[cfg(test)]
++        {
++            bind &= !self.test_no_bind;
++        }
++        let child_nv = self.child_nv;
 +        self.generate_program(move |b| {
 +            b.bind = bind;
 +            b.child_nv = child_nv;
@@ -3408,10 +3419,10 @@ index 0000000..e1db382
 +}
 diff --git a/crates/recursion/src/nv/faithful_tests.rs b/crates/recursion/src/nv/faithful_tests.rs
 new file mode 100644
-index 0000000..09423b9
+index 0000000..ca8bb26
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_tests.rs
-@@ -0,0 +1,768 @@
+@@ -0,0 +1,769 @@
 +//! NV-faithful: degree-of-freedom (single-cell perturbation) runs and tamper tests for the ALU,
 +//! BIND and app-binding roles (results/pq-recursion-nv/FAITHFUL.md).
 +//!
@@ -4122,6 +4133,7 @@ index 0000000..09423b9
 +    assert!(super::circuit::check_statement(&child_pv, &p0.public_values));
 +    let mut circ2 = NvCircuit::new(3, 19, 1);
 +    circ2.child_nv = true;
++    circ2.test_no_bind = true; // the child is smaller than this level: passthrough only
 +    let airs = circ2.airs::<Sha384Config>();
 +    let (mats, b2) = circ2.generate(&vk1, &p1);
 +    assert!(b2.failures.is_empty(), "{:?}", b2.failures);
@@ -6332,7 +6344,7 @@ index 0000000..3b36d05
 +mod faithful_tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..e5664c4
+index 0000000..2d4e4f8
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
 @@ -0,0 +1,1306 @@
@@ -7595,12 +7607,12 @@ index 0000000..e5664c4
 +    let (vk0, p0) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&child_engine);
 +    let mut pp = openvm_stark_backend::test_utils::test_system_params_small(2, 18, 3);
 +    pp.max_constraint_degree = nv_debug_params().max_constraint_degree;
-+    pp.log_blowup = 2;
-+    let pp = crate::sha384::e2e_tests::with_levers(pp, Default::default(), 1, 20);
++    pp.log_blowup = 1;
++    let pp = crate::sha384::e2e_tests::with_levers(pp, Default::default(), 1, 12);
 +    let engine = Sha384CpuEngine::new(pp.clone());
 +    let engine_final = Sha384CpuEngine::new_final(pp);
 +    let k = openvm_stark_backend::StarkEngine::params(&engine).k_whir();
-+    let log_rows = 19;
++    let log_rows = 18;
 +    // natural L1, then L2's natural heights fix every level's heights
 +    let circ1 = super::circuit::NvCircuit::new(k, log_rows, 1);
 +    let (vk1n, p1n, b1n, _) = super::circuit::prove_level(&circ1, &engine, &vk0, &p0);

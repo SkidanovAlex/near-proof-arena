@@ -1336,3 +1336,40 @@ the level's own program. That trick does not apply to L1, whose program differs.
     about 6k rows; FINAL NvAir is then about 267k, so L 25. That is about 290.4 KB.
   * **Next:** implement (a) as the default (uniform levels, bind on everywhere), then cut the
     ~8k rows for the k1 = 1 shape.
+
+## Binding on at every level, FINAL at the fixed point, and V_d with a pinned program [measured: tests]
+
+* **Binding is on by default.** `NvCircuit::generate` now sets `bind = bind || child_nv`, so
+  every level whose child is an NV proof binds the child's program. With a level-1 child, the
+  binding flag selects the app-table check; with a deeper child, the fixed-point BIND check.
+* **`nv_chain` default.** Phase A only finds the fixed heights; it runs with no binding and no
+  passthrough. Phase B then runs L1, L2, …, `NV_LEVELS` (default 2), with binding at every
+  level ≥ 2.
+* **FINAL runs the same program** as the last phase-B level, under the final domain
+  (`Sha384CpuEngine::new_final` with the NV parameters), with binding on. The chain then calls V_d
+  with the pinned program. The old measurement-only FINAL (different `FINAL_*` parameters, child
+  program not bound) runs only with `NV_UNBOUND_FINAL=1`.
+* **V_d** (`nv/vd.rs`) is ported from lane/pq-e2e-slice @ 480bf27f4: `check_final_program`,
+  `program_eval`, `final_point_and_openings`, `verify_final`, and the forgery helpers
+  (`forge_statement_program`, `prove_traces`). `NvCircuit::generate_program` runs any program
+  body through the trace pipeline.
+* **Test `nv_vd_pinned_program`** (ignored: 1 h 3 min, 17.9 GB):
+  * **Chain:** Fib base (with PoW) → L1 → L2, bound to L1 by the app table → FINAL (final domain),
+    bound to L2 at the fixed point. All levels are at fixed heights [2^18, 2^19, 128, 2^16].
+  * **Uniform program:** FINAL's program equals L2's (76,014 rows); the NV levels use PoW, so this
+    also exercises the G1 fix.
+  * **V_d** (pinned final vk, level 3, program) accepts the honest final. It rejects a wrong claim
+    and a wrong pinned level.
+  * **The forged FINAL** is a 9,684-row verify-nothing program that exposes level 3 and the honest
+    statement, proved under the pinned final vk. V_d accepts it without the program check and
+    rejects it with the check ("final program openings differ from the pinned program").
+
+**Bytes with FINAL at the fixed point** (MODEL; options in the G1 section above). The final now
+has the penultimate's shape. At (7, 20, 2, 4, 6) it is **300,191 B** (L 24). The uniform k1 = 1
+shape (7, 20, 1, 4, 7) gives 290,477 B at L 25. About 8k more NvAir rows of cuts would give
+L 24, about 287.9 KB. That uniform shape is the next size target.
+
+*Fast suite on the bind-default tree:* 57/58 at first. The auditor's `nv_statement_passthrough`
+uses an L1 smaller than L2, which binding cannot handle, because binding needs equal ALU heights.
+It now sets the test-only `NvCircuit::test_no_bind` (`#[cfg(test)]`, absent from the library) and
+passes. Everything else passes in both digest modes.
