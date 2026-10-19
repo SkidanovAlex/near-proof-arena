@@ -1258,7 +1258,7 @@ roughly half the size of L2's own verifier.
 fix. Its bytes are representative to within the about 0.5 KB above. It does not demonstrate a
 pinned program.
 
-## Gap G2: binding whose cost does not grow with the child program [design note, not built]
+## Gap G2: binding whose cost does not grow with the child program [design note; built, see "G2 built" below]
 
 **The problem.** L2 must check that its child L1's committed program columns equal the fixed L1
 program P_L1, at the random point r. Today it evaluates Σ_x eq(r, x)·pw(P_L1[x]) over a data copy
@@ -1373,3 +1373,196 @@ L 24, about 287.9 KB. That uniform shape is the next size target.
 uses an L1 smaller than L2, which binding cannot handle, because binding needs equal ALU heights.
 It now sets the test-only `NvCircuit::test_no_bind` (`#[cfg(test)]`, absent from the library) and
 passes. Everything else passes in both digest modes.
+
+## G2 built: cached program commitment, app table removed, 24-bit addresses, Merkle 4 rows/level [measured: tests; model]
+
+**What is built** (deps tree, `openvm-recursion-sha384.patch`):
+* **Program part (cached).** With `NvCircuit::program_part` on (every NV level), NvAir's program
+  columns P0..P3 are a cached main partition of width 4 (`PartitionedBaseAir`). The level commits
+  it once (`commit_program_part`, the same `stacked_commit_odd` as the rest of the trace); its root
+  is the proof's `cached_commitments[0]`. The AIR reads the full row view
+  `[common[..U_P], P0..P3, common[U_P..]]`, so no constraint changes.
+* **Parent check, selected by `flag = [child level ≠ 1]`:**
+  * **Level-1 child:** `(root − C_L1)·(1 − flag) = 0` on the root's lo / hi digest cells, where
+    `C_L1 = program_commitment(config, L1 NvAir trace)` is a constant of the NV program, computed
+    at setup without a proof (deterministic, anyone can recompute it). The child's program
+    openings at r are WHIR-bound to MLE(P_L1)(r) by that root, so no table is needed.
+  * **Deeper child:** BIND as before, but the child's program openings come from its cached part
+    (`part_cells`), and `defer_acc_check(phat, flag)` checks `flag·(own − phat) = 0`.
+  * C_L1 missing or different → builder failure `C_L1` (and the trace fails the Zero rows).
+* **FINAL** keeps the program in common main (`program_part = false`): one commitment, so its
+  round 0 stays first-order (O-2 certificate). It runs the same program (the program depends only
+  on the child vk) and may use its own WHIR parameters; its NvAir height equals its child's.
+  V_d pins FINAL's program (`check_final_program` reads common main, unchanged).
+* **Chain of constants:** V_d pins FINAL's program → FINAL and every NV level ≥ 3 pin their child
+  by BIND (child program = own) → L2 pins L1 by C_L1 → L1's program pins the base vk.
+* **App table removed.** The app-binding role (`kc`), its buses (`bind2`, `acc2`), the `Data` /
+  `Acc2` semantics (now reserved ops `Rsv26` / `Rsv27`: c = 0, never emitted), `emit_app`,
+  `app_table` and the app path of `defer_acc_check` are gone. The B-field range check now covers
+  every ALU row (the `Data` exemption is gone). NvAir: 77 → **76 columns, 51 → 48 interactions per
+  row, 37 → 36 rotated, degree 9** (measured, `nv_degrees`).
+* **24-bit address space (item 3).** `ADDR_BITS = 24`: P1 = B + op·2^24 with
+  B = rx + 2^8·ry + 2^16·rz and rz now a full byte, looked up as the pair (rz, 0) (the old
+  pair (rz, 16·rz)). No new column or interaction.
+* **Merkle level 5 → 4 rows.** A path level's node-job start (job P2, tag NODE_TAG) is now sent on
+  the job bus by its SibWS4 row, whose P0 (unused by SibWS4, which reads no a operand) holds
+  NODE_TAG in the program. The level's NodeJob row is gone (the `MerkleSwapLr` test hook, which has
+  no SibWS4 row, keeps one). Same bus interaction, only its multiplicity gains `s(SibWS4)`.
+
+**Soundness notes for the auditor:**
+* *C_L1 / cached root.* The cached root is a proof value observed in the preamble (after the
+  heights), like any commitment; the level-1 check compares it with a program constant. The
+  native WHIR opening of the child binds its program openings at r to that root. For a deeper
+  child the root is free, and BIND ties the openings to the parent's own program instead.
+* *FINAL single commitment.* FINAL's own proof has one commitment, so round 0 is under the
+  first-order (DKT) certificate; NV levels have two commitments and their round 0 is on Johnson
+  (the multi-commit rule; PARENT default `COMMITS = 2`).
+* *24-bit B field.* P1 < 40·2^24 < p, so (op, B) is unique: another op' gives
+  B' = B + (op − op')·2^24, outside [0, 2^24) as an integer, and no wrap mod p. rz = byte: the
+  old 20-bit bug class (rz = t/16 mod p) cannot reach B + 2^24 at all (4096·255 + 65535 < 2^24);
+  the relabel regressions (`nv_alu_relabel_zero_to_bit`, `_mul_to_nop`) now forge B + 2^24 with
+  rz ≥ 256 and are rejected.
+* *SibWS4 job start.* Each node job has exactly one SibWS4 row; the job-start message (P2, P0, 1)
+  is the one NodeJob sent, P0 is a program word (bound by BIND / C_L1 / V_d). New tamper: SibWS4's
+  P0 changed → job bus (and bind bus) unbalanced (`nv_merkle_op_tamper`).
+* *App removal.* Removes a role, two buses and the only B-field exemption; Rsv26/27 behave like
+  Nop (c = 0). New relabel case Nop → Rsv26 is rejected by the B field.
+
+**Tests [measured]:**
+* Fast suite (G2 + 24-bit + 4-row Merkle + app role removed): **66/66 in both digest modes**
+  (`nv_dof_app_rows` removed with the role; logs `logs/g2/nvg2b-{48,42}.summary.log`). The
+  intermediate tree (G2 + 24-bit only) was 65/67: the two relabel regressions still forged
+  B + 2^20; they now forge B + 2^24 and pass.
+* `nv_l1_commit_binding` (replaces `nv_app_binding`; 20 min, 17.7 GB): C_L1 computed natively
+  equals L1's proof cached root; level 2 accepted at program and debug-constraint level; statement
+  passthrough; rejected: a wrong C_L1 constant, a re-exposed different statement digest.
+* `nv_merkle_op_tamper` gains "SibWS4 node-job start (P0)" (job bus and bind bus unbalanced);
+  `nv_alu_relabel_misc` gains Nop → Rsv26.
+* `nv_vd_pinned_program` (G2 rewrite, ignored; G2 + 20-bit tree: 3 h 26 min, 19.8 GB, passes):
+  Fib → L1 (program part) → L2 (anchor C_L1) → FINAL (one commitment, final domain). C_L1
+  computed natively equals L1's cached root; a wrong C_L1 is rejected; FINAL's program equals
+  L2's (76,638 rows); V_d accepts the honest final, rejects a wrong claim and a wrong level; the
+  776-row forged final is accepted without the program check and rejected with it
+  (`logs/g2/nv-vd-g2.summary.log`). On the final tree (+ 24-bit, 4-row Merkle, app role removed; built before the anchor
+  generalisation, M = 1 is the same check): passes, 3 h 08 min, 19.9 GB, program 74,878 rows
+  (`logs/g2/nvg2b-vd.summary.log`).
+
+**Bytes [MODEL, `size_g2.py` → `size_g2.out`; NV_MCA=O2].** B1 = the prep lane's G2 cost model
+(one more round-0 tree per NV child, round 0 on Johnson for two-commitment children, app table
+removed):
+
+| state | final | L | NvAir (vs 2^18) | pen (b, n_stack, k, k1, lf), q | FINAL shape |
+|---|---:|---:|---:|---|---|
+| B1, Merkle 5 rows/level (prep lane) | 295,741 | 25 | 263,261 (−0.4 %) | (7,18,4,2,6) [44,35,27,22] | b7 k1 1 k4 h20 lf7 |
+| + Merkle 4 rows/level | 293,197 | 24 | 256,031 (+2.3 %) | same | same |
+| + app role removed (76 cols, 48 int/row) | **293,101** | 24 | 256,031 (+2.3 %) | same | same |
+
+* **Best sound FINAL shape:** b = 7, k1 = 1, k = 4, log_h = 20, lf = 7, queries [41, 38, 29, 23],
+  O-2 certified (single commitment). The final binds its child by BIND and is pinned by V_d.
+* **Margin:** about 6.1k NvAir rows (2.3 %) under 2^18 in the model. The model was about 3k rows
+  conservative against the stream lane's measured FINAL (252.6k measured vs 257.9k modelled, bind
+  off), so the real margin is likely larger; a measured G2 FINAL at full parameters is still to do.
+* The 4-row Merkle level also saves about 15k program rows at L1 over the real base (536 round-0
+  queries × 28 levels).
+
+**Item 3: L1 over the real base at the ISA ceiling.**
+* **Chosen fix: widen the address space to 24 bits** (built). Cost: zero columns, zero
+  interactions, zero bytes (L1 is not in the final). Program addresses now reach 2^24 rows, far
+  above L1's ~624k program rows (+80k for an extra base commitment, −15k from the Merkle cut).
+  The next ceiling is the NvAir trace height: L1 needs about 1.1M NvAir rows, a 2^21 trace.
+* **Alternatives:**
+  * *Base at b = 2:* L1 program 400k rows (q0 268). It fits 20 bits, but it costs base proving
+    time and base proof size, and changes the pinned base.
+  * *Split L1* into two levels that each verify half the base openings: a new aggregation shape
+    and a second constant; more complex than the address change.
+
+### Blocking finding (stream lane): with tight heights the program does not converge by L2 — fixed by option (b), anchored levels
+
+**The finding** (lane/pq-stream-commit @ a12b65b77): with tight heights, the NV program depends on
+the child's *committed* heights. L1 commits 14,740 NvAir rows, so L2's program (133,154 rows) is
+smaller than L3's (142,517; L2 has 257,212 NvAir rows). BIND at L3 needs child program = own, so
+the real-settings chain failed at L3 ("program binding").
+
+**Choice: (b), per-level anchors until the program converges.** Built:
+* `NvCircuit::anchor = Some((M, C_M))` generalises C_L1. The program computes
+  `flag = [child level ≠ M]` (as before, with the constant M instead of 1). A child at level M is
+  bound by `(root − C_M)(1 − flag) = 0`; any other child by BIND, `flag·(own − phat) = 0`.
+* **Anchor rule** (`NvCircuit::select_anchor`, deterministic setup): level ℓ keeps the current
+  anchor (M, C_M) if, with it, its program words equal its child's program words (the program
+  has converged; the child is then bound by BIND). Otherwise it anchors at its child,
+  (ℓ − 1, C_{ℓ−1}), where C_{ℓ−1} is the commitment of level ℓ − 1's program part.
+* So the first levels each anchor at their child (P_2 holds C_1, P_3 holds C_2, …) while the
+  committed heights change. From the first level whose program equals its child's, every level
+  and FINAL run the converged program P*, which embeds the final (M, C_M), and bind by BIND. V_d
+  pins P*. No circularity: P_ℓ embeds C_{ℓ−1}, never its own commitment, and P* embeds C_M of a
+  different program P_M.
+* **Cost: zero extra rows** against G2 with C_L1: the check is the same, M is a constant. Setup
+  computes C_1..C_M natively from the level traces (`program_commitment`), like C_L1. The program
+  words depend only on the child vk / heights and the anchor, not on proof values (G1), so
+  setup needs one honest run per non-converged level.
+* **Soundness:** every level still fully verifies its child; the binding only restricts *which*
+  program the child ran. A child at level M must have run P_M (its root is the constant C_M, and
+  the native WHIR opening binds its program openings to that root). A child at another level must
+  have run the parent's own program (BIND). By induction from V_d's pinned P* and level, every
+  proof in an accepted chain ran one of P_1, …, P_M, P*, all honest verifiers fixed at setup.
+  (A P_M child with child level ≠ M−1 would need BIND to P_M itself — still an honest verifier.)
+* **Why not (a) or (c):** (a) makes stacking layout and round-0 widths witness-dependent, which
+  costs rows and new range checks in every level. (c) drops the tight-heights saving in every
+  level. (b) costs nothing extra.
+* **Rows:** the converged program is the model's fixed point. The stream lane's ≈ 271k converged
+  NvAir at the k1 = 1 penultimate (pre-G2, 5-row Merkle) matches the model's 270,105. The model
+  at the adopted k1 = 2 penultimate (7, 18, 4, 2, 6) with G2, the 4-row Merkle level and the app
+  role removed gives 256,031 NvAir rows (< 2^18; the k1 = 1 shape would be 266,653 > 2^18).
+
+**Anchors alone do not converge with tight heights [measured].** A tight-heights chain at test size
+(n_stack 18, blowup 2, unique decoding, natural heights, `logs/g2/nvanc-chain-nofloor.summary.log`)
+gave program rows 82,736 / 93,678 / 94,962 / 92,038 / 93,471 at L2..L6. Each level anchored at its
+child; the program never repeated. The reason: tight stacking splits each trace's committed
+height into power-of-two chunks, so the stacking and round-0 work follows the exact committed
+height (stacking rows at L2..L6: 9,719 / 12,002 / 12,334 / 9,411 / 10,844), and the heights
+follow the program.
+
+**Fix: pin the committed heights (prover-side tight-height floor).**
+* `stacked_pcs::set_tight_floor` (stark-backend patch): when the traces of a tight commit match a
+  floor list by (width, log height), each commits `max(natural tight height, floor)` rows. The
+  extra rows are explicit zeros. **No verifier rule changes:** the verifier already accepts any
+  declared height in (0, 2^log_h] that is a multiple of 2^l_skip and treats rows past it as zero,
+  so the committed matrix is the one it assumes.
+* `NvCircuit::tight_floor` (per AIR) is applied in `prove_level`, which asserts the declared
+  heights meet it. Levels ≥ 2 use one floor F (setup constants): natural height + 1/64 slack, raised
+  only if a level's natural height exceeds it. With F fixed, every child of a level ≥ 3 has the
+  same committed shape, so the program is the same from one level on: anchors handle the levels
+  before that (L2 anchors C_1; usually L3 or L4 anchors at its child), then BIND.
+* L1 over the real base is far larger than the NV levels (log height 21), so it is not pinned;
+  its shape is absorbed by the anchor at L2.
+* FINAL is not pinned (nothing verifies it in circuit).
+* Cost [model]: the penultimate commits ≤ 1/64 more rows; FINAL's program grows by a few hundred
+  rows (wider round-0 leaves). The final's own traces are unchanged.
+* Soundness: the floor is a prover choice of declared heights within the verifier's existing
+  rule; the parent program reads the declared heights as part of the child's proof shape, and
+  BIND / C_M forces them to the setup values (a different declared height gives a different
+  program).
+
+**Test: bound chain with different committed heights, ≥ 3 bound levels, FINAL and V_d [measured].**
+`nv_chain` (ignored, env-driven), tight heights on, natural log heights, no phase A, test-size
+parameters; reproduce with
+`NV_PHASE_A=0 NV_LEVELS=3 NV_LOG_ROWS=18 NV_PROG_LOG=17 PARENT_N_STACK=18 PARENT_LOG_BLOWUP=1
+PARENT_BITS=12 PARENT_LIST_M=0 PARENT_TIGHT=1 <bin> nv::tests::nv_chain --exact --ignored`
+(2 h 43 min, 19.1 GB; `logs/g2/nvflr-chain.summary.log`):
+
+| level | anchor (M) | child bound by | program rows | natural committed NvAir / SHA rows | floor |
+|---|---|---|---:|---|---|
+| L1 | — | (base) | 8,788 | not pinned | — |
+| L2 | 1 | root = C_1 | 82,736 | 174,032 / 740,480 | set 176,752 / 752,052 |
+| L3 | 2 | root = C_2 | 95,882 | 198,804 / 817,664 | raised 201,912 / 830,440 |
+| L4 | 3 | root = C_3 | 96,390 | 199,636 / 818,688 | fits |
+| L5 | 3 | **BIND** (program = L4's) | 96,390 | 199,576 / 817,920 | fits |
+| FINAL | 3 | **BIND** | 96,390 | — | — |
+
+* Every level's child had different committed heights from the level before it until the floor
+  settled (L1 ≪ L2 < L3). Four bound levels (L2–L5) plus FINAL. L5's cached root equals L4's
+  (same program part).
+* FINAL (one commitment, final domain) runs the converged program (96,390 rows) and V_d accepts it
+  at level 6 with the pinned program. FINAL proof 257,377 B at these test parameters
+  (unique decoding, not the PQ shape).
+* Fast suite on this tree: 66/66 in both digest modes (`logs/g2/nvflr-{48,42}.summary.log`).

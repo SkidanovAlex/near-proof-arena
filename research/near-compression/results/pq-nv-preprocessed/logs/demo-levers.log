@@ -1,0 +1,16 @@
+NV_PREP_DEMO variant=Public n=16 commits=1 interactions=19 rows=9600 jobs=115 merkle_nodes=106 proof_bytes=16857
+NV_PREP_DEMO Split other program under this program's NV: 79 failures
+NV_PREP_DEMO_REJECTED Split other program, tampered code opening
+NV_PREP_DEMO variant=Public n=32 commits=1 interactions=35 rows=11607 jobs=115 merkle_nodes=106 proof_bytes=18725
+NV_PREP_DEMO Fixed other program under this program's NV: 77 failures
+NV_PREP_DEMO_REJECTED Fixed other program, tampered code opening
+test nv::prep_demo::nv_prep_demo_wrong_program ... ok
+NV_PREP_DEMO variant=Public n=64 commits=1 interactions=67 rows=14308 jobs=115 merkle_nodes=106 proof_bytes=22003
+NV_PREP_DEMO variant=Split n=16 commits=3 interactions=4 rows=9372 jobs=265 merkle_nodes=246 proof_bytes=20573
+NV_PREP_DEMO variant=Split n=32 commits=3 interactions=4 rows=9463 jobs=265 merkle_nodes=246 proof_bytes=20903
+NV_PREP_DEMO variant=Split n=64 commits=3 interactions=4 rows=9480 jobs=265 merkle_nodes=246 proof_bytes=21065
+NV_PREP_DEMO variant=Fixed n=16 commits=2 interactions=4 rows=9590 jobs=190 merkle_nodes=176 proof_bytes=19127
+NV_PREP_DEMO variant=Fixed n=32 commits=2 interactions=4 rows=9611 jobs=190 merkle_nodes=176 proof_bytes=19169
+NV_PREP_DEMO variant=Fixed n=64 commits=2 interactions=4 rows=9608 jobs=190 merkle_nodes=176 proof_bytes=18627
+test nv::prep_demo::nv_prep_demo_toy_base ... ok
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 81 filtered out; finished in 54.26s

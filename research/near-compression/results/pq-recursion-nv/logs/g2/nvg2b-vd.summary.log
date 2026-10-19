@@ -1,0 +1,55 @@
+NV_PHASE before_dag 1416
+NV_DAG air=0 nodes=21 rows_so_far=1466
+NV_PHASE after_dag 1479
+NV_PHASE after_stacking 1787
+NV_PHASE end 8788
+NV_PHASE before_dag 15824
+NV_DAG air=0 nodes=4517 rows_so_far=21905
+NV_DAG air=1 nodes=5848 rows_so_far=29350
+NV_DAG air=3 nodes=32 rows_so_far=29895
+NV_DAG air=2 nodes=1234 rows_so_far=31209
+NV_PHASE after_dag 31291
+NV_PHASE after_stacking 33957
+NV_PHASE end 64505
+NV_VD fixed heights [262144, 1048576, 128, 65536]
+NV_PHASE before_dag 1416
+NV_DAG air=0 nodes=21 rows_so_far=1466
+NV_PHASE after_dag 1479
+NV_PHASE after_stacking 1787
+NV_PHASE end 8788
+NV_PHASE before_dag 1416
+NV_DAG air=0 nodes=21 rows_so_far=1466
+NV_PHASE after_dag 1479
+NV_PHASE after_stacking 1787
+NV_PHASE end 8788
+NV_VD C_L1 = setup commitment of the L1 program part
+NV_PHASE before_dag 16855
+NV_DAG air=1 nodes=5848 rows_so_far=23130
+NV_DAG air=0 nodes=4517 rows_so_far=29639
+NV_DAG air=3 nodes=32 rows_so_far=30937
+NV_DAG air=2 nodes=1234 rows_so_far=32251
+NV_PHASE after_dag 32333
+NV_PHASE after_stacking 35671
+NV_PHASE end 74877
+NV_VD wrong C_L1 rejected: ["level-1 child program commitment = C_L1", "level-1 child program commitment != C_L1"]
+NV_PHASE before_dag 16855
+NV_DAG air=1 nodes=5848 rows_so_far=23130
+NV_DAG air=0 nodes=4517 rows_so_far=29639
+NV_DAG air=3 nodes=32 rows_so_far=30937
+NV_DAG air=2 nodes=1234 rows_so_far=32251
+NV_PHASE after_dag 32333
+NV_PHASE after_stacking 35671
+NV_PHASE end 74877
+NV_PHASE before_dag 16855
+NV_DAG air=1 nodes=5848 rows_so_far=23130
+NV_DAG air=0 nodes=4517 rows_so_far=29639
+NV_DAG air=3 nodes=32 rows_so_far=30937
+NV_DAG air=2 nodes=1234 rows_so_far=32251
+NV_PHASE after_dag 32333
+NV_PHASE after_stacking 35671
+NV_PHASE end 74877
+NV_VD honest final accepted (74878 program rows)
+NV_VD forged final (776 rows) accepted without the program check, rejected with it: final program openings differ from the pinned program
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 82 filtered out; finished in 11282.81s
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:08:02
+	Maximum resident set size (kbytes): 19857280

@@ -1,0 +1,13 @@
+test nv::prep_demo::nv_prep_demo_wrong_program ... ok
+test nv::prep_demo::nv_prep_demo_toy_base has been running for over 60 seconds
+test nv::prep_tests::nv_prep_cached has been running for over 60 seconds
+test nv::prep_tests::nv_prep_cached ... ok
+test nv::prep_demo::nv_prep_demo_toy_base ... ok
+test nv::prep_tests::nv_prep_honest ... ok
+test nv::prep_tests::nv_prep_o2_round0 ... ok
+test nv::prep_tests::nv_prep_every_proof_element has been running for over 60 seconds
+test nv::prep_tests::nv_prep_other_table ... ok
+test nv::prep_tests::nv_prep_tampered_commitment ... ok
+test nv::prep_tests::nv_prep_wrong_vk_constant ... ok
+test nv::prep_tests::nv_prep_every_proof_element ... ok
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 75 filtered out; finished in 289.07s

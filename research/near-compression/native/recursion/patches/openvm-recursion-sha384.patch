@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..97a491e
+index 0000000..4808ad1
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,883 @@
+@@ -0,0 +1,866 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1365,8 +1365,6 @@ index 0000000..97a491e
 +    pub acc_flag: Option<EF>,
 +    /// instructions re-evaluated at finish (they read the ACC / ACC2 rows); the last is a Zero
 +    pub late: Vec<usize>,
-+    /// app-verifier table rows (data region at the start of the program, after the reserved rows)
-+    pub app: Vec<[u32; 4]>,
 +    /// addresses of the ACC2 / ACC rows (allocated by `begin`, right after the data region)
 +    pub acc_slots: Option<(u32, u32)>,
 +    /// debug: batch point and the child's per-trace openings
@@ -1381,6 +1379,12 @@ index 0000000..97a491e
 +    pub statement: Option<Digest>,
 +    /// the child is an NV proof (statement passthrough even without program binding)
 +    pub child_nv: bool,
++    /// G2 anchor (M, C_M): a child at level M is bound by its cached program root = C_M, the
++    /// setup commitment of the level-M program; a child at any other level by BIND (child
++    /// program = own).  M = 1 while the program has converged by level 2; with tight heights the
++    /// program depends on the child's committed heights, so M is the last level whose program
++    /// differs from the converged one (levels <= M each anchor at their own child level).
++    pub anchor: Option<(u32, Digest)>,
 +    /// open flush job (job id, t_start, observed felts)
 +    tr_pending: Option<(u32, u32, u32)>,
 +    /// static transcript jobs allocated so far
@@ -1412,7 +1416,6 @@ index 0000000..97a491e
 +            acc_check: None,
 +            acc_flag: None,
 +            late: vec![],
-+            app: vec![],
 +            acc_slots: None,
 +            dbg_rs: vec![],
 +            dbg_openings: vec![],
@@ -1421,6 +1424,7 @@ index 0000000..97a491e
 +            level: 0,
 +            statement: None,
 +            child_nv: false,
++            anchor: None,
 +            tr_pending: None,
 +            tr_static: 0,
 +            tr_started: false,
@@ -1478,18 +1482,6 @@ index 0000000..97a491e
 +        self.push(Op::Pv, x.addr, 0, 0, 0, x.val, F::ZERO);
 +    }
 +
-+    /// Emit the app-verifier data region (must be called right after `new`, before any op).
-+    pub fn emit_app(&mut self, app: Vec<[u32; 4]>) {
-+        assert_eq!(self.instrs.len(), self.reserved);
-+        assert!(app.len() % 2 == 0 && app.len() >= 2);
-+        for w in &app {
-+            self.instrs.push(Instr { op: Op::Data, a: w[0], b: w[1], k1: w[2], k2: w[3] });
-+            self.vals.push(EF::ZERO);
-+            self.wits.push(F::ZERO);
-+        }
-+        self.app = app;
-+    }
-+
 +    /// Allocate the ACC2 / ACC rows at fixed addresses (after reserved rows and the data region).
 +    pub fn begin(&mut self) {
 +        assert!(self.acc_slots.is_none());
@@ -1502,32 +1494,19 @@ index 0000000..97a491e
 +        self.acc_slots = Some((a2, a2 + 1));
 +    }
 +
-+    /// Program binding check, evaluated at finish (ACC = own binding total at row L-1, ACC2 =
-+    /// app-table total at row L-2):  flag * own + (1 - flag) * (ACC2 + app_extra) == phat.
-+    /// Without an app table: flag * (own - phat) == 0.
-+    pub fn defer_acc_check(&mut self, phat: V, flag: V, app_extra: Option<V>) {
-+        let (l2, l1) = self.acc_slots.expect("Builder::begin not called");
++    /// Program binding check, evaluated at finish (ACC = own binding total at row L-1):
++    /// flag * (own - phat) == 0.  (A level-1 child, flag = 0, is pinned by its cached root C_L1.)
++    pub fn defer_acc_check(&mut self, phat: V, flag: V) {
++        let (_l2, l1) = self.acc_slots.expect("Builder::begin not called");
 +        let mut late = vec![];
 +        let mut op = |b: &mut Self, o: Op, x: u32, y: u32| -> u32 {
 +            let v = b.push(o, x, y, 0, 0, EF::ZERO, F::ZERO);
 +            late.push(v.addr as usize);
 +            v.addr
 +        };
-+        match app_extra {
-+            Some(ex) => {
-+                let t_app = op(self, Op::Add, l2, ex.addr);
-+                let d = op(self, Op::Sub, l1, t_app);
-+                let g = op(self, Op::Mul, d, flag.addr);
-+                let sm = op(self, Op::Add, g, t_app);
-+                let e = op(self, Op::Sub, sm, phat.addr);
-+                op(self, Op::Zero, e, 0);
-+            }
-+            None => {
-+                let d = op(self, Op::Sub, l1, phat.addr);
-+                let g = op(self, Op::Mul, d, flag.addr);
-+                op(self, Op::Zero, g, 0);
-+            }
-+        }
++        let d = op(self, Op::Sub, l1, phat.addr);
++        let g = op(self, Op::Mul, d, flag.addr);
++        op(self, Op::Zero, g, 0);
 +        self.late = late;
 +        self.acc_flag = Some(flag.val);
 +        let _ = &self.acc_check;
@@ -1828,6 +1807,13 @@ index 0000000..97a491e
 +        let hi = self.load(ef_from(hi));
 +        self.observe_commit_cells(lo, hi, d)
 +    }
++    /// Constant digest as cells (not observed).
++    pub fn const_digest(&mut self, d: Digest) -> DigestCells {
++        let (lo, hi) = digest_cells(d);
++        let lo = self.ce(ef_from(lo));
++        let hi = self.ce(ef_from(hi));
++        DigestCells { lo, hi, digest: d }
++    }
 +    /// Constant digest (e.g. the vk pre-hash) as cells, observed as a commitment.
 +    pub fn const_commit(&mut self, d: Digest) -> DigestCells {
 +        let (lo, hi) = digest_cells(d);
@@ -1989,7 +1975,7 @@ index 0000000..97a491e
 +            let b1 = coeffs(bit.val)[0] == F::ONE;
 +            let (ld, rd) = if b1 { (sd, cur_d) } else { (cur_d, sd) };
 +            // node job: the current digest goes left iff bit = 0 (unit index + 12 * bit), the
-+            // sibling to the other side (12 (1 - bit)); 5 rows per level
++            // sibling to the other side (12 (1 - bit)); 4 rows per level
 +            use openvm_stark_backend::hasher::MerkleHasher;
 +            let id = self.job_units.len() as u32;
 +            let units: Vec<Option<U2>> = super::hash::digest_units(digest_words(ld))
@@ -1999,7 +1985,12 @@ index 0000000..97a491e
 +                .collect();
 +            self.job_units.push(BJob { tag: 0, node: true, units });
 +            self.merkle_nodes += 1;
-+            self.push(Op::NodeJob, NODE_TAG, 0, id, 0, EF::ZERO, F::ZERO);
++            // the node job's start (job id, NODE_TAG) is sent by the SibWS4 row (P0 = NODE_TAG,
++            // otherwise unused by SibWS4); only the swap test hook, which has no SibWS4 row,
++            // keeps a separate NodeJob row.  4 rows per level.
++            if swap {
++                self.push(Op::NodeJob, NODE_TAG, 0, id, 0, EF::ZERO, F::ZERO);
++            }
 +            if let Some(c) = cur_cells.take() {
 +                self.push(Op::UnitWS4, c.lo.addr, bit.addr, id, 0, c.lo.val, F::ZERO);
 +                self.push(Op::UnitWS2, c.hi.addr, bit.addr, id, 8, c.hi.val, F::ZERO);
@@ -2015,7 +2006,7 @@ index 0000000..97a491e
 +                self.push(Op::UnitWS4, l4.addr, bit.addr, id, 0, l4.val, F::ZERO);
 +                self.push(Op::UnitWS2, l2.addr, bit.addr, id, 8, l2.val, F::ZERO);
 +            } else {
-+                self.push(Op::SibWS4, 0, bit.addr, id, 0, ef_from(slo), F::ZERO);
++                self.push(Op::SibWS4, NODE_TAG, bit.addr, id, 0, ef_from(slo), F::ZERO);
 +                self.push(Op::SibWS2, 0, bit.addr, id, 8, ef_from(shi), F::ZERO);
 +            }
 +            cur_d = crate::sha384::config::ShaHasher.compress(ld, rd);
@@ -2051,15 +2042,7 @@ index 0000000..97a491e
 +        let tp = super::uair::tau_pows();
 +        let e1n = super::uair::E1_SIZE;
 +        let pw = |w: [u32; 4]| -> EF { (0..4).map(|j| tp[j] * F::from_u32(w[j])).sum() };
-+        // ACC2 when an app table is present: its total and pinned length
-+        if !self.app.is_empty() {
-+            self.instrs[s2 as usize] = Instr { op: Op::Acc2, a: self.app.len() as u32 - 2, b: 0, k1: 0, k2: 0 };
-+            let mut a2 = EF::ZERO;
-+            for (x, w) in self.app.iter().enumerate() {
-+                a2 += self.vals[x % e1n] * self.vals[e1n + x / e1n] * pw(*w);
-+            }
-+            self.vals[s2 as usize] = a2;
-+        }
++        let _ = s2; // former ACC2 slot (app table, removed with G2): stays a Nop
 +        // ACC: P0 = last BIND pair index, pinning the BIND region to the whole program
 +        self.instrs[s1 as usize] = Instr { op: Op::Acc, a: n as u32 - 2, b: 0, k1: 0, k2: 0 };
 +        // binding sum over all rows (including the ACC row itself)
@@ -2123,10 +2106,10 @@ index 0000000..97a491e
 +}
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..f4ac463
+index 0000000..38ea204
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
-@@ -0,0 +1,272 @@
+@@ -0,0 +1,403 @@
 +//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
 +use std::{collections::HashMap, sync::Arc};
 +
@@ -2176,8 +2159,6 @@ index 0000000..f4ac463
 +            digest,
 +            bind: next(),
 +            acc: next(),
-+            bind2: next(),
-+            acc2: next(),
 +        };
 +        let h = HashBuses {
 +            ctl: next(),
@@ -2205,6 +2186,7 @@ index 0000000..f4ac463
 +    }
 +}
 +
++#[derive(Clone)]
 +pub struct NvCircuit {
 +    pub buses: NvBuses,
 +    /// WHIR folding factor of the child (coset tree height)
@@ -2218,16 +2200,32 @@ index 0000000..f4ac463
 +    pub bind: bool,
 +    /// fixed trace heights (AIR order of `airs`); None = natural (next power of two)
 +    pub heights: Option<Vec<usize>>,
-+    /// app-verifier table (the level-1 program words, rows [0, n)), checked by level 2
-+    pub app: Option<Vec<[u32; 4]>>,
 +    /// the child is an NV proof: pass its statement digest through and bind its program
 +    pub child_nv: bool,
 +    /// TEST ONLY: passthrough without program binding (child of a different size)
 +    #[cfg(test)]
 +    pub test_no_bind: bool,
++    /// G2: P0..P3 as a cached main part (NV levels); false = in common main (FINAL)
++    pub program_part: bool,
++    /// G2 anchor (M, C_M): a child at level M is bound by its cached program root = C_M, the
++    /// setup commitment of the level-M program; a child at any other level by BIND (child
++    /// program = own).  M = 1 while the program has converged by level 2; with tight heights the
++    /// program depends on the child's committed heights, so M is the last level whose program
++    /// differs from the converged one (levels <= M each anchor at their own child level).
++    pub anchor: Option<(u32, crate::sha384::config::Digest)>,
++    /// G2 + tight heights: minimum committed rows per AIR (AIR order) of this level's own traces
++    /// (prover-side floor, `stacked_pcs::set_tight_floor`).  The parent's program depends on its
++    /// child's committed heights; pinning them to setup constants makes the program converge
++    /// (`NvCircuit::select_anchor` then switches to BIND).  None = natural tight heights.
++    pub tight_floor: Option<Vec<usize>>,
 +}
 +
 +impl NvCircuit {
++    /// A copy of this circuit (same shape, constants and flags).
++    pub fn clone_shape(&self) -> Self {
++        self.clone()
++    }
++
 +    pub fn new(k: usize, log_rows: usize, sha_instances: usize) -> Self {
 +        Self {
 +            buses: NvBuses::new(),
@@ -2240,10 +2238,12 @@ index 0000000..f4ac463
 +            sha_instances,
 +            bind: false,
 +            heights: None,
-+            app: None,
 +            child_nv: false,
 +            #[cfg(test)]
 +            test_no_bind: false,
++            program_part: false,
++            anchor: None,
++            tight_floor: None,
 +        }
 +    }
 +
@@ -2256,7 +2256,7 @@ index 0000000..f4ac463
 +        let lay = self.layout();
 +        assert_eq!(self.sha_instances, 1, "NV v1 uses one compression AIR");
 +        vec![
-+            Arc::new(NvAir { buses: b.alu, app_base: self.reserved(), h: b.h, t: b.tr }) as AirRef<SC>,
++            Arc::new(NvAir { buses: b.alu, h: b.h, t: b.tr, program_part: self.program_part }) as AirRef<SC>,
 +            Arc::new(Sha512Air4 {
 +                lay,
 +                buses: b.h.sha(),
@@ -2272,13 +2272,6 @@ index 0000000..f4ac463
 +
 +    pub fn reserved(&self) -> usize {
 +        E1_SIZE + (1 << (self.prog_log - E1_BITS))
-+    }
-+
-+    /// The app-verifier table for level 2 from a level-1 program: rows [0, n) with n the
-+    /// first even number past the last non-Nop row below the fixed ACC2 / ACC rows.
-+    pub fn app_table(l1_program: &[super::isa::Instr]) -> Vec<[u32; 4]> {
-+        // the whole level-1 program (even length, its ACC row included)
-+        l1_program.iter().map(|i| i.words()).collect()
 +    }
 +
 +    /// Execute the verifier program and generate every trace (AIR order as `airs`).
@@ -2303,14 +2296,58 @@ index 0000000..f4ac463
 +        })
 +    }
 +
++    /// The verifier program's words for this child (no trace generation).
++    pub fn program_words(&self, vk: &MultiStarkVerifyingKey<Sha384Config>, proof: &Proof<Sha384Config>) -> Vec<[u32; 4]> {
++        #[allow(unused_mut)]
++        let mut bind = self.bind || self.child_nv;
++        #[cfg(test)]
++        {
++            bind &= !self.test_no_bind;
++        }
++        let mut b = Builder::new(self.log_rows, self.reserved());
++        b.prog_log = self.prog_log;
++        b.begin();
++        b.anchor = self.anchor;
++        b.bind = bind;
++        b.child_nv = self.child_nv;
++        build_verifier(&mut b, vk, proof);
++        b.finish();
++        b.instrs.iter().map(|i| i.words()).collect()
++    }
++
++    /// G2 anchor rule (setup, deterministic) for the level verifying `child` at level
++    /// `child_level` >= 1, whose program words are `child_words` and cached program root
++    /// `child_root`:
++    /// * keep the current anchor (M, C_M) if, with it, this level's program equals the child's
++    ///   (the program has converged: the child is then bound by BIND, child level != M);
++    /// * otherwise anchor at the child: (child_level, child_root), bound by the root check.
++    /// With tight heights the program depends on the child's committed heights, so the first
++    /// levels each anchor at their child until the heights (and so the program) stop changing;
++    /// V_d pins the converged program, which embeds the final (M, C_M).
++    pub fn select_anchor(
++        &self,
++        vk: &MultiStarkVerifyingKey<Sha384Config>,
++        proof: &Proof<Sha384Config>,
++        child_level: u32,
++        child_words: &[[u32; 4]],
++        child_root: crate::sha384::config::Digest,
++    ) -> (u32, crate::sha384::config::Digest) {
++        if let Some(a) = self.anchor.filter(|&(m, _)| m < child_level) {
++            let mut c = self.clone();
++            c.anchor = Some(a);
++            if c.program_words(vk, proof) == child_words {
++                return a;
++            }
++        }
++        (child_level, child_root)
++    }
++
 +    /// Run an arbitrary program body (the verifier, or a test forgery) and generate every trace.
 +    pub fn generate_program(&self, body: impl FnOnce(&mut Builder)) -> (Vec<RowMajorMatrix<F>>, Builder) {
 +        let mut b = Builder::new(self.log_rows, self.reserved());
 +        b.prog_log = self.prog_log;
-+        if let Some(app) = &self.app {
-+            b.emit_app(app.clone());
-+        }
 +        b.begin();
++        b.anchor = self.anchor;
 +        body(&mut b);
 +        b.finish();
 +        let _ = self.k; // per-round folding factors come from the child vk
@@ -2335,7 +2372,7 @@ index 0000000..f4ac463
 +        for (c, t) in counts.iter_mut().zip(&tr.byte_counts) {
 +            *c += t;
 +        }
-+        let nv = nv_trace(&b.instrs, &b.vals, &b.wits, &b.wits_x, &sha.glue_rows, &tr.hash, &tr.samp, &b.app, self.log_rows, &mut counts);
++        let nv = nv_trace(&b.instrs, &b.vals, &b.wits, &b.wits_x, &sha.glue_rows, &tr.hash, &tr.samp, self.log_rows, &mut counts);
 +        let mats = vec![nv, sha.compress, sha.table, byte_table2(&counts)];
 +        if let Some(h) = &self.heights {
 +            use p3_matrix::Matrix;
@@ -2356,6 +2393,78 @@ index 0000000..f4ac463
 +    nv_public_values.len() == super::uair::NV_NUM_PVS
 +        && nv_public_values[1..13] == lo[..]
 +        && nv_public_values[13..19] == hi[..6]
++}
++
++/// Natural tight heights of a level's traces (AIR order): rows up to the last non-zero row,
++/// rounded up to a multiple of 2^l_skip (as `stacked_pcs::tight_height`).
++pub fn natural_tight_heights(mats: &[RowMajorMatrix<F>], l_skip: usize) -> Vec<usize> {
++    use p3_matrix::Matrix;
++    mats.iter()
++        .map(|m| {
++            let w = m.width();
++            let last = (0..m.height()).rev().find(|&r| m.values[r * w..(r + 1) * w].iter().any(|v| *v != F::ZERO)).map_or(0, |r| r + 1);
++            last.max(1).next_multiple_of(1 << l_skip)
++        })
++        .collect()
++}
++
++/// The level's program part P0..P3 (G2) committed as a cached main trace under `config`.
++/// Always committed with tight heights OFF (last argument), even when the level's own traces use
++/// the tight lever: a cached trace committed tight is rejected by the native verifier (auditor
++/// R5, `native_r5_cached_tight_commit`).  The program part is a full-height column set anyway.
++pub fn commit_program_part(
++    config: &Sha384Config,
++    prog: openvm_stark_backend::prover::ColMajorMatrix<F>,
++) -> (crate::sha384::config::Digest, openvm_stark_backend::prover::stacked_pcs::StackedPcsData<F, crate::sha384::config::Digest>) {
++    use openvm_stark_backend::StarkProtocolConfig;
++    let p = config.params();
++    openvm_stark_backend::prover::stacked_pcs::stacked_commit_odd(
++        config.hasher(),
++        p.l_skip,
++        p.n_stack,
++        p.log_blowup,
++        p.whir.k_first(),
++        p.whir.domain_odd_factor,
++        &[&prog],
++        false,
++    )
++    .expect("program part commitment")
++}
++
++/// C_L1 (G2): the commitment of a level's program part, from its NvAir trace (setup, native).
++pub fn program_commitment(config: &Sha384Config, nv_trace: &RowMajorMatrix<F>) -> crate::sha384::config::Digest {
++    let (_, prog) = super::uair::split_program_part(nv_trace);
++    commit_program_part(config, openvm_stark_backend::prover::ColMajorMatrix::from_row_major(&prog)).0
++}
++
++/// Proving contexts of an NV level: AIR 0 with the builder's public values (and, with the
++/// program part, the common main without P0..P3 plus the committed cached part).
++pub fn nv_contexts(
++    circ: &NvCircuit,
++    config: &Sha384Config,
++    mats: Vec<RowMajorMatrix<F>>,
++    pvs: Vec<F>,
++) -> Vec<openvm_stark_backend::prover::AirProvingContext<openvm_cpu_backend::CpuBackend<Sha384Config>>> {
++    use openvm_stark_backend::prover::{AirProvingContext, CommittedTraceData};
++    mats.into_iter()
++        .enumerate()
++        .map(|(i, m)| {
++            if i == 0 && circ.program_part {
++                let (common, prog) = super::uair::split_program_part(&m);
++                let (commitment, data) =
++                    commit_program_part(config, openvm_stark_backend::prover::ColMajorMatrix::from_row_major(&prog));
++                AirProvingContext {
++                    cached_mains: vec![CommittedTraceData { commitment, trace: prog, data: std::sync::Arc::new(data) }],
++                    common_main: common,
++                    public_values: pvs.clone(),
++                }
++            } else if i == 0 {
++                AirProvingContext::simple(m, pvs.clone())
++            } else {
++                AirProvingContext::simple_no_pis(m)
++            }
++        })
++        .collect()
 +}
 +
 +/// Prove one NV level; returns (vk, proof, executed builder, trace matrices' shapes).
@@ -2381,30 +2490,35 @@ index 0000000..f4ac463
 +    assert!(b.failures.is_empty(), "verifier program failures: {:?}", b.failures);
 +    let shapes = mats.iter().map(|m| (m.height(), m.width())).collect();
 +    let pvs = b.public_values();
-+    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
-+        .into_iter()
-+        .enumerate()
-+        .map(|(i, m)| {
-+            if i == 0 {
-+                AirProvingContext::simple(m, pvs.clone())
-+            } else {
-+                AirProvingContext::simple_no_pis(m)
-+            }
-+        })
-+        .collect();
++    let ctxs = nv_contexts(circ, engine.config(), mats, pvs);
 +    let d_pk = engine.device().transport_pk_to_device(&pk);
-+    let proof = engine
-+        .prove(&d_pk, ProvingContext::new(ctxs.into_iter().enumerate().collect()))
-+        .unwrap();
++    if let Some(fl) = &circ.tight_floor {
++        let f: Vec<(usize, usize, usize)> = ctxs
++            .iter()
++            .zip(fl)
++            .map(|(c, &m)| (c.common_main.width(), c.common_main.height().trailing_zeros() as usize, m))
++            .collect();
++        openvm_stark_backend::prover::stacked_pcs::set_tight_floor(Some(f));
++    }
++    let proof = engine.prove(&d_pk, ProvingContext::new(ctxs.into_iter().enumerate().collect()));
++    openvm_stark_backend::prover::stacked_pcs::set_tight_floor(None);
++    let proof = proof.unwrap();
++    if let Some(fl) = &circ.tight_floor {
++        for (i, &m) in fl.iter().enumerate() {
++            if let Some(h) = proof.trace_vdata[i].as_ref().and_then(|v| v.tight_height) {
++                assert!(h >= m.min(1 << proof.trace_vdata[i].as_ref().unwrap().log_height), "AIR {i}: committed {h} below the floor {m}");
++            }
++        }
++    }
 +    engine.verify(&vk, &proof).unwrap();
 +    (vk, proof, b, shapes)
 +}
 diff --git a/crates/recursion/src/nv/faithful_dof.rs b/crates/recursion/src/nv/faithful_dof.rs
 new file mode 100644
-index 0000000..b0d3ec7
+index 0000000..2529563
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_dof.rs
-@@ -0,0 +1,527 @@
+@@ -0,0 +1,533 @@
 +//! NV-faithful degree-of-freedom check (results/pq-recursion-nv/FAITHFUL.md §4).
 +//!
 +//! For an honest NV trace set, every cell of every AIR is perturbed one at a time
@@ -2477,6 +2591,15 @@ index 0000000..b0d3ec7
 +        if x.into() != F::ZERO {
 +            self.bad += 1;
 +        }
++    }
++}
++// the DOF harness evaluates the unpartitioned NvAir (program in common main)
++impl<'a> openvm_stark_backend::air_builders::PartitionedAirBuilder for WinEval<'a> {
++    fn cached_mains(&self) -> &[Self::M] {
++        &[]
++    }
++    fn common_main(&self) -> &Self::M {
++        &self.main
 +    }
 +}
 +impl<'a> InteractionBuilder for WinEval<'a> {
@@ -2632,7 +2755,7 @@ index 0000000..b0d3ec7
 +    let mut n: Vec<String> = (0..NV_WIDTH).map(|i| if i < N_COMMON { String::new() } else { format!("pool{}", i - N_COMMON) }).collect();
 +    let idx: Vec<usize> = (0..NV_WIDTH).collect();
 +    let cm: &NvCommon<usize> = idx[..N_COMMON].borrow();
-+    for (s, v) in [("ka", cm.ka), ("kb", cm.kb), ("kg", cm.kg), ("kh", cm.kh), ("ks", cm.ks), ("y", cm.y), ("kc", cm.kc)] {
++    for (s, v) in [("ka", cm.ka), ("kb", cm.kb), ("kg", cm.kg), ("kh", cm.kh), ("ks", cm.ks), ("y", cm.y)] {
 +        n[v] = s.into();
 +    }
 +    for j in 0..4 {
@@ -2642,7 +2765,7 @@ index 0000000..b0d3ec7
 +    // are "pool<i>" (the don't-care class "beyond the role view" must not hide unnamed columns)
 +    let view = match role {
 +        r if r.starts_with("ALU") => AB_W,
-+        "BIND" | "APPB" => BIND_W,
++        "BIND" => BIND_W,
 +        r if r.starts_with("GLUE") => super::glue::GLUE_W,
 +        r if r.starts_with("HASH") => super::transcript2::HASH2_WIDTH,
 +        r if r.starts_with("SAMP") => super::transcript2::SAMP2_WIDTH,
@@ -2674,7 +2797,7 @@ index 0000000..b0d3ec7
 +            set(c.ry, "ry".into());
 +            set(c.rz, "rz".into());
 +        }
-+        "BIND" | "APPB" => {
++        "BIND" => {
 +            let c: &BindCols<usize> = pool[..BIND_W].borrow();
 +            for k in 0..12 {
 +                set(c.e1a[k], format!("e1a{k}"));
@@ -2765,9 +2888,6 @@ index 0000000..b0d3ec7
 +    }
 +    if row[cm.kb] == F::ONE {
 +        return "BIND".into();
-+    }
-+    if row[cm.kc] == F::ONE {
-+        return "APPB".into();
 +    }
 +    if row[cm.kg] == F::ONE {
 +        let c: &GlueCols<usize> = idx[N_COMMON..N_COMMON + super::glue::GLUE_W].borrow();
@@ -3419,12 +3539,12 @@ index 0000000..e1db382
 +}
 diff --git a/crates/recursion/src/nv/faithful_tests.rs b/crates/recursion/src/nv/faithful_tests.rs
 new file mode 100644
-index 0000000..f9a676c
+index 0000000..86afaa5
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_tests.rs
-@@ -0,0 +1,883 @@
+@@ -0,0 +1,839 @@
 +//! NV-faithful: degree-of-freedom (single-cell perturbation) runs and tamper tests for the ALU,
-+//! BIND and app-binding roles (results/pq-recursion-nv/FAITHFUL.md).
++//! BIND roles (results/pq-recursion-nv/FAITHFUL.md; the app-binding role was removed with G2).
 +//!
 +//!   NV_DOF_CAP=<rows per (AIR, role)>   (default 48; 0 = every row)
 +use core::borrow::Borrow;
@@ -3451,10 +3571,8 @@ index 0000000..f9a676c
 +    vk: &MultiStarkVerifyingKey<Sha384Config>,
 +    proof: &Proof<Sha384Config>,
 +    log_rows: usize,
-+    app: Option<Vec<[u32; 4]>>,
 +) -> (Vec<AirRef<Sha384Config>>, Vec<RowMajorMatrix<F>>, Vec<Vec<F>>) {
-+    let mut circ = NvCircuit::new(vk.inner.params.k_whir(), log_rows, 1);
-+    circ.app = app;
++    let circ = NvCircuit::new(vk.inner.params.k_whir(), log_rows, 1);
 +    let airs = circ.airs::<Sha384Config>();
 +    let (mats, b) = circ.generate(vk, proof);
 +    assert!(b.failures.is_empty(), "{:?}", b.failures);
@@ -3493,13 +3611,10 @@ index 0000000..f9a676c
 +            if col == "wit2" && o != Op::Horn2 {
 +                return Some("wit2 only used by Horn2");
 +            }
-+            if matches!(col, "rx" | "ry" | "rz") && o == Op::Data {
-+                return Some("B-field bytes unused on Data rows");
-+            }
 +        }
 +        return None;
 +    }
-+    if (role == "BIND" || role == "APPB") && pool {
++    if role == "BIND" && pool {
 +        return Some("pool column beyond the BIND view");
 +    }
 +    if role.starts_with("GLUE") || role.starts_with("HASH") || role == "SAMP" {
@@ -3603,7 +3718,7 @@ index 0000000..f9a676c
 +                    readers[bf as usize].push((r, ab.b[0]));
 +                }
 +            }
-+        } else if g(r, cm.kb) == F::ONE || g(r, cm.kc) == F::ONE {
++        } else if g(r, cm.kb) == F::ONE {
 +            let ya = g(r, bc.ya).as_canonical_u32() as usize;
 +            let yb = g(r, bc.yb).as_canonical_u32() as usize;
 +            readers[ya].push((r, bc.e1a[0]));
@@ -3616,7 +3731,7 @@ index 0000000..f9a676c
 +    let mut tested = 0;
 +    for y in 0..h {
 +        let Some(op) = ops[y] else { continue };
-+        let free = matches!(op, Op::Load | Op::LoadF | Op::LoadBit | Op::Smp1 | Op::Smp12 | Op::Acc | Op::Dig | Op::PowChk | Op::Acc2 | Op::SibWS4 | Op::SibWS2 | Op::DigWS4 | Op::DigWS2);
++        let free = matches!(op, Op::Load | Op::LoadF | Op::LoadBit | Op::Smp1 | Op::Smp12 | Op::Acc | Op::Dig | Op::PowChk | Op::SibWS4 | Op::SibWS2 | Op::DigWS4 | Op::DigWS2);
 +        let name = format!("{op:?}");
 +        let n = seen.entry(name.clone()).or_default();
 +        if !free && *n >= 8 {
@@ -3657,9 +3772,9 @@ index 0000000..f9a676c
 +    }
 +}
 +
-+fn dof_case(tag: &str, vk: &MultiStarkVerifyingKey<Sha384Config>, proof: &Proof<Sha384Config>, app: Option<Vec<[u32; 4]>>) -> Vec<String> {
++fn dof_case(tag: &str, vk: &MultiStarkVerifyingKey<Sha384Config>, proof: &Proof<Sha384Config>) -> Vec<String> {
 +    let t0 = std::time::Instant::now();
-+    let (airs, mats, pvs) = honest(vk, proof, 16, app);
++    let (airs, mats, pvs) = honest(vk, proof, 16);
 +    let (bad, unb) = global_check(&airs, &mats, &pvs);
 +    println!("NV_DOF_HONEST[{tag}] bad_constraints={bad} unbalanced_messages={unb}");
 +    assert_eq!((bad, unb), (0, 0), "evaluator must accept the honest trace");
@@ -3677,7 +3792,7 @@ index 0000000..f9a676c
 +fn nv_dof_fib() {
 +    let engine = Sha384CpuEngine::new(child_params_small());
 +    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
-+    let bad = dof_case("fib", &vk, &proof, None);
++    let bad = dof_case("fib", &vk, &proof);
 +    assert!(bad.is_empty(), "unexpected degrees of freedom: {bad:#?}");
 +}
 +
@@ -3690,7 +3805,7 @@ index 0000000..f9a676c
 +    p.max_constraint_degree = 4;
 +    let engine = Sha384CpuEngine::new(with_levers(p, lv, 1, 5));
 +    let (vk, proof) = InteractionsFixture11.keygen_and_prove(&engine);
-+    let bad = dof_case("interactions-levers", &vk, &proof, None);
++    let bad = dof_case("interactions-levers", &vk, &proof);
 +    assert!(bad.is_empty(), "unexpected degrees of freedom: {bad:#?}");
 +}
 +
@@ -3703,23 +3818,12 @@ index 0000000..f9a676c
 +    p.max_constraint_degree = 4;
 +    let engine = Sha384CpuEngine::new(with_levers(p, lv, 15, 5));
 +    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
-+    let bad = dof_case("whir-levers-x15", &vk, &proof, None);
-+    assert!(bad.is_empty(), "unexpected degrees of freedom: {bad:#?}");
-+}
-+
-+/// Data / app-binding / Acc2 rows: a synthetic app table on a Fib child (no binding check is
-+/// emitted without `bind`, so the trace is honest and contains every app-binding role).
-+#[test]
-+fn nv_dof_app_rows() {
-+    let engine = Sha384CpuEngine::new(child_params_small());
-+    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
-+    let app: Vec<[u32; 4]> = (0..64u32).map(|i| [i * 7 + 1, (i * 13) ^ 0x5a5a, i, 3 * i + 2]).collect();
-+    let bad = dof_case("app-rows", &vk, &proof, Some(app));
++    let bad = dof_case("whir-levers-x15", &vk, &proof);
 +    assert!(bad.is_empty(), "unexpected degrees of freedom: {bad:#?}");
 +}
 +
 +// ---------------------------------------------------------------------------------------
-+// ALU / BIND / app-binding tamper tests
++// ALU / BIND tamper tests
 +// ---------------------------------------------------------------------------------------
 +
 +fn debug_params() -> openvm_stark_backend::SystemParams {
@@ -3757,7 +3861,7 @@ index 0000000..f9a676c
 +    let ab: &AbCols<usize> = idx[N_COMMON..N_COMMON + AB_W].borrow();
 +    let bc: &BindCols<usize> = idx[N_COMMON..N_COMMON + BIND_W].borrow();
 +    Ix {
-+        cm: NvCommon { ka: cm.ka, kb: cm.kb, kg: cm.kg, kh: cm.kh, ks: cm.ks, y: cm.y, kc: cm.kc, p: cm.p },
++        cm: NvCommon { ka: cm.ka, kb: cm.kb, kg: cm.kg, kh: cm.kh, ks: cm.ks, y: cm.y, p: cm.p },
 +        ab: AbCols { a: ab.a, b: ab.b, c: ab.c, h: ab.h, g: ab.g, wit: ab.wit, mult: ab.mult, rx: ab.rx, ry: ab.ry, rz: ab.rz, wit2: ab.wit2 },
 +        bc: BindCols { e1a: bc.e1a, e1b: bc.e1b, e2: bc.e2, acc: bc.acc, pc0: bc.pc0, pc1: bc.pc1, ya: bc.ya, yb: bc.yb, bl: bc.bl },
 +    }
@@ -3782,7 +3886,7 @@ index 0000000..f9a676c
 +    for k in 0..OP_LO {
 +        mats[0].values[r * w + x.ab.h[k]] = F::from_bool(k == op % OP_LO);
 +    }
-+    for k in 0..4 {
++    for k in 0..crate::nv::isa::OP_HI {
 +        mats[0].values[r * w + x.ab.g[k]] = F::from_bool(k == op / OP_LO);
 +    }
 +    mats[0].values[r * w + x.ab.rx] = rxyz.0;
@@ -3802,20 +3906,23 @@ index 0000000..f9a676c
 +        *c = if d > 0 { *c + F::ONE } else { *c - F::ONE };
 +    };
 +    bump(old.0, old.1, -1);
-+    bump(old.2, old.2 * F::from_u32(16), -1);
++    bump(old.2, F::ZERO, -1);
 +    bump(rxyz.0, rxyz.1, 1);
-+    bump(rxyz.2, rxyz.2 * F::from_u32(16), 1);
++    bump(rxyz.2, F::ZERO, 1);
 +}
 +
-+/// B-field bytes forging B' = B + 2^20 (B <= 61439) with rz = t / 16, t = 255 (not a multiple
-+/// of 16): 65536 rz = 4096 * 255 (mod p).
-+fn forge_b_plus_2_20(b: u32) -> (F, F, F) {
-+    let target = b + (1 << ADDR_BITS) - 4096 * 255;
-+    assert!(target < 65536, "B too large for the forged decomposition");
-+    (F::from_u32(target & 255), F::from_u32(target >> 8), F::from_u32(255) * F::from_u32(16).inverse())
++/// B-field bytes forging B' = B + 2^ADDR_BITS (the relabel op -> op - 1).  With ADDR_BITS = 24
++/// the B field is rx + 2^8 ry + 2^16 rz with rz looked up as a full byte (pair (rz, 0)), so the
++/// only decompositions of B' need rz >= 256 (here rz = (B >> 16) + 2^(ADDR_BITS-16)), which is
++/// outside the byte table.  The old 20-bit attack (rz = t/16, 65536 rz = 4096 t) cannot reach
++/// B + 2^24 either: 4096 * 255 + 65535 < 2^24.
++fn forge_b_plus_2_addr(b: u32) -> (F, F, F) {
++    let t = b as u64 + (1u64 << ADDR_BITS);
++    assert!(4096 * 255 + 65535 < (1u64 << ADDR_BITS));
++    (F::from_u32((t & 255) as u32), F::from_u32(((t >> 8) & 255) as u32), F::from_u32((t >> 16) as u32))
 +}
 +
-+/// Bug (fixed on this branch): the B-field range check `lookup_byte(16 rz)` accepts any
++/// Bug (fixed on this branch; regression kept for ADDR_BITS = 24): the 20-bit B-field range check `lookup_byte(16 rz)` accepts any
 +/// rz = t/16 (t a byte), so B ranges over [0, 1110015] instead of [0, 2^20) and an op can be
 +/// relabelled to op - 1 with B' = B + 2^20.  Zero -> Bit turns the equality assertion a == 0 into
 +/// a0 in {0, 1}: a child proof whose Gruen GKR s(3) = 1 (must be 0) is accepted.
@@ -3847,7 +3954,7 @@ index 0000000..f9a676c
 +        let a: Vec<F> = (0..12).map(|k| mats[0].values[r * w + x.ab.a[k]]).collect();
 +        assert!(a[0] == F::ONE && a[1..].iter().all(|v| *v == F::ZERO), "Zero row {r} a = {a:?} is not the unit");
 +        let bf = mats[0].values[r * w + x.cm.p[1]].as_canonical_u32() - ((zero as u32) << ADDR_BITS);
-+        relabel(&mut mats, r, Op::Bit as usize, forge_b_plus_2_20(bf), &x);
++        relabel(&mut mats, r, Op::Bit as usize, forge_b_plus_2_addr(bf), &x);
 +        for k in 0..12 {
 +            mats[0].values[r * w + x.ab.c[k]] = a[k]; // Bit: c = a
 +        }
@@ -3865,7 +3972,7 @@ index 0000000..f9a676c
 +    let engine = Sha384CpuEngine::new(child_params_small());
 +    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
 +    for target in [Op::Nop as usize, 29] {
-+        let (airs, mut mats, pvs) = honest(&vk, &proof, 16, None);
++        let (airs, mut mats, pvs) = honest(&vk, &proof, 16);
 +        let x = ix();
 +        let w = mats[0].width();
 +        let mul = Op::Mul as usize;
@@ -3873,73 +3980,51 @@ index 0000000..f9a676c
 +            .find(|&r| {
 +                op_of(&mats[0], r, &x) == Some(mul)
 +                    && (0..12).all(|k| mats[0].values[r * w + x.ab.c[k]] == F::ZERO)
-+                    && mats[0].values[r * w + x.cm.p[1]].as_canonical_u32() - (1 << ADDR_BITS) <= 61439
 +            })
 +            .expect("a Mul row with zero product");
 +        let a_addr = mats[0].values[r * w + x.cm.p[0]].as_canonical_u32() as usize;
 +        let b_addr = (mats[0].values[r * w + x.cm.p[1]].as_canonical_u32() - (1 << ADDR_BITS)) as usize;
-+        relabel(&mut mats, r, target, forge_b_plus_2_20(b_addr as u32), &x);
++        relabel(&mut mats, r, target, forge_b_plus_2_addr(b_addr as u32), &x);
 +        mats[0].values[a_addr * w + x.ab.mult] -= F::ONE;
 +        mats[0].values[b_addr * w + x.ab.mult] -= F::ONE;
 +        must_fail(&format!("alu relabel Mul->op{target} (forged B field)"), || debug_check(&airs, mats, &pvs));
 +    }
 +}
 +
-+/// Relabels that the op binding must reject with honest B-field bytes: any non-Nop row to an
-+/// undefined opcode, a Data row to Nop, a non-Data row to Data.
++/// Relabels that the op binding must reject with honest B-field bytes: a row to another opcode
++/// (op 30), a Nop row to a reserved opcode (the former app-table Data op).
 +#[test]
 +fn nv_alu_relabel_misc() {
 +    let engine = Sha384CpuEngine::new(child_params_small());
 +    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
-+    let app: Vec<[u32; 4]> = (0..64u32).map(|i| [i * 7 + 1, (i * 13) ^ 0x5a5a, i, 3 * i + 2]).collect();
 +    let x = ix();
 +    // Const -> op 30 (undefined): B-field = P1 = 4 * 2^20 out of range
 +    {
-+        let (airs, mut mats, pvs) = honest(&vk, &proof, 16, None);
++        let (airs, mut mats, pvs) = honest(&vk, &proof, 16);
 +        let w = mats[0].width();
 +        let r = (0..mats[0].height()).find(|&r| op_of(&mats[0], r, &x) == Some(Op::Const as usize)).unwrap();
 +        let keep = (mats[0].values[r * w + x.ab.rx], mats[0].values[r * w + x.ab.ry], mats[0].values[r * w + x.ab.rz]);
 +        relabel(&mut mats, r, 30, keep, &x);
 +        must_fail("alu relabel Const->op30", || debug_check(&airs, mats, &pvs));
 +    }
-+    // Data -> Nop (table word P1 < 2^20 so the range check alone would pass; bind2 must fail)
++    // Nop -> Rsv26 (reserved, c = 0 like Nop): P1 still encodes Nop, so the B field is negative
 +    {
-+        let (airs, mut mats, pvs) = honest(&vk, &proof, 16, Some(app.clone()));
-+        let w = mats[0].width();
-+        let r = (0..mats[0].height())
-+            .find(|&r| op_of(&mats[0], r, &x) == Some(Op::Data as usize) && mats[0].values[r * w + x.cm.p[1]].as_canonical_u32() < 1 << 16)
-+            .unwrap();
-+        let p1 = mats[0].values[r * w + x.cm.p[1]].as_canonical_u32();
-+        // the Data row had no B lookups; account the new ones
-+        mats[0].values[r * w + x.ab.rx] = F::ZERO;
-+        mats[0].values[r * w + x.ab.ry] = F::ZERO;
-+        mats[0].values[r * w + x.ab.rz] = F::ZERO;
-+        // the Data row performed no lookups; relabel() removes two (0, 0) lookups, pre-add them
-+        mats[3].values[4] += F::from_u32(2);
-+        relabel(&mut mats, r, Op::Nop as usize, (F::from_u32(p1 & 255), F::from_u32(p1 >> 8), F::ZERO), &x);
-+        must_fail("alu relabel Data->Nop", || debug_check(&airs, mats, &pvs));
-+    }
-+    // Nop -> Data inside the program (c stays 0; bind2 message unmatched)
-+    {
-+        let (airs, mut mats, pvs) = honest(&vk, &proof, 16, Some(app.clone()));
++        let (airs, mut mats, pvs) = honest(&vk, &proof, 16);
 +        let w = mats[0].width();
 +        let r = (0..mats[0].height()).rev().find(|&r| op_of(&mats[0], r, &x) == Some(Op::Nop as usize)).unwrap();
-+        let _ = w;
-+        relabel(&mut mats, r, Op::Data as usize, (F::ZERO, F::ZERO, F::ZERO), &x);
-+        // Data rows perform no B-field lookups: remove the Nop row's two (0, 0) lookups
-+        mats[3].values[4] -= F::from_u32(2);
-+        must_fail("alu relabel Nop->Data", || debug_check(&airs, mats, &pvs));
++        let keep = (mats[0].values[r * w + x.ab.rx], mats[0].values[r * w + x.ab.ry], mats[0].values[r * w + x.ab.rz]);
++        relabel(&mut mats, r, Op::Rsv26 as usize, keep, &x);
++        must_fail("alu relabel Nop->Rsv26", || debug_check(&airs, mats, &pvs));
 +    }
 +    // public value: the Pv row asserts a0 == level
 +    {
-+        let (airs, mats, mut pvs) = honest(&vk, &proof, 16, None);
++        let (airs, mats, mut pvs) = honest(&vk, &proof, 16);
 +        pvs[0][0] += F::ONE;
 +        must_fail("alu public value (level)", || debug_check(&airs, mats, &pvs));
 +    }
 +}
 +
-+/// BIND: alternative (ya, yb) decomposition of the same pair index, a premature last-row flag,
-+/// and an app-binding row's table word.
++/// BIND: alternative (ya, yb) decomposition of the same pair index and a premature last-row flag.
 +#[test]
 +fn nv_bind_tamper() {
 +    let engine = Sha384CpuEngine::new(child_params_small());
@@ -3947,7 +4032,7 @@ index 0000000..f9a676c
 +    let x = ix();
 +    // ya + 2, yb - 2/512 (same y2 = ya + 512 yb); E1 copies refilled from the new addresses
 +    {
-+        let (airs, mut mats, pvs) = honest(&vk, &proof, 16, None);
++        let (airs, mut mats, pvs) = honest(&vk, &proof, 16);
 +        let w = mats[0].width();
 +        let r0 = (0..mats[0].height()).find(|&r| mats[0].values[r * w + x.cm.kb] == F::ONE).unwrap();
 +        let r = r0 + 5;
@@ -3962,20 +4047,11 @@ index 0000000..f9a676c
 +    }
 +    // bl = 1 on a middle BIND row
 +    {
-+        let (airs, mut mats, pvs) = honest(&vk, &proof, 16, None);
++        let (airs, mut mats, pvs) = honest(&vk, &proof, 16);
 +        let w = mats[0].width();
 +        let r0 = (0..mats[0].height()).find(|&r| mats[0].values[r * w + x.cm.kb] == F::ONE).unwrap();
 +        mats[0].values[(r0 + 7) * w + x.bc.bl] = F::ONE;
 +        must_fail("bind premature last flag", || debug_check(&airs, mats, &pvs));
-+    }
-+    // app-binding row: table word copy
-+    {
-+        let app: Vec<[u32; 4]> = (0..64u32).map(|i| [i * 7 + 1, (i * 13) ^ 0x5a5a, i, 3 * i + 2]).collect();
-+        let (airs, mut mats, pvs) = honest(&vk, &proof, 16, Some(app));
-+        let w = mats[0].width();
-+        let r0 = (0..mats[0].height()).find(|&r| mats[0].values[r * w + x.cm.kc] == F::ONE).unwrap();
-+        mats[0].values[(r0 + 3) * w + x.bc.pc1[2]] += F::ONE;
-+        must_fail("app-binding table word", || debug_check(&airs, mats, &pvs));
 +    }
 +}
 +
@@ -4045,7 +4121,7 @@ index 0000000..f9a676c
 +fn nv_alu_base_load_pow() {
 +    let engine = Sha384CpuEngine::new(child_params_small());
 +    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
-+    let (airs, mats, pvs) = honest(&vk, &proof, 16, None);
++    let (airs, mats, pvs) = honest(&vk, &proof, 16);
 +    let x = ix();
 +    let w = mats[0].width();
 +    let yp = (0..mats[0].height()).find(|&r| op_of(&mats[0], r, &x) == Some(Op::PowChk as usize)).expect("child has PoW");
@@ -4189,7 +4265,7 @@ index 0000000..f9a676c
 +    p.max_constraint_degree = 4;
 +    let engine = Sha384CpuEngine::new(p);
 +    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
-+    let bad = dof_case("horn2", &vk, &proof, None);
++    let bad = dof_case("horn2", &vk, &proof);
 +    assert!(bad.is_empty(), "unexpected degrees of freedom: {bad:#?}");
 +}
 +
@@ -6259,10 +6335,10 @@ index 0000000..ddcb0ca
 +}
 diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
 new file mode 100644
-index 0000000..7c70b86
+index 0000000..e5491de
 --- /dev/null
 +++ b/crates/recursion/src/nv/isa.rs
-@@ -0,0 +1,164 @@
+@@ -0,0 +1,162 @@
 +//! NV ALU instruction set.  One instruction per ALU row; every row writes its result
 +//! `c` (an Ext12 value) to memory address = its row index.  Program words:
 +//!   P0 = A  (operand address, or base-field immediate)
@@ -6273,7 +6349,9 @@ index 0000000..7c70b86
 +//! in-circuit multilinear evaluation (see DESIGN.md §2.1).
 +
 +/// Address bits available for operand `B` in `P1`.
-+pub const ADDR_BITS: u32 = 20;
++/// Address / B-field width: 24 bits (NvAir up to 2^24 rows; L1 over a real base needs > 2^20).
++/// P1 = B + op * 2^24 < 40 * 2^24 < p, so the decomposition stays unique.
++pub const ADDR_BITS: u32 = 24;
 +pub const MAX_ROWS: usize = 1 << ADDR_BITS;
 +
 +#[repr(u32)]
@@ -6332,12 +6410,11 @@ index 0000000..7c70b86
 +    UnitWS2 = 24,
 +    /// c = PoW output word 0 limbs of transcript job P2 (from the hash chain, slot chan 3)
 +    PowChk = 25,
-+    /// data row of the app-verifier table (P0..P3 = the table row's program words, P1 raw);
-+    /// c = 0; sends (y - app_base, P) to the app-binding rows.  Only valid in the fixed region
-+    /// [app_base, app_base + n) whose length the app-binding rows pin (see `Acc2`).
-+    Data = 26,
-+    /// c = app-binding total; receives (c, P0) from the last app-binding row, P0 = n - 2
-+    Acc2 = 27,
++    /// Reserved (was `Data`, the app-table data row; removed with G2): no semantics beyond c = 0
++    /// (like Nop); never emitted.
++    Rsv26 = 26,
++    /// Reserved (was `Acc2`, the app-binding total; removed with G2): c = 0; never emitted.
++    Rsv27 = 27,
 +    /// c = free witness bit: c0 in {0, 1}, c1..c11 = 0 (one row instead of Load + Bit)
 +    LoadBit = 28,
 +    /// c = free base-field witness: c1..c11 = 0 (a plain `Load` leaves all 12 coefficients
@@ -6351,7 +6428,8 @@ index 0000000..7c70b86
 +    PvD = 31,
 +    /// Merkle sibling, low digest cell: c = free witness (the sibling's 12 limbs); push word units
 +    /// c[0..12] at unit index P3 + 12 (1 - B) of job P2 (B = the path bit read at the B field).
-+    /// Replaces Load + one_minus + UnitWS4 (3 rows) for the sibling.
++    /// Replaces Load + one_minus + UnitWS4 (3 rows) for the sibling.  Also starts node job P2
++    /// with tag P0 (= NODE_TAG) on the job bus, replacing the level's NodeJob row.
 +    SibWS4 = 32,
 +    /// Merkle sibling, high digest cell: as SibWS4 for 2 word units (c[0..6]; c[6..12] = 0).
 +    SibWS2 = 33,
@@ -6384,7 +6462,7 @@ index 0000000..7c70b86
 +        use Op::*;
 +        [
 +            Nop, Mul, Add, Sub, Const, ConstX, Load, Unit1, Anchor, UnitW, Smp1, Smp12, Unit12,
-+            Horn, Job, Bit, Zero, Dig, NodeJob, Acc, DblAdd, MulAddA, Pv, UnitWS4, UnitWS2, PowChk, Data, Acc2, LoadBit, LoadF, UnitWT, PvD, SibWS4, SibWS2, DigWS4, DigWS2, HornS, HornR, HornE, Horn2,
++            Horn, Job, Bit, Zero, Dig, NodeJob, Acc, DblAdd, MulAddA, Pv, UnitWS4, UnitWS2, PowChk, Rsv26, Rsv27, LoadBit, LoadF, UnitWT, PvD, SibWS4, SibWS2, DigWS4, DigWS2, HornS, HornR, HornE, Horn2,
 +        ]
 +    }
 +    pub fn reads_a(self) -> bool {
@@ -6419,20 +6497,16 @@ index 0000000..7c70b86
 +        k2: 0,
 +    };
 +    pub fn words(&self) -> [u32; 4] {
-+        if self.op == Op::Data {
-+            // data rows carry the table row's words verbatim (P1 raw)
-+            return [self.a, self.b, self.k1, self.k2];
-+        }
 +        assert!(self.b < (1 << ADDR_BITS), "B field overflow");
 +        [self.a, self.b + ((self.op as u32) << ADDR_BITS), self.k1, self.k2]
 +    }
 +}
 diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
 new file mode 100644
-index 0000000..3b36d05
+index 0000000..02b4921
 --- /dev/null
 +++ b/crates/recursion/src/nv/mod.rs
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,27 @@
 +//! NV: narrow fixed-point verifier circuit (see results/pq-recursion-nv/DESIGN.md).
 +pub mod builder;
 +pub mod circuit;
@@ -6453,15 +6527,948 @@ index 0000000..3b36d05
 +#[cfg(test)]
 +mod tests;
 +#[cfg(test)]
++mod prep_tests;
++#[cfg(test)]
++mod prep_demo;
++#[cfg(test)]
 +mod faithful_dof;
 +#[cfg(test)]
 +mod faithful_tests;
+diff --git a/crates/recursion/src/nv/prep_demo.rs b/crates/recursion/src/nv/prep_demo.rs
+new file mode 100644
+index 0000000..9505729
+--- /dev/null
++++ b/crates/recursion/src/nv/prep_demo.rs
+@@ -0,0 +1,505 @@
++//! pq-nv-preprocessed demo: a toy base layer in the pq-wasm-base FETCH style whose code table
++//! (records [pc, op, h, fee, x0..x3]) and byte range table are preprocessed, verified by NV.
++//! Variants (DESIGN.md §6):
++//!   * `Split`: CODE and RANGE are two preprocessed AIRs (3 commitments: main + 2 preprocessed);
++//!   * `Fixed`: one FIXED AIR holds both tables as preprocessed columns (2 commitments);
++//!   * `Public`: the pq-wasm-base design today: code records are public values, one boundary
++//!     interaction per record; RANGE is committed and derived (1 commitment).
++use std::sync::Arc;
++
++use openvm_stark_backend::{
++    interaction::{InteractionBuilder, LookupBus},
++    prover::{AirProvingContext, ColMajorMatrix, CpuColMajorBackend, ProvingContext},
++    test_utils::TestFixture,
++    AirRef, BaseAirWithPublicValues, PartitionedBaseAir, StarkEngine,
++};
++use p3_air::{Air, AirBuilder, AirBuilderWithPublicValues, BaseAir, PairBuilder};
++use p3_field::{Field, PrimeCharacteristicRing};
++use p3_matrix::{dense::RowMajorMatrix, Matrix};
++
++use super::{builder::Builder, verifier::build_verifier};
++use crate::sha384::{config::*, e2e_tests::child_params_small};
++
++const FETCH: LookupBus = LookupBus::new(0);
++const RANGE: LookupBus = LookupBus::new(1);
++/// code record width (pq-wasm-base FETCH message)
++const REC: usize = 8;
++const RANGE_ROWS: usize = 256;
++
++fn records(n: usize) -> Vec<[u32; REC]> {
++    (0..n as u32).map(|i| [i, i % 3, i % 5, 1 + i % 2, 3 * i + 1, i, 2 * i, 7]).collect()
++}
++
++// ---- CODE: preprocessed [rec(8), valid], main [mult] ----
++pub struct CodeAir {
++    pub code: Vec<[u32; REC]>,
++    pub rows: usize,
++}
++impl<F: Field> BaseAir<F> for CodeAir {
++    fn width(&self) -> usize {
++        1
++    }
++    fn preprocessed_trace(&self) -> Option<RowMajorMatrix<F>> {
++        let mut v = vec![F::ZERO; self.rows * (REC + 1)];
++        for (i, r) in self.code.iter().enumerate() {
++            for k in 0..REC {
++                v[i * (REC + 1) + k] = F::from_u32(r[k]);
++            }
++            v[i * (REC + 1) + REC] = F::ONE;
++        }
++        Some(RowMajorMatrix::new(v, REC + 1))
++    }
++}
++impl<F: Field> BaseAirWithPublicValues<F> for CodeAir {}
++impl<F: Field> PartitionedBaseAir<F> for CodeAir {}
++impl<AB: AirBuilderWithPublicValues + PairBuilder + InteractionBuilder> Air<AB> for CodeAir {
++    fn eval(&self, builder: &mut AB) {
++        let prep = builder.preprocessed();
++        let p = prep.row_slice(0).unwrap();
++        let main = builder.main();
++        let m = main.row_slice(0).unwrap();
++        let mult: AB::Expr = m[0].clone().into();
++        let valid: AB::Expr = p[REC].clone().into();
++        // padding rows (valid = 0) offer nothing
++        builder.assert_zero(mult.clone() * (AB::Expr::ONE - valid));
++        let key: Vec<AB::Expr> = (0..REC).map(|k| p[k].clone().into()).collect();
++        FETCH.add_key_with_lookups(builder, key, mult);
++    }
++}
++
++// ---- RANGE: preprocessed [v = row], main [mult] ----
++pub struct RangeAir;
++impl<F: Field> BaseAir<F> for RangeAir {
++    fn width(&self) -> usize {
++        1
++    }
++    fn preprocessed_trace(&self) -> Option<RowMajorMatrix<F>> {
++        Some(RowMajorMatrix::new_col((0..RANGE_ROWS).map(F::from_usize).collect()))
++    }
++}
++impl<F: Field> BaseAirWithPublicValues<F> for RangeAir {}
++impl<F: Field> PartitionedBaseAir<F> for RangeAir {}
++impl<AB: AirBuilderWithPublicValues + PairBuilder + InteractionBuilder> Air<AB> for RangeAir {
++    fn eval(&self, builder: &mut AB) {
++        let prep = builder.preprocessed();
++        let v: AB::Expr = prep.row_slice(0).unwrap()[0].clone().into();
++        let main = builder.main();
++        let mult: AB::Expr = main.row_slice(0).unwrap()[0].clone().into();
++        RANGE.add_key_with_lookups(builder, vec![v], mult);
++    }
++}
++
++// ---- FIXED: both tables in one preprocessed trace (256 rows): [rec(8), valid, v], main [mc, mr] ----
++pub struct FixedAir {
++    pub code: Vec<[u32; REC]>,
++}
++impl<F: Field> BaseAir<F> for FixedAir {
++    fn width(&self) -> usize {
++        2
++    }
++    fn preprocessed_trace(&self) -> Option<RowMajorMatrix<F>> {
++        let w = REC + 2;
++        let mut v = vec![F::ZERO; RANGE_ROWS * w];
++        for i in 0..RANGE_ROWS {
++            if let Some(r) = self.code.get(i) {
++                for k in 0..REC {
++                    v[i * w + k] = F::from_u32(r[k]);
++                }
++                v[i * w + REC] = F::ONE;
++            }
++            v[i * w + REC + 1] = F::from_usize(i);
++        }
++        Some(RowMajorMatrix::new(v, w))
++    }
++}
++impl<F: Field> BaseAirWithPublicValues<F> for FixedAir {}
++impl<F: Field> PartitionedBaseAir<F> for FixedAir {}
++impl<AB: AirBuilderWithPublicValues + PairBuilder + InteractionBuilder> Air<AB> for FixedAir {
++    fn eval(&self, builder: &mut AB) {
++        let prep = builder.preprocessed();
++        let p = prep.row_slice(0).unwrap();
++        let main = builder.main();
++        let m = main.row_slice(0).unwrap();
++        let (mc, mr): (AB::Expr, AB::Expr) = (m[0].clone().into(), m[1].clone().into());
++        let valid: AB::Expr = p[REC].clone().into();
++        builder.assert_zero(mc.clone() * (AB::Expr::ONE - valid));
++        let key: Vec<AB::Expr> = (0..REC).map(|k| p[k].clone().into()).collect();
++        FETCH.add_key_with_lookups(builder, key, mc);
++        RANGE.add_key_with_lookups(builder, vec![p[REC + 1].clone().into()], mr);
++    }
++}
++
++// ---- BOUNDARY (Public variant): code records as public values, one interaction per record ----
++pub struct BoundaryAir {
++    pub n: usize,
++}
++impl<F: Field> BaseAir<F> for BoundaryAir {
++    fn width(&self) -> usize {
++        self.n
++    }
++}
++impl<F: Field> BaseAirWithPublicValues<F> for BoundaryAir {
++    fn num_public_values(&self) -> usize {
++        REC * self.n
++    }
++}
++impl<F: Field> PartitionedBaseAir<F> for BoundaryAir {}
++impl<AB: AirBuilderWithPublicValues + PairBuilder + InteractionBuilder> Air<AB> for BoundaryAir {
++    fn eval(&self, builder: &mut AB) {
++        let pv: Vec<AB::Expr> = builder.public_values().iter().map(|&x| x.into()).collect();
++        let main = builder.main();
++        let m = main.row_slice(0).unwrap();
++        let mults: Vec<AB::Expr> = (0..self.n).map(|j| m[j].clone().into()).collect();
++        // records are offered on the first row only (pq-wasm-base: count first * mult_j)
++        let first: AB::Expr = builder.is_first_row();
++        for (j, mult) in mults.into_iter().enumerate() {
++            builder.assert_zero((AB::Expr::ONE - first.clone()) * mult.clone());
++            FETCH.add_key_with_lookups(builder, pv[REC * j..REC * (j + 1)].to_vec(), mult);
++        }
++    }
++}
++
++/// RANGE committed and derived (Public variant): main [v, mult], v_0 = 0, v' = v + 1.
++pub struct RangeCommittedAir;
++impl<F: Field> BaseAir<F> for RangeCommittedAir {
++    fn width(&self) -> usize {
++        2
++    }
++}
++impl<F: Field> BaseAirWithPublicValues<F> for RangeCommittedAir {}
++impl<F: Field> PartitionedBaseAir<F> for RangeCommittedAir {}
++impl<AB: AirBuilderWithPublicValues + PairBuilder + InteractionBuilder> Air<AB> for RangeCommittedAir {
++    fn eval(&self, builder: &mut AB) {
++        let main = builder.main();
++        let (l, n) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++        let (v, mult, nv): (AB::Expr, AB::Expr, AB::Expr) = (l[0].clone().into(), l[1].clone().into(), n[0].clone().into());
++        builder.when_first_row().assert_zero(v.clone());
++        builder.when_transition().assert_eq(nv, v.clone() + AB::Expr::ONE);
++        builder.when_last_row().assert_eq(v.clone(), AB::Expr::from_usize(RANGE_ROWS - 1));
++        RANGE.add_key_with_lookups(builder, vec![v], mult);
++    }
++}
++
++// ---- EXEC: main [real, rec(8), byte, acc]: fetch the record at pc, acc' = acc + x0 + byte ----
++pub struct ExecAir;
++const E_REAL: usize = 0;
++const E_REC: usize = 1;
++const E_BYTE: usize = 1 + REC;
++const E_ACC: usize = 2 + REC;
++const E_W: usize = 3 + REC;
++impl<F: Field> BaseAir<F> for ExecAir {
++    fn width(&self) -> usize {
++        E_W
++    }
++}
++impl<F: Field> BaseAirWithPublicValues<F> for ExecAir {
++    fn num_public_values(&self) -> usize {
++        1
++    }
++}
++impl<F: Field> PartitionedBaseAir<F> for ExecAir {}
++impl<AB: AirBuilderWithPublicValues + PairBuilder + InteractionBuilder> Air<AB> for ExecAir {
++    fn eval(&self, builder: &mut AB) {
++        let out: AB::Expr = builder.public_values()[0].into();
++        let main = builder.main();
++        let (l, n) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++        let e = |r: &[AB::Var], i: usize| -> AB::Expr { r[i].clone().into() };
++        let (real, pc, x0, byte, acc) = (e(&l, E_REAL), e(&l, E_REC), e(&l, E_REC + 4), e(&l, E_BYTE), e(&l, E_ACC));
++        let (nreal, npc, nacc) = (e(&n, E_REAL), e(&n, E_REC), e(&n, E_ACC));
++        builder.assert_bool(real.clone());
++        builder.when_first_row().assert_one(real.clone());
++        builder.when_first_row().assert_zero(pc.clone());
++        builder.when_first_row().assert_zero(acc.clone());
++        // real rows form a prefix; within it pc' = pc + 1, acc' = acc + x0 + byte
++        builder.when_transition().assert_zero(nreal.clone() * (AB::Expr::ONE - real.clone()));
++        builder.when_transition().assert_zero(nreal.clone() * (npc - pc.clone() - AB::Expr::ONE));
++        builder.when_transition().assert_zero(nreal.clone() * (nacc.clone() - acc.clone() - x0.clone() - byte.clone()));
++        // the last real row's acc + x0 + byte is the output
++        let fin = acc + x0 + byte.clone();
++        builder.when_transition().assert_zero(real.clone() * (AB::Expr::ONE - nreal) * (fin.clone() - out.clone()));
++        builder.when_last_row().assert_zero(real.clone() * (fin - out));
++        let key: Vec<AB::Expr> = (0..REC).map(|k| e(&l, E_REC + k)).collect();
++        FETCH.lookup_key(builder, key, real.clone());
++        RANGE.lookup_key(builder, vec![byte], real);
++    }
++}
++
++#[derive(Clone, Copy, Debug, PartialEq)]
++pub enum Variant {
++    Split,
++    Fixed,
++    Public,
++}
++
++/// Toy base: `n` code records, `steps` executed (pc 0..steps), EXEC height `exec_rows`.
++pub struct ToyBase {
++    pub v: Variant,
++    pub n: usize,
++    pub steps: usize,
++    pub exec_rows: usize,
++    pub seed: u64,
++}
++
++impl ToyBase {
++    fn code(&self) -> Vec<[u32; REC]> {
++        records(self.n)
++    }
++    fn bytes(&self) -> Vec<u32> {
++        // byte 255 is always used, so the RANGE multiplicity column has no zero tail (tight heights
++        // lever: the committed height would otherwise depend on the execution)
++        (0..self.steps as u64).map(|i| if i == 0 { 255 } else { ((i * 37 + self.seed * 11) % 256) as u32 }).collect()
++    }
++    fn exec(&self) -> (RowMajorMatrix<F>, F) {
++        let code = self.code();
++        let bytes = self.bytes();
++        let mut v = vec![F::ZERO; self.exec_rows * E_W];
++        let mut acc = F::ZERO;
++        for i in 0..self.steps {
++            let r = &mut v[i * E_W..(i + 1) * E_W];
++            r[E_REAL] = F::ONE;
++            for k in 0..REC {
++                r[E_REC + k] = F::from_u32(code[i][k]);
++            }
++            r[E_BYTE] = F::from_u32(bytes[i]);
++            r[E_ACC] = acc;
++            acc += F::from_u32(code[i][4]) + F::from_u32(bytes[i]);
++        }
++        (RowMajorMatrix::new(v, E_W), acc)
++    }
++    fn range_mults(&self) -> Vec<F> {
++        let mut m = vec![F::ZERO; RANGE_ROWS];
++        for b in self.bytes() {
++            m[b as usize] += F::ONE;
++        }
++        m
++    }
++    fn code_rows(&self) -> usize {
++        self.n.next_power_of_two().max(4)
++    }
++}
++
++fn ctx(m: RowMajorMatrix<F>, pv: Vec<F>) -> AirProvingContext<CpuColMajorBackend<Sha384Config>> {
++    AirProvingContext::simple(ColMajorMatrix::from_row_major(&m), pv)
++}
++
++impl TestFixture<Sha384Config> for ToyBase {
++    fn airs(&self) -> Vec<AirRef<Sha384Config>> {
++        match self.v {
++            Variant::Split => vec![Arc::new(ExecAir), Arc::new(CodeAir { code: self.code(), rows: self.code_rows() }), Arc::new(RangeAir)],
++            Variant::Fixed => vec![Arc::new(ExecAir), Arc::new(FixedAir { code: self.code() })],
++            Variant::Public => vec![Arc::new(ExecAir), Arc::new(BoundaryAir { n: self.n }), Arc::new(RangeCommittedAir)],
++        }
++    }
++    fn generate_proving_ctx(&self) -> ProvingContext<CpuColMajorBackend<Sha384Config>> {
++        let (exec, out) = self.exec();
++        let rm = self.range_mults();
++        // every record is fetched once (steps = n) or not at all
++        let cm = |i: usize| F::from_bool(i < self.steps.min(self.n));
++        let mut ctxs = vec![(0, ctx(exec, vec![out]))];
++        match self.v {
++            Variant::Split => {
++                ctxs.push((1, ctx(RowMajorMatrix::new_col((0..self.code_rows()).map(cm).collect()), vec![])));
++                ctxs.push((2, ctx(RowMajorMatrix::new_col(rm), vec![])));
++            }
++            Variant::Fixed => {
++                let v = (0..RANGE_ROWS).flat_map(|i| [cm(i), rm[i]]).collect();
++                ctxs.push((1, ctx(RowMajorMatrix::new(v, 2), vec![])));
++            }
++            Variant::Public => {
++                let mut v = vec![F::ZERO; 4 * self.n];
++                for j in 0..self.n {
++                    v[j] = cm(j);
++                }
++                let pv = self.code().iter().flatten().map(|&x| F::from_u32(x)).collect();
++                ctxs.push((1, ctx(RowMajorMatrix::new(v, self.n), pv)));
++                let rv = (0..RANGE_ROWS).flat_map(|i| [F::from_usize(i), rm[i]]).collect();
++                ctxs.push((2, ctx(RowMajorMatrix::new(rv, 2), vec![])));
++            }
++        }
++        ProvingContext::new(ctxs)
++    }
++}
++
++fn nv_debug(vk: &openvm_stark_backend::keygen::types::MultiStarkVerifyingKey<Sha384Config>, proof: &openvm_stark_backend::proof::Proof<Sha384Config>, log_rows: usize) {
++    use openvm_cpu_backend::CpuBackend;
++    let circ = super::circuit::NvCircuit::new(vk.inner.params.k_whir(), log_rows, 1);
++    let airs = circ.airs::<Sha384Config>();
++    let (mats, b) = circ.generate(vk, proof);
++    assert!(b.failures.is_empty(), "{:?}", b.failures);
++    let pv = b.public_values();
++    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
++        .into_iter()
++        .enumerate()
++        .map(|(i, m)| if i == 0 { AirProvingContext::simple(m, pv.clone()) } else { AirProvingContext::simple_no_pis(m) })
++        .collect();
++    let mut p = crate::sha384::e2e_tests::parent_params_debug();
++    p.max_constraint_degree = circ.layout().degree().max(6);
++    Sha384CpuEngine::new(p).debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
++}
++
++/// The toy base in all three variants: native verify, NV program (no failures, native
++/// transcript, witness-independent), full NV constraint check; program rows per variant and
++/// code size (the Public variant grows with the code, the preprocessed ones do not).
++#[test]
++fn nv_prep_demo_toy_base() {
++    let e = Sha384CpuEngine::new(child_params_small());
++    let mut table = vec![];
++    for v in [Variant::Public, Variant::Split, Variant::Fixed] {
++        for n in [16usize, 32, 64] {
++            let fx = ToyBase { v, n, steps: n, exec_rows: 64, seed: 1 };
++            let (vk, proof) = fx.keygen_and_prove(&e);
++            e.verify(&vk, &proof).expect("native");
++            let mut b = Builder::new(17, 0);
++            build_verifier(&mut b, &vk, &proof);
++            assert!(b.failures.is_empty(), "{v:?} n={n}: {:?}", b.failures);
++            let mut t = ShaTranscript::default();
++            openvm_stark_backend::verifier::verify(e.config(), &vk, &proof, &mut t).unwrap();
++            assert_eq!(t.state, b.transcript.inner.state, "transcript");
++            // a different execution (other bytes) of the same program: same NV program
++            let (vk2, proof2) = ToyBase { seed: 5, ..fx }.keygen_and_prove(&e);
++            let mut b2 = Builder::new(17, 0);
++            build_verifier(&mut b2, &vk2, &proof2);
++            assert!(b2.failures.is_empty());
++            // (tight-heights lever: the committed heights are shape facts of the program; the two
++            // executions must agree on them for the comparison to apply)
++            let tight = |p: &openvm_stark_backend::proof::Proof<Sha384Config>| -> Vec<Option<usize>> {
++                p.trace_vdata.iter().map(|v| v.as_ref().unwrap().tight_height).collect()
++            };
++            if tight(&proof) == tight(&proof2) {
++                assert_eq!(b.instrs, b2.instrs, "program depends on the execution");
++            } else {
++                println!("NV_PREP_DEMO {v:?} n={n}: tight heights differ {:?} / {:?} (program comparison skipped)", tight(&proof), tight(&proof2));
++            }
++            let commits = proof.whir_proof.initial_round_opened_rows.len();
++            let ints: usize = vk.inner.per_air.iter().map(|a| a.symbolic_constraints.interactions.len()).sum();
++            println!(
++                "NV_PREP_DEMO variant={v:?} n={n} commits={commits} interactions={ints} rows={} jobs={} merkle_nodes={} proof_bytes={}",
++                b.instrs.len(),
++                b.job_units.len(),
++                b.merkle_nodes,
++                bincode_len(&proof)
++            );
++            table.push((v, n, b.instrs.len()));
++            if n == 32 {
++                nv_debug(&vk, &proof, 16);
++            }
++        }
++    }
++    // preprocessed variants: rows independent of the code size (up to the deduplication of the
++    // constant commitment's limbs against other program constants: a few rows)
++    // (tight-heights lever: the code table's committed height is part of the shape; skip)
++    let tight = e.params().whir.levers.tight_heights;
++    for v in [Variant::Split, Variant::Fixed].into_iter().filter(|_| !tight) {
++        let r: Vec<usize> = table.iter().filter(|x| x.0 == v).map(|x| x.2).collect();
++        let (lo, hi) = (r.iter().min().unwrap(), r.iter().max().unwrap());
++        assert!(hi - lo <= 24, "{v:?} rows depend on the code size: {r:?}");
++    }
++    // the public-value variant grows with the code
++    let p: Vec<usize> = table.iter().filter(|x| x.0 == Variant::Public).map(|x| x.2).collect();
++    assert!(p[0] < p[1] && p[1] < p[2]);
++}
++
++/// Program for (vk, proof) with failures.
++fn prog(vk: &openvm_stark_backend::keygen::types::MultiStarkVerifyingKey<Sha384Config>, proof: &openvm_stark_backend::proof::Proof<Sha384Config>) -> Vec<String> {
++    let mut b = Builder::new(17, 0);
++    build_verifier(&mut b, vk, proof);
++    b.failures
++}
++
++/// The demo's soundness cases: an execution of a different program (same code size) is rejected by
++/// the NV program for this code table (in-circuit too), and so is a forged proof whose EXEC
++/// fetches a record the table does not contain (the native prover refuses to prove an unbalanced
++/// bus, so the forgery is a tampered column opening of the code table).
++#[test]
++fn nv_prep_demo_wrong_program() {
++    let e = Sha384CpuEngine::new(child_params_small());
++    for v in [Variant::Split, Variant::Fixed] {
++        let fx = ToyBase { v, n: 32, steps: 32, exec_rows: 64, seed: 1 };
++        let (vk, proof) = fx.keygen_and_prove(&e);
++        // a different program: record 3's x0 changed
++        let other = |code: &mut Vec<[u32; REC]>| code[3][4] += 1;
++        let (vk_o, proof_o) = {
++            let fxo = ToyBaseOther { base: ToyBase { ..fx }, edit: other };
++            fxo.keygen_and_prove(&e)
++        };
++        assert_ne!(vk.pre_hash, vk_o.pre_hash);
++        e.verify(&vk_o, &proof_o).expect("the other program proves");
++        assert!(e.verify(&vk, &proof_o).is_err());
++        let f = prog(&vk, &proof_o);
++        println!("NV_PREP_DEMO {v:?} other program under this program's NV: {} failures", f.len());
++        assert!(!f.is_empty());
++        let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| nv_debug_nofail(&vk, &proof_o, 16)));
++        assert!(r.is_err(), "{v:?}: other program accepted in-circuit");
++        // the code table's preprocessed opening tampered with
++        let mut bad = proof.clone();
++        let t = bad.batch_constraint_proof.column_openings.iter().position(|p| p.len() > 1).unwrap();
++        bad.batch_constraint_proof.column_openings[t][1][0] += EF::ONE;
++        assert!(!prog(&vk, &bad).is_empty());
++        println!("NV_PREP_DEMO_REJECTED {v:?} other program, tampered code opening");
++    }
++}
++
++/// `ToyBase` with an edited code table.
++struct ToyBaseOther {
++    base: ToyBase,
++    edit: fn(&mut Vec<[u32; REC]>),
++}
++impl TestFixture<Sha384Config> for ToyBaseOther {
++    fn airs(&self) -> Vec<AirRef<Sha384Config>> {
++        let mut code = self.base.code();
++        (self.edit)(&mut code);
++        match self.base.v {
++            Variant::Split => vec![Arc::new(ExecAir), Arc::new(CodeAir { code, rows: self.base.code_rows() }), Arc::new(RangeAir)],
++            Variant::Fixed => vec![Arc::new(ExecAir), Arc::new(FixedAir { code })],
++            Variant::Public => unreachable!(),
++        }
++    }
++    fn generate_proving_ctx(&self) -> ProvingContext<CpuColMajorBackend<Sha384Config>> {
++        // EXEC must fetch the edited records: rebuild its trace from the edited code
++        let mut ctx = self.base.generate_proving_ctx();
++        let mut code = self.base.code();
++        (self.edit)(&mut code);
++        let bytes = self.base.bytes();
++        let mut v = vec![F::ZERO; self.base.exec_rows * E_W];
++        let mut acc = F::ZERO;
++        for i in 0..self.base.steps {
++            let r = &mut v[i * E_W..(i + 1) * E_W];
++            r[E_REAL] = F::ONE;
++            for k in 0..REC {
++                r[E_REC + k] = F::from_u32(code[i][k]);
++            }
++            r[E_BYTE] = F::from_u32(bytes[i]);
++            r[E_ACC] = acc;
++            acc += F::from_u32(code[i][4]) + F::from_u32(bytes[i]);
++        }
++        ctx.per_trace[0].1 = ctx_of(RowMajorMatrix::new(v, E_W), vec![acc]);
++        ctx
++    }
++}
++fn ctx_of(m: RowMajorMatrix<F>, pv: Vec<F>) -> AirProvingContext<CpuColMajorBackend<Sha384Config>> {
++    ctx(m, pv)
++}
++
++fn nv_debug_nofail(vk: &openvm_stark_backend::keygen::types::MultiStarkVerifyingKey<Sha384Config>, proof: &openvm_stark_backend::proof::Proof<Sha384Config>, log_rows: usize) {
++    use openvm_cpu_backend::CpuBackend;
++    let circ = super::circuit::NvCircuit::new(vk.inner.params.k_whir(), log_rows, 1);
++    let airs = circ.airs::<Sha384Config>();
++    let (mats, b) = circ.generate(vk, proof);
++    let pv = b.public_values();
++    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
++        .into_iter()
++        .enumerate()
++        .map(|(i, m)| if i == 0 { AirProvingContext::simple(m, pv.clone()) } else { AirProvingContext::simple_no_pis(m) })
++        .collect();
++    let mut p = crate::sha384::e2e_tests::parent_params_debug();
++    p.max_constraint_degree = circ.layout().degree().max(6);
++    Sha384CpuEngine::new(p).debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
++}
++
++fn bincode_len(p: &openvm_stark_backend::proof::Proof<Sha384Config>) -> usize {
++    use openvm_stark_backend::codec::Encode;
++    let mut v = vec![];
++    p.encode(&mut v).unwrap();
++    v.len()
++}
++
+diff --git a/crates/recursion/src/nv/prep_tests.rs b/crates/recursion/src/nv/prep_tests.rs
+new file mode 100644
+index 0000000..9373307
+--- /dev/null
++++ b/crates/recursion/src/nv/prep_tests.rs
+@@ -0,0 +1,412 @@
++//! pq-nv-preprocessed: NV verifying children with preprocessed (vk-committed) and cached traces
++//! (results/pq-nv-preprocessed/DESIGN.md §5).
++use openvm_stark_backend::{
++    keygen::types::MultiStarkVerifyingKey,
++    proof::Proof,
++    test_utils::{CachedFixture11, FibFixture, PreprocessedAndCachedFixture, PreprocessedFibFixture, TestFixture},
++    StarkEngine,
++};
++use p3_field::PrimeCharacteristicRing;
++
++use super::{builder::Builder, verifier::build_verifier};
++use crate::sha384::{config::*, e2e_tests::child_params_small};
++
++type Vk = MultiStarkVerifyingKey<Sha384Config>;
++type Pf = Proof<Sha384Config>;
++
++/// Child selector table (the preprocessed column of FibonacciSelectorAir), 32 rows.
++fn sels(seed: usize) -> Vec<bool> {
++    (0..32).map(|i| (i * 7 + seed) % 3 != 0).collect()
++}
++
++fn engine() -> Sha384CpuEngine {
++    Sha384CpuEngine::new(child_params_small())
++}
++
++/// Program for (vk, proof) (generation only: failures are recorded, the program is returned).
++fn program(vk: &Vk, proof: &Pf) -> Builder {
++    let mut b = Builder::new(17, 0);
++    build_verifier(&mut b, vk, proof);
++    b
++}
++
++/// Honest child: native verify passes, the program records no failure and ends in the native
++/// transcript state.
++fn honest(vk: &Vk, proof: &Pf) -> Builder {
++    let e = engine();
++    e.verify(vk, proof).expect("native verify");
++    let b = program(vk, proof);
++    assert!(b.failures.is_empty(), "{:?}", b.failures);
++    let mut t = ShaTranscript::default();
++    openvm_stark_backend::verifier::verify(e.config(), vk, proof, &mut t).unwrap();
++    assert_eq!(t.state, b.transcript.inner.state, "transcript diverged from native");
++    b
++}
++
++/// Full NV constraint check (all AIRs, all buses) of the trace generated for (vk, proof).
++fn debug(vk: &Vk, proof: &Pf, log_rows: usize) {
++    use openvm_cpu_backend::CpuBackend;
++    use openvm_stark_backend::prover::{AirProvingContext, ProvingContext};
++    let circ = super::circuit::NvCircuit::new(vk.inner.params.k_whir(), log_rows, 1);
++    let airs = circ.airs::<Sha384Config>();
++    let (mats, b) = circ.generate(vk, proof);
++    let pv = b.public_values();
++    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
++        .into_iter()
++        .enumerate()
++        .map(|(i, m)| if i == 0 { AirProvingContext::simple(m, pv.clone()) } else { AirProvingContext::simple_no_pis(m) })
++        .collect();
++    let mut p = crate::sha384::e2e_tests::parent_params_debug();
++    p.max_constraint_degree = circ.layout().degree().max(6);
++    Sha384CpuEngine::new(p).debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
++}
++
++fn must_fail(name: &str, f: impl FnOnce()) {
++    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
++    assert!(r.is_err(), "`{name}` accepted");
++    println!("NV_PREP_REJECTED {name}");
++}
++
++fn n_commits(proof: &Pf) -> usize {
++    proof.whir_proof.initial_round_opened_rows.len()
++}
++
++/// Honest preprocessed child: the program verifies it, matches the native transcript, does not
++/// depend on the witness (two different Fibonacci seeds over the same table), and the generated
++/// NV trace satisfies every NV constraint.
++#[test]
++fn nv_prep_honest() {
++    let e = engine();
++    let (vk, proof) = PreprocessedFibFixture::new(0, 1, sels(0)).keygen_and_prove(&e);
++    assert_eq!(n_commits(&proof), 2, "main + preprocessed");
++    let b = honest(&vk, &proof);
++    let (vk2, proof2) = PreprocessedFibFixture::new(2, 3, sels(0)).keygen_and_prove(&e);
++    assert_eq!(vk.pre_hash, vk2.pre_hash);
++    let b2 = honest(&vk2, &proof2);
++    assert_eq!(b.instrs, b2.instrs, "program depends on proof values");
++    // the same AIR without a preprocessed trace for scale: the plain Fib child
++    let (vkf, prf) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&e);
++    let bf = honest(&vkf, &prf);
++    println!(
++        "NV_PREP_ROWS prep={} jobs={} merkle_nodes={} | fib={} jobs={} merkle_nodes={}",
++        b.instrs.len(),
++        b.job_units.len(),
++        b.merkle_nodes,
++        bf.instrs.len(),
++        bf.job_units.len(),
++        bf.merkle_nodes
++    );
++    debug(&vk, &proof, 16);
++}
++
++/// The preprocessed commitment in the child vk is tampered with (pre-hash kept): the program's
++/// constant root differs from the tree the child opened. Rejected by the program (Merkle root,
++/// and the transcript, which observes the constant) and by the NV constraints.
++#[test]
++fn nv_prep_tampered_commitment() {
++    let e = engine();
++    let (vk, proof) = PreprocessedFibFixture::new(0, 1, sels(0)).keygen_and_prove(&e);
++    let mut bad = vk.clone();
++    bad.inner.per_air[0].preprocessed_data.as_mut().unwrap().commit[0] ^= 1;
++    assert!(e.verify(&bad, &proof).is_err(), "native accepts a tampered commitment");
++    let b = program(&bad, &proof);
++    println!("NV_PREP tampered commitment: {:?}", b.failures);
++    assert!(b.failures.iter().any(|f| f == "merkle root"), "{:?}", b.failures);
++    must_fail("tampered preprocessed commitment (circuit)", || debug(&bad, &proof, 16));
++    // the proof's opened preprocessed rows tampered with (commitment honest): Merkle root
++    let mut badp = proof.clone();
++    badp.whir_proof.initial_round_opened_rows[1][0][0][0] += F::ONE;
++    let b = program(&vk, &badp);
++    assert!(b.failures.iter().any(|f| f == "merkle root"), "{:?}", b.failures);
++    must_fail("tampered preprocessed opened row (circuit)", || debug(&vk, &badp, 16));
++    // the preprocessed column opening tampered with: constraint / stacking checks
++    let mut badc = proof.clone();
++    badc.batch_constraint_proof.column_openings[0][1][0] += EF::ONE;
++    let b = program(&vk, &badc);
++    println!("NV_PREP tampered preprocessed opening: {:?}", b.failures);
++    assert!(!b.failures.is_empty());
++    must_fail("tampered preprocessed column opening (circuit)", || debug(&vk, &badc, 16));
++}
++
++/// Wrong vk constant: the program is generated from a vk whose pre-hash differs from the one the
++/// child's transcript used. Rejected.
++#[test]
++fn nv_prep_wrong_vk_constant() {
++    let e = engine();
++    let (vk, proof) = PreprocessedFibFixture::new(0, 1, sels(0)).keygen_and_prove(&e);
++    let mut bad = vk.clone();
++    bad.pre_hash[0] ^= 1;
++    assert!(e.verify(&bad, &proof).is_err());
++    let b = program(&bad, &proof);
++    println!("NV_PREP wrong pre-hash: {} failures, first {:?}", b.failures.len(), b.failures.first());
++    assert!(!b.failures.is_empty());
++    must_fail("wrong vk pre-hash (circuit)", || debug(&bad, &proof, 16));
++}
++
++/// A child proved against a different preprocessed table (same AIR, same heights, different
++/// selector column, hence a different commitment and vk), checked by the program for the
++/// original table. Rejected; both directions.
++#[test]
++fn nv_prep_other_table() {
++    let e = engine();
++    let (vk_a, proof_a) = PreprocessedFibFixture::new(0, 1, sels(0)).keygen_and_prove(&e);
++    let (vk_b, proof_b) = PreprocessedFibFixture::new(0, 1, sels(1)).keygen_and_prove(&e);
++    let ca = vk_a.inner.per_air[0].preprocessed_data.as_ref().unwrap().commit;
++    let cb = vk_b.inner.per_air[0].preprocessed_data.as_ref().unwrap().commit;
++    assert_ne!(ca, cb, "tables must differ");
++    honest(&vk_b, &proof_b);
++    for (name, vk, proof) in [("table B under A's program", &vk_a, &proof_b), ("table A under B's program", &vk_b, &proof_a)] {
++        assert!(e.verify(vk, proof).is_err());
++        let b = program(vk, proof);
++        println!("NV_PREP {name}: {} failures, first {:?}", b.failures.len(), b.failures.first());
++        assert!(!b.failures.is_empty());
++        must_fail(name, || debug(vk, proof, 16));
++    }
++    // a vk that claims table B's commitment but keeps A's pre-hash, on A's proof: the program's
++    // constant root (B) is not the tree A's proof opens
++    let mut mixed = vk_a.clone();
++    mixed.inner.per_air[0].preprocessed_data.as_mut().unwrap().commit = cb;
++    let b = program(&mixed, &proof_a);
++    assert!(b.failures.iter().any(|f| f == "merkle root"), "{:?}", b.failures);
++    must_fail("A's proof under a vk claiming table B", || debug(&mixed, &proof_a, 16));
++}
++
++/// Cached traces (the commitment is a proof witness): 1 sender + 1 receiver, each with a cached
++/// part, and a preprocessed + 1..3 cached parts AIR.
++#[test]
++fn nv_prep_cached() {
++    let e = engine();
++    let (vk, proof) = CachedFixture11::new(e.config().clone()).keygen_and_prove(&e);
++    assert_eq!(n_commits(&proof), 3);
++    let b = honest(&vk, &proof);
++    println!("NV_PREP cached11 rows={}", b.instrs.len());
++    debug(&vk, &proof, 16);
++    // a cached commitment tampered with in the proof: transcript and Merkle root
++    let mut bad = proof.clone();
++    bad.trace_vdata[0].as_mut().unwrap().cached_commitments[0][0] ^= 1;
++    let b = program(&vk, &bad);
++    assert!(b.failures.iter().any(|f| f == "merkle root"), "{:?}", b.failures);
++    must_fail("tampered cached commitment (circuit)", || debug(&vk, &bad, 16));
++    for parts in [1, 3] {
++        let fx = PreprocessedAndCachedFixture::new(sels(0), e.config().clone(), parts);
++        let (vk, proof) = fx.keygen_and_prove(&e);
++        assert_eq!(n_commits(&proof), 2 + parts);
++        let b = honest(&vk, &proof);
++        println!("NV_PREP preprocessed+{parts} cached rows={}", b.instrs.len());
++        debug(&vk, &proof, 16);
++    }
++}
++
++/// O-2: a child with more than one commitment must run round 0 on Johnson. The program
++/// generator applies the native proof-shape rule (a static fact of the child vk): a preprocessed
++/// child under a first-order round 0 is refused; under Johnson round 0 it verifies.
++#[test]
++fn nv_prep_o2_round0() {
++    use openvm_stark_backend::{AgreementTable, CertSet};
++    let base = child_params_small();
++    let (lb, lh) = (base.log_blowup, base.l_skip + base.n_stack);
++    let bits = 5 + base.whir.query_phase_pow_bits;
++    let codes = base.whir.round_codes(lb, lh);
++    let kr = base.whir.k_rounds();
++    let (n0, k0) = codes[0];
++    let a0 = AgreementTable::first_order_agree(n0, k0, 50, 64);
++    let certs: CertSet = (0..=kr[0]).map(|s| (n0 >> s, k0 >> s, (a0 + (1 << s) - 1) >> s)).collect();
++    let mk = |commits: usize| {
++        let mut p = base.clone();
++        p.whir = p.whir.clone().with_first_order(lb, lh, bits, 50, 64, Some(&certs), commits);
++        p
++    };
++    let fx = PreprocessedFibFixture::new(0, 1, sels(0));
++    let e2 = Sha384CpuEngine::new(mk(2));
++    let (vk, proof) = fx.keygen_and_prove(&e2);
++    e2.verify(&vk, &proof).unwrap();
++    let b = program(&vk, &proof);
++    assert!(b.failures.is_empty(), "{:?}", b.failures);
++    let e1 = Sha384CpuEngine::new(mk(1));
++    let (vk1, proof1) = fx.keygen_and_prove(&e1);
++    must_fail("first-order round 0 with a preprocessed child", || {
++        program(&vk1, &proof1);
++    });
++}
++
++/// Copy of `faithful_tr_tests::mutate_elem` (private there) plus the cached commitments
++/// (`trace_vdata[a].cached_commitments`), the only proof elements a cached child adds.
++fn mutate_elem(p: &mut Pf, k: usize) -> Option<String> {
++    let mut i = 0usize;
++    macro_rules! ef { ($x:expr, $l:expr) => {{ if i == k { $x += EF::ONE; return Some($l); } i += 1; }}; }
++    macro_rules! ff { ($x:expr, $l:expr) => {{ if i == k { $x += F::ONE; return Some($l); } i += 1; }}; }
++    macro_rules! dg { ($x:expr, $l:expr) => {{ for w in 0..6 { if i == k { $x[w] ^= 1 << (w * 7 % 64); return Some(format!("{} word {w}", $l)); } i += 1; } }}; }
++    dg!(p.common_main_commit, "common_main_commit".to_string());
++    for a in 0..p.trace_vdata.len() {
++        if let Some(v) = p.trace_vdata[a].as_mut() {
++            for c in 0..v.cached_commitments.len() {
++                dg!(v.cached_commitments[c], format!("trace_vdata[{a}].cached_commitments[{c}]"));
++            }
++        }
++    }
++    for a in 0..p.public_values.len() {
++        for j in 0..p.public_values[a].len() {
++            ff!(p.public_values[a][j], format!("public_values[{a}][{j}]"));
++        }
++    }
++    let g = &mut p.gkr_proof;
++    ff!(g.logup_pow_witness, "gkr.logup_pow_witness".into());
++    ef!(g.q0_claim, "gkr.q0_claim".into());
++    for l in 0..g.claims_per_layer.len() {
++        ef!(g.claims_per_layer[l].p_xi_0, format!("gkr.layer[{l}].p_xi_0"));
++        ef!(g.claims_per_layer[l].p_xi_1, format!("gkr.layer[{l}].p_xi_1"));
++        ef!(g.claims_per_layer[l].q_xi_0, format!("gkr.layer[{l}].q_xi_0"));
++        ef!(g.claims_per_layer[l].q_xi_1, format!("gkr.layer[{l}].q_xi_1"));
++    }
++    for a in 0..g.sumcheck_polys.len() {
++        for b in 0..g.sumcheck_polys[a].len() {
++            for c in 0..3 {
++                ef!(g.sumcheck_polys[a][b][c], format!("gkr.sumcheck_polys[{a}][{b}][{c}]"));
++            }
++        }
++    }
++    let bc = &mut p.batch_constraint_proof;
++    for a in 0..bc.numerator_term_per_air.len() {
++        ef!(bc.numerator_term_per_air[a], format!("bc.numerator[{a}]"));
++    }
++    for a in 0..bc.denominator_term_per_air.len() {
++        ef!(bc.denominator_term_per_air[a], format!("bc.denominator[{a}]"));
++    }
++    for a in 0..bc.univariate_round_coeffs.len() {
++        ef!(bc.univariate_round_coeffs[a], format!("bc.univariate[{a}]"));
++    }
++    for a in 0..bc.sumcheck_round_polys.len() {
++        for b in 0..bc.sumcheck_round_polys[a].len() {
++            ef!(bc.sumcheck_round_polys[a][b], format!("bc.sumcheck[{a}][{b}]"));
++        }
++    }
++    for a in 0..bc.column_openings.len() {
++        for b in 0..bc.column_openings[a].len() {
++            for c in 0..bc.column_openings[a][b].len() {
++                ef!(bc.column_openings[a][b][c], format!("bc.column_openings[{a}][{b}][{c}]"));
++            }
++        }
++    }
++    let sp = &mut p.stacking_proof;
++    for a in 0..sp.univariate_round_coeffs.len() {
++        ef!(sp.univariate_round_coeffs[a], format!("stacking.univariate[{a}]"));
++    }
++    for a in 0..sp.sumcheck_round_polys.len() {
++        for b in 0..2 {
++            ef!(sp.sumcheck_round_polys[a][b], format!("stacking.sumcheck[{a}][{b}]"));
++        }
++    }
++    for a in 0..sp.stacking_openings.len() {
++        for b in 0..sp.stacking_openings[a].len() {
++            ef!(sp.stacking_openings[a][b], format!("stacking.openings[{a}][{b}]"));
++        }
++    }
++    let w = &mut p.whir_proof;
++    ff!(w.mu_pow_witness, "whir.mu_pow_witness".into());
++    for a in 0..w.whir_sumcheck_polys.len() {
++        for b in 0..2 {
++            ef!(w.whir_sumcheck_polys[a][b], format!("whir.sumcheck[{a}][{b}]"));
++        }
++    }
++    for a in 0..w.codeword_commits.len() {
++        dg!(w.codeword_commits[a], format!("whir.codeword_commits[{a}]"));
++    }
++    for a in 0..w.ood_values.len() {
++        ef!(w.ood_values[a], format!("whir.ood[{a}]"));
++    }
++    for a in 0..w.folding_pow_witnesses.len() {
++        ff!(w.folding_pow_witnesses[a], format!("whir.folding_pow[{a}]"));
++    }
++    for a in 0..w.query_phase_pow_witnesses.len() {
++        ff!(w.query_phase_pow_witnesses[a], format!("whir.query_pow[{a}]"));
++    }
++    for t in 0..w.initial_round_opened_rows.len() {
++        for q in 0..w.initial_round_opened_rows[t].len() {
++            for j in 0..w.initial_round_opened_rows[t][q].len() {
++                for c in 0..w.initial_round_opened_rows[t][q][j].len() {
++                    ff!(w.initial_round_opened_rows[t][q][j][c], format!("whir.initial_rows[{t}][{q}][{j}][{c}]"));
++                }
++            }
++        }
++    }
++    for t in 0..w.initial_round_merkle_proofs.len() {
++        for q in 0..w.initial_round_merkle_proofs[t].len() {
++            for l in 0..w.initial_round_merkle_proofs[t][q].len() {
++                dg!(w.initial_round_merkle_proofs[t][q][l], format!("whir.initial_merkle[{t}][{q}][{l}]"));
++            }
++        }
++    }
++    for r in 0..w.codeword_opened_values.len() {
++        for q in 0..w.codeword_opened_values[r].len() {
++            for j in 0..w.codeword_opened_values[r][q].len() {
++                ef!(w.codeword_opened_values[r][q][j], format!("whir.codeword_values[{r}][{q}][{j}]"));
++            }
++        }
++    }
++    for r in 0..w.codeword_merkle_proofs.len() {
++        for q in 0..w.codeword_merkle_proofs[r].len() {
++            for l in 0..w.codeword_merkle_proofs[r][q].len() {
++                dg!(w.codeword_merkle_proofs[r][q][l], format!("whir.codeword_merkle[{r}][{q}][{l}]"));
++            }
++        }
++    }
++    for a in 0..w.final_poly.len() {
++        ef!(w.final_poly[a], format!("whir.final_poly[{a}]"));
++    }
++    let _ = i;
++    None
++}
++
++
++/// Program ≡ native on every single-element mutation of a child with preprocessed / cached
++/// traces (FAITHFUL §2(d)(iii) `nv_tr_every_proof_element`, extended): for each value element the
++/// native verifier accepts iff the NV program records no failure. Fixtures: preprocessed Fib,
++/// preprocessed + 2 cached parts, the toy base (Split: 2 preprocessed AIRs); 3 lever sets.
++#[test]
++fn nv_prep_every_proof_element() {
++    use crate::sha384::e2e_tests::with_levers;
++    use openvm_stark_backend::WhirLevers;
++    let base = WhirLevers::default();
++    let cases: Vec<(&str, WhirLevers, usize)> = vec![
++        ("default", base, 1),
++        ("x15+multiproof+whir_y+widepow", WhirLevers { multiproof: true, whir_y: true, wide_query_pow: true, ..base }, 15),
++        ("gruen+derive+mask+k1", WhirLevers { gruen_gkr: true, gkr_derive_claims: true, gruen_zerocheck: true, next_mask: true, k_first: 1, ..base }, 1),
++    ];
++    let mut mismatches = vec![];
++    for (name, lv, x15) in cases {
++        let mut p = openvm_stark_backend::test_utils::test_system_params_small(2, 8, 3);
++        p.max_constraint_degree = 4;
++        let p = with_levers(p, lv, x15, 5);
++        let engine = Sha384CpuEngine::new(p);
++        for fx in 0..3 {
++            let (vk, proof) = match fx {
++                0 => PreprocessedFibFixture::new(0, 1, sels(0)).keygen_and_prove(&engine),
++                1 => PreprocessedAndCachedFixture::new(sels(0), engine.config().clone(), 2).keygen_and_prove(&engine),
++                _ => super::prep_demo::ToyBase { v: super::prep_demo::Variant::Split, n: 16, steps: 16, exec_rows: 32, seed: 1 }.keygen_and_prove(&engine),
++            };
++            let (mut n, mut both_reject, mut both_accept) = (0, 0, 0);
++            for k in 0.. {
++                let mut bad = proof.clone();
++                let Some(label) = mutate_elem(&mut bad, k) else { break };
++                n += 1;
++                let mut t = ShaTranscript::default();
++                let native_ok = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++                    openvm_stark_backend::verifier::verify(engine.config(), &vk, &bad, &mut t).is_ok()
++                }))
++                .unwrap_or(false);
++                let prog_ok = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| program(&vk, &bad).failures.is_empty())).unwrap_or(false);
++                match (native_ok, prog_ok) {
++                    (false, false) => both_reject += 1,
++                    (true, true) => both_accept += 1,
++                    _ => mismatches.push(format!("{name} fx{fx} {label}: native_ok={native_ok} program_ok={prog_ok}")),
++                }
++            }
++            println!("NV_PREP_ELEMENTS {name} fixture={fx} elements={n} both_reject={both_reject} both_accept={both_accept}");
++        }
++    }
++    for m in &mismatches {
++        println!("NV_PREP_ELEMENT_MISMATCH {m}");
++    }
++    assert!(mismatches.is_empty(), "{} program/native mismatches", mismatches.len());
++}
++
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..2d4e4f8
+index 0000000..a19e2c3
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,1306 @@
+@@ -0,0 +1,1382 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -6787,7 +7794,6 @@ index 0000000..2d4e4f8
 +    let k = openvm_stark_backend::StarkEngine::params(&engine).k_whir();
 +    let _ = k;
 +    // optional final layer with its own parameters (env FINAL_*), proving the last phase-A proof
-+    assert!(unbound_final || std::env::var("FINAL_LOG_BLOWUP").is_err(), "FINAL must run the NV program (bound): FINAL_* params need NV_UNBOUND_FINAL=1 (measurement only)");
 +    let final_engine = std::env::var("FINAL_LOG_BLOWUP").ok().map(|_| {
 +        let mut fp = params_from_env("FINAL", [16, 3, 20, 64]);
 +        fp.max_constraint_degree = nv_debug_params().max_constraint_degree;
@@ -6846,8 +7852,8 @@ index 0000000..2d4e4f8
 +        );
 +        soundness(tag, &vk1);
 +        println!("{tag}_PROOF_BYTES {}", proof_sizes(&p1));
-+        let app = super::circuit::NvCircuit::app_table(&b.instrs);
-+        (vk1, p1, shapes, app)
++        let words: Vec<[u32; 4]> = b.instrs.iter().map(|i| i.words()).collect();
++        (vk1, p1, shapes, words)
 +    };
 +    let run = |circ: &super::circuit::NvCircuit,
 +               vk: &MultiStarkVerifyingKey<Sha384Config>,
@@ -6862,11 +7868,8 @@ index 0000000..2d4e4f8
 +    let mut phase_a = if fixed.is_empty() { env_usize("NV_PHASE_A", 4) } else { 0 };
 +    let save_dir = std::env::var("NV_SAVE_DIR").ok();
 +    // resume: a saved phase-A proof (every NV level has the same vk under the parent engine;
-+    // the app table is the level-1 program, rebuilt without proving)
 +    if let Ok(path) = std::env::var("NV_RESUME_PROOF") {
 +        use openvm_stark_backend::codec::Decode;
-+        let (_, b1) = circ.generate(&vk0, &p0);
-+        circ.app = Some(super::circuit::NvCircuit::app_table(&b1.instrs));
 +        let (_, vk) = openvm_stark_backend::StarkEngine::keygen(&engine, &circ.airs::<Sha384Config>());
 +        let bytes = std::fs::read(&path).unwrap();
 +        pa = Proof::<Sha384Config>::decode(&mut std::io::Cursor::new(&bytes)).unwrap();
@@ -6880,16 +7883,12 @@ index 0000000..2d4e4f8
 +        // phase A only finds the fixed heights: no binding / passthrough (child_nv would force the
 +        // program binding, which needs equal programs, i.e. the fixed heights)
 +        circ.child_nv = false;
-+        let (v, q, sh, app) = run(&circ, &vka, &pa, &format!("A{i}"));
++        let (v, q, sh, _) = run(&circ, &vka, &pa, &format!("A{i}"));
 +        if let Some(d) = &save_dir {
 +            use openvm_stark_backend::codec::Encode;
 +            let mut bytes = vec![];
 +            q.encode(&mut bytes).unwrap();
 +            std::fs::write(format!("{d}/A{i}.proof"), &bytes).unwrap();
-+        }
-+        if i == 1 {
-+            // level-1 program = app-verifier table for every later level
-+            circ.app = Some(app);
 +        }
 +        let hs: Vec<usize> = sh.iter().map(|s| s.0).collect();
 +        println!("A{i}_HEIGHTS {hs:?}");
@@ -6908,36 +7907,90 @@ index 0000000..2d4e4f8
 +        // its program (FINAL params differ from the NV fixed point)
 +        println!("NV_FINAL_UNBOUND measurement only: the child's program is not bound");
 +        let mut fc = super::circuit::NvCircuit::new(k, log_rows, 1); // k = the child (parent-param) folding factor
-+        fc.app = circ.app.clone();
 +        fc.prog_log = circ.prog_log;
 +        let _ = run_with(fe, &fc, &vka, &pa, "FINAL");
 +        if levels == 0 {
 +            return;
 +        }
 +    }
-+    // phase B: fixed heights; binding from level 3
-+    let app_a = circ.app.clone();
++    // phase B: fixed heights (if phase A ran); binding at every level >= 2
 +    let mut circ = super::circuit::NvCircuit::new(k, log_rows, 1);
-+    circ.heights = Some(fixed);
++    if !fixed.is_empty() {
++        circ.heights = Some(fixed);
++    }
 +    let (mut vk, mut p) = (vk0, p0.clone());
 +    let mut last_words: Vec<[u32; 4]> = vec![];
-+    for level in 1..=levels {
++    let mut last_root = None;
++    // G2: every NV level carries its program as a cached part.  Anchor rule
++    // (`NvCircuit::select_anchor`): a level anchors at its child (C_child) until its program
++    // equals its child's, then keeps that anchor and binds by BIND.  Run at least `levels` levels
++    // and until the last level binds its child by BIND (the program has converged), at most
++    // NV_MAX_LEVELS.
++    circ.program_part = true;
++    let max_levels = env_usize("NV_MAX_LEVELS", levels.max(2) + 4);
++    let mut level = 0usize;
++    let mut bound_levels = 0usize;
++    // tight heights: levels >= 2 commit at least `floor` rows per AIR (setup constants, natural
++    // height + 1/NV_TIGHT_SLACK_DIV slack, raised only when a level's natural height exceeds it)
++    let tight = openvm_stark_backend::StarkEngine::params(&engine).whir.levers.tight_heights;
++    let l_skip = openvm_stark_backend::StarkEngine::params(&engine).l_skip;
++    let slack_div = env_usize("NV_TIGHT_SLACK_DIV", 64);
++    let mut floor: Option<Vec<usize>> = None;
++    let mut last_by_bind = false;
++    loop {
++        level += 1;
 +        circ.bind = level >= 2;
 +        circ.child_nv = level >= 2;
-+        circ.app = if level >= 2 { app_a.clone() } else { None };
-+        let (v, q, _, app) = run(&circ, &vk, &p, &format!("L{level}"));
-+        if level == 1 {
-+            assert_eq!(Some(app.clone()), app_a, "level-1 program differs from the phase-A table");
++        if level >= 2 {
++            let a = circ.select_anchor(&vk, &p, level as u32 - 1, &last_words, last_root.unwrap());
++            let by_bind = a.0 != level as u32 - 1;
++            println!("NV_G2_ANCHOR L{level}: anchor level M = {} ({})", a.0, if by_bind { "child bound by BIND" } else { "child bound by its root = C_M" });
++            bound_levels += by_bind as usize;
++            last_by_bind = by_bind;
++            circ.anchor = Some(a);
++            if tight {
++                use p3_matrix::Matrix;
++                let (mats, _) = circ.generate(&vk, &p);
++                let nat = super::circuit::natural_tight_heights(&mats, l_skip);
++                let fits = floor.as_ref().is_some_and(|f| nat.iter().zip(f).all(|(n, f)| n <= f));
++                if !fits {
++                    floor = Some(
++                        nat.iter()
++                            .zip(&mats)
++                            .map(|(&n, m)| (n + n / slack_div).next_multiple_of(1 << l_skip).min(m.height()))
++                            .collect(),
++                    );
++                    println!("NV_G2_FLOOR L{level}: natural committed {nat:?} -> new floor {:?}", floor.as_ref().unwrap());
++                } else {
++                    println!("NV_G2_FLOOR L{level}: natural committed {nat:?} fits floor {:?}", floor.as_ref().unwrap());
++                }
++                circ.tight_floor = floor.clone();
++            }
 +        }
++        let (v, q, sh, words) = run(&circ, &vk, &p, &format!("L{level}"));
++        let root = q.trace_vdata[0].as_ref().unwrap().cached_commitments[0];
++        println!("NV_G2 L{level} program rows {} committed heights {:?} cached root {root:?}", words.len(), sh.iter().map(|s| s.0).collect::<Vec<_>>());
 +        assert!(super::circuit::check_statement(&q.public_values[0], &p0.public_values), "L{level} statement");
-+        last_words = app;
++        last_words = words;
++        last_root = Some(root);
 +        vk = v;
 +        p = q;
++        if level >= levels && last_by_bind {
++            break;
++        }
++        assert!(level < max_levels, "program did not converge within {max_levels} levels");
 +    }
++    let levels = level;
++    println!("NV_G2 converged: {levels} levels, {bound_levels} bound by BIND, anchor M = {}", circ.anchor.unwrap().0);
 +    // FINAL: the fixed-point program under the final domain, child program bound; V_d checks it
 +    assert!(levels >= 2, "FINAL needs an NV child (NV_LEVELS >= 2)");
-+    let fe = Sha384CpuEngine::new_final(openvm_stark_backend::StarkEngine::params(&engine).clone());
-+    let (vkf, pf, _, words_f) = run_with(&fe, &circ, &vk, &p, "FINAL");
++    // FINAL: its own WHIR shape (FINAL_* params, default the NV params) and a single commitment
++    // (program in common main); the program is the same (it depends on the child vk only)
++    let fe = final_engine.unwrap_or_else(|| Sha384CpuEngine::new_final(openvm_stark_backend::StarkEngine::params(&engine).clone()));
++    let mut fcirc = circ.clone_shape();
++    fcirc.program_part = false;
++    fcirc.tight_floor = None; // nobody verifies FINAL in-circuit
++    let (vkf, pf, _, words_f) = run_with(&fe, &fcirc, &vk, &p, "FINAL");
 +    assert_eq!(words_f, last_words, "FINAL runs the same (fixed-point) program as its child");
 +    let setup = super::vd::VdSetup { vk_final: vkf, program: words_f, level: levels as u32 + 1 };
 +    super::vd::verify_final(&setup, &fe, &p0.public_values, &pf, false).expect("V_d (pinned program) accepts the final proof");
@@ -7169,9 +8222,12 @@ index 0000000..2d4e4f8
 +    nv_debug_mats(&vk, &proof, 16, |_, _| {});
 +}
 +
-+/// App-verifier binding: level 2 checks level 1's program against the app table it carries.
++/// G2 level-1 binding: level 2 checks its level-1 child's cached program root against the
++/// constant C_L1 (the setup commitment of the L1 program part); no app table.  Honest accepted
++/// (program and full debug constraint level), statement passthrough; rejected: a wrong C_L1
++/// constant and a re-exposed different statement digest.
 +#[test]
-+fn nv_app_binding() {
++fn nv_l1_commit_binding() {
 +    use openvm_cpu_backend::CpuBackend;
 +    use openvm_stark_backend::prover::{AirProvingContext, ProvingContext};
 +    let engine = Sha384CpuEngine::new(child_params_small());
@@ -7181,18 +8237,25 @@ index 0000000..2d4e4f8
 +    pp.log_blowup = 2;
 +    let pp = crate::sha384::e2e_tests::with_levers(pp, Default::default(), 1, 20);
 +    let parent = Sha384CpuEngine::new(pp);
-+    let circ1 = super::circuit::NvCircuit::new(3, 19, 1);
-+    let (vk1, p1, b1, _) = super::circuit::prove_level(&circ1, &parent, &vk0, &p0);
-+    let app = super::circuit::NvCircuit::app_table(&b1.instrs);
-+    println!("NV_APP table rows {}", app.len());
-+    let run = |app: Vec<[u32; 4]>| {
++    let mut circ1 = super::circuit::NvCircuit::new(3, 19, 1);
++    circ1.program_part = true;
++    let (m1, b1g) = circ1.generate(&vk0, &p0);
++    assert!(b1g.failures.is_empty());
++    let c_l1 = super::circuit::program_commitment(openvm_stark_backend::StarkEngine::config(&parent), &m1[0]);
++    let (vk1, p1, _, _) = super::circuit::prove_level(&circ1, &parent, &vk0, &p0);
++    assert_eq!(p1.trace_vdata[0].as_ref().unwrap().cached_commitments[0], c_l1, "L1 cached root = setup C_L1");
++    println!("NV_L1C C_L1 = setup commitment of the L1 program part");
++    // level 2 (own program in common main: debug-checkable; its own partition is irrelevant here)
++    let run = |c: crate::sha384::config::Digest, pv_tamper: bool| -> Vec<String> {
 +        let mut circ2 = super::circuit::NvCircuit::new(3, 19, 1);
-+        circ2.bind = true;
-+        circ2.app = Some(app);
++        circ2.child_nv = true;
++        circ2.anchor = Some((1, c));
 +        let airs = circ2.airs::<Sha384Config>();
 +        let (mats, b2) = circ2.generate(&vk1, &p1);
-+        println!("NV_APP level2 failures {:?}", b2.failures);
-+        let pv2 = b2.public_values();
++        let mut pv2 = b2.public_values();
++        if pv_tamper {
++            pv2[5] += F::ONE;
++        }
 +        let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
 +            .into_iter()
 +            .enumerate()
@@ -7201,14 +8264,14 @@ index 0000000..2d4e4f8
 +        Sha384CpuEngine::new(nv_debug_params()).debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
 +        b2.failures
 +    };
-+    assert!(run(app.clone()).is_empty());
-+    println!("NV_APP honest ok");
++    assert!(run(c_l1, false).is_empty());
++    println!("NV_L1C honest level 2 accepted (C_L1 check)");
 +    // statement passthrough (G1): L2 re-exposes L1's digest = statement of the app proof
 +    assert!(super::circuit::check_statement(&p1.public_values[0], &p0.public_values), "L1 statement");
 +    {
 +        let mut circ2 = super::circuit::NvCircuit::new(3, 19, 1);
-+        circ2.bind = true;
-+        circ2.app = Some(app.clone());
++        circ2.child_nv = true;
++        circ2.anchor = Some((1, c_l1));
 +        let (_, b2) = circ2.generate(&vk1, &p1);
 +        assert!(super::circuit::check_statement(&b2.public_values(), &p0.public_values), "L2 passthrough");
 +        let mut other = p0.public_values.clone();
@@ -7217,24 +8280,12 @@ index 0000000..2d4e4f8
 +        println!("NV_STATEMENT L1 = L2 = statement digest ok");
 +    }
 +    must_fail("level-2 re-exposes a different statement digest", || {
-+        let mut circ2 = super::circuit::NvCircuit::new(3, 19, 1);
-+        circ2.bind = true;
-+        circ2.app = Some(app.clone());
-+        let airs = circ2.airs::<Sha384Config>();
-+        let (mats, b2) = circ2.generate(&vk1, &p1);
-+        let mut pv2 = b2.public_values();
-+        pv2[5] += F::ONE;
-+        let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
-+            .into_iter()
-+            .enumerate()
-+            .map(|(i, m)| if i == 0 { AirProvingContext::simple(m, pv2.clone()) } else { AirProvingContext::simple_no_pis(m) })
-+            .collect();
-+        Sha384CpuEngine::new(nv_debug_params()).debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
++        run(c_l1, true);
 +    });
-+    let mut bad = app.clone();
-+    bad[app.len() / 2][0] ^= 1;
-+    must_fail("app table word", || {
-+        let f = run(bad.clone());
++    let mut bad = c_l1;
++    bad[3] ^= 0x10;
++    must_fail("wrong C_L1 constant", || {
++        let f = run(bad, false);
 +        assert!(f.is_empty(), "{f:?}");
 +    });
 +}
@@ -7603,6 +8654,16 @@ index 0000000..2d4e4f8
 +            })
 +        });
 +    }
++    // SibWS4 also starts the level's node job (P0 = NODE_TAG on the job bus): a row whose P0 no
++    // longer carries the tag leaves the job start unmatched
++    let r = row_of(Op::SibWS4).unwrap();
++    assert_eq!(b.instrs[r].a, super::hash::NODE_TAG);
++    must_fail("SibWS4 node-job start (P0)", || {
++        nv_debug_mats(&vk, &proof, 16, |mats, _| {
++            let w = mats[0].width;
++            mats[0].values[r * w + core::mem::offset_of!(super::uair::NvCommon<u8>, p)] = F::ZERO;
++        })
++    });
 +}
 +
 +/// Two-step leaf Horner (Horn2) on a child whose stacked rows are 2+ felts wide: honest
@@ -7707,7 +8768,8 @@ index 0000000..2d4e4f8
 +    println!("NV_POW_IDENTITY {} programs byte-identical ({} rows)", progs.len(), progs[0].len());
 +}
 +
-+/// V_d end to end (test size): base (Fib) -> L1 -> L2 (bound to L1 via the app table) -> FINAL
++/// V_d end to end (test size, G2): base (Fib) -> L1 (cached program part, commitment C_L1) -> L2
++/// (checks its child's program commitment = C_L1) -> FINAL
 +/// (`new_final`, the same program as L2, bound to L2 at the fixed point) -> V_d. V_d pins the final
 +/// vk, level 3 and the NV program; it accepts the honest chain; a forged FINAL (a verify-nothing
 +/// program exposing the honest statement) passes every AIR and the final vk, and is accepted by
@@ -7727,42 +8789,63 @@ index 0000000..2d4e4f8
 +    let engine_final = Sha384CpuEngine::new_final(pp);
 +    let k = openvm_stark_backend::StarkEngine::params(&engine).k_whir();
 +    let log_rows = 18;
-+    // natural L1, then L2's natural heights fix every level's heights
-+    let circ1 = super::circuit::NvCircuit::new(k, log_rows, 1);
-+    let (vk1n, p1n, b1n, _) = super::circuit::prove_level(&circ1, &engine, &vk0, &p0);
-+    let app = super::circuit::NvCircuit::app_table(&b1n.instrs);
++    // natural L1 (program part), then L2's natural heights fix every level's heights
++    // program length 2^17 (the default log_rows - 2 = 16 overflows), independent of NV_PROG_LOG
++    let mut circ1 = super::circuit::NvCircuit::new(k, log_rows, 1);
++    circ1.prog_log = 17;
++    circ1.program_part = true;
++    let (vk1n, p1n, _, _) = super::circuit::prove_level(&circ1, &engine, &vk0, &p0);
 +    let mut circ2 = super::circuit::NvCircuit::new(k, log_rows, 1);
-+    circ2.app = Some(app.clone());
++    circ2.prog_log = 17;
++    circ2.program_part = true;
 +    circ2.child_nv = true;
++    circ2.anchor = Some((1, p1n.trace_vdata[0].as_ref().unwrap().cached_commitments[0]));
 +    let (m2n, _) = circ2.generate(&vk1n, &p1n);
 +    use p3_matrix::Matrix;
 +    let fixed: Vec<usize> = m2n.iter().map(|m| m.height()).collect();
 +    println!("NV_VD fixed heights {fixed:?}");
-+    let mut circ1f = circ1;
-+    circ1f.heights = Some(fixed.clone());
-+    let (vk1, p1, b1, _) = super::circuit::prove_level(&circ1f, &engine, &vk0, &p0);
-+    assert_eq!(super::circuit::NvCircuit::app_table(&b1.instrs), app, "L1 program independent of its heights");
++    circ1.heights = Some(fixed.clone());
++    // C_L1 at setup: the level-1 program part committed natively (no proof needed)
++    let (m1, b1g) = circ1.generate(&vk0, &p0);
++    assert!(b1g.failures.is_empty());
++    let c_l1 = super::circuit::program_commitment(openvm_stark_backend::StarkEngine::config(&engine), &m1[0]);
++    let (vk1, p1, _, _) = super::circuit::prove_level(&circ1, &engine, &vk0, &p0);
++    assert_eq!(p1.trace_vdata[0].as_ref().unwrap().cached_commitments[0], c_l1, "L1's program commitment = the setup C_L1");
++    println!("NV_VD C_L1 = setup commitment of the L1 program part");
 +    circ2.heights = Some(fixed.clone());
++    circ2.anchor = Some((1, c_l1));
++    // a wrong C_L1 constant: the level-2 program rejects the honest L1
++    {
++        let mut bad = circ2.clone_shape();
++        let mut d = c_l1;
++        d[0] ^= 1;
++        bad.anchor = Some((1, d));
++        let (_, bb) = bad.generate(&vk1, &p1);
++        assert!(bb.failures.iter().any(|f| f.contains("C_M")), "wrong C_L1 accepted: {:?}", bb.failures);
++        println!("NV_VD wrong C_L1 rejected: {:?}", bb.failures);
++    }
 +    let (vk2, p2, b2, _) = super::circuit::prove_level(&circ2, &engine, &vk1, &p1);
 +    assert_eq!(b2.level, 2);
-+    let (vkf, pf, bf, _) = super::circuit::prove_level(&circ2, &engine_final, &vk2, &p2);
++    // FINAL: the same program, one commitment (program in common main), final domain
++    let mut circf = circ2.clone_shape();
++    circf.program_part = false;
++    let (vkf, pf, bf, _) = super::circuit::prove_level(&circf, &engine_final, &vk2, &p2);
 +    assert_eq!(bf.level, 3);
 +    assert_eq!(bf.instrs, b2.instrs, "FINAL runs the uniform NV program (bound to L2's)");
++    assert!(pf.trace_vdata[0].as_ref().unwrap().cached_commitments.is_empty(), "FINAL has one commitment");
 +    let program: Vec<[u32; 4]> = bf.instrs.iter().map(|i| i.words()).collect();
 +    let setup = VdSetup { vk_final: vkf.clone(), program, level: 3 };
 +    verify_final(&setup, &engine_final, &p0.public_values, &pf, false).expect("V_d accepts the honest chain");
 +    println!("NV_VD honest final accepted ({} program rows)", setup.program.len());
-+    // wrong claim / wrong pinned level
 +    let mut other = p0.public_values.clone();
 +    let a = other.iter().position(|v| !v.is_empty()).unwrap();
 +    other[a][0] += F::ONE;
 +    assert!(verify_final(&setup, &engine_final, &other, &pf, false).is_err(), "wrong claim accepted");
 +    let wrong_level = VdSetup { level: 2, ..setup.clone() };
 +    assert!(verify_final(&wrong_level, &engine_final, &p0.public_values, &pf, false).is_err(), "wrong level accepted");
-+    // the forgery: a verify-nothing program exposing level 3 and the honest statement digest
 +    let d = crate::sha384::config::statement_digest(&p0.public_values);
-+    let (mats, bforge) = circ2.generate_program(forge_statement_program(3, d));
-+    let (vk_forge, p_forge) = prove_traces(&circ2, &engine_final, mats, bforge.public_values());
++    let (mats, bforge) = circf.generate_program(forge_statement_program(3, d));
++    let (vk_forge, p_forge) = prove_traces(&circf, &engine_final, mats, bforge.public_values());
 +    assert_eq!(vk_forge.pre_hash, vkf.pre_hash, "the forgery uses the pinned final vk");
 +    verify_final(&setup, &engine_final, &p0.public_values, &p_forge, true).expect("without the program check V_d is fooled");
 +    let err = verify_final(&setup, &engine_final, &p0.public_values, &p_forge, false).expect_err("forged final accepted with the program check");
@@ -8572,10 +9655,10 @@ index 0000000..36b0e7c
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..2ee07dd
+index 0000000..3232a2d
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
-@@ -0,0 +1,852 @@
+@@ -0,0 +1,853 @@
 +//! NV merged non-SHA AIR ("NvAir", U2): one AIR, row roles sharing a column pool.
 +//!
 +//! Common columns: role flags ka (ALU), kb (BIND), kg (GLUE), kh (transcript hash chain),
@@ -8603,6 +9686,7 @@ index 0000000..2ee07dd
 +
 +use openvm_recursion_circuit_derive::AlignedBorrow;
 +use openvm_stark_backend::{
++    air_builders::PartitionedAirBuilder,
 +    interaction::{BusIndex, Interaction, InteractionBuilder, LookupBus, PermutationCheckBus},
 +    BaseAirWithPublicValues, PartitionedBaseAir,
 +};
@@ -8645,8 +9729,6 @@ index 0000000..2ee07dd
 +    pub digest: BusIndex,
 +    pub bind: BusIndex,
 +    pub acc: BusIndex,
-+    pub bind2: BusIndex,
-+    pub acc2: BusIndex,
 +}
 +
 +#[repr(C)]
@@ -8658,8 +9740,6 @@ index 0000000..2ee07dd
 +    pub kh: T,
 +    pub ks: T,
 +    pub y: T,
-+    /// app-binding role (L2 checks L1's app-verifier program against the data table)
-+    pub kc: T,
 +    /// program words P0..P3
 +    pub p: [T; 4],
 +}
@@ -8673,7 +9753,7 @@ index 0000000..2ee07dd
 +    pub h: [T; OP_LO],
 +    pub wit: T,
 +    pub mult: T,
-+    /// bytes of the B field: B = rx + 256 ry + 65536 rz, rz < 16 (binds the op to P1)
++    /// bytes of the B field: B = rx + 256 ry + 65536 rz, three bytes (binds the op to P1)
 +    pub rx: T,
 +    pub ry: T,
 +    /// the result: pool 36..48, the positions of BIND's accumulator, which are already opened at
@@ -8716,7 +9796,7 @@ index 0000000..2ee07dd
 +pub const POOL: usize = max(max(max(AB_W, BIND_W), GLUE_W), max(HASH2_WIDTH, SAMP2_WIDTH));
 +pub const NV_WIDTH: usize = N_COMMON + POOL;
 +/// Column offsets used by tests / the binding check.
-+pub const U_P: usize = 7;
++pub const U_P: usize = core::mem::offset_of!(NvCommon<u8>, p);
 +/// NvAir public values: [level, statement digest limbs (18)]
 +pub const NV_NUM_PVS: usize = 1 + super::fmt::NV_DIGEST;
 +pub const U_A: usize = N_COMMON;
@@ -8724,11 +9804,15 @@ index 0000000..2ee07dd
 +
 +pub struct NvAir {
 +    pub buses: UBuses,
-+    /// first program row of the app-verifier data region (= reserved rows)
-+    pub app_base: usize,
 +    pub h: HashBuses,
 +    pub t: TrBuses,
++    /// G2: the program columns P0..P3 form a separate CACHED main part (one commitment per
++    /// level, the program's; its root is a proof value bound by the parent: C_L1 for a level-1
++    /// child, BIND otherwise).  FINAL keeps them in common main (one commitment).
++    pub program_part: bool,
 +}
++/// Number of program columns (the cached part when `program_part`).
++pub const N_PROG: usize = 4;
 +impl<T> BaseAir<T> for NvAir {
 +    fn width(&self) -> usize {
 +        NV_WIDTH
@@ -8739,7 +9823,38 @@ index 0000000..2ee07dd
 +        NV_NUM_PVS
 +    }
 +}
-+impl<T> PartitionedBaseAir<T> for NvAir {}
++impl<T> PartitionedBaseAir<T> for NvAir {
++    fn cached_main_widths(&self) -> Vec<usize> {
++        if self.program_part {
++            vec![N_PROG]
++        } else {
++            vec![]
++        }
++    }
++    fn common_main_width(&self) -> usize {
++        if self.program_part {
++            NV_WIDTH - N_PROG
++        } else {
++            NV_WIDTH
++        }
++    }
++}
++
++/// Split an NvAir trace into (common main without P0..P3, the program part P0..P3).
++pub fn split_program_part(m: &RowMajorMatrix<F>) -> (RowMajorMatrix<F>, RowMajorMatrix<F>) {
++    let w = m.width;
++    assert_eq!(w, NV_WIDTH);
++    let h = m.values.len() / w;
++    let mut common = Vec::with_capacity(h * (w - N_PROG));
++    let mut prog = Vec::with_capacity(h * N_PROG);
++    for r in 0..h {
++        let row = &m.values[r * w..(r + 1) * w];
++        common.extend_from_slice(&row[..U_P]);
++        common.extend_from_slice(&row[U_P + N_PROG..]);
++        prog.extend_from_slice(&row[U_P..U_P + N_PROG]);
++    }
++    (RowMajorMatrix::new(common, w - N_PROG), RowMajorMatrix::new(prog, N_PROG))
++}
 +
 +/// Builder adapter: constraints go to the inner builder, interactions are collected.
 +pub struct Collect<'a, AB: InteractionBuilder> {
@@ -8806,7 +9921,7 @@ index 0000000..2ee07dd
 +            }
 +        }
 +        for (bus, c) in t {
-+            eprintln!("NV_INT bus={bus} per-role [alu,bind,appbind,glue,hash,samp]={c:?} max={}", c.iter().max().unwrap());
++            eprintln!("NV_INT bus={bus} per-role [alu,bind,glue,hash,samp]={c:?} max={}", c.iter().max().unwrap());
 +        }
 +    }
 +    let mut slots: BTreeMap<BusIndex, Vec<Vec<(AB::Expr, Interaction<AB::Expr>)>>> = BTreeMap::new();
@@ -8852,20 +9967,34 @@ index 0000000..2ee07dd
 +    }
 +}
 +
-+impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for NvAir
++impl<AB: AirBuilderWithPublicValues + InteractionBuilder + PartitionedAirBuilder> Air<AB> for NvAir
 +where
 +    <AB::Expr as PrimeCharacteristicRing>::PrimeSubfield:
 +        p3_field::extension::BinomiallyExtendable<12>,
 +{
 +    fn eval(&self, builder: &mut AB) {
-+        let main = builder.main();
-+        let (local, next) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++        // the full row view [common 0..7, P0..P3, common 7..]: P0..P3 come from the cached
++        // program part when `program_part`
++        let (local, next): (Vec<AB::Var>, Vec<AB::Var>) = if self.program_part {
++            let cm = builder.common_main();
++            let pm = &builder.cached_mains()[0];
++            let row = |i: usize| -> Vec<AB::Var> {
++                let c = cm.row_slice(i).unwrap();
++                let p = pm.row_slice(i).unwrap();
++                c[..U_P].iter().chain(p.iter()).chain(c[U_P..].iter()).copied().collect()
++            };
++            (row(0), row(1))
++        } else {
++            let main = builder.main();
++            let (l, n) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++            (l.to_vec(), n.to_vec())
++        };
 +        let cl: &NvCommon<AB::Var> = local[..N_COMMON].borrow();
 +        let cn: &NvCommon<AB::Var> = next[..N_COMMON].borrow();
 +        let pl = &local[N_COMMON..];
 +        let pn = &next[N_COMMON..];
 +        let one = AB::Expr::ONE;
-+        let kinds = [cl.ka, cl.kb, cl.kc, cl.kg, cl.kh, cl.ks];
++        let kinds = [cl.ka, cl.kb, cl.kg, cl.kh, cl.ks];
 +        let mut ksum = AB::Expr::ZERO;
 +        for k in kinds {
 +            builder.assert_bool(k);
@@ -8875,7 +10004,7 @@ index 0000000..2ee07dd
 +        // y = row index on role rows; padding rows (no role, the last region) are all zero, so
 +        // all-zero rows satisfy the AIR (tight-heights lever: a zero tail is not committed)
 +        builder.when_first_row().assert_zero(cl.y);
-+        let npad: AB::Expr = cn.ka + cn.kb + cn.kc + cn.kg + cn.kh + cn.ks;
++        let npad: AB::Expr = cn.ka + cn.kb + cn.kg + cn.kh + cn.ks;
 +        builder.when_transition().assert_zero(npad * (cn.y - cl.y - one.clone()));
 +        builder.assert_zero((one.clone() - ksum.clone()) * cl.y);
 +        // padding rows are all zero (pool included), so a non-zero tail is rejected
@@ -8887,14 +10016,13 @@ index 0000000..2ee07dd
 +        }
 +        // role order: stage(ALU) = 0 < BIND < GLUE < HASH < SAMP < padding = 5, non-decreasing
 +        let stage = |c: &NvCommon<AB::Var>| -> AB::Expr {
-+            let s = c.ka + c.kb + c.kc + c.kg + c.kh + c.ks;
-+            c.kb + c.kc * AB::Expr::TWO + c.kg * AB::Expr::from_u64(3) + c.kh * AB::Expr::from_u64(4)
-+                + c.ks * AB::Expr::from_u64(5)
-+                + (one.clone() - s) * AB::Expr::from_u64(6)
++            let s = c.ka + c.kb + c.kg + c.kh + c.ks;
++            c.kb + c.kg * AB::Expr::TWO + c.kh * AB::Expr::from_u64(3) + c.ks * AB::Expr::from_u64(4)
++                + (one.clone() - s) * AB::Expr::from_u64(5)
 +        };
 +        let d = stage(cn) - stage(cl);
 +        let mut poly = AB::Expr::ONE;
-+        for i in 0..7u64 {
++        for i in 0..6u64 {
 +            poly = poly * (d.clone() - AB::Expr::from_u64(i));
 +        }
 +        builder.when_transition().assert_zero(poly);
@@ -8904,7 +10032,7 @@ index 0000000..2ee07dd
 +            let l: &AbCols<AB::Var> = pl[..AB_W].borrow();
 +            let n: &AbCols<AB::Var> = pn[..AB_W].borrow();
 +            let mut cb = Collect { inner: &mut *builder, ints: vec![] };
-+            eval_alu(&mut cb, cl, l, n, &self.buses, self.app_base, self.h.byte);
++            eval_alu(&mut cb, cl, l, n, &self.buses, self.h.byte);
 +            groups.push((cl.ka.into(), cb.ints));
 +        }
 +        {
@@ -8913,13 +10041,6 @@ index 0000000..2ee07dd
 +            let mut cb = Collect { inner: &mut *builder, ints: vec![] };
 +            eval_bind(&mut cb, cl.kb, cn.kb, l, n, self.buses.bind, self.buses.acc, self.buses.mem, self.h.byte);
 +            groups.push((cl.kb.into(), cb.ints));
-+        }
-+        {
-+            let l: &BindCols<AB::Var> = pl[..BIND_W].borrow();
-+            let n: &BindCols<AB::Var> = pn[..BIND_W].borrow();
-+            let mut cb = Collect { inner: &mut *builder, ints: vec![] };
-+            eval_bind(&mut cb, cl.kc, cn.kc, l, n, self.buses.bind2, self.buses.acc2, self.buses.mem, self.h.byte);
-+            groups.push((cl.kc.into(), cb.ints));
 +        }
 +        {
 +            let l: &GlueCols<AB::Var> = pl[..GLUE_W].borrow();
@@ -8953,7 +10074,6 @@ index 0000000..2ee07dd
 +    l: &AbCols<AB::Var>,
 +    n: &AbCols<AB::Var>,
 +    buses: &UBuses,
-+    app_base: usize,
 +    byte_bus: BusIndex,
 +) where
 +    <AB::Expr as PrimeCharacteristicRing>::PrimeSubfield:
@@ -9002,7 +10122,7 @@ index 0000000..2ee07dd
 +        t[0] += w2;
 +        t
 +    };
-+    let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc) + s(Op::Dig) + s(Op::PowChk) + s(Op::Acc2) + s(Op::LoadBit) + s(Op::LoadF) + s(Op::SibWS4) + s(Op::SibWS2) + s(Op::DigWS4) + s(Op::DigWS2) + s(Op::HornR) + s(Op::HornE);
++    let free = s(Op::Load) + s(Op::Smp1) + s(Op::Smp12) + s(Op::Acc) + s(Op::Dig) + s(Op::PowChk) + s(Op::LoadBit) + s(Op::LoadF) + s(Op::SibWS4) + s(Op::SibWS2) + s(Op::DigWS4) + s(Op::DigWS2) + s(Op::HornR) + s(Op::HornE);
 +    let copy_a = s(Op::Unit1) + s(Op::UnitW) + s(Op::UnitWT) + s(Op::Unit12) + s(Op::Bit) + s(Op::Pv) + s(Op::PvD) + s(Op::UnitWS4) + s(Op::UnitWS2) + s(Op::HornS);
 +    // Horner chain: HornS sets the next row's c to its a; HornR sets the next row's c to
 +    // c * b + a (its own c was set by the previous row); the chain ends in HornE (free c)
@@ -9150,8 +10270,10 @@ index 0000000..2ee07dd
 +        let [v0, v1, v2] = v;
 +        slot.send(builder, [chan.clone(), key1, key2, kind, v0, v1, v2], send - recv);
 +    }
-+    // job starts (leaf / node jobs): (job P2, tag P0)
-+    PermutationCheckBus::new(buses.job).send(builder, [p[2].into(), p[0].into(), AB::Expr::ONE], s(Op::Job) + s(Op::NodeJob));
++    // job starts (leaf / node jobs): (job P2, tag P0).  A Merkle path level's node job is
++    // started by its SibWS4 row (P0 = NODE_TAG in the program; SibWS4 reads no a operand), so the
++    // level needs no separate NodeJob row.
++    PermutationCheckBus::new(buses.job).send(builder, [p[2].into(), p[0].into(), AB::Expr::ONE], s(Op::Job) + s(Op::NodeJob) + s(Op::SibWS4));
 +    // digests: pairs P3, P3 + 1 (if B = 2) of job P2
 +    let dig = PermutationCheckBus::new(buses.digest);
 +    // Dig: job P2, pairs P3, P3 + 1 (B = 2) or P3 (B = 1); DigWS4: job P0, pairs 0, 1;
@@ -9173,22 +10295,16 @@ index 0000000..2ee07dd
 +        builder.assert_zero(s(Op::Dig) * (cst(2) - bfield.clone()) * l.c[k]);
 +    }
 +
-+    // B field range: B = rx + 256 ry + 65536 rz in [0, 2^20) binds the op to P1 (every ALU row
-+    // except the app data rows, whose P1 is a table word)
-+    let nd = ka.clone() - s(Op::Data);
++    // B field range: B = rx + 256 ry + 65536 rz in [0, 2^24) binds the op to P1 (every ALU row;
++    // the app-table data rows, the one exemption, are gone with G2)
++    let nd = ka.clone();
 +    builder.assert_zero(nd.clone() * (bfield.clone() - l.rx - l.ry * cst(256) - l.rz * cst(65536)));
 +    super::hash::lookup_pair(builder, byte_bus, l.rx, l.ry, nd.clone());
-+    // rz < 16: the pair (rz, 16 rz) must be two bytes.  (A lone lookup of 16 rz only gives
-+    // rz = t / 16 mod p for a byte t, i.e. B in [0, 1110015], which allowed op -> op - 1
++    // rz a byte (24-bit B field): the pair (rz, 0) is in the byte-pair table.  (With the old
++    // 20-bit field rz < 16 was the pair (rz, 16 rz); a lone lookup of 16 rz only gave
++    // rz = t / 16 mod p for a byte t, which allowed op -> op - 1.)
 +    // relabels such as Zero -> Bit; see FAITHFUL.md, bug B1.)
-+    super::hash::lookup_pair(builder, byte_bus, l.rz, l.rz * cst(16), nd);
-+    // app data rows -> app-binding rows; app-binding total (and its pinned length) -> `Acc2`
-+    let mut dmsg: Vec<AB::Expr> = vec![cl.y - cst(app_base as u64)];
-+    dmsg.extend(p.iter().map(|&x| x.into()));
-+    PermutationCheckBus::new(buses.bind2).send(builder, dmsg, s(Op::Data));
-+    let mut a2: Vec<AB::Expr> = l.c.iter().map(|&x| x.into()).collect();
-+    a2.push(p[0].into());
-+    PermutationCheckBus::new(buses.acc2).receive(builder, a2, s(Op::Acc2));
++    super::hash::lookup_pair(builder, byte_bus, l.rz, AB::Expr::ZERO, nd);
 +    // ALU rows send (y, P) to the BIND rows; the binding total arrives at the `Acc` row
 +    let mut bmsg: Vec<AB::Expr> = vec![cl.y.into()];
 +    bmsg.extend(p.iter().map(|&x| x.into()));
@@ -9269,7 +10385,7 @@ index 0000000..2ee07dd
 +        m.extend(pc.iter().map(|&x| x.into()));
 +        bind.receive(builder, m, kb.clone());
 +    }
-+    // total and the last row's pair index (pins the region length for the app binding)
++    // total and the last row's pair index (pins the BIND region length)
 +    let mut amsg: Vec<AB::Expr> = (0..12).map(|k| l.acc[k] + wp[k].clone()).collect();
 +    amsg.push(y2(l));
 +    PermutationCheckBus::new(acc_bus).send(builder, amsg, kb * l.bl);
@@ -9285,15 +10401,12 @@ index 0000000..2ee07dd
 +    glue: &[[F; GLUE_W]],
 +    hash: &[[F; HASH2_WIDTH]],
 +    samp: &[[F; SAMP2_WIDTH]],
-+    app: &[[u32; 4]],
 +    log_h: usize,
 +    counts: &mut [u32],
 +) -> RowMajorMatrix<F> {
 +    let na = instrs.len();
 +    assert!(na % 2 == 0 && na >= E1_SIZE);
-+    assert!(app.len() % 2 == 0);
-+    let nc = app.len() / 2;
-+    let used = na + na / 2 + nc + glue.len() + hash.len() + samp.len();
++    let used = na + na / 2 + glue.len() + hash.len() + samp.len();
 +    assert!(used <= 1 << log_h, "NvAir: {used} rows exceed 2^{log_h}");
 +    let h = 1usize << log_h;
 +    let w = NV_WIDTH;
@@ -9306,8 +10419,8 @@ index 0000000..2ee07dd
 +            reads[ins.b as usize] += 1;
 +        }
 +    }
-+    for t in 0..na / 2 + nc {
-+        let y = 2 * if t < na / 2 { t } else { t - na / 2 };
++    for t in 0..na / 2 {
++        let y = 2 * t;
 +        reads[y % E1_SIZE] += 1;
 +        reads[y % E1_SIZE + 1] += 1;
 +        reads[E1_SIZE + y / E1_SIZE] += 1;
@@ -9337,15 +10450,13 @@ index 0000000..2ee07dd
 +            r.wit2 = w2;
 +        }
 +        r.mult = F::from_u32(reads[y]);
-+        if ins.op != Op::Data {
-+            let bf = ins.b as usize;
-+            assert!(bf < 1 << 20);
-+            r.rx = F::from_usize(bf & 255);
-+            r.ry = F::from_usize((bf >> 8) & 255);
-+            r.rz = F::from_usize(bf >> 16);
-+            super::hash::cnt2(counts, bf & 255, (bf >> 8) & 255);
-+            super::hash::cnt2(counts, bf >> 16, (bf >> 16) * 16);
-+        }
++        let bf = ins.b as usize;
++        assert!(bf < 1 << super::isa::ADDR_BITS);
++        r.rx = F::from_usize(bf & 255);
++        r.ry = F::from_usize((bf >> 8) & 255);
++        r.rz = F::from_usize(bf >> 16);
++        super::hash::cnt2(counts, bf & 255, (bf >> 8) & 255);
++        super::hash::cnt2(counts, bf >> 16, 0);
 +    }
 +    let tp = tau_pows();
 +    let mut acc = EF::ZERO;
@@ -9375,33 +10486,7 @@ index 0000000..2ee07dd
 +        acc += e2 * (e1a * pw(w0) + e1b * pw(w1));
 +    }
 +    debug_assert!(vals.contains(&acc), "ACC row must hold the full binding sum");
-+    // app-binding rows: pair x = 2t of the app table, E1[x mod 512] E2[x / 512]
-+    let mut acc2 = EF::ZERO;
-+    for bt in 0..nc {
-+        let x = 2 * bt;
-+        let row = &mut t[(na + nb + bt) * w..(na + nb + bt + 1) * w];
-+        let (cm, pool) = row.split_at_mut(N_COMMON);
-+        let c: &mut NvCommon<F> = cm.borrow_mut();
-+        c.kc = F::ONE;
-+        let r: &mut BindCols<F> = pool[..BIND_W].borrow_mut();
-+        let (ya, yb) = (x % E1_SIZE, x / E1_SIZE);
-+        let (e1a, e1b, e2) = (vals[ya], vals[ya + 1], vals[E1_SIZE + yb]);
-+        r.e1a = coeffs(e1a);
-+        r.e1b = coeffs(e1b);
-+        r.e2 = coeffs(e2);
-+        r.acc = coeffs(acc2);
-+        let (w0, w1) = (app[x], app[x + 1]);
-+        for j in 0..4 {
-+            r.pc0[j] = F::from_u32(w0[j]);
-+            r.pc1[j] = F::from_u32(w1[j]);
-+        }
-+        r.ya = F::from_usize(ya);
-+        r.yb = F::from_usize(yb);
-+        r.bl = F::from_bool(bt + 1 == nc);
-+        let pw = |wd: [u32; 4]| -> EF { (0..4).map(|j| tp[j] * F::from_u32(wd[j])).sum() };
-+        acc2 += e2 * (e1a * pw(w0) + e1b * pw(w1));
-+    }
-+    let mut row = na + na / 2 + nc;
++    let mut row = na + na / 2;
 +    let mut put = |flag: usize, data: &[F]| {
 +        let r = &mut t[row * w..(row + 1) * w];
 +        r[flag] = F::ONE;
@@ -9409,17 +10494,16 @@ index 0000000..2ee07dd
 +        row += 1;
 +    };
 +    for g in glue {
-+        put(2, g);
++        put(core::mem::offset_of!(NvCommon<u8>, kg), g);
 +    }
-+    let _ = acc2;
 +    for x in hash {
-+        put(3, x);
++        put(core::mem::offset_of!(NvCommon<u8>, kh), x);
 +    }
 +    for x in samp {
-+        put(4, x);
++        put(core::mem::offset_of!(NvCommon<u8>, ks), x);
 +    }
 +    for r in 0..used {
-+        t[r * w + 5] = F::from_usize(r);
++        t[r * w + core::mem::offset_of!(NvCommon<u8>, y)] = F::from_usize(r);
 +    }
 +    RowMajorMatrix::new(t, w)
 +}
@@ -9618,10 +10702,10 @@ index 0000000..bb0d7ab
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..ad639b0
+index 0000000..ad74497
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1627 @@
+@@ -0,0 +1,1751 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -10029,14 +11113,16 @@ index 0000000..ad639b0
 +// ---------------------------------------------------------------------------------------
 +
 +pub struct NvChildData {
-+    /// commit ids: 0 = common main; preprocessed/cached not supported; WHIR round r
-+    /// codeword commit = r.
++    /// commit ids: 0 = common main; then, per trace in sorted order, its preprocessed commit
++    /// (a vk constant) and its cached commits (proof witnesses); WHIR round r codeword commit = r.
 +    pub num_stacking_commits: usize,
 +}
 +
 +/// Build the verifier program for `proof` under `vk`.  Requirements (asserted): every
-+/// AIR present, no preprocessed or cached traces, all PoW bits zero, trace heights >=
-+/// 2^l_skip.
++/// AIR present, trace heights >= 2^l_skip.  Preprocessed traces (pq-nv-preprocessed): the
++/// commitment is a constant of the program (from the child vk, which the vk pre-hash binds);
++/// cached traces: the commitment is a witness observed in the preamble.  Each is one more
++/// stacked commitment, opened in WHIR round 0 at the shared query points.
 +pub fn build_verifier(b: &mut Builder, vk: &MultiStarkVerifyingKey<SC>, proof: &Proof<SC>) {
 +    let mvk = &vk.inner;
 +    let params = &mvk.params;
@@ -10048,12 +11134,17 @@ index 0000000..ad639b0
 +    }
 +    let num_airs = mvk.per_air.len();
 +    for (avk, td) in mvk.per_air.iter().zip(&proof.trace_vdata) {
-+        assert!(avk.preprocessed_data.is_none() && avk.params.width.cached_mains.is_empty());
 +        let td = td.as_ref().expect("all AIRs present");
 +        assert!(td.log_height >= l_skip, "short traces not supported yet");
++        // preprocessed: the height is fixed by the vk (native PreprocessedTraceHeightMismatch);
++        // heights are program constants, so this is static
++        if let Some(pd) = &avk.preprocessed_data {
++            assert_eq!(pd.hypercube_dim + l_skip as isize, td.log_height as isize, "preprocessed trace height != vk");
++        }
 +    }
++    // proof shape (static: depends on the vk and the trace heights only) also rejects a
++    // first-order O-2 round 0 when there is more than one commitment
 +    let layouts = verify_proof_shape::<SC>(mvk, proof).expect("proof shape");
-+    assert_eq!(layouts.len(), 1, "single stacking commitment");
 +    // Native check `TraceHeightsTooLarge` (verifier/mod.rs): the LogUp count constraints
 +    // sum_a coeff_a * 2^max(log_height_a, l_skip) < threshold.  The heights are constants of
 +    // the generated program, so the check is static: a program is only generated for heights
@@ -10078,18 +11169,30 @@ index 0000000..ad639b0
 +    b.const_commit(vk.pre_hash);
 +    let main_commit = b.load_commit(proof.common_main_commit);
 +    let mut pv_cells: Vec<Vec<V>> = vec![];
++    // per AIR: extra commitments in opening order (preprocessed constant, then cached witnesses)
++    let mut extra_commits: Vec<Vec<DigestCells>> = vec![vec![]; num_airs];
 +    for (a, avk) in mvk.per_air.iter().enumerate() {
 +        if !avk.is_required {
 +            let one = b.c(F::ONE);
 +            b.obs1(one);
 +        }
-+        let lh = proof.trace_vdata[a].as_ref().unwrap().log_height;
-+        let lhv = b.cu(lh as u64);
-+        b.obs1(lhv);
++        if let Some(pd) = &avk.preprocessed_data {
++            // native: the preprocessed commitment is observed instead of log_height
++            extra_commits[a].push(b.const_commit(pd.commit));
++        } else {
++            let lh = proof.trace_vdata[a].as_ref().unwrap().log_height;
++            let lhv = b.cu(lh as u64);
++            b.obs1(lhv);
++        }
 +        // tight-heights lever: the committed height is observed after log_height
 +        if let Some(h) = proof.trace_vdata[a].as_ref().unwrap().tight_height {
 +            let hv = b.cu(h as u64);
 +            b.obs1(hv);
++        }
++        let cached = &proof.trace_vdata[a].as_ref().unwrap().cached_commitments;
++        assert_eq!(cached.len(), avk.params.width.cached_mains.len(), "cached commitments (proof shape)");
++        for &c in cached {
++            extra_commits[a].push(b.load_commit(c));
 +        }
 +        pv_cells.push(
 +            proof.public_values[a]
@@ -10421,12 +11524,12 @@ index 0000000..ad639b0
 +    }
 +    // column openings: observe (all common main first)
 +    // per trace, per common-main column: rotated opening present (next_mask lever / need_rot)
-+    let masks: Vec<Vec<bool>> = tid.iter().map(|&a| mvk.per_air[a].params.opening_masks()[0].clone()).collect();
-+    let mut open_cells: Vec<Vec<(V, V)>> = vec![];
-+    for (t, parts) in bp.column_openings.iter().enumerate() {
-+        let pairs: Vec<(V, V)> = openvm_stark_backend::proof::column_openings_by_mask(&parts[0], &masks[t])
++    let all_masks: Vec<Vec<Vec<bool>>> = tid.iter().map(|&a| mvk.per_air[a].params.opening_masks()).collect();
++    let masks: Vec<Vec<bool>> = all_masks.iter().map(|m| m[0].clone()).collect();
++    let load_part = |b: &mut Builder, part: &[EF], mask: &[bool]| -> Vec<(V, V)> {
++        openvm_stark_backend::proof::column_openings_by_mask(part, mask)
 +            .into_iter()
-+            .zip(&masks[t])
++            .zip(mask)
 +            .map(|((c, r), &m)| {
 +                let cv = b.load_obs(c);
 +                let rv = if m {
@@ -10437,8 +11540,17 @@ index 0000000..ad639b0
 +                };
 +                (cv, rv)
 +            })
-+            .collect();
-+        open_cells.push(pairs);
++            .collect()
++    };
++    let mut open_cells: Vec<Vec<(V, V)>> = vec![];
++    for (t, parts) in bp.column_openings.iter().enumerate() {
++        open_cells.push(load_part(b, &parts[0], &masks[t]));
++    }
++    // then, per trace, its other parts (preprocessed, cached) in opening order (native
++    // batch_constraints: observed per trace before its evaluation; nothing is sampled between)
++    let mut part_cells: Vec<Vec<Vec<(V, V)>>> = vec![];
++    for (t, parts) in bp.column_openings.iter().enumerate() {
++        part_cells.push(parts[1..].iter().zip(&all_masks[t][1..]).map(|(p, m)| load_part(b, p, m)).collect());
 +    }
 +    b.dbg_rs = rs.iter().map(|v| v.val).collect();
 +    b.dbg_tid = tid.clone();
@@ -10447,19 +11559,54 @@ index 0000000..ad639b0
 +        .map(|cs| cs.iter().map(|(c, _)| c.val).collect())
 +        .collect();
 +    if b.bind {
-+        // child is NV: level = child level + 1; binding enforced iff child level != 1
++        // child is NV: level = child level + 1; BIND enforced iff child level != M (the anchor
++        // level; M = 1 unless the program converges later, see `NvCircuit::anchor`)
 +        let cl = pv_cells[0][0];
 +        let one = b.c(F::ONE);
 +        let own = b.add(cl, one);
 +        b.pv_level(own);
-+        let clm1 = b.sub(cl, one);
++        let m_level = b.anchor.map_or(1, |(m, _)| m);
++        let mc = b.c(F::from_u32(m_level));
++        let clm1 = b.sub(cl, mc);
 +        let cv = coeffs(clm1.val)[0];
 +        let inv = b.load_f(if cv == F::ZERO { F::ZERO } else { cv.inverse() });
 +        let flag = b.mul(clm1, inv);
 +        let nf = b.one_minus(flag);
 +        let t = b.mul(clm1, nf);
 +        b.zero(t, "level flag");
-+        bind_child_program(b, &tid, &n_per_trace, &rs, &open_cells, l_skip, flag);
++        // G2: the child's program columns: its cached program part (NV levels) or, for a child
++        // without one, its common main P0..P3
++        let tc = tid.iter().position(|&a| a == 0).expect("child ALU");
++        let child_prog_part = !mvk.per_air[0].params.width.cached_mains.is_empty();
++        let prog_open: Vec<V> = if child_prog_part {
++            let has_prep = mvk.per_air[0].preprocessed_data.is_some() as usize;
++            (0..4).map(|j| part_cells[tc][has_prep][j].0).collect()
++        } else {
++            (0..4).map(|j| open_cells[tc][super::uair::U_P + j].0).collect()
++        };
++        // anchor-level child (flag = 0): its program commitment is the constant C_M, the
++        // commitment of the level-M program at these parameters (setup); (root - C_M) (1 - flag) = 0
++        if child_prog_part {
++            match b.anchor {
++                Some((_, c_m)) => {
++                    let root = extra_commits[0][0];
++                    let nf = b.one_minus(flag);
++                    let cm = b.const_digest(c_m);
++                    for (x, y) in [(root.lo, cm.lo), (root.hi, cm.hi)] {
++                        let d = b.sub(x, y);
++                        let t = b.mul(d, nf);
++                        b.zero(t, "anchor child program commitment = C_M");
++                    }
++                    if flag.val == EF::ZERO && root.digest != c_m {
++                        b.failures.push("anchor child program commitment != C_M".into());
++                    }
++                }
++                None => b.failures.push("no anchor constant C_M for an anchor-level child".into()),
++            }
++        } else if flag.val == EF::ZERO {
++            b.failures.push("anchor-level child without a program commitment cannot be bound".into());
++        }
++        bind_child_program(b, &tid, &n_per_trace, &rs, &prog_open, l_skip, flag);
 +    } else {
 +        let one = b.c(F::ONE);
 +        b.pv_level(one);
@@ -10537,16 +11684,34 @@ index 0000000..ad639b0
 +        }
 +        let ptrans = b.one_minus(plast);
 +        let cells = &open_cells[t];
++        let has_prep = avk.preprocessed_data.is_some() as usize;
++        let n_cached = avk.params.width.cached_mains.len();
 +        let dag = &avk.symbolic_constraints.constraints;
 +        let mut nodes: Vec<V> = Vec::with_capacity(dag.nodes.len());
 +        for node in &dag.nodes {
 +            let v = match node {
 +                SymbolicExpressionNode::Variable(var) => match var.entry {
-+                    Entry::Main { part_index: 0, offset } => {
-+                        if offset == 0 {
-+                            cells[var.index].0
++                    // native evaluator: partitioned main = cached parts, then common main last
++                    Entry::Main { part_index, offset } => {
++                        let pc = if part_index == n_cached {
++                            cells
 +                        } else {
-+                            cells[var.index].1
++                            assert!(part_index < n_cached, "main part index");
++                            &part_cells[t][has_prep + part_index]
++                        };
++                        if offset == 0 {
++                            pc[var.index].0
++                        } else {
++                            pc[var.index].1
++                        }
++                    }
++                    Entry::Preprocessed { offset } => {
++                        assert!(has_prep == 1, "preprocessed variable without a preprocessed trace");
++                        let pc = &part_cells[t][0];
++                        if offset == 0 {
++                            pc[var.index].0
++                        } else {
++                            pc[var.index].1
 +                        }
 +                    }
 +                    Entry::Public => pv_cells[a][var.index],
@@ -10620,8 +11785,9 @@ index 0000000..ad639b0
 +
 +    // ---- stacked reduction ----
 +    let sp = &proof.stacking_proof;
-+    let layout = &layouts[0];
-+    let t_claims: Vec<(V, V)> = open_cells.iter().flatten().copied().collect();
++    // claims: commit 0 (every trace's common main), then commits 1.. (per trace, its other parts)
++    let mut t_claims: Vec<(V, V)> = open_cells.iter().flatten().copied().collect();
++    t_claims.extend(part_cells.iter().flatten().flatten().copied());
 +    let lambda_s = b.smp12();
 +    let lambda2 = b.square(lambda_s);
 +    let mut l2p = vec![];
@@ -10661,22 +11827,36 @@ index 0000000..ad639b0
 +        claim = interp_quadratic(b, [sj0, s1, s2], uj);
 +    }
 +    // q_coeffs: kernels depend only on (n, need_rot); cache per n.
-+    let width = sp.stacking_openings[0].len();
-+    let mut qc = vec![b.c(F::ZERO); width];
++    let zero = b.c(F::ZERO);
++    let mut qcs: Vec<Vec<V>> = sp.stacking_openings.iter().map(|o| vec![zero; o.len()]).collect();
 +    let om_u: Vec<V> = u.iter().map(|&x| b.one_minus(x)).collect();
++    // per commit: the masks of its matrices (commit 0: every trace's common main; commits 1..:
++    // one matrix each, per trace in sorted order its preprocessed then cached parts)
++    let mut commit_masks: Vec<Vec<Vec<bool>>> = vec![masks.clone()];
++    for m in &all_masks {
++        for pm in &m[1..] {
++            commit_masks.push(vec![pm.clone()]);
++        }
++    }
++    assert_eq!(commit_masks.len(), layouts.len(), "commitments (proof shape)");
++    // kernels and the eq memo depend on (u, r, lambda) and the slice position only, so they
++    // are shared between commitments
++    let mut kern: std::collections::BTreeMap<(usize, bool, usize, usize), V> = Default::default();
++    let mut em_memo: std::collections::HashMap<(usize, usize), V> = Default::default();
++    let mut lambda_base = 0usize;
++    for ((layout, cmasks), qc) in layouts.iter().zip(&commit_masks).zip(qcs.iter_mut()) {
 +    // claim index of (mat, col): position in (matrix, column) order (tight chunks share it)
 +    let mut col_base = vec![];
 +    {
-+        let mut acc = 0;
-+        for m in &masks {
++        let mut acc = lambda_base;
++        for m in cmasks {
 +            col_base.push(acc);
 +            acc += m.len();
 +        }
++        lambda_base = acc;
 +    }
-+    let mut kern: std::collections::BTreeMap<(usize, bool, usize, usize), V> = Default::default();
-+    let mut em_memo: std::collections::HashMap<(usize, usize), V> = Default::default();
 +    for &(mat_idx, col_idx, s) in layout.sorted_cols.iter() {
-+        let need = masks[mat_idx][col_idx];
++        let need = cmasks[mat_idx][col_idx];
 +        let n = s.log_height() - l_skip;
 +        let key = (n, need, s.src_row, s.col_log_height());
 +        if !kern.contains_key(&key) {
@@ -10783,12 +11963,17 @@ index 0000000..ad639b0
 +        let t = b.mul(t, l2p[col_base[mat_idx] + col_idx]);
 +        qc[s.col_idx] = b.add(qc[s.col_idx], t);
 +    }
-+    let stack_open: Vec<V> = sp.stacking_openings[0]
++    }
++    assert_eq!(lambda_base, t_claims.len());
++    // stacking openings of every commitment, in commit order (one flat list, as WHIR batches it)
++    let widths: Vec<usize> = sp.stacking_openings.iter().map(|o| o.len()).collect();
++    let stack_open: Vec<V> = sp.stacking_openings
 +        .iter()
++        .flatten()
 +        .map(|&q| b.load_obs(q))
 +        .collect();
 +    let mut final_sum = b.c(F::ZERO);
-+    for (q, o) in qc.iter().zip(&stack_open) {
++    for (q, o) in qcs.iter().flatten().zip(&stack_open) {
 +        let t = b.mul(*q, *o);
 +        final_sum = b.add(final_sum, t);
 +    }
@@ -10801,7 +11986,13 @@ index 0000000..ad639b0
 +        v.extend(&u[1..]);
 +        v
 +    };
-+    whir(b, vk, proof, &stack_open, &main_commit, &u_cube, &mut pow_id);
++    // WHIR round-0 trees: common main, then the extra commitments in sorted trace order
++    let mut roots = vec![main_commit];
++    for &a in &tid {
++        roots.extend(extra_commits[a].iter().copied());
++    }
++    assert_eq!(roots.len(), layouts.len());
++    whir(b, vk, proof, &stack_open, &widths, &roots, &u_cube, &mut pow_id);
 +    eprintln!("NV_PHASE end {}", b.instrs.len());
 +}
 +
@@ -10814,7 +12005,7 @@ index 0000000..ad639b0
 +    tid: &[usize],
 +    n_per_trace: &[usize],
 +    rs: &[V],
-+    open_cells: &[Vec<(V, V)>],
++    prog_open: &[V],
 +    l_skip: usize,
 +    flag: V,
 +) {
@@ -10871,14 +12062,13 @@ index 0000000..ad639b0
 +    let mut phat = b.c(F::ZERO);
 +    for j in 0..4 {
 +        let tj = b.ce(tp[j]);
-+        let o = open_cells[t][super::uair::U_P + j].0;
++        let o = prog_open[j];
 +        let term = b.mul(tj, o);
 +        phat = b.add(phat, term);
 +    }
-+    // app-verifier table (L2 checks L1): ACC2 is the multilinear evaluation of the whole
-+    // level-1 program (its ACC row included)
-+    let app_extra = if b.app.is_empty() { None } else { Some(b.c(F::ZERO)) };
-+    b.defer_acc_check(phat, flag, app_extra);
++    // child level != M (flag = 1): BIND, flag (ACC - phat) = 0; an anchor-level child is bound by
++    // C_M above (G2: no app table)
++    b.defer_acc_check(phat, flag);
 +}
 +
 +fn whir(
@@ -10886,7 +12076,8 @@ index 0000000..ad639b0
 +    vk: &MultiStarkVerifyingKey<SC>,
 +    proof: &Proof<SC>,
 +    stack_open: &[V],
-+    main_commit: &DigestCells,
++    widths: &[usize],
++    roots: &[DigestCells],
 +    u: &[V],
 +    pow_id: &mut u32,
 +) {
@@ -10926,7 +12117,9 @@ index 0000000..ad639b0
 +    let mut z0s = vec![];
 +    let mut alphas: Vec<V> = vec![];
 +    let mut final_poly: Vec<V> = vec![];
-+    let num_commits = 1usize;
++    let num_commits = roots.len();
++    assert_eq!(widths.len(), num_commits);
++    assert_eq!(widths.iter().sum::<usize>(), total_width);
 +    let mut qid = 0u32;
 +    let mut round_commits: Vec<DigestCells> = vec![];
 +    for round in 0..num_rounds {
@@ -10970,7 +12163,9 @@ index 0000000..ad639b0
 +        let mut ys_round = vec![];
 +        let q_start = b.instrs.len();
 +        // Merkle paths are verified after the round's queries (multiproof needs all leaves)
-+        let mut pending: Vec<(u32, Vec<crate::sha384::config::Digest>, Vec<V>, usize)> = vec![];
++        // per round-0 tree (one tree in later rounds): (leaf job base, leaf digests, bits, index)
++        let mut pending: Vec<Vec<(u32, Vec<crate::sha384::config::Digest>, Vec<V>, usize)>> =
++            vec![vec![]; if is_initial { num_commits } else { 1 }];
 +        let zeta = if odd != 1 { openvm_stark_backend::odd_domain::odd_root::<F>(odd) } else { F::ONE };
 +        for qi in 0..nq {
 +            let s = b.smp1();
@@ -10989,53 +12184,66 @@ index 0000000..ad639b0
 +            };
 +            let zi = exp_pow2(b, zi_root, k);
 +            let values: Vec<V> = if is_initial {
-+                // per commit: leaf jobs (one per coset row), Horner over all columns
++                // per commit: leaf jobs (one per coset row, or one coset job); the 2^k values are
++                // sum_c mu^c row[c] over the concatenated columns of every commit, by one Horner
++                // chain per row from the last column of the last commit down (native
++                // codeword_vals: commit t's columns take mu powers after those of commits < t)
 +                let rows = &w.initial_round_opened_rows;
-+                let width0 = rows[0][qi][0].len();
 +                // test hook: open query 1's rows at query 0's index
 +                let qi = if qi == 0 && nq > 1 && tamper_now(Tamper::OtherLeaf) { 1 } else { qi };
-+                let job_base = b.job_units.len() as u32;
 +                let coset = crate::sha384::config::sha_levers().coset_leaf;
-+                // coset leaf (lever): one tag-6 job holding all 2^k rows; else one job per row
-+                if coset {
-+                    b.job_start(crate::sha384::config::TAG_COSET_LEAF, 4 * width0 << k);
-+                } else {
-+                    for _ in 0..(1 << k) {
-+                        b.job_start(0, 4 * width0);
++                let mut job_bases = vec![];
++                for ct in 0..num_commits {
++                    let width_t = rows[ct][qi][0].len();
++                    assert_eq!(width_t, widths[ct], "opened row width (proof shape)");
++                    job_bases.push(b.job_units.len() as u32);
++                    // coset leaf (lever): one tag-6 job holding all 2^k rows; else one job per row
++                    if coset {
++                        b.job_start(crate::sha384::config::TAG_COSET_LEAF, 4 * width_t << k);
++                    } else {
++                        for _ in 0..(1 << k) {
++                            b.job_start(0, 4 * width_t);
++                        }
 +                    }
 +                }
 +                let mut vals = vec![];
 +                for j in 0..(1 << k) {
 +                    let mut acc = b.c(F::ZERO);
-+                    let unit = |c: usize| -> (u32, u32) {
-+                        if coset {
-+                            (job_base, 2 + (j * width0 + c) as u32)
-+                        } else {
-+                            (job_base + j as u32, 2 + c as u32)
++                    for ct in (0..num_commits).rev() {
++                        let r = &rows[ct][qi][j];
++                        let width_t = r.len();
++                        let job_base = job_bases[ct];
++                        let unit = |c: usize| -> (u32, u32) {
++                            if coset {
++                                (job_base, 2 + (j * width_t + c) as u32)
++                            } else {
++                                (job_base + j as u32, 2 + c as u32)
++                            }
++                        };
++                        // Horner over the row's felts from the top: two per Horn2 row, the last one
++                        // (odd width) in a Horn row
++                        let mut c = width_t;
++                        while c >= 2 {
++                            let (job, u) = unit(c - 2);
++                            acc = b.horn2(acc, mu, [r[c - 1], r[c - 2]], job, u);
++                            c -= 2;
 +                        }
-+                    };
-+                    // Horner over the row's felts from the top: two per Horn2 row, the last one
-+                    // (odd width) in a Horn row
-+                    let mut c = width0;
-+                    while c >= 2 {
-+                        let (job, u) = unit(c - 2);
-+                        let r = &rows[0][qi][j];
-+                        acc = b.horn2(acc, mu, [r[c - 1], r[c - 2]], job, u);
-+                        c -= 2;
-+                    }
-+                    while c > 0 {
-+                        c -= 1;
-+                        let (job, u) = unit(c);
-+                        acc = b.horn(acc, mu, rows[0][qi][j][c], job, u);
++                        while c > 0 {
++                            c -= 1;
++                            let (job, u) = unit(c);
++                            acc = b.horn(acc, mu, r[c], job, u);
++                        }
 +                    }
 +                    vals.push(acc);
 +                }
-+                let leaf_digests: Vec<_> = if coset {
-+                    vec![ShaHasher.hash_coset(&rows[0][qi])]
-+                } else {
-+                    (0..(1 << k)).map(|j| ShaHasher.hash_slice(&rows[0][qi][j])).collect()
-+                };
-+                pending.push((job_base, leaf_digests, bits.clone(), index));
++                for ct in 0..num_commits {
++                    let leaf_digests: Vec<_> = if coset {
++                        vec![ShaHasher.hash_coset(&rows[ct][qi])]
++                    } else {
++                        (0..(1 << k)).map(|j| ShaHasher.hash_slice(&rows[ct][qi][j])).collect()
++                    };
++                    pending[ct].push((job_bases[ct], leaf_digests, bits.clone(), index));
++                }
 +                vals
 +            } else {
 +                let vs = &w.codeword_opened_values[round - 1][qi];
@@ -11066,7 +12274,7 @@ index 0000000..ad639b0
 +                } else {
 +                    rows_f.iter().map(|r| ShaHasher.hash_slice(r)).collect()
 +                };
-+                pending.push((job_base, leaf_digests, bits.clone(), index));
++                pending[0].push((job_base, leaf_digests, bits.clone(), index));
 +                vals
 +            };
 +            // binary_k_fold(values, alphas_round, zi_root)
@@ -11100,9 +12308,9 @@ index 0000000..ad639b0
 +            ys_round.push(vals[0]);
 +            qid += 1;
 +        }
-+        {
-+            let proofs = if is_initial { &w.initial_round_merkle_proofs[0] } else { &w.codeword_merkle_proofs[round - 1] };
-+            let root = if is_initial { *main_commit } else { round_commits[round - 1] };
++        for (tree, pending) in pending.iter().enumerate() {
++            let proofs = if is_initial { &w.initial_round_merkle_proofs[tree] } else { &w.codeword_merkle_proofs[round - 1] };
++            let root = if is_initial { roots[tree] } else { round_commits[round - 1] };
 +            let depth = nbits + openvm_stark_backend::odd_domain::ceil_log2(odd);
 +            let siblings: Vec<Vec<crate::sha384::config::Digest>> = if multiproof {
 +                let leaves: Vec<_> = pending
@@ -16372,7 +17580,7 @@ index 0000000..f589e8d
 +}
 diff --git a/crates/recursion/src/sha384/e2e_tests.rs b/crates/recursion/src/sha384/e2e_tests.rs
 new file mode 100644
-index 0000000..cd2d220
+index 0000000..69d4a88
 --- /dev/null
 +++ b/crates/recursion/src/sha384/e2e_tests.rs
 @@ -0,0 +1,545 @@
@@ -16688,7 +17896,7 @@ index 0000000..cd2d220
 +        // entries without a kernel proof (e.g. lean/DKTCertsO2_big.keys) are excluded
 +        let excl = std::env::var(format!("{prefix}_DKT_EXCLUDE")).or_else(|_| std::env::var("NEARPROOF_DKT_EXCLUDE")).ok();
 +        let certs = path.map(|p| load_dkt_certs_excluding(&p, excl.as_deref()));
-+        p.whir = p.whir.clone().with_first_order(log_blowup, l_skip + n_stack, bits, e("O2_MARGIN_MILLI", 50) as u32, list_m as u32, certs.as_ref(), e("COMMITS", 1));
++        p.whir = p.whir.clone().with_first_order(log_blowup, l_skip + n_stack, bits, e("O2_MARGIN_MILLI", 50) as u32, list_m as u32, certs.as_ref(), e("COMMITS", if prefix == "PARENT" { 2 } else { 1 }));
 +    }
 +    p
 +}
