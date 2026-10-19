@@ -1,7 +1,7 @@
 diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384/config.rs
 --- a/crates/recursion/src/sha384/config.rs
 +++ b/crates/recursion/src/sha384/config.rs
-@@ -242,6 +242,62 @@ impl MerkleHasher for ShaHasher {
+@@ -242,6 +242,107 @@ impl MerkleHasher for ShaHasher {
          let bytes: Vec<u8> = rows.iter().flat_map(|r| felt_bytes(r)).collect();
          digest_from_bytes(truncate_digest(hash_parts(TAG_COSET_LEAF, &[&bytes])))
      }
@@ -44,6 +44,51 @@ diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384
 +            level
 +        }
 +    }
++    /// [pq-cpu-prover] leaves straight from a flat buffer: one byte arena, no per-row vectors.
++    fn hash_leaves_flat(&self, data: &[F], row_len: usize, rows_per_leaf: usize) -> Vec<Digest> {
++        let per = row_len * rows_per_leaf;
++        if !crate::sha384::mb::mb_enabled() || per == 0 {
++            let leaves: Vec<Vec<Vec<F>>> = data
++                .chunks_exact(per.max(1))
++                .map(|leaf| leaf.chunks_exact(row_len.max(1)).map(|r| r.to_vec()).collect())
++                .collect();
++            return self.hash_coset_batch(&leaves);
++        }
++        let n = data.len() / per;
++        // message = prefix(32) || tag || le64(len) || parts; one part per message
++        let (tag, part_len, parts_per_leaf) = if sha_levers().coset_leaf {
++            (TAG_COSET_LEAF, 4 * per, 1)
++        } else {
++            (TAG_LEAF, 4 * row_len, rows_per_leaf)
++        };
++        let prefix = sha_levers().prefix();
++        let mlen = 32 + 1 + 8 + part_len;
++        let nmsg = n * parts_per_leaf;
++        let mut arena = vec![0u8; nmsg * mlen];
++        for (mi, m) in arena.chunks_exact_mut(mlen).enumerate() {
++            m[..32].copy_from_slice(&prefix);
++            m[32] = tag;
++            m[33..41].copy_from_slice(&(part_len as u64).to_le_bytes());
++            let vals = &data[mi * (part_len / 4)..(mi + 1) * (part_len / 4)];
++            for (o, v) in m[41..].chunks_exact_mut(4).zip(vals) {
++                o.copy_from_slice(&v.as_canonical_u32().to_le_bytes());
++            }
++        }
++        let refs: Vec<&[u8]> = arena.chunks_exact(mlen).collect();
++        let mut level: Vec<Digest> = crate::sha384::mb::sha384_many(&refs)
++            .into_iter()
++            .map(|h| digest_from_bytes(truncate_digest(h)))
++            .collect();
++        if parts_per_leaf > 1 {
++            assert!(rows_per_leaf.is_power_of_two());
++            let mut w = rows_per_leaf;
++            while w > 1 {
++                level = self.compress_pairs(&level);
++                w /= 2;
++            }
++        }
++        level
++    }
 +    /// [pq-cpu-prover] multi-buffer node compression.
 +    fn compress_pairs(&self, inputs: &[Digest]) -> Vec<Digest> {
 +        if !crate::sha384::mb::mb_enabled() {
@@ -64,7 +109,7 @@ diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384
  }
  
  #[derive(Clone, Debug)]
-@@ -378,6 +434,56 @@ pub fn pow_step(state: &[u8; 48], witness: &[u32], bits: usize) -> ([u8; 48], bo
+@@ -378,6 +479,56 @@ pub fn pow_step(state: &[u8; 48], witness: &[u32], bits: usize) -> ([u8; 48], bo
      };
      (s, leading_zero_bits(&s) >= bits)
  }
@@ -121,7 +166,7 @@ diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384
  impl ShaTranscript {
      /// Fresh transcript of the inner or the final layer (U-12).
      pub fn new_layer(final_layer: bool) -> Self {
-@@ -389,6 +495,9 @@ impl ShaTranscript {
+@@ -389,6 +540,9 @@ impl ShaTranscript {
          use p3_maybe_rayon::prelude::*;
          self.flush();
          let base = self.state;
@@ -135,7 +180,7 @@ diff --git a/crates/recursion/src/sha384/mb.rs b/crates/recursion/src/sha384/mb.
 new file mode 100644
 --- /dev/null
 +++ b/crates/recursion/src/sha384/mb.rs
-@@ -0,0 +1,269 @@
+@@ -0,0 +1,271 @@
 +//! [pq-cpu-prover] Multi-buffer SHA-384: 8 independent messages per AVX-512 register lane
 +//! (one 64-bit word of each message per zmm lane), in the style of isa-l_crypto's mb_sha512.
 +//! Zen 5 has no SHA-512 instructions; one 8-lane compression costs about as much as two scalar
@@ -372,6 +417,8 @@ new file mode 100644
 +                .collect();
 +            let want: Vec<_> = leaves.iter().map(|r| h.hash_coset(r)).collect();
 +            assert_eq!(h.hash_coset_batch(&leaves), want);
++            let flat: Vec<F> = leaves.iter().flatten().flatten().copied().collect();
++            assert_eq!(h.hash_leaves_flat(&flat, 13, 8), want);
 +            let ds: Vec<_> = want.iter().chain(want.iter()).copied().collect();
 +            let want2: Vec<_> = ds.chunks_exact(2).map(|p| h.compress(p[0], p[1])).collect();
 +            assert_eq!(h.compress_pairs(&ds), want2);

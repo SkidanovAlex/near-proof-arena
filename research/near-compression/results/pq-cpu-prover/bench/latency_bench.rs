@@ -228,6 +228,35 @@ fn stream(w: usize, n: usize, b: usize, k: usize, c: usize) {
     );
 }
 
+/// lane/pq-cpu-prover: coset DFT of a 2^n x w row-major matrix: p3 Radix2DitParallel (as the
+/// streamed commit used), p3 Radix2Dit, and the four-step `fast_dft::coset_dft_rows`.
+fn dft_bench(w: usize, n: usize) {
+    use openvm_stark_backend::prover::fast_dft::coset_dft_rows;
+    use openvm_stark_backend::p3_dft::{Radix2Dit, Radix2DitParallel, TwoAdicSubgroupDft};
+    use p3_matrix::{bitrev::BitReversibleMatrix, dense::RowMajorMatrix};
+    let vals: Vec<F> = (0..(w << n) as u32).map(|i| F::from_u32(i.wrapping_mul(2654435761) % 2013265921)).collect();
+    let shift = F::from_u32(7);
+    let t = Instant::now();
+    let a = Radix2DitParallel::<F>::default().coset_dft_batch(RowMajorMatrix::new(vals.clone(), w), shift).bit_reverse_rows().values;
+    let s1 = t.elapsed().as_secs_f64();
+    let t = Instant::now();
+    let b = Radix2Dit::<F>::default().coset_dft_batch(RowMajorMatrix::new(vals.clone(), w), shift).values;
+    let s2 = t.elapsed().as_secs_f64();
+    let t = Instant::now();
+    let c = coset_dft_rows(&vals, w, shift);
+    let s3 = t.elapsed().as_secs_f64();
+    let n_ = 1usize << n;
+    let same = (0..n_).all(|u| {
+        let r = openvm_stark_backend::p3_util::reverse_bits_len(u, n);
+        a[r * w..(r + 1) * w] == c[u * w..(u + 1) * w]
+    }) && b == c;
+    let cells = (w << n) as f64;
+    println!(
+        "DFT w={w} n={n} threads={} parallel={s1:.3}s ({:.2} ns/cell) dit={s2:.3}s ({:.2}) four_step={s3:.3}s ({:.2}) equal={same}",
+        threads(), 1e9 * s1 / cells, 1e9 * s2 / cells, 1e9 * s3 / cells
+    );
+}
+
 fn main() {
     let a: Vec<String> = std::env::args().collect();
     let what = a.get(1).map(|s| s.as_str()).unwrap_or("all");
@@ -237,6 +266,10 @@ fn main() {
         "grind" => grind(nt),
         "ext" => ext(),
         "ntt" => ntt(),
+        "dft" => {
+            let p = |i: usize, d: usize| a.get(i).and_then(|s| s.parse().ok()).unwrap_or(d);
+            dft_bench(p(2, 82), p(3, 20))
+        }
         "stream" => {
             let p = |i: usize, d: usize| a.get(i).and_then(|s| s.parse().ok()).unwrap_or(d);
             stream(p(2, 82), p(3, 20), p(4, 2), p(5, 1), p(6, 15))
