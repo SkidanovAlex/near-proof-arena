@@ -757,3 +757,15 @@ model 308.5 → 298.9 KB.
   step_return proven, FUNC table bound through statement; budget hi-part range check added after
   the Lean proof exposed it). KAT 73/73 (incl. recursion fib10, trap two calls deep); difftest OK.
   Call tamper runs in progress. Next: DIV/SHIFT/CMP optimisation.
+
+## 2026-10-19 — G2 built, L3 heights fixed (lane/pq-recursion-sha384 @ 9159123be)
+
+* G2: per-level cached program commitment (P0..P3); child check root = C_M at anchor level,
+  else BIND; FINAL single-commitment, pinned by V_d. App table removed. NvAir 76 cols / 48 int.
+* Heights: anchors + prover-side tight-height floor (`set_tight_floor`, explicit zero rows, no
+  verifier change). Real bound chain with differing heights L1→L5→FINAL converged (96,390-row
+  program), V_d accepted (test size, 2 h 43). V_d forgery test passes (prog_log 17).
+* Merkle level 4 rows; addresses 20→24 bits (zero cost) → L1 over real base fits the address space.
+* Model: FINAL b7 h20 k1=1 k4 lf7 293,101 B at L=24 (NvAir 256,031, 2.3 % under 2^18).
+* CPU fast prover (lane/pq-cpu-prover @ 6134476fc) byte-identical on real layers → used for the
+  G2 measured chain (stream lane). Auditor §Z on G2.
