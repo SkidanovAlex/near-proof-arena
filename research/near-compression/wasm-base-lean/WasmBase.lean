@@ -23,3 +23,6 @@ import WasmBase.Extract.Occ
 import WasmBase.Main.Abstract
 import WasmBase.Local.ShiftBytes
 import WasmBase.Local.Shift
+import WasmBase.Main.Lookups
+import WasmBase.Main.Rows
+import WasmBase.Main.RowConst

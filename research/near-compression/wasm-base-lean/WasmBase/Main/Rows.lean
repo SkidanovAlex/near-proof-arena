@@ -171,4 +171,57 @@ theorem rowMsgs_eq (T : Table) (tr : Trace) (pub : List F) (t r b : Nat) (s : Bo
     · rw [List.map_cons, List.filter_cons_of_neg (by simp only [decide_eq_true_eq]; exact fun h => h1 ⟨h.1, h.2.1⟩),
         List.filter_cons_of_neg (by simpa using h1), ih]
 
+theorem feeUnits_lt {cfg : NearCfg} {g : Option (Option (IK × Fee))} {fee : Nat} (h : feeUnits cfg g = some fee) :
+    fee < 2 ^ 16 := by
+  unfold feeUnits at h
+  split at h
+  · simp only [Option.some.injEq] at h; omega
+  · split at h
+    · simp only [Option.some.injEq] at h; omega
+    · simp at h
+  · simp at h
+
+/-- The pc of any FETCH query is a code index. -/
+theorem fetch_pc {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (hpub : PubOK X nloc ncode pub)
+    (L : Looks nloc ncode pub tr) {m : List F}
+    (ho : (busFetch, true, m, 1) ∈ occs (wasmBaseAir nloc ncode) tr pub) :
+    ∃ pc, pc < X.pf.code.size ∧ m.getD 0 0 = ((pc : Nat) : F) := by
+  obtain ⟨j, hj, hm⟩ := L.fetch _ ho rfl rfl rfl
+  simp only at hm
+  rw [hpub.recs j hj] at hm
+  have CF := X.facts
+  have hjc : j < X.pf.code.size := hpub.hncode ▸ hj
+  obtain ⟨ins, fee, hins, hfee, hfl, hrec⟩ := CF.recs j hjc
+  have hsz : j < X.ck.records.size := by rw [CF.records]; exact hjc
+  rw [Array.getElem?_eq_getElem hsz] at hrec hm
+  simp only [Option.getD_some] at hm
+  obtain ⟨op, x0, x1, x2, x3, hre, -⟩ := recordOf_spec hrec
+  exact ⟨j, hjc, by rw [hm, hre]; rfl⟩
+
+theorem stMsg_cons {a b c d : F} {pc t S h : Nat} (e : [a, b, c, d] = stMsg pc t S h) :
+    a = ((pc : Nat) : F) ∧ b = ((t : Nat) : F) ∧ c = ((S : Nat) : F) ∧ d = ((h : Nat) : F) := by
+  simp only [stMsg, List.cons.injEq, and_true] at e; exact e
+
+theorem decMsg_cast (a0 a1 a2 a3 a4 a5 a6 a7 : Nat) (h0 : a0 < ZkFormal.Algebra.P) (h1 : a1 < ZkFormal.Algebra.P)
+    (h2 : a2 < ZkFormal.Algebra.P) (h3 : a3 < ZkFormal.Algebra.P) (h4 : a4 < ZkFormal.Algebra.P)
+    (h5 : a5 < ZkFormal.Algebra.P) (h6 : a6 < ZkFormal.Algebra.P) (h7 : a7 < ZkFormal.Algebra.P) :
+    decMsg [((a0 : Nat) : F), ((a1 : Nat) : F), ((a2 : Nat) : F), ((a3 : Nat) : F), ((a4 : Nat) : F),
+      ((a5 : Nat) : F), ((a6 : Nat) : F), ((a7 : Nat) : F)] = ⟨a0, a1, a2, a3, a4, a5, a6, a7⟩ := by
+  simp only [decMsg, List.getD_cons_zero, List.getD_cons_succ, Fp.toNat_cast_of_lt h0, Fp.toNat_cast_of_lt h1,
+    Fp.toNat_cast_of_lt h2, Fp.toNat_cast_of_lt h3, Fp.toNat_cast_of_lt h4, Fp.toNat_cast_of_lt h5,
+    Fp.toNat_cast_of_lt h6, Fp.toNat_cast_of_lt h7]
+
+theorem isFamilyNum_le {op : Nat} (h : isFamilyNum op = true) : op ≤ 0x8A := by
+  unfold isFamilyNum at h
+  simp only [Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq, beq_iff_eq] at h
+  omega
+
+theorem recordOf_op_lt {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : List Nat}
+    (hr : recordOf ls h fee pc ins = some rec) : rec.getD 1 0 < 512 := by
+  obtain ⟨op, x0, x1, x2, x3, rfl, hc⟩ := recordOf_spec hr
+  simp only [List.getD_cons_succ, List.getD_cons_zero]
+  rcases hc with ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ |
+    ⟨_, _, h, _⟩ | ⟨_, hf, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ <;>
+  first | (subst h; decide) | (have := isFamilyNum_le hf; omega)
+
 end WasmBase
