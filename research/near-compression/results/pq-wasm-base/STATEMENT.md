@@ -67,8 +67,13 @@ is computed.
 
 ## 4. Cost
 
-* **Base proof.** At the small shape it grows from about 746 KB to about 972 KB, because of the extra
-  round-0 tree openings (`logs/prove-*.log`). Base proofs are not sent to V_d.
+* **Base proof.** It grows because of the extra round-0 tree openings (`logs/prove-*.log`, re-run on
+  v2). Base proofs are not sent to V_d.
+
+  | shape | v1 | v2 |
+  |---|---:|---:|
+  | small (2^20) | 746 KB | 970–976 KB |
+  | pinned (2^24) | 949 KB | 1,263 KB (prove 408 s, 12.8 GB) |
 * **Base per-op cost.** No change: the CODE table has one row per instruction of the code, not per
   executed op.
 * **L1.** One more round-0 tree: about +80k program rows and +15.5k compressions at b = 1

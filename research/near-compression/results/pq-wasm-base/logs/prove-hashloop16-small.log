@@ -1,4 +1,4 @@
-TABLE BOUNDARY  width  74 rows      1 height      4 cells       296 constraints   0 interactions  63 degree 2
+TABLE BOUNDARY  width  20 rows      1 height      4 cells        80 constraints   0 interactions   9 degree 1
 TABLE ADD       width  28 rows     32 height     32 cells       896 constraints  20 interactions  14 degree 3
 TABLE BIT       width  37 rows     57 height     64 cells      2368 constraints  19 interactions  18 degree 2
 TABLE MUL       width  43 rows     16 height     16 cells       688 constraints  26 interactions  30 degree 3
@@ -10,9 +10,10 @@ TABLE CTRL      width  16 rows     60 height     64 cells      1024 constraints 
 TABLE LOCAL     width  23 rows    199 height    256 cells      5888 constraints  10 interactions  11 degree 2
 TABLE RANGE16   width   2 rows  65536 height  65536 cells    131072 constraints   3 interactions   1 degree 2
 TABLE BYTE      width  20 rows  65536 height  65536 cells   1310720 constraints  19 interactions   4 degree 2
-STEPS 619 S_UNITS 607 CELLS_TOTAL 1468808 CELLS_ACTIVE 1459426
+TABLE CODE      width   9 rows     64 height     64 cells       576 constraints   0 interactions   1 degree 1
+STEPS 619 S_UNITS 607 CELLS_TOTAL 1469168 CELLS_ACTIVE 1459948
 PARAMS n_stack 18 log_h 20 w_stack 8 degree 8 queries [536, 256, 83, 50] pow 24
-VK BOUNDARY  degree 2 constraints 0 interactions 63 dag_nodes 632
+VK BOUNDARY  degree 1 constraints 0 interactions 9 dag_nodes 38
 VK ADD       degree 3 constraints 20 interactions 14 dag_nodes 124
 VK BIT       degree 2 constraints 19 interactions 18 dag_nodes 121
 VK MUL       degree 3 constraints 26 interactions 30 dag_nodes 213
@@ -24,25 +25,27 @@ VK CTRL      degree 4 constraints 7 interactions 6 dag_nodes 82
 VK LOCAL     degree 2 constraints 10 interactions 11 dag_nodes 86
 VK RANGE16   degree 2 constraints 3 interactions 1 dag_nodes 15
 VK BYTE      degree 2 constraints 19 interactions 4 dag_nodes 242
+VK CODE      degree 1 constraints 0 interactions 1 dag_nodes 10
 SOUNDNESS total=268.2 logup=333.3 proximity=316.2 query=268.2
-PROOF total=746092 gkr=28328 relations=29108 stacking=2176 whir=684504
-TIME tracegen 0.050s keygen 0.001s prove 22.630s verify 0.0159s threads 8 peak_rss_kib 795748
+PROOF total=969902 gkr=28328 relations=27056 stacking=2228 whir=911988
+STATEMENT code_root cd904f0341d51239c2baa7d4c2ea2a49f4818db5dca02dad91244702107985de1631f7bd96870446000000000000420e code_hash - (V_d: recomputed root matches the proof's cached CODE commitment)
+TIME tracegen 0.096s keygen 0.001s prove 28.743s verify 0.0238s threads 8 peak_rss_kib 1006068
 PROVE OK steps 619 result Some((1, 1387308143281165977))
-	Command being timed: "nice -n 10 env HEAVY_MEM=20G taskset -c 8-15 /data/illia/nearproof-deps/bin/heavy /data/illia/nearproof-deps/pq-wasm-base/target/release/nearproof-wasm-base prove /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/meas2/air-3-54.json /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/meas2/progs/hashloop16.prep.json small"
-	User time (seconds): 76.08
-	System time (seconds): 0.76
-	Percent of CPU this job got: 337%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:22.78
+	Command being timed: "nice -n 10 env HEAVY_MEM=20G taskset -c 8-15 /data/illia/nearproof-deps/bin/heavy /data/illia/nearproof-deps/pq-wasm-base/target/release/nearproof-wasm-base prove /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/meas3/air-3-54.json /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/meas3/progs/hashloop16.prep.json small"
+	User time (seconds): 91.61
+	System time (seconds): 1.22
+	Percent of CPU this job got: 315%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:29.42
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 795748
+	Maximum resident set size (kbytes): 1006068
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 339524
-	Voluntary context switches: 40903
-	Involuntary context switches: 679859
+	Minor (reclaiming a frame) page faults: 414498
+	Voluntary context switches: 43108
+	Involuntary context switches: 649656
 	Swaps: 0
 	File system inputs: 0
 	File system outputs: 16
