@@ -420,12 +420,13 @@ theorem load_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   obtain ⟨al, off, hinsE, -, hisL, hoff, hxs⟩ : ∃ al off, ins = .load op al off ∧ (0x28 ≤ op ∧ op ≤ 0x35) ∧
       isLoadOp op = true ∧ off < 2 ^ 32 ∧ [x0, x1, x2, x3] = [off % 65536, off / 65536, 0, 0] := by
     rcases hcase with ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ |
-      ⟨_, _, h, _⟩ | ⟨_, hf, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ | hl | ⟨_, _, _, hmem, _⟩ | ⟨_, _, hgl, _⟩ | ⟨_, _, hgl, _⟩
+      ⟨_, _, h, _⟩ | ⟨_, hf, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ | hl | ⟨_, _, _, hmem, _⟩ | ⟨_, _, hgl, _⟩ | ⟨_, _, hgl, _⟩ | ⟨_, _, _, h, _⟩
     all_goals first
       | exact hl
       | (exfalso; omega)
       | (exfalso; simp only [isFamilyNum, Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq] at hf; omega)
       | (exfalso; simp only [Ctrl.opNext, Ctrl.opJump, Ctrl.opJif, Ctrl.opHalt, Ctrl.opHif] at h; omega)
+      | (exfalso; simp only [opCall] at h; omega)
   subst hinsE
   simp only [List.cons.injEq, and_true] at hxs
   obtain ⟨hx0, hx1, -, -⟩ := hxs
@@ -927,12 +928,13 @@ theorem store_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   obtain ⟨al, off, hinsE, -, hisS, hoff, hxs⟩ : ∃ al off, ins = .store op al off ∧ (0x36 ≤ op ∧ op ≤ 0x3E) ∧
       isStoreOp op = true ∧ off < 2 ^ 32 ∧ [x0, x1, x2, x3] = [off % 65536, off / 65536, 0, 0] := by
     rcases hcase with ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ |
-      ⟨_, _, h, _⟩ | ⟨_, hf, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, _, hmem, _⟩ | hl | ⟨_, _, hgl, _⟩ | ⟨_, _, hgl, _⟩
+      ⟨_, _, h, _⟩ | ⟨_, hf, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, _, hmem, _⟩ | hl | ⟨_, _, hgl, _⟩ | ⟨_, _, hgl, _⟩ | ⟨_, _, _, h, _⟩
     all_goals first
       | exact hl
       | (exfalso; omega)
       | (exfalso; simp only [isFamilyNum, Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq] at hf; omega)
       | (exfalso; simp only [Ctrl.opNext, Ctrl.opJump, Ctrl.opJif, Ctrl.opHalt, Ctrl.opHif] at h; omega)
+      | (exfalso; simp only [opCall] at h; omega)
   subst hinsE
   simp only [List.cons.injEq, and_true] at hxs
   obtain ⟨hx0, hx1, -, -⟩ := hxs

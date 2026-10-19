@@ -69,9 +69,24 @@ structure CheckOut where
   resTag : Nat
   records : Array (List Nat)
   maxFee : Nat
-  /-- declared local types (1 = i64) -/
+  /-- local types, params first (1 = i64) -/
   localTags : List Nat
+  /-- number of params and of locals (params included) -/
+  np : Nat
+  nl : Nat
+  /-- the spec's stack-budget charge of a call (`stackCharge`) -/
+  charge : Nat
+  /-- prologue gas units (`prologueGas / regular_op_cost`) -/
+  prologue : Nat
   deriving Inhabited
+
+/-- Opcode of a call record (bus FETCH). -/
+def opCall : Nat := 0x10
+
+/-- `(params, results)` of a defined-function call target (`none`: an import or out of range). -/
+def sigOf (p : Prepared) (fi : Nat) : Option (Nat × Nat) :=
+  if p.m.imports.size ≤ fi then (p.funcs[fi - p.m.imports.size]?).map fun pf =>
+    (pf.type.params.size, pf.type.results.size) else none
 
 def rootLabel (pf : PFunc) : Label :=
   { target := pf.code.size, arity := pf.type.results.size, height := 0, isLoop := false }
@@ -111,7 +126,7 @@ def kindOf (ls : List Label) : Instr → Option Kind
 
 /-- Forward pass: static labels and heights (`none` = outside D1/D4). `dead` = after an
 unconditional transfer. -/
-def analyze (pf : PFunc) : Option (Array (List Label) × Array Nat) := Id.run do
+def analyze (p : Prepared) (pf : PFunc) : Option (Array (List Label) × Array Nat) := Id.run do
   let n := pf.code.size
   let mut ls : List Label := [rootLabel pf]
   let mut h : Nat := 0
@@ -146,6 +161,12 @@ def analyze (pf : PFunc) : Option (Array (List Label) × Array Nat) := Id.run do
         | _ => dead := true
       | .br _ | .ret => dead := true
       | .brIf _ => h := h - 1
+      | .call fi =>
+        match sigOf p fi with
+        | some (np, ar) =>
+          if h < np then return none
+          h := h - np + ar
+        | none => return none
       | i =>
         match kindOf ls i with
         | some (.straight pops pushes) =>
@@ -155,7 +176,7 @@ def analyze (pf : PFunc) : Option (Array (List Label) × Array Nat) := Id.run do
   return some (L, H)
 
 /-- Successor obligations of one pc (the only facts the proofs use). -/
-def verifyAt (pf : PFunc) (L : Array (List Label)) (H : Array Nat) (pc : Nat) : Bool :=
+def verifyAt (p : Prepared) (pf : PFunc) (L : Array (List Label)) (H : Array Nat) (pc : Nat) : Bool :=
   match pf.code[pc]?, L[pc]?, H[pc]? with
   | some ins, some ls, some h =>
     let fnAr := pf.type.results.size
@@ -186,6 +207,9 @@ def verifyAt (pf : PFunc) (L : Array (List Label)) (H : Array Nat) (pc : Nat) : 
         | some lab => decide (h - 1 = lab.height + lab.arity) &&
             atQ lab.target (if lab.isLoop then ls.drop l else ls.drop (l + 1)) (h - 1)
         | none => false)
+    | .call fi => match sigOf p fi with
+      | some (np, ar) => decide (np ≤ h) && atQ (pc + 1) ls (h - np + ar)
+      | none => false
     | i => match kindOf ls i with
       | some (.straight pops pushes) => decide (pops ≤ h) && atQ (pc + 1) ls (h - pops + pushes)
       | _ => false
@@ -196,7 +220,8 @@ def limbs4 (x : Nat) : List Nat := [x % 65536, x / 65536 % 65536, x / 2 ^ 32 % 6
 
 /-- Code record `[pc, op, h, fee, x0, x1, x2, x3]` (bus FETCH) at global pc `pc`; jump targets are
 global (`off` = the function's code offset; the labels are local). -/
-def recordOf (off : Nat) (ls : List Label) (h fee pc : Nat) (ins : Instr) : Option (List Nat) :=
+def recordOf (off : Nat) (cinfo : Nat → Option Nat) (ls : List Label) (h fee pc : Nat) (ins : Instr) :
+    Option (List Nat) :=
   let mk (op : Nat) (xs : List Nat) := some ([pc, op, h, fee] ++ xs)
   match ins with
   | .i32Const v => mk 0x41 (limbs4 v.toNat)
@@ -211,6 +236,9 @@ def recordOf (off : Nat) (ls : List Label) (h fee pc : Nat) (ins : Instr) : Opti
   | .num op => if isFamilyNum op then mk op [0, 0, 0, 0] else none
   | .load op _ off => if isLoadOp op ∧ off < 2 ^ 32 then mk op [off % 65536, off / 65536, 0, 0] else none
   | .store op _ off => if isStoreOp op ∧ off < 2 ^ 32 then mk op [off % 65536, off / 65536, 0, 0] else none
+  | .call fi => match cinfo fi with
+    | some entry => mk opCall [entry, 0, 0, 0]
+    | none => none
   | i => match kindOf ls i with
     | some .next => mk Chips.Ctrl.opNext [0, 0, 0, 0]
     | some (.jump t) => mk Chips.Ctrl.opJump [t + off, 0, 0, 0]
@@ -219,44 +247,54 @@ def recordOf (off : Nat) (ls : List Label) (h fee pc : Nat) (ins : Instr) : Opti
     | some .haltIf => mk Chips.Ctrl.opHif [0, 0, 0, 0]
     | _ => none
 
-/-- D1/D5 basic shape (decidable). -/
-def basicOk (pf : PFunc) : Bool :=
-  decide (pf.type.params.size = 0) && decide (pf.locals.size ≤ 64) && decide (pf.type.results.size ≤ 1) &&
+/-- D1/D5 basic shape (decidable): at most 8 params and 64 locals (params included), numeric types,
+local indices in range, the stack charge and prologue gas of a call representable. -/
+def basicOk (cfg : NearCfg) (pf : PFunc) : Bool :=
+  decide (pf.type.params.size ≤ 8) && decide (pf.type.params.size + pf.locals.size ≤ 64) &&
+  decide (pf.type.results.size ≤ 1) &&
   pf.type.results.all (fun t => t == .i32 || t == .i64) &&
   pf.locals.all (fun t => t == .i32 || t == .i64) &&
   pf.code.all (fun i => match i with
-    | .localGet x | .localSet x | .localTee x => decide (x < pf.locals.size)
+    | .localGet x | .localSet x | .localTee x => decide (x < pf.type.params.size + pf.locals.size)
     | _ => true) &&
-  decide (pf.code.size < 2 ^ 20) && decide (pf.gas.size = pf.code.size)
+  decide (pf.code.size < 2 ^ 20) && decide (pf.gas.size = pf.code.size) &&
+  pf.type.params.all (fun t => t == .i32 || t == .i64) &&
+  decide (pf.stackCharge < 2 ^ 26) && decide (cfg.regularOpCost ≠ 0) &&
+  decide (pf.prologueGas % cfg.regularOpCost = 0) && decide (pf.prologueGas / cfg.regularOpCost < 2 ^ 16)
 
 /-- Static structure: sizes, entry, every local transition, height bound. -/
-def structOk (pf : PFunc) (L : Array (List Label)) (H : Array Nat) : Bool :=
+def structOk (p : Prepared) (pf : PFunc) (L : Array (List Label)) (H : Array Nat) : Bool :=
   decide (L.size = pf.code.size) && decide (H.size = pf.code.size) &&
   decide (L[0]? = some [rootLabel pf]) && decide (H[0]? = some 0) &&
-  (List.range pf.code.size).all (fun pc => verifyAt pf L H pc && decide (H[pc]?.getD 0 < 2 ^ 16))
+  (List.range pf.code.size).all (fun pc => verifyAt p pf L H pc && decide (H[pc]?.getD 0 < 2 ^ 16))
 
-def recordAt (cfg : NearCfg) (pf : PFunc) (L : Array (List Label)) (H : Array Nat) (off pc : Nat) :
-    Option (List Nat) :=
+def recordAt (cfg : NearCfg) (pf : PFunc) (L : Array (List Label)) (H : Array Nat) (off : Nat)
+    (cinfo : Nat → Option Nat) (pc : Nat) : Option (List Nat) :=
   match pf.code[pc]?, feeUnits cfg pf.gas[pc]? with
-  | some ins, some fee => recordOf off (L[pc]?.getD []) (H[pc]?.getD 0) fee (off + pc) ins
+  | some ins, some fee => recordOf off cinfo (L[pc]?.getD []) (H[pc]?.getD 0) fee (off + pc) ins
   | _, _ => none
+
+/-- Type tag of a value type (1 = i64). -/
+def vtTag (t : VT) : Nat := if t == .i64 then 1 else 0
 
 /-- The eligibility check of defined function `fn` (domain D1–D5), its code placed at global pc
 `off`. -/
-def check (cfg : NearCfg) (p : Prepared) (fn off : Nat) : Option CheckOut :=
+def check (cfg : NearCfg) (p : Prepared) (fn off : Nat) (cinfo : Nat → Option Nat) : Option CheckOut :=
   match p.funcs[fn]? with
   | none => none
   | some pf =>
-    if basicOk pf then
-      match analyze pf with
+    if basicOk cfg pf then
+      match analyze p pf with
       | none => none
       | some (L, H) =>
-        if structOk pf L H then
-          match (List.range pf.code.size).mapM (recordAt cfg pf L H off) with
+        if structOk p pf L H then
+          match (List.range pf.code.size).mapM (recordAt cfg pf L H off cinfo) with
           | none => none
           | some recs =>
             some { fn, labels := L, heights := H, arity := pf.type.results.size,
-                   localTags := pf.locals.toList.map fun t => if t == .i64 then 1 else 0,
+                   localTags := (pf.type.params.toList ++ pf.locals.toList).map vtTag,
+                   np := pf.type.params.size, nl := pf.type.params.size + pf.locals.size,
+                   charge := pf.stackCharge, prologue := pf.prologueGas / cfg.regularOpCost,
                    resTag := if pf.type.results[0]? == some .i64 then 1 else 0,
                    records := recs.toArray,
                    maxFee := (recs.map fun r => r.getD 3 0).foldl max 0 }
@@ -312,6 +350,9 @@ structure ModOut where
   /-- global code records -/
   records : Array (List Nat)
   maxFee : Nat
+  /-- the function table (bus FUNC): per checked function `[entry, np + 128 nl, charge, prologue, m0, m1, m2, m3]`
+  (`m` = the locals' type mask, bit `j` = local `j` is i64, as four 16-bit limbs) -/
+  funcs : List (List Nat)
   deriving Inhabited
 
 /-- The decidable layout facts the proof uses. -/
@@ -324,6 +365,17 @@ def layoutOk (fns : List Nat) (offs sizes : List Nat) (total : Nat) : Bool :=
     decide (offs.getD k 0 + sizes.getD k 0 ≤ total) &&
     (List.range (sizes.getD k 0)).all fun l => decide (locate offs sizes (offs.getD k 0 + l) = (k, l)))
 
+/-- Type mask of a list of local tags: bit `j` set iff local `j` is i64. -/
+def maskOf (tags : List Nat) : Nat := (tags.zipIdx.map fun (t, j) => t * 2 ^ j).foldl (· + ·) 0
+
+/-- The function-table row of a checked function placed at `off`. -/
+def funcRow (off : Nat) (ck : CheckOut) : List Nat :=
+  [off, ck.np + 128 * ck.nl, ck.charge, ck.prologue] ++ limbs4 (maskOf ck.localTags)
+
+/-- Call-target info for the records: the global entry pc of a checked function. -/
+def callInfo (p : Prepared) (fns : List Nat) (offs : List Nat) (fi : Nat) : Option Nat :=
+  if p.m.imports.size ≤ fi then (fns.idxOf? (fi - p.m.imports.size)).map fun k => offs.getD k 0 else none
+
 /-- Module-level eligibility check from entry function `entry`. -/
 def checkModule (cfg : NearCfg) (p : Prepared) (entry : Nat) : Option ModOut :=
   let fns := closureFns p entry
@@ -332,7 +384,8 @@ def checkModule (cfg : NearCfg) (p : Prepared) (entry : Nat) : Option ModOut :=
   | some pfs =>
   let sizes := pfs.map (·.code.size)
   let offs := prefixOffs sizes 0
-  match (List.range fns.length).mapM (fun k => check cfg p (fns.getD k 0) (offs.getD k 0)) with
+  let cinfo := callInfo p fns offs
+  match (List.range fns.length).mapM (fun k => check cfg p (fns.getD k 0) (offs.getD k 0) cinfo) with
   | none => none
   | some cks =>
     let total := sizes.foldl (· + ·) 0
@@ -340,9 +393,11 @@ def checkModule (cfg : NearCfg) (p : Prepared) (entry : Nat) : Option ModOut :=
       let kl := locate offs sizes j
       ((cks.getD kl.1 default).records)[kl.2]?.getD []
     if fns.head? = some entry ∧ total < 2 ^ 20 ∧ layoutOk fns offs sizes total = true ∧
-        fns.all (fun fn => ((p.funcs[fn]?.map (calleesOf p)).getD []).all (fns.contains ·)) then
+        fns.all (fun fn => ((p.funcs[fn]?.map (calleesOf p)).getD []).all (fns.contains ·)) ∧
+        (pfs.head?.map (·.type.params.size)) = some 0 then
       some { fns, cks, offs, sizes, codeSize := total, records := recs.toArray,
-             maxFee := (cks.map (·.maxFee)).foldl max 0 }
+             maxFee := (cks.map (·.maxFee)).foldl max 0 + (cks.map (·.prologue)).foldl max 0,
+             funcs := (List.range fns.length).map fun k => funcRow (offs.getD k 0) (cks.getD k default) }
     else none
 
 end WasmBase

@@ -260,7 +260,7 @@ structure RelW (X : Ctx) (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) 
   base : f.base = E.sb
   sbLe : E.sb ≤ s.stack.size
   height : (X.ckOf E.k).heights[pc]? = some (s.stack.size - E.sb)
-  nloc : f.locals.size = (X.pfOf E.k).locals.size
+  nloc : f.locals.size = (X.pfOf E.k).type.params.size + (X.pfOf E.k).locals.size
   gas : X.R * S + s.gas.g = X.g0
   numS : ∀ i, i < s.stack.size → isNum (s.stack[i]?.getD default)
   numL : ∀ j, j < f.locals.size → isNum (f.locals[j]?.getD default)

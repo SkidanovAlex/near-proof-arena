@@ -308,12 +308,13 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       ⟨g5, g6, g7, g26, g27⟩ | ⟨g5, g6, g7, g26, g27⟩ <;> rw [g6, g7, g26, g27] at hop <;>
   rcases hcase with ⟨v, hv, h, hl⟩ | ⟨v, hv, h, hl⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨x, hv, h, hl⟩ | ⟨x, hv, h, hl⟩ |
     ⟨x, hv, h, hl⟩ | ⟨_, hf, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ |
-    ⟨_, _, _, hmem, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨x, hv, h, hl, hx16⟩ | ⟨x, hv, h, hl, hx16⟩
+    ⟨_, _, _, hmem, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨x, hv, h, hl, hx16⟩ | ⟨x, hv, h, hl, hx16⟩ | ⟨_, _, _, h, _⟩
   all_goals first
     | (exfalso; simp only [isBinop, binops, List.mem_cons, List.mem_nil_iff, or_false] at hop; omega)
     | (exfalso; omega)
     | (exfalso; rw [hop] at hf; revert hf; decide)
     | (exfalso; simp only [Ctrl.opNext, Ctrl.opJump, Ctrl.opJif, Ctrl.opHalt, Ctrl.opHif] at h; omega)
+    | (exfalso; simp only [opCall] at h; omega)
     | skip
   · -- local.get
     simp only [List.cons.injEq, and_true] at hl

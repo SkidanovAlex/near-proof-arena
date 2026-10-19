@@ -75,7 +75,7 @@ theorem verify_straight (X : Ctx) {k : Nat} (hkn : k < X.nf) {pc : Nat} {ins : I
     pops ≤ h ∧ pc + 1 < (X.pfOf k).code.size ∧ (X.ckOf k).labels[pc + 1]? = some ls ∧
       (X.ckOf k).heights[pc + 1]? = some (h - pops + pushes) := by
   have hv := (X.factsOf hkn).verify pc hpc
-  have e : verifyAt (X.pfOf k) (X.ckOf k).labels (X.ckOf k).heights pc =
+  have e : verifyAt X.p (X.pfOf k) (X.ckOf k).labels (X.ckOf k).heights pc =
       (decide (pops ≤ h) && (decide (pc + 1 < (X.pfOf k).code.size) && decide ((X.ckOf k).labels[pc + 1]? = some ls) &&
         decide ((X.ckOf k).heights[pc + 1]? = some (h - pops + pushes)))) := by
     unfold verifyAt
@@ -89,6 +89,7 @@ theorem verify_straight (X : Ctx) {k : Nat} (hkn : k < X.nf) {pc : Nat} {ins : I
     | ret => exact absurd rfl hnr
     | br l => exact absurd rfl (hnb l)
     | brIf l => exact absurd rfl (hnbi l)
+    | call fi => simp [kindOf] at hk
     | _ => simp only [hk]
   rw [e] at hv
   simp only [Bool.and_eq_true, decide_eq_true_eq] at hv

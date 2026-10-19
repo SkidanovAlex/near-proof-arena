@@ -49,33 +49,42 @@ where
     | cons y l ih => intro a; simp only [List.foldl_cons]; have := ih (max a y); omega
 
 /-- Everything the base-faithful proof uses from `check`. -/
-structure CheckFacts (cfg : NearCfg) (p : Prepared) (fn off : Nat) (pf : PFunc) (ck : CheckOut) : Prop where
+structure CheckFacts (cfg : NearCfg) (p : Prepared) (fn off : Nat) (cinfo : Nat → Option Nat) (pf : PFunc)
+    (ck : CheckOut) : Prop where
   func : p.funcs[fn]? = some pf
-  params : pf.type.params.size = 0
-  nloc : pf.locals.size ≤ 64
+  params : pf.type.params.size ≤ 8
+  nloc : pf.type.params.size + pf.locals.size ≤ 64
   results : pf.type.results.size ≤ 1
   resTypes : ∀ t ∈ pf.type.results.toList, t = .i32 ∨ t = .i64
   locTypes : ∀ t ∈ pf.locals.toList, t = .i32 ∨ t = .i64
+  parTypes : ∀ t ∈ pf.type.params.toList, t = .i32 ∨ t = .i64
   codeLt : pf.code.size < 2 ^ 20
   gasSize : pf.gas.size = pf.code.size
   lsize : ck.labels.size = pf.code.size
   hsize : ck.heights.size = pf.code.size
   l0 : ck.labels[0]? = some [rootLabel pf]
   h0 : ck.heights[0]? = some 0
-  verify : ∀ pc, pc < pf.code.size → verifyAt pf ck.labels ck.heights pc = true
+  verify : ∀ pc, pc < pf.code.size → verifyAt p pf ck.labels ck.heights pc = true
   hBound : ∀ pc, pc < pf.code.size → ck.heights[pc]?.getD 0 < 2 ^ 16
   records : ck.records.size = pf.code.size
   recs : ∀ pc, pc < pf.code.size → ∃ ins fee, pf.code[pc]? = some ins ∧
     feeUnits cfg pf.gas[pc]? = some fee ∧ fee ≤ ck.maxFee ∧
-    recordOf off (ck.labels[pc]?.getD []) (ck.heights[pc]?.getD 0) fee (off + pc) ins = ck.records[pc]?
+    recordOf off cinfo (ck.labels[pc]?.getD []) (ck.heights[pc]?.getD 0) fee (off + pc) ins = ck.records[pc]?
   arity : ck.arity = pf.type.results.size
   resTag : ck.resTag = if pf.type.results[0]? == some .i64 then 1 else 0
-  localTags : ck.localTags = pf.locals.toList.map fun t => if t == .i64 then 1 else 0
+  localTags : ck.localTags = (pf.type.params.toList ++ pf.locals.toList).map vtTag
   locIdx : ∀ i ∈ pf.code.toList, ∀ x, (i = .localGet x ∨ i = .localSet x ∨ i = .localTee x) →
-    x < pf.locals.size
+    x < pf.type.params.size + pf.locals.size
+  np : ck.np = pf.type.params.size
+  nl : ck.nl = pf.type.params.size + pf.locals.size
+  charge : ck.charge = pf.stackCharge
+  chargeLt : pf.stackCharge < 2 ^ 26
+  prologue : ck.prologue * cfg.regularOpCost = pf.prologueGas
+  prologueLt : ck.prologue < 2 ^ 16
+  regPos : cfg.regularOpCost ≠ 0
 
-theorem recordOf_fee {off : Nat} {ls : List Label} {h fee pc : Nat} {ins : Instr} {r : List Nat}
-    (hr : recordOf off ls h fee pc ins = some r) : r.getD 3 0 = fee := by
+theorem recordOf_fee {off : Nat} {cinfo : Nat → Option Nat} {ls : List Label} {h fee pc : Nat}
+    {ins : Instr} {r : List Nat} (hr : recordOf off cinfo ls h fee pc ins = some r) : r.getD 3 0 = fee := by
   unfold recordOf at hr
   split at hr <;> (try split at hr) <;> (try split at hr) <;> simp_all <;>
     (try (obtain ⟨_, rfl⟩ := hr; rfl)) <;> (try (subst hr; rfl))
@@ -85,27 +94,27 @@ end WasmBase
 namespace WasmBase
 open NearSpecV3.Wasm
 
-theorem check_sound {cfg : NearCfg} {p : Prepared} {fn off : Nat} {ck : CheckOut}
-    (h : check cfg p fn off = some ck) : ∃ pf, CheckFacts cfg p fn off pf ck := by
+theorem check_sound {cfg : NearCfg} {p : Prepared} {fn off : Nat} {cinfo : Nat → Option Nat} {ck : CheckOut}
+    (h : check cfg p fn off cinfo = some ck) : ∃ pf, CheckFacts cfg p fn off cinfo pf ck := by
   unfold check at h
   cases hpf : p.funcs[fn]? with
   | none => simp [hpf] at h
   | some pf =>
     simp only [hpf] at h
-    cases hb : basicOk pf with
+    cases hb : basicOk cfg pf with
     | false => simp [hb] at h
     | true =>
       simp only [hb, ite_true] at h
-      cases han : analyze pf with
+      cases han : analyze p pf with
       | none => simp [han] at h
       | some LH =>
         obtain ⟨L, H⟩ := LH
         simp only [han] at h
-        cases hs : structOk pf L H with
+        cases hs : structOk p pf L H with
         | false => simp [hs] at h
         | true =>
           simp only [hs, ite_true] at h
-          cases hm : (List.range pf.code.size).mapM (recordAt cfg pf L H off) with
+          cases hm : (List.range pf.code.size).mapM (recordAt cfg pf L H off cinfo) with
           | none => simp [hm] at h
           | some recs =>
             simp only [hm, Option.some.injEq] at h
@@ -113,13 +122,13 @@ theorem check_sound {cfg : NearCfg} {p : Prepared} {fn off : Nat} {ck : CheckOut
             obtain ⟨hlen, hall⟩ := mapM_some _ _ _ hm
             simp only [List.length_range] at hlen
             simp only [basicOk, Bool.and_eq_true, decide_eq_true_eq] at hb
-            obtain ⟨⟨⟨⟨⟨⟨⟨g1, g1a⟩, g1b⟩, g2⟩, g3⟩, g4⟩, g5⟩, g5a⟩ := hb
+            obtain ⟨⟨⟨⟨⟨⟨⟨⟨⟨⟨⟨⟨g1, g1a⟩, g1b⟩, g2⟩, g3⟩, g4⟩, g5⟩, g5a⟩, gp⟩, gch⟩, greg⟩, gpro⟩, gprl⟩ := hb
             simp only [structOk, Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true, List.mem_range]
               at hs
             obtain ⟨⟨⟨⟨g6, g6a⟩, g6b⟩, g6c⟩, g7⟩ := hs
             have fee_of : ∀ pc (hpc : pc < pf.code.size), ∃ ins fee, pf.code[pc]? = some ins ∧
                 feeUnits cfg pf.gas[pc]? = some fee ∧
-                recordOf off (L[pc]?.getD []) (H[pc]?.getD 0) fee (off + pc) ins = recs[pc]? := by
+                recordOf off cinfo (L[pc]?.getD []) (H[pc]?.getD 0) fee (off + pc) ins = recs[pc]? := by
               intro pc hpc
               have := hall pc (by simpa using hpc)
               simp only [List.getElem_range, recordAt] at this
@@ -131,14 +140,22 @@ theorem check_sound {cfg : NearCfg} {p : Prepared} {fn off : Nat} {ck : CheckOut
                 cases hfu : feeUnits cfg pf.gas[pc]? with
                 | none => intro e; simp [hr] at e
                 | some fee => intro e; exact ⟨ins, fee, rfl, rfl, e⟩
+            have recMax : ∀ pc (hpc : pc < pf.code.size),
+                (recs[pc]'(by omega)).getD 3 0 ≤ (recs.map fun r => r.getD 3 0).foldl max 0 := by
+              intro pc hpc
+              apply foldl_max_ge
+              simp only [List.mem_map]
+              exact ⟨recs[pc]'(by omega), List.getElem_mem _, rfl⟩
             refine ⟨pf, {
               func := hpf, params := g1, nloc := g1a, results := g1b,
-              resTypes := ?_, locTypes := ?_, codeLt := g5, gasSize := g5a,
+              resTypes := ?_, locTypes := ?_, parTypes := ?_, codeLt := g5, gasSize := g5a,
               lsize := g6, hsize := g6a, l0 := g6b, h0 := g6c,
               verify := fun pc hpc => by have := g7 pc hpc; simp_all,
               hBound := fun pc hpc => by have := g7 pc hpc; simp_all,
               records := by simp [hlen],
-              recs := ?_, arity := rfl, resTag := rfl, localTags := rfl, locIdx := ?_ }⟩
+              recs := ?_, arity := rfl, resTag := rfl, localTags := rfl, locIdx := ?_,
+              np := rfl, nl := rfl, charge := rfl, chargeLt := gch,
+              prologue := Nat.div_mul_cancel (Nat.dvd_of_mod_eq_zero gpro), prologueLt := gprl, regPos := greg }⟩
             · intro t ht
               rw [Array.all_eq_true] at g2
               obtain ⟨x, hx, rfl⟩ := Array.mem_iff_getElem.mp (Array.mem_toList_iff.mp ht)
@@ -151,14 +168,20 @@ theorem check_sound {cfg : NearCfg} {p : Prepared} {fn off : Nat} {ck : CheckOut
               have := g3 x hx
               revert this
               cases pf.locals[x] <;> decide
+            · intro t ht
+              rw [Array.all_eq_true] at gp
+              obtain ⟨x, hx, rfl⟩ := Array.mem_iff_getElem.mp (Array.mem_toList_iff.mp ht)
+              have := gp x hx
+              revert this
+              cases pf.type.params[x] <;> decide
             · intro pc hpc
               obtain ⟨ins, fee, h1, h2, h3⟩ := fee_of pc hpc
+              have hr : recs[pc]? = some (recs[pc]'(by omega)) := List.getElem?_eq_getElem (by omega)
               refine ⟨ins, fee, h1, h2, ?_, by simpa using h3⟩
-              apply foldl_max_ge
-              simp only [List.mem_map]
-              refine ⟨recs[pc]'(by omega), List.getElem_mem _, ?_⟩
-              rw [List.getElem?_eq_getElem (by omega)] at h3
-              exact (recordOf_fee h3)
+              rw [hr] at h3
+              have := recMax pc hpc
+              rw [recordOf_fee h3] at this
+              exact this
             · intro i hi x hx
               rw [Array.all_eq_true] at g4
               obtain ⟨k, hk, rfl⟩ := Array.mem_iff_getElem.mp (Array.mem_toList_iff.mp hi)

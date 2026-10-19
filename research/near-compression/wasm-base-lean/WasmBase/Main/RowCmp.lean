@@ -372,12 +372,13 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
           (val4 (rowNat tr 5 r 23) (rowNat tr 5 r 24) (rowNat tr 5 r 25) (rowNat tr 5 r 26))); omega)]
   have hnum : ins = .num op := by
     rcases hcase with ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ |
-      ⟨_, _, h, _⟩ | ⟨h1, _, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, hgl, _⟩ | ⟨_, _, hgl, _⟩
+      ⟨_, _, h, _⟩ | ⟨h1, _, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, hgl, _⟩ | ⟨_, _, hgl, _⟩ | ⟨_, _, _, h, _⟩
     all_goals first
       | (exfalso; simp only [isBinop, binops, List.mem_cons, List.mem_nil_iff, or_false] at hop; omega)
       | (exfalso; omega)
       | exact h1
       | (exfalso; simp only [Ctrl.opNext, Ctrl.opJump, Ctrl.opJif, Ctrl.opHalt, Ctrl.opHif] at h; omega)
+      | (exfalso; simp only [opCall] at h; omega)
   subst hnum
   have hidx : 1 * rowNat tr 5 r 6 + 2 * rowNat tr 5 r 7 + 3 * rowNat tr 5 r 8 + 4 * rowNat tr 5 r 9 +
       5 * rowNat tr 5 r 10 + 6 * rowNat tr 5 r 11 + 7 * rowNat tr 5 r 12 + 8 * rowNat tr 5 r 13 +

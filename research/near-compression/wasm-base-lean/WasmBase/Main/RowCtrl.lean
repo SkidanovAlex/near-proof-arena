@@ -337,12 +337,13 @@ theorem ctrl_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   rw [f5, f6, f7, f8, f9] at hop <;>
   simp only [Ctrl.opNext, Ctrl.opJump, Ctrl.opJif, Ctrl.opHalt, Ctrl.opHif] at hop <;>
   rcases hcase with ⟨v, hv, h, hl⟩ | ⟨v, hv, h, hl⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨x, hv, h, hl⟩ | ⟨x, hv, h, hl⟩ |
-    ⟨x, hv, h, hl⟩ | ⟨_, hf, _⟩ | ⟨hk, h, hl⟩ | ⟨tg, hk, h, hl⟩ | ⟨tg, hk, h, hl⟩ | ⟨hk, h, hl⟩ | ⟨hk, h, hl⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, hgl, _⟩ | ⟨_, _, hgl, _⟩
+    ⟨x, hv, h, hl⟩ | ⟨_, hf, _⟩ | ⟨hk, h, hl⟩ | ⟨tg, hk, h, hl⟩ | ⟨tg, hk, h, hl⟩ | ⟨hk, h, hl⟩ | ⟨hk, h, hl⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, hgl, _⟩ | ⟨_, _, hgl, _⟩ | ⟨_, _, _, h, _⟩
   all_goals first
     | (exfalso; simp only [isBinop, binops, List.mem_cons, List.mem_nil_iff, or_false] at hop; omega)
     | (exfalso; omega)
     | (exfalso; rw [hop] at hf; revert hf; decide)
     | (exfalso; simp only [Ctrl.opNext, Ctrl.opJump, Ctrl.opJif, Ctrl.opHalt, Ctrl.opHif] at h; omega)
+    | (exfalso; simp only [opCall] at h; omega)
     | skip
   all_goals (
     have k5 : cc 5 = ((rowNat tr 8 r 5 : Nat) : F) := rfl

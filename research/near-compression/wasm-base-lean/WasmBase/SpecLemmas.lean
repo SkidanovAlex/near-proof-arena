@@ -32,16 +32,21 @@ open NearSpecV3.Wasm
 /-- What a successful `checkModule` gives (all from decidable checks and `check`). -/
 structure ModFacts (cfg : NearCfg) (p : Prepared) (entry : Nat) (M : ModOut) : Prop where
   head : M.fns.head? = some entry
-  cks : ∀ k, k < M.fns.length → check cfg p (M.fns.getD k 0) (M.offs.getD k 0) = some (M.cks.getD k default)
+  cks : ∀ k, k < M.fns.length →
+    check cfg p (M.fns.getD k 0) (M.offs.getD k 0) (callInfo p M.fns M.offs) = some (M.cks.getD k default)
   pfs : ∀ k, k < M.fns.length → ∃ pf, p.funcs[M.fns.getD k 0]? = some pf ∧ M.sizes.getD k 0 = pf.code.size
   total : M.codeSize < 2 ^ 20
   layout : layoutOk M.fns M.offs M.sizes M.codeSize = true
   recSize : M.records.size = M.codeSize
   recs : ∀ j, j < M.codeSize → M.records[j]? =
       some (((M.cks.getD (locate M.offs M.sizes j).1 default).records)[(locate M.offs M.sizes j).2]?.getD [])
-  feeLe : ∀ k, k < M.fns.length → (M.cks.getD k default).maxFee ≤ M.maxFee
+  feeLe : ∀ k j, k < M.fns.length → j < M.fns.length →
+    (M.cks.getD k default).maxFee + (M.cks.getD j default).prologue ≤ M.maxFee
   closed : M.fns.all (fun fn => ((p.funcs[fn]?.map (calleesOf p)).getD []).all (M.fns.contains ·)) = true
   offs0 : M.offs.getD 0 0 = 0
+  entryParams : ∃ pf, p.funcs[entry]? = some pf ∧ pf.type.params.size = 0
+  funcs : ∀ k, k < M.fns.length → M.funcs.getD k [] = funcRow (M.offs.getD k 0) (M.cks.getD k default)
+  funcsLen : M.funcs.length = M.fns.length
 
 theorem checkModule_sound {cfg : NearCfg} {p : Prepared} {entry : Nat} {M : ModOut}
     (h : checkModule cfg p entry = some M) : ModFacts cfg p entry M := by
@@ -57,11 +62,11 @@ theorem checkModule_sound {cfg : NearCfg} {p : Prepared} {entry : Nat} {M : ModO
       · rename_i hcond
         simp only [Option.some.injEq] at h
         subst h
-        obtain ⟨hhd, htot, hlay, hcl⟩ := hcond
+        obtain ⟨hhd, htot, hlay, hcl, hent⟩ := hcond
         obtain ⟨hcl1, hcl2⟩ := mapM_some _ _ _ hc
         obtain ⟨hpl1, hpl2⟩ := mapM_some _ _ _ hp
         simp only [List.length_range] at hcl1
-        refine ⟨hhd, ?_, ?_, htot, hlay, by simp, ?_, ?_, hcl, ?_⟩
+        refine ⟨hhd, ?_, ?_, htot, hlay, by simp, ?_, ?_, hcl, ?_, ?_, ?_, by simp⟩
         · intro k hk
           dsimp only at hk ⊢
           have := hcl2 k (by simpa using hk)
@@ -78,16 +83,39 @@ theorem checkModule_sound {cfg : NearCfg} {p : Prepared} {entry : Nat} {M : ModO
         · intro j hj
           dsimp only at hj ⊢
           simp only [List.getElem?_toArray, List.getElem?_map, List.getElem?_range hj, Option.map_some]
-        · intro k hk
-          dsimp only at hk ⊢
-          apply foldl_max_ge
-          simp only [List.mem_map]
-          refine ⟨cks[k]'(by omega), List.getElem_mem _, ?_⟩
-          rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega), Option.getD_some]
+        · intro k j hk hj
+          dsimp only at hk hj ⊢
+          have a1 : (cks.getD k default).maxFee ≤ (cks.map (·.maxFee)).foldl max 0 := by
+            apply foldl_max_ge
+            simp only [List.mem_map]
+            refine ⟨cks[k]'(by omega), List.getElem_mem _, ?_⟩
+            rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega), Option.getD_some]
+          have a2 : (cks.getD j default).prologue ≤ (cks.map (·.prologue)).foldl max 0 := by
+            apply foldl_max_ge
+            simp only [List.mem_map]
+            refine ⟨cks[j]'(by omega), List.getElem_mem _, ?_⟩
+            rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega), Option.getD_some]
+          omega
         · dsimp only
           cases pfs with
           | nil => rfl
           | cons _ _ => rfl
+        · cases hf : closureFns p entry with
+          | nil => rw [hf] at hhd; simp at hhd
+          | cons a rest =>
+            rw [hf] at hhd hpl1 hpl2
+            simp only [List.head?_cons, Option.some.injEq] at hhd
+            subst hhd
+            cases pfs with
+            | nil => simp at hpl1
+            | cons pf0 pfs' =>
+              have := hpl2 0 (by simp)
+              simp only [List.getElem_cons_zero, List.getElem?_cons_zero] at this
+              simp only [List.head?_cons, Option.map_some, Option.some.injEq] at hent
+              exact ⟨pf0, this, hent⟩
+        · intro k hk
+          dsimp only at hk ⊢
+          rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_range hk, Option.map_some, Option.getD_some]
       · simp at h
 
 theorem Ctx.mf (X : Ctx) : ModFacts X.cfg X.p X.fn X.M := checkModule_sound X.hM
@@ -109,9 +137,12 @@ theorem Ctx.sizeOf (X : Ctx) {k : Nat} (hk : k < X.nf) : X.M.sizes.getD k 0 = (X
   obtain ⟨pf, h1, h2⟩ := X.mf.pfs k hk
   simp only [Ctx.pfOf, Ctx.fnOf, h1, Option.getD_some, h2]
 
+/-- Call-target info of the module's records. -/
+def Ctx.cinfo (X : Ctx) : Nat → Option Nat := callInfo X.p X.M.fns X.M.offs
+
 /-- The facts of `check` for every checked function. -/
 theorem Ctx.factsOf (X : Ctx) {k : Nat} (hk : k < X.nf) :
-    CheckFacts X.cfg X.p (X.fnOf k) (X.offOf k) (X.pfOf k) (X.ckOf k) := by
+    CheckFacts X.cfg X.p (X.fnOf k) (X.offOf k) X.cinfo (X.pfOf k) (X.ckOf k) := by
   obtain ⟨pf', h⟩ := check_sound (X.mf.cks k hk)
   have : pf' = X.pfOf k := by
     have := h.func; simp only [Ctx.pfOf, Ctx.fnOf, this, Option.getD_some]
@@ -132,11 +163,23 @@ theorem Ctx.fnOf_zero (X : Ctx) : X.fnOf 0 = X.fn := by
 theorem Ctx.off_zero (X : Ctx) : X.offOf 0 = 0 := X.mf.offs0
 
 /-- The entry function's `check` facts. -/
-theorem Ctx.facts (X : Ctx) : CheckFacts X.cfg X.p X.fn 0 X.pf X.ck := by
+theorem Ctx.facts (X : Ctx) : CheckFacts X.cfg X.p X.fn 0 X.cinfo X.pf X.ck := by
   have := X.factsOf X.nf_pos
   rw [X.fnOf_zero, X.off_zero] at this; exact this
 
-theorem Ctx.maxFee_ge (X : Ctx) {k : Nat} (hk : k < X.nf) : (X.ckOf k).maxFee ≤ X.maxFee := X.mf.feeLe k hk
+/-- The entry function has no params. -/
+theorem Ctx.entry_params (X : Ctx) : X.pf.type.params.size = 0 := by
+  obtain ⟨pf, h1, h2⟩ := X.mf.entryParams
+  have : X.pf = pf := by
+    unfold Ctx.pf Ctx.pfOf; rw [X.fnOf_zero, h1]; rfl
+  rw [this]; exact h2
+
+theorem Ctx.maxFee_ge (X : Ctx) {k : Nat} (hk : k < X.nf) : (X.ckOf k).maxFee ≤ X.maxFee := by
+  have := X.mf.feeLe k 0 hk X.nf_pos; unfold Ctx.ckOf Ctx.maxFee; omega
+
+/-- A call's fee plus the callee's prologue units fit the module-wide fee bound. -/
+theorem Ctx.callFee_le (X : Ctx) {k j : Nat} (hk : k < X.nf) (hj : j < X.nf) :
+    (X.ckOf k).maxFee + (X.ckOf j).prologue ≤ X.maxFee := X.mf.feeLe k j hk hj
 
 /-- A global record is a shifted local record of the checked function containing it. -/
 theorem Ctx.recG (X : Ctx) {j : Nat} (hj : j < X.M.codeSize) :

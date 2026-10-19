@@ -50,8 +50,8 @@ theorem row_occ {A : Air} {tr : Trace} {pub : List F} {t : Nat} (ht : t < A.tabl
 
 /-! ## Code records -/
 
-theorem recordOf_spec {cof : Nat} {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : List Nat}
-    (hr : recordOf cof ls h fee pc ins = some rec) :
+theorem recordOf_spec {cof : Nat} {ci : Nat → Option Nat} {ls : List Label} {h fee pc : Nat} {ins : Instr}
+    {rec : List Nat} (hr : recordOf cof ci ls h fee pc ins = some rec) :
     ∃ op x0 x1 x2 x3, rec = [pc, op, h, fee, x0, x1, x2, x3] ∧
       ((∃ v : UInt32, ins = .i32Const v ∧ op = 0x41 ∧ [x0, x1, x2, x3] = limbs4 v.toNat) ∨
        (∃ v : UInt64, ins = .i64Const v ∧ op = 0x42 ∧ [x0, x1, x2, x3] = limbs4 v.toNat) ∨
@@ -71,7 +71,8 @@ theorem recordOf_spec {cof : Nat} {ls : List Label} {h fee pc : Nat} {ins : Inst
        (∃ al off, ins = .store op al off ∧ (0x36 ≤ op ∧ op ≤ 0x3E) ∧ isStoreOp op = true ∧ off < 2 ^ 32 ∧
           [x0, x1, x2, x3] = [off % 65536, off / 65536, 0, 0]) ∨
        (∃ x, ins = .globalGet x ∧ op = 0x23 ∧ [x0, x1, x2, x3] = [x, 0, 0, 0] ∧ x < 2 ^ 16) ∨
-       (∃ x, ins = .globalSet x ∧ op = 0x24 ∧ [x0, x1, x2, x3] = [x, 0, 0, 0] ∧ x < 2 ^ 16)) := by
+       (∃ x, ins = .globalSet x ∧ op = 0x24 ∧ [x0, x1, x2, x3] = [x, 0, 0, 0] ∧ x < 2 ^ 16) ∨
+       (∃ fi, ins = .call fi ∧ ci fi = some x0 ∧ op = opCall ∧ [x1, x2, x3] = [0, 0, 0])) := by
   unfold recordOf at hr
   split at hr
   · simp only [Option.some.injEq] at hr; subst hr
@@ -96,7 +97,7 @@ theorem recordOf_spec {cof : Nat} {ls : List Label} {h fee pc : Nat} {ins : Inst
   · split at hr
     · rename_i x hx
       simp only [Option.some.injEq] at hr; subst hr
-      exact ⟨_, _, _, _, _, rfl, (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨_, rfl, rfl, rfl, hx⟩))))))))))))))))⟩
+      exact ⟨_, _, _, _, _, rfl, (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨_, rfl, rfl, rfl, hx⟩)))))))))))))))))⟩
     · simp at hr
   · split at hr
     · simp only [Option.some.injEq] at hr; subst hr
@@ -119,6 +120,10 @@ theorem recordOf_spec {cof : Nat} {ls : List Label} {h fee pc : Nat} {ins : Inst
         omega
       exact ⟨_, _, _, _, _, rfl, (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨_, _, rfl, hr, hc.1, hc.2, rfl⟩)))))))))))))))⟩
     · simp at hr
+  · split at hr
+    · simp only [Option.some.injEq] at hr; subst hr
+      exact ⟨_, _, _, _, _, rfl, (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨_, rfl, ‹_›, rfl, rfl⟩)))))))))))))))))⟩
+    · simp at hr
   · rename_i hk1 hk2 hk3 hk4 hk5 hk6 hk7 hk8 hk9 hk10 hk11 hk12
     split at hr <;> simp only [Option.some.injEq, reduceCtorEq] at hr <;> subst hr
     · exact ⟨_, _, _, _, _, rfl, Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
@@ -138,7 +143,7 @@ theorem fetch_rec {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (_hpu
     (hpc : m.getD 0 0 = ((gpc : Nat) : F)) (hpcl : gpc < X.M.codeSize) :
     ∃ q l ins fee rec, q < X.nf ∧ l < (X.pfOf q).code.size ∧ X.offOf q + l = gpc ∧
       (X.pfOf q).code[l]? = some ins ∧ feeUnits X.cfg (X.pfOf q).gas[l]? = some fee ∧ fee ≤ X.maxFee ∧
-      recordOf (X.offOf q) ((X.ckOf q).labels[l]?.getD []) ((X.ckOf q).heights[l]?.getD 0) fee gpc ins = some rec ∧
+      recordOf (X.offOf q) X.cinfo ((X.ckOf q).labels[l]?.getD []) ((X.ckOf q).heights[l]?.getD 0) fee gpc ins = some rec ∧
       m = rec.map fun x => ((x : Nat) : F) := by
   have hP' := P_val
   obtain ⟨j, hjc, hm⟩ := L.fetch _ ho rfl rfl rfl
@@ -263,12 +268,12 @@ theorem isFamilyNum_le {op : Nat} (h : isFamilyNum op = true) : op ≤ 0x8A := b
   simp only [Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq, beq_iff_eq] at h
   omega
 
-theorem recordOf_op_lt {cof : Nat} {ls : List Label} {h fee pc : Nat} {ins : Instr} {rec : List Nat}
-    (hr : recordOf cof ls h fee pc ins = some rec) : rec.getD 1 0 < 512 := by
+theorem recordOf_op_lt {cof : Nat} {ci : Nat → Option Nat} {ls : List Label} {h fee pc : Nat} {ins : Instr}
+    {rec : List Nat} (hr : recordOf cof ci ls h fee pc ins = some rec) : rec.getD 1 0 < 512 := by
   obtain ⟨op, x0, x1, x2, x3, rfl, hc⟩ := recordOf_spec hr
   simp only [List.getD_cons_succ, List.getD_cons_zero]
   rcases hc with ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ |
-    ⟨_, _, h, _⟩ | ⟨_, hf, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ <;>
+    ⟨_, _, h, _⟩ | ⟨_, hf, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, _, hmem, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, _, h, _⟩ <;>
   first | (subst h; decide) | (have := isFamilyNum_le hf; omega) | omega
 
 end WasmBase

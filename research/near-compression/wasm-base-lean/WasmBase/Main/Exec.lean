@@ -524,12 +524,13 @@ theorem init_rel {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X nlo
     · rw [h] at this; simp at this
     · exact (Array.getElem?_eq_some_iff.mp h).1
   have hnl : f0.locals.size = X.pf.locals.size := by rw [hloc]; simp
+  have hp0 : X.pf.type.params = #[] := Array.eq_empty_of_size_eq_zero X.entry_params
   have hdef : ∀ j, j < X.pf.locals.size → (X.pf.locals[j]?.getD default = VT.i32 ∨ X.pf.locals[j]?.getD default = VT.i64) := by
     intro j hj
     have := CF.locTypes (X.pf.locals[j]'hj) (Array.getElem_mem_toList hj)
     rw [Array.getElem?_eq_getElem hj]; simpa using this
   refine ⟨hfr, X.nf_pos, by rw [hfn, X.fnOf_zero], hpc, hcode, ⟨_, CF.l0, by rw [hlab]; exact (shiftLabels_zero _).symm⟩, hbase,
-    Nat.zero_le _, by rw [hstk]; exact CF.h0, hnl, by simp [hg, Ctx.R], by simp [hstk], ?_, by simp [hstk],
+    Nat.zero_le _, by rw [hstk]; exact CF.h0, by rw [hnl]; show _ = X.pf.type.params.size + _; rw [X.entry_params, Nat.zero_add]; rfl, by simp [hg, Ctx.R], by simp [hstk], ?_, by simp [hstk],
     fun _ _ => by decide, fun x h => by have := hM3 x h; simp only [Env.lsp]; omega,
     fun _ => ⟨rfl, rfl⟩, by show 0 < 2 ^ 28; decide, by show 0 < 2 ^ 28; decide, hheap, ?_⟩
   · intro j hj
@@ -554,13 +555,13 @@ theorem init_rel {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X nlo
     simp only [Option.map_some, Option.getD_some]
     rcases hdef j hj' with h | h <;> rw [Array.getElem?_eq_getElem hj'] at h <;> simp only [Option.getD_some] at h
     · have : X.ck.localTags.getD j 0 = 0 := by
-        rw [CF.localTags]; simp [List.getD_eq_getElem?_getD, hj', h]; decide
+        rw [CF.localTags, hp0]; simp [List.getD_eq_getElem?_getD, hj', h, vtTag]; decide
       have hn := CF.nloc
       rw [this]; simp only [h, enc, Val.default, vTag, vNum, Msg.mk.injEq]
       refine ⟨Fp.toNat_cast_of_lt (by omega), Fp.toNat_cast_of_lt (by omega), Fp.toNat_cast_of_lt (by omega), ?_⟩
       simp; rfl
     · have : X.ck.localTags.getD j 0 = 1 := by
-        rw [CF.localTags]; simp [List.getD_eq_getElem?_getD, hj', h]; decide
+        rw [CF.localTags, hp0]; simp [List.getD_eq_getElem?_getD, hj', h, vtTag]; decide
       have hn := CF.nloc
       rw [this]; simp only [h, enc, Val.default, vTag, vNum, Msg.mk.injEq]
       refine ⟨Fp.toNat_cast_of_lt (by omega), Fp.toNat_cast_of_lt (by omega), Fp.toNat_cast_of_lt (by omega), ?_⟩
