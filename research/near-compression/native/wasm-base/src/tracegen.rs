@@ -190,6 +190,28 @@ fn binop(op: u64, a: u64, b: u64) -> u64 {
     }
 }
 
+/// div/rem with the spec's traps (b = 0; div_s MIN / -1).
+fn divop(op: u64, a: u64, b: u64) -> Option<u64> {
+    let w: u32 = if op >= 0x7F { 64 } else { 32 };
+    let m: u128 = (1u128 << w) - 1;
+    let kind = op - if w == 64 { 0x7F } else { 0x6D };
+    if b == 0 {
+        return None;
+    }
+    let (sa, sb) = (sg(a, w) as i128, sg(b, w) as i128);
+    match kind {
+        0 => {
+            if sa == -(1i128 << (w - 1)) && sb == -1 {
+                return None;
+            }
+            Some(((sa / sb) as u128 & m) as u64)
+        }
+        1 => Some(a / b),
+        2 => Some(((sa % sb) as u128 & m) as u64),
+        _ => Some(a % b),
+    }
+}
+
 fn relop(op: u64, a: u64, b: u64) -> u64 {
     let w: u32 = if op >= 0x50 { 64 } else { 32 };
     let k = op - if w == 64 { 0x51 } else { 0x46 };
@@ -222,6 +244,8 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     let mut stk = Tab::new(t("STACK"));
     let mut ctrl = Tab::new(t("CTRL"));
     let mut loc = Tab::new(t("LOCAL"));
+    let mut div = Tab::new(t("DIV"));
+    let mut trapped = false;
     let mut st = St { r16: vec![0; 65536], byte: vec![vec![0; 65536]; 4] };
     let mut fetch = vec![0u64; prep.records.len()];
 
@@ -555,26 +579,162 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                     _ => {}
                 }
             }
+            0x6D..=0x70 | 0x7F..=0x82 => {
+                let is64 = (op >= 0x7F) as u64;
+                let w: u32 = if is64 == 1 { 64 } else { 32 };
+                let kind = op - if is64 == 1 { 0x7F } else { 0x6D }; // 0 divS 1 divU 2 remS 3 remU
+                let signed = kind == 0 || kind == 2;
+                let b = stack.pop().unwrap();
+                let a = stack.pop().unwrap();
+                assert!(a.tag == is64 && b.tag == is64);
+                let nl = if is64 == 1 { 4 } else { 2 };
+                let (al, bl) = (limbs(a.val), limbs(b.val));
+                let (hb_a, ra) = (al[nl - 1] >> 15, al[nl - 1] & 0x7fff);
+                let (hb_b, rb) = (bl[nl - 1] >> 15, bl[nl - 1] & 0x7fff);
+                let wm: u128 = 1u128 << w;
+                let neg = |x: u64| -> u64 { ((wm - x as u128) % wm) as u64 };
+                let sa = signed && hb_a == 1;
+                let sb = signed && hb_b == 1;
+                let am = if sa { neg(a.val) } else { a.val };
+                let bm = if sb { neg(b.val) } else { b.val };
+                // negation-chain carries: s ? X + x = 2^16 c (limb-wise) : 0
+                let chain = |on: bool, x: u64, xx: u64| -> [u64; 4] {
+                    let mut c = [0u64; 4];
+                    if on {
+                        let (xl, xxl) = (limbs(x), limbs(xx));
+                        let mut cin = 0u64;
+                        for i in 0..nl {
+                            let sm = xl[i] + xxl[i] + cin;
+                            assert_eq!(sm & 0xffff, 0);
+                            c[i] = sm >> 16;
+                            cin = c[i];
+                        }
+                    }
+                    c
+                };
+                let ca = chain(sa, am, a.val);
+                let cb = chain(sb, bm, b.val);
+                let tz = bm == 0;
+                let (qm, rm) = if tz { (0, 0) } else { (am / bm, am % bm) };
+                let (ab_, bb_, qb, rb_) = (bytes(am), bytes(bm), bytes(qm), bytes(rm));
+                let nb = if is64 == 1 { 8 } else { 4 };
+                let mut cy = [0u64; 8];
+                let mut dd = [0u64; 4];
+                let mut bw = [0u64; 4];
+                if !tz {
+                    let mut cin = 0u64;
+                    for k in 0..nb {
+                        let mut conv = 0u64;
+                        for i in 0..=k {
+                            conv += qb[i] * bb_[k - i];
+                        }
+                        let tot = conv + rb_[k] + cin;
+                        assert!(tot >= ab_[k] && (tot - ab_[k]) % 256 == 0);
+                        cy[k] = (tot - ab_[k]) / 256;
+                        cin = cy[k];
+                    }
+                    assert_eq!(cy[nb - 1], 0);
+                    let (bml, rml) = (limbs(bm), limbs(rm));
+                    let mut bin = 0i64;
+                    for i in 0..4 {
+                        let mut d = bml[i] as i64 - rml[i] as i64 - (i == 0) as i64 - bin;
+                        if d < 0 {
+                            d += 65536;
+                            bw[i] = 1;
+                        }
+                        dd[i] = d as u64;
+                        bin = bw[i] as i64;
+                    }
+                    assert_eq!(bw[3], 0);
+                }
+                let ql = limbs(qm);
+                let (hb_q, rq) = (ql[nl - 1] >> 15, ql[nl - 1] & 0x7fff);
+                let tov = !tz && kind == 0 && hb_a == 1 && hb_b == 1 && hb_q == 1;
+                let trap = tz || tov;
+                let xv = if kind == 0 || kind == 1 { qm } else { rm };
+                let sres = (kind == 0 && (hb_a ^ hb_b) == 1) || (kind == 2 && hb_a == 1);
+                let resv = if sres { neg(xv) } else { xv };
+                let cr = chain(sres, resv, xv);
+                if !trap {
+                    let rv = match divop(op, a.val, b.val) {
+                        Some(v) => v,
+                        None => panic!("div trap mismatch"),
+                    };
+                    assert_eq!(rv, resv, "div result op {op:#x} a {:#x} b {:#x}", a.val, b.val);
+                } else {
+                    assert!(divop(op, a.val, b.val).is_none(), "div should trap");
+                }
+                let ha = st.tchk(ts, a.tp);
+                let hb = st.tchk(ts, b.tp);
+                st.r16(2 * ra);
+                st.r16(2 * rb);
+                st.r16(2 * rq);
+                for i in 0..4 {
+                    st.byte(0, ab_[2 * i], ab_[2 * i + 1]);
+                    st.byte(0, bb_[2 * i], bb_[2 * i + 1]);
+                    st.byte(0, qb[2 * i], qb[2 * i + 1]);
+                    st.byte(0, rb_[2 * i], rb_[2 * i + 1]);
+                }
+                for d in dd {
+                    st.r16(d);
+                }
+                for l in limbs(resv) {
+                    st.r16(l);
+                }
+                for c in cy {
+                    st.r16(c);
+                }
+                let bsum: u64 = bb_.iter().sum();
+                let mut r = div.row();
+                hdr(&mut r);
+                r.u("f_divs", (kind == 0) as u64).u("f_divu", (kind == 1) as u64).u("f_rems", (kind == 2) as u64)
+                    .u("f_remu", (kind == 3) as u64).u("is64", is64);
+                r.limbs("a", al).u("ta", a.tp).u("ha", ha).limbs("b", bl).u("tb", b.tp).u("hb", hb);
+                r.u("hbA", hb_a).u("ra", ra).u("hbB", hb_b).u("rb", rb);
+                r.bytes("A", ab_).bytes("B", bb_).bytes("Q", qb).bytes("R", rb_);
+                r.limbs("ca", ca).limbs("cb", cb);
+                for k in 0..8 {
+                    r.u(&format!("cy{k}"), cy[k]);
+                }
+                r.limbs("d", dd).limbs("bw", bw);
+                r.u("tz", tz as u64).s("invB", if bsum == 0 { F::ZERO } else { fe(bsum).inverse() });
+                r.u("hbQ", hb_q).u("rq", rq).u("tov", tov as u64).limbs("res", limbs(resv)).limbs("cr", cr);
+                if trap {
+                    trapped = true;
+                } else {
+                    stack.push(Ent { tag: is64, val: resv, tp: ts });
+                }
+            }
             _ => panic!("unknown op {op:#x}"),
         }
         s += fee;
         ts += 1;
-        if halted {
-            halt_pc = pc;
+        if halted || trapped {
+            halt_pc = if trapped { pc + 1 } else { pc };
             break;
         }
         pc = next;
     }
     let steps = ts - 1;
-    assert_eq!(stack.len() as u64, prep.arity, "final stack size");
-    let result = stack.last().map(|e| (e.tag, e.val));
+    let status: u64 = if trapped { 2 } else { 1 };
+    if !trapped {
+        assert_eq!(stack.len() as u64, prep.arity, "final stack size");
+    }
+    let result = if trapped { None } else { stack.last().map(|e| (e.tag, e.val)) };
+    // after a trap the leftover operand stack goes to DRAIN rows
+    let mut drn = Tab::new(t("DRAIN"));
+    if trapped {
+        for (i, e) in stack.iter().enumerate() {
+            drn.row().u("act", 1).u("slot", i as u64).u("tag", e.tag).limbs("v", limbs(e.val)).u("tp", e.tp);
+        }
+    }
 
     // BOUNDARY
     let bspec = t("BOUNDARY");
     let mut bnd = Tab::new(bspec);
     {
         let mut r = bnd.row();
-        r.u("pcf", halt_pc).u("tpr", stack.last().map(|e| e.tp).unwrap_or(0));
+        r.u("pcf", halt_pc).u("tpr", if trapped { 0 } else { stack.last().map(|e| e.tp).unwrap_or(0) });
         for (j, e) in locals.iter().enumerate() {
             r.u(&format!("ftag{j}"), e.tag).limbs(&format!("fv{j}_"), limbs(e.val)).u(&format!("ftp{j}"), e.tp);
         }
@@ -584,6 +744,7 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     let (rtag, rval) = result.unwrap_or((0, 0));
     pubs.push(fe(rtag));
     pubs.extend(limbs(rval).map(fe));
+    pubs.push(fe(status));
     pubs.extend(prep.local_tags.iter().map(|&x| fe(x)));
     assert_eq!(pubs.len(), air.num_pub);
 
@@ -616,7 +777,7 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     }
 
     let mut tabs: HashMap<String, Tab> = HashMap::new();
-    for tb in [bnd, add, bit, mul, shift, cmp, cnst, stk, ctrl, loc, rng, byt, code] {
+    for tb in [bnd, add, bit, mul, shift, cmp, cnst, stk, ctrl, loc, div, rng, byt, code, drn] {
         tabs.insert(tb.spec.name.clone(), tb);
     }
     let mut mats = vec![];

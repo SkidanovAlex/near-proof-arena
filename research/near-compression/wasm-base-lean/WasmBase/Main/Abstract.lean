@@ -48,6 +48,39 @@ structure RowFacts (X : Ctx) (inS outS : List F) (cons prod : List Msg) : Prop w
   prodT : ∀ x ∈ prod, x.tp < ZkFormal.Algebra.P ∧ ((x.tp : Nat) : F) = lvl inS
   prodNd : prod.Nodup
 
+/-- `RowSpec` with a third outcome: the row traps (`halted = 2`), the spec step aborts. -/
+def RowSpec2 (X : Ctx) (inS outS : List F) (cons prod : List Msg) : Prop :=
+  ∀ (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat) (live : Msg → Prop),
+    RelW X s f tps tpl t pc S live → inS = stMsg pc t S 0 → (∀ x ∈ cons, live x) →
+    t + 1 < ZkFormal.Algebra.P → S + X.ck.maxFee < ZkFormal.Algebra.P → X.g0 < 2 ^ 64 →
+    ∃ pc' fee hb, fee ≤ X.ck.maxFee ∧ hb ≤ 2 ∧ outS = stMsg pc' (t + 1) (S + fee) hb ∧
+      (X.R * (S + fee) ≤ X.g0 →
+        (hb = 0 → ∃ s', step X.cfg X.p s = .cont s' ∧
+          Rel X s' (t + 1) pc' (S + fee) (stepLive live cons prod)) ∧
+        (hb = 1 → ∃ sN, step X.cfg X.p s = .fin sN ∧ sN.frames = [] ∧
+          X.R * (S + fee) + sN.gas.g = X.g0 ∧
+          ∀ x, stepLive live cons prod x ↔ x ∈ stackView sN.stack tps ∨ x ∈ localView f.locals tpl) ∧
+        (hb = 2 → ∃ sN e, step X.cfg X.p s = .abort sN e ∧ X.R * (S + fee) + sN.gas.g = X.g0))
+
+theorem RowSpec.two {X : Ctx} {inS outS : List F} {cons prod : List Msg} (h : RowSpec X inS outS cons prod) :
+    RowSpec2 X inS outS cons prod := by
+  intro s f tps tpl t pc S live R hin hl h1 h2 h3
+  obtain ⟨pc', fee, hb, hfl, hbl, hout, hsp⟩ := h s f tps tpl t pc S live R hin hl h1 h2 h3
+  exact ⟨pc', fee, hb, hfl, by omega, hout, fun hg => ⟨(hsp hg).1, (hsp hg).2, fun h2 => absurd h2 (by omega)⟩⟩
+
+structure RowFacts2 (X : Ctx) (inS outS : List F) (cons prod : List Msg) : Prop where
+  spec : RowSpec2 X inS outS cons prod
+  halt0 : inS.getD 3 0 = 0
+  tsOut : lvl outS = lvl inS + 1
+  gasOut : ∃ fee, fee ≤ X.ck.maxFee ∧ gasF outS = gasF inS + (fee : F)
+  consT : ∀ x ∈ cons, ∃ n, n < 2 ^ 30 + 2 ^ 16 ∧ ((x.tp + 1 + n : Nat) : F) = lvl inS
+  prodT : ∀ x ∈ prod, x.tp < ZkFormal.Algebra.P ∧ ((x.tp : Nat) : F) = lvl inS
+  prodNd : prod.Nodup
+
+theorem RowFacts.two {X : Ctx} {inS outS : List F} {cons prod : List Msg} (h : RowFacts X inS outS cons prod) :
+    RowFacts2 X inS outS cons prod :=
+  ⟨h.spec.two, h.halt0, h.tsOut, h.gasOut, h.consT, h.prodT, h.prodNd⟩
+
 /-! ## List helpers -/
 
 theorem perm_map_lift {ρ β : Type} [DecidableEq ρ] (g : ρ → β) :
@@ -122,18 +155,20 @@ section
 variable (X : Ctx) {ρ : Type} [DecidableEq ρ] (act : List ρ) (inS outS : ρ → List F)
   (cons prod : ρ → List Msg) (init fin : List Msg) (pcf N Sf : F)
 
-theorem exec_of_rows
-    (hrows : ∀ r ∈ act, RowFacts X (inS r) (outS r) (cons r) (prod r))
-    (hst : (stMsg 0 1 0 0 :: act.map outS).Perm ([pcf, N, Sf, 1] :: act.map inS))
+theorem exec_of_rows (st : Nat) (hst12 : st = 1 ∨ st = 2)
+    (hrows : ∀ r ∈ act, RowFacts2 X (inS r) (outS r) (cons r) (prod r))
+    (hst : (stMsg 0 1 0 0 :: act.map outS).Perm ([pcf, N, Sf, (st : F)] :: act.map inS))
     (hch : (init ++ act.flatMap prod).Perm (fin ++ act.flatMap cons))
     (hinit : init.Nodup) (hinitTp : ∀ x ∈ init, x.tp = 0)
     (hlen : act.length < 2 ^ 28)
     (hfee : (act.length + 1) * (X.ck.maxFee + 1) < ZkFormal.Algebra.P)
     (hgas : X.R * Sf.toNat ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
     {s0 : St} {f0 : Frame} (h0 : RelW X s0 f0 (fun _ => 0) (fun _ => 0) 1 0 0 (· ∈ init)) :
-    ∃ sN tps tpl locs, run X.cfg X.p act.length s0 = .fin sN ∧ sN.frames = [] ∧
-      X.R * Sf.toNat + sN.gas.g = X.g0 ∧ act.length + 1 = N.toNat ∧
-      ∀ x, x ∈ fin ↔ x ∈ stackView sN.stack tps ∨ x ∈ localView locs tpl := by
+    act.length + 1 = N.toNat ∧
+    (st = 1 → ∃ sN tps tpl locs, run X.cfg X.p act.length s0 = .fin sN ∧ sN.frames = [] ∧
+      X.R * Sf.toNat + sN.gas.g = X.g0 ∧
+      ∀ x, x ∈ fin ↔ x ∈ stackView sN.stack tps ∨ x ∈ localView locs tpl) ∧
+    (st = 2 → ∃ sN e, run X.cfg X.p act.length s0 = .abort sN e ∧ X.R * Sf.toNat + sN.gas.g = X.g0) := by
   have hP' := P_val
   -- (A) the chain
   let g : ρ → List F × List F := fun r => (inS r, outS r)
@@ -143,12 +178,12 @@ theorem exec_of_rows
     intro e he
     obtain ⟨r, hr, rfl⟩ := List.mem_map.mp he
     exact (hrows r hr).tsOut
-  obtain ⟨es, hes, hpath⟩ := chain (act.map g) (stMsg 0 1 0 0) [pcf, N, Sf, 1] lvl
+  obtain ⟨es, hes, hpath⟩ := chain (act.map g) (stMsg 0 1 0 0) [pcf, N, Sf, (st : F)] lvl
     (by rw [hE1, hE2]; exact hst) hstepE (by simp; omega)
   obtain ⟨rs, hrs, rfl⟩ := perm_map_lift g es act hes
   have hlenrs : rs.length = act.length := hrs.length_eq
   have hmem : ∀ k (hk : k < rs.length), rs[k] ∈ act := fun k hk => hrs.subset (List.getElem_mem hk)
-  have RF : ∀ k (hk : k < rs.length), RowFacts X (inS rs[k]) (outS rs[k]) (cons rs[k]) (prod rs[k]) :=
+  have RF : ∀ k (hk : k < rs.length), RowFacts2 X (inS rs[k]) (outS rs[k]) (cons rs[k]) (prod rs[k]) :=
     fun k hk => hrows _ (hmem k hk)
   obtain ⟨lk, lfin⟩ := path_levels lvl (rs.map g) _ _ hpath (fun e he => hstepE e (hes.subset he))
   obtain ⟨link, ends, _⟩ := path_link (rs.map g) _ _ hpath
@@ -160,14 +195,14 @@ theorem exec_of_rows
     refine Nat.pos_of_ne_zero fun h0' => ?_
     have := (path_link (rs.map g) _ _ hpath).2.2 (by simp [h0'])
     simp only [stMsg, List.cons.injEq] at this
-    exact absurd this.2.2.2.1 (by decide)
+    rcases hst12 with rfl | rfl <;> exact absurd this.2.2.2.1 (by decide)
   have hN : act.length + 1 = N.toNat := by
     have : N = ((rs.length + 1 : Nat) : F) := by
-      have e : lvl [pcf, N, Sf, 1] = N := rfl
+      have e : lvl [pcf, N, Sf, (st : F)] = N := rfl
       rw [← e, lfin, l0, Lean.Grind.Semiring.natCast_add, cast_one]; grind
     rw [this, Fp.toNat_cast_of_lt (by omega), hlenrs]
   -- position messages: `pos k` is the STATE message entering step `k` (the final one at `k = n`)
-  let pos : Nat → List F := fun k => if h : k < rs.length then inS rs[k] else [pcf, N, Sf, 1]
+  let pos : Nat → List F := fun k => if h : k < rs.length then inS rs[k] else [pcf, N, Sf, (st : F)]
   have pos_in : ∀ k (hk : k < rs.length), pos k = inS rs[k] := fun k hk => by simp [pos, hk]
   have pos_out : ∀ k (hk : k < rs.length), pos (k + 1) = outS rs[k] := by
     intro k hk
@@ -214,7 +249,7 @@ theorem exec_of_rows
         obtain ⟨fee, hfl, he⟩ := step1 j (by omega) (bnd j (by omega))
         rw [he]
         omega
-  have posN : pos rs.length = [pcf, N, Sf, 1] := by simp [pos]
+  have posN : pos rs.length = [pcf, N, Sf, (st : F)] := by simp [pos]
   have gasN : (gasF (pos rs.length)).toNat = Sf.toNat := by rw [posN]; rfl
   -- (B) the channel
   let prodL := rs.map prod
@@ -331,19 +366,28 @@ theorem exec_of_rows
   have e := hout'.symm
   simp only [stMsg, List.cons.injEq, and_true] at e
   obtain ⟨-, -, eS, eH⟩ := e
-  have hb1 : hb = 1 := natEq (eH.trans rfl) (by omega) (by decide)
+  have hbP : hb < ZkFormal.Algebra.P := Nat.lt_of_le_of_lt hbl (by rw [hP']; decide)
+  have hstP : st < ZkFormal.Algebra.P := by rcases hst12 with rfl | rfl <;> rw [hP'] <;> decide
+  have hbst : hb = st := by
+    first | exact natEq eH hbP hstP | exact (natEq eH hstP hbP).symm
   have hSf : (gasF (pos (rs.length - 1))).toNat + fee = Sf.toNat := by
     rw [← eS, Fp.toNat_cast_of_lt (by omega)]
   have hgas' : X.R * ((gasF (pos (rs.length - 1))).toNat + fee) ≤ X.g0 := by rw [hSf]; exact hgas
-  obtain ⟨sN, hsN, hfr, hg, hview⟩ := (hspec hgas').2 hb1
-  refine ⟨sN, tps, tpl, f.locals, ?_, hfr, by rw [← hSf]; exact hg, hN, ?_⟩
-  · rw [← hlenrs, show rs.length = 0 + 1 + (rs.length - 1) by omega, hrun]
-    simp only [run, hsN]
-  · intro x
+  have hrunlen : ∀ r, step X.cfg X.p s = r → (∀ s', r ≠ .cont s') → run X.cfg X.p act.length s0 = r := by
+    intro r hr hnc
+    rw [← hlenrs, show rs.length = 0 + 1 + (rs.length - 1) by omega, hrun]
+    simp only [run, hr]
+    try (cases r <;> simp_all)
+  refine ⟨hN, fun h1 => ?_, fun h2 => ?_⟩
+  · obtain ⟨sN, hsN, hfr, hg, hview⟩ := (hspec hgas').2.1 (by omega)
+    refine ⟨sN, tps, tpl, f.locals, hrunlen _ hsN (by simp), hfr, by rw [← hSf]; exact hg, ?_⟩
+    intro x
     rw [← hview x, ← C.live_final x]
     have := C.live_succ (k := rs.length - 1) (by simp [consL]; omega) x
     simp only [consL, List.length_map, show rs.length - 1 + 1 = rs.length by omega] at this ⊢
     rw [this]; simp only [stepLive, prodL, List.getElem_map]
+  · obtain ⟨sN, e, hsN, hg⟩ := (hspec hgas').2.2 (by omega)
+    exact ⟨sN, e, hrunlen _ hsN (by simp), by rw [← hSf]; exact hg⟩
 end
 
 end WasmBase

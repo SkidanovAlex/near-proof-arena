@@ -157,10 +157,18 @@ fn cells(g: &Gen) -> usize {
 }
 
 fn compare_with_spec(prep: &Prep, g: &Gen) {
-    assert_eq!(prep.status, "fin", "spec run did not finish normally");
+    let trapped = g.pubs[8] == F::from_u64(2);
+    if trapped {
+        assert!(prep.status.starts_with("abort WasmTrap"), "trace trapped, spec: {}", prep.status);
+    } else {
+        assert_eq!(prep.status, "fin", "spec run did not finish normally");
+    }
     assert_eq!(g.steps, prep.steps, "step count vs spec");
     let spent = prep.g0 - prep.g_final;
     assert_eq!(spent, prep.regular * g.s_units as u128, "gas vs spec");
+    if trapped {
+        return;
+    }
     match (g.result, prep.stack.last()) {
         (Some((tag, val)), Some((stag, slimbs))) => {
             assert_eq!(tag, *stag);
@@ -349,7 +357,9 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
     let mut cases: Vec<(String, Mut)> = vec![];
     for (name, c) in [("ADD", "r0"), ("ADD", "c0"), ("MUL", "rb0"), ("MUL", "cy0"), ("BIT", "rb0"), ("SHIFT", "P0"),
         ("SHIFT", "kb0"), ("CMP", "d0"), ("CMP", "br0"), ("CMP", "inv"), ("CONST", "imm0"), ("LOCAL", "L0"),
-        ("CTRL", "tgt"), ("STACK", "V1_0"), ("STACK", "A0"), ("ADD", "ta"), ("ADD", "h"), ("ADD", "fee"), ("CMP", "S")] {
+        ("CTRL", "tgt"), ("STACK", "V1_0"), ("STACK", "A0"), ("ADD", "ta"), ("ADD", "h"), ("ADD", "fee"), ("CMP", "S"),
+        ("DIV", "Q0"), ("DIV", "R0"), ("DIV", "tz"), ("DIV", "tov"), ("DIV", "res0"), ("DIV", "cy0"), ("DIV", "hbA"),
+        ("DRAIN", "v0"), ("DRAIN", "act")] {
         let t = tb(name);
         if g.rows_per_table[t].1 == 0 {
             continue;
@@ -370,7 +380,11 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
     cases.push(("BYTE.x0[1] flip".into(), cell(tb("BYTE"), 1, 0, Box::new(|v| F::ONE - v))));
     cases.push(("pub.N+1".into(), Box::new(|g: &mut Gen| g.pubs[0] += F::ONE)));
     cases.push(("pub.S+1".into(), Box::new(|g: &mut Gen| g.pubs[1] += F::ONE)));
-    cases.push(("pub.result+1".into(), Box::new(|g: &mut Gen| g.pubs[4] += F::ONE)));
+    // after a trap the result fields are not part of the statement (the result receive has count 0)
+    if g.pubs[8] == F::ONE {
+        cases.push(("pub.result+1".into(), Box::new(|g: &mut Gen| g.pubs[4] += F::ONE)));
+    }
+    cases.push(("pub.status 1<->2".into(), Box::new(|g: &mut Gen| g.pubs[8] = F::from_u64(3) - g.pubs[8])));
     cases.push(("CODE.op[0]+1".into(), cell(tcode, 0, col(tcode, "op"), plus1())));
     cases.push(("CODE.h[0]+1".into(), cell(tcode, 0, col(tcode, "h"), plus1())));
     // a CODE row no instruction fetches (padding, multiplicity 0): the AIR and the proof are fine;

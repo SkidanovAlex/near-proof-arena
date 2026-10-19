@@ -21,7 +21,7 @@ theorem Rel_of_RelW_congr {X : Ctx} {s : St} {f : Frame} {tps tpl : Nat → Nat}
 
 theorem isFamilyNum_of_binop {op : Nat} (h : isBinop op) : isFamilyNum op = true ∧ numPops op = 2 := by
   simp only [isBinop, binops, List.mem_cons, List.mem_nil_iff, or_false] at h
-  rcases h with h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h <;>
+  rcases h with h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h <;>
   subst h <;> decide
 
 theorem step_binop (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
@@ -116,5 +116,57 @@ theorem step_binop (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc 
         refine ⟨0, by omega, ?_⟩
         rw [emr]; simp only [Nat.add_zero, Array.getElem?_push, Array.size_pop]
         rw [if_pos (by omega)]; rfl
+
+end WasmBase
+
+namespace WasmBase
+open NearSpecV3.Wasm
+
+/-- A trapping binary op (div/rem by zero, signed overflow): the spec step aborts, having charged
+the fee. -/
+theorem step_binop_trap (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X s f tps tpl t pc S live)
+    {op fee : Nat} (hins : X.pf.code[pc]? = some (.num op)) (hop : isBinop op)
+    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
+    (hg64 : X.g0 < 2 ^ 64)
+    (ma mb : Msg) (hma : live ma) (hmb : live mb)
+    (sa : ma.space = 0 ∧ ma.slot = s.stack.size - 2)
+    (sb : mb.space = 0 ∧ mb.slot = s.stack.size - 1)
+    (sem : ma.ok → mb.ok → Num.binop (opW op) (opK op) ma.val mb.val = none) :
+    ∃ sN e, step X.cfg X.p s = .abort sN e ∧ X.R * (S + fee) + sN.gas.g = X.g0 := by
+  have F := X.facts
+  obtain ⟨hfam, hpops⟩ := isFamilyNum_of_binop hop
+  have hv := F.verify pc R.pcLt
+  have hL := R.labels
+  have hH := R.height
+  simp only [verifyAt, hins, hL, hH, kindOf, hfam, ite_true, hpops, Bool.and_eq_true,
+    decide_eq_true_eq] at hv
+  obtain ⟨h2, -, -⟩ := hv
+  have ea := R.stack_msg hma sa.1 (by omega)
+  have eb := R.stack_msg hmb sb.1 (by omega)
+  rw [sa.2] at ea; rw [sb.2] at eb
+  have na := R.numS (s.stack.size - 2) (by omega)
+  have nb := R.numS (s.stack.size - 1) (by omega)
+  have oka : ma.ok := by rw [ea]; exact enc_ok na _ _ _
+  have okb : mb.ok := by rw [eb]; exact enc_ok nb _ _ _
+  have hbin := sem oka okb
+  have va : ma.val = vNum (s.stack[s.stack.size - 2]?.getD default) := by rw [ea]; exact enc_val na _ _ _
+  have vb : mb.val = vNum (s.stack[s.stack.size - 1]?.getD default) := by rw [eb]; exact enc_val nb _ _ _
+  rw [step_eq_exec X R hins hfee hg hg64]
+  have hpopb : (popN { s with gas := { s.gas with g := s.gas.g - X.R * fee } }).1 = mb.val := by
+    rw [popN_eq, vb]; simp only; rw [back_getD _ (by omega)]
+  have hpopa : (popN (popN { s with gas := { s.gas with g := s.gas.g - X.R * fee } }).2).1 = ma.val := by
+    rw [popN_eq, popN_eq, va]; simp only
+    rw [back_getD _ (by simp; omega)]
+    simp only [Array.size_pop, Array.getElem?_pop]
+    rw [if_pos (by omega)]
+    congr 2
+  refine ⟨{ s with gas := { s.gas with g := s.gas.g - X.R * fee } }, trapStr "IllegalArithmetic", ?_, ?_⟩
+  · have htr : (trapStr "IllegalArithmetic").startsWith "WasmTrap" = true := by decide +kernel
+    simp only [exec, execNum_binop _ _ hop, hpopb, hpopa, hbin, htr, ite_true]
+  · have hgas := R.gas
+    simp only
+    rw [Nat.mul_add] at hg ⊢
+    omega
 
 end WasmBase

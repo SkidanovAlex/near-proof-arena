@@ -2,7 +2,7 @@ import WasmBase.Air
 /-!
 # WasmBase.Chips — the AIR set `wasm-base-v2` (instruction family F1)
 
-Thirteen AIRs (≤ 32), max degree 8, no preprocessed or cached traces.  Buses:
+Fifteen AIRs (≤ 32), max degree 8, no preprocessed or cached traces.  Buses:
 
 | bus | name | message | role |
 |---|---|---|---|
@@ -497,22 +497,26 @@ def pcf : Nat := 0
 def tpr : Nat := 1
 /-- per local `j`: final tag, value limbs, producer time (6 columns from `2 + 6 j`) -/
 def fin (j : Nat) : Nat := 2 + 6 * j
-/-- Public values: `[N, S_final, nres, rtag, r0, r1, r2, r3]`, then one tag per local.  The code is
-not public: it is the cached CODE table, whose commitment is a statement component (`code_root`).
-The first instruction row has `ts = 1`; initial locals are produced at time 0. -/
+/-- Public values: `[N, S_final, nres, rtag, r0, r1, r2, r3, status]`, then one tag per local
+(`status` = 1: the function returned; 2: it trapped).  The code is not public: it is the cached CODE
+table, whose commitment is a statement component (`code_root`).  The first instruction row has
+`ts = 1`; initial locals are produced at time 0. -/
 def pubN : Nat := 0
 def pubS : Nat := 1
 def pubNres : Nat := 2
 def pubTag : Nat := 3
 def pubR : Nat := 4
-def pubLoc : Nat := 8
+def pubStatus : Nat := 8
+def pubLoc : Nat := 9
 def recWidth : Nat := 8
 def cols (nloc : Nat) : List String := ["pcf", "tpr"] ++
   ((List.range nloc).flatMap fun j => [s!"ftag{j}", s!"fv{j}_0", s!"fv{j}_1", s!"fv{j}_2", s!"fv{j}_3", s!"ftp{j}"])
 def inters (nloc : Nat) : List Inter :=
   [stateOut 0 1 0 0 .first,
-   ⟨busState, false, .first, [v pcf, pv pubN, pv pubS, 1]⟩,
-   stkRecv 0 (pv pubTag) ((List.range 4).map fun i => pv (pubR + i)) (v tpr) (.first * pv pubNres)] ++
+   ⟨busState, false, .first, [v pcf, pv pubN, pv pubS, pv pubStatus]⟩,
+   -- the result is returned only if the function did not trap
+   stkRecv 0 (pv pubTag) ((List.range 4).map fun i => pv (pubR + i)) (v tpr)
+     (.first * pv pubNres * (2 - pv pubStatus))] ++
   ((List.range nloc).flatMap fun j =>
     [chSend 1 (Expr.c j) (pv (pubLoc + j)) zeros4 0 .first,
      chRecv 1 (Expr.c j) (v (fin j)) ((List.range 4).map fun i => v (fin j + 1 + i)) (v (fin j + 5)) .first])
@@ -569,6 +573,141 @@ def inters : List Inter :=
 def table : Table := ⟨"BYTE", cols, constraints, inters⟩
 end Byte
 
+/-! ## DIV: i32/i64 div_s, div_u, rem_s, rem_u, with traps
+
+Magnitudes: `A = |a|`, `B = |b|` (signed ops; `= a, b` for unsigned) via negation chains
+`A + a ∈ {0, 2^w}`; the byte product `Q·B + R = A` (no overflow: high convolution sums and the top
+carry vanish) and `R < B` (borrow chain, `D = B − R − 1 ≥ 0`); the result is `±Q` or `±R`
+(negation chain with the result sign).  Traps: `tz = [B = 0]` (inverse test; the division is only
+enforced when `tz = 0`) and `tov = div_s · sign(a) · sign(b) · topbit(Q)` (for div_s, `Q ≤ 2^(w−1)`
+with equality exactly when `a = MIN`, `b = ±1`).  A trapping row consumes its operands, produces
+nothing and ends the execution (`halted = 2`). -/
+namespace Div
+def fDivS : Nat := 5
+def fDivU : Nat := 6
+def fRemS : Nat := 7
+def fRemU : Nat := 8
+def is64 : Nat := 9
+def a : Nat := 10    -- 10..13
+def ta : Nat := 14
+def ha : Nat := 15
+def b : Nat := 16    -- 16..19
+def tb : Nat := 20
+def hb : Nat := 21
+def hbA : Nat := 22  -- top bit of a
+def ra : Nat := 23
+def hbB : Nat := 24
+def rb : Nat := 25
+def AB : Nat := 26   -- A bytes 26..33
+def BB : Nat := 34   -- B bytes 34..41
+def QB : Nat := 42   -- Q bytes 42..49
+def RB : Nat := 50   -- R bytes 50..57
+def ca : Nat := 58   -- 58..61
+def cb : Nat := 62   -- 62..65
+def cy : Nat := 66   -- 66..73
+def dd : Nat := 74   -- D limbs 74..77
+def bw : Nat := 78   -- borrows 78..81
+def tz : Nat := 82
+def invB : Nat := 83
+def hbQ : Nat := 84  -- top bit of Q
+def rq : Nat := 85
+def tov : Nat := 86
+def res : Nat := 87  -- 87..90
+def cr : Nat := 91   -- 91..94
+def names (p : String) (n : Nat) : List String := (List.range n).map fun i => p ++ toString i
+def cols : List String := headerCols ++ ["f_divs", "f_divu", "f_rems", "f_remu", "is64"] ++ names "a" 4 ++
+  ["ta", "ha"] ++ names "b" 4 ++ ["tb", "hb", "hbA", "ra", "hbB", "rb"] ++ names "A" 8 ++ names "B" 8 ++
+  names "Q" 8 ++ names "R" 8 ++ names "ca" 4 ++ names "cb" 4 ++ names "cy" 8 ++ names "d" 4 ++ names "bw" 4 ++
+  ["tz", "invB", "hbQ", "rq", "tov"] ++ names "res" 4 ++ names "cr" 4
+def act : Expr := v fDivS + v fDivU + v fRemS + v fRemU
+def signed : Expr := v fDivS + v fRemS
+def trap : Expr := v tz + v tov
+/-- the division is enforced on active rows unless `B = 0` (`tz ≤ act`) -/
+def nt : Expr := act - v tz
+def op : Expr := 0x6D + 18 * v is64 + v fDivU + 2 * v fRemS + 3 * v fRemU
+def sa : Expr := signed * v hbA
+def sb : Expr := signed * v hbB
+/-- 16-bit limb `i` of a byte vector. -/
+def L (base i : Nat) : Expr := v (base + 2 * i) + 256 * v (base + 2 * i + 1)
+def topA : Expr := v is64 * v (a + 3) + (1 - v is64) * v (a + 1)
+def topB : Expr := v is64 * v (b + 3) + (1 - v is64) * v (b + 1)
+def cIn (c i : Nat) : Expr := if i = 0 then 0 else v (c + i - 1)
+/-- `s = 0 → X_i = x_i`; `s = 1 → X_i + x_i + c_{i-1} = 2^16 c_i` (limbs 2, 3 only for i64). -/
+def negChain (s : Expr) (X : Nat → Expr) (x : Nat → Expr) (c : Nat) : List Expr :=
+  (List.range 4).flatMap fun i =>
+    let g : Expr := if i < 2 then 1 else v is64
+    [g * ((1 - s) * (X i - x i)), g * (s * (X i + x i + cIn c i - B16 * v (c + i)))]
+def conv (k : Nat) : Expr :=
+  ((List.range 8).filterMap fun i => if i ≤ k ∧ k - i < 8 then some (v (QB + i) * v (BB + (k - i))) else none).foldl
+    (· + ·) 0
+def prodEq (k : Nat) : Expr := conv k + v (RB + k) + cIn cy k - v (AB + k) - 256 * v (cy + k)
+def ltEq (i : Nat) : Expr :=
+  L BB i - L RB i - (if i = 0 then 1 else 0) - cIn bw i + B16 * v (bw + i) - v (dd + i)
+def bsum : Expr := ((List.range 8).map fun i => v (BB + i)).foldl (· + ·) 0
+def topQ : Expr := v is64 * L QB 3 + (1 - v is64) * L QB 1
+def isDiv : Expr := v fDivS + v fDivU
+def isRem : Expr := v fRemS + v fRemU
+/-- result sign: div_s: `sa xor sb`; rem_s: `sa`. -/
+def sres : Expr := v fDivS * (v hbA + v hbB - 2 * v hbA * v hbB) + v fRemS * v hbA
+def X (i : Nat) : Expr := isDiv * L QB i + isRem * L RB i
+def constraints : List Expr :=
+  [bool (v fDivS), bool (v fDivU), bool (v fRemS), bool (v fRemU), bool act, bool (v is64),
+   bool (v hbA), bool (v hbB), topA - 32768 * v hbA - v ra, topB - 32768 * v hbB - v rb,
+   (1 - v is64) * v (a + 2), (1 - v is64) * v (a + 3), (1 - v is64) * v (b + 2), (1 - v is64) * v (b + 3),
+   (1 - v is64) * v (res + 2), (1 - v is64) * v (res + 3),
+   bool (v hbQ), topQ - 32768 * v hbQ - v rq] ++
+  ((List.range 4).flatMap fun i =>
+    [(1 - v is64) * v (AB + 4 + i), (1 - v is64) * v (BB + 4 + i), (1 - v is64) * v (QB + 4 + i),
+     (1 - v is64) * v (RB + 4 + i), (1 - v is64) * v (cy + 4 + i)]) ++
+  ((List.range 4).map fun i => bool (v (ca + i))) ++ ((List.range 4).map fun i => bool (v (cb + i))) ++
+  ((List.range 4).map fun i => bool (v (cr + i))) ++ ((List.range 4).map fun i => bool (v (bw + i))) ++
+  negChain sa (L AB) (fun i => v (a + i)) ca ++ negChain sb (L BB) (fun i => v (b + i)) cb ++
+  -- zero test of B and the overflow test
+  [v tz - act * (1 - bsum * v invB), bsum * v tz,
+   v tov - nt * v fDivS * v hbA * v hbB * v hbQ] ++
+  -- the division (non-trap rows)
+  ((List.range 8).map fun k => nt * prodEq k) ++
+  [nt * (1 - v is64) * v (cy + 3), nt * v is64 * v (cy + 7)] ++
+  ((List.range 3).map fun j => nt * (1 - v is64) * conv (4 + j)) ++
+  ((List.range 7).map fun j => nt * v is64 * conv (8 + j)) ++
+  ((List.range 4).map fun i => nt * ltEq i) ++ [nt * v (bw + 3)] ++
+  -- the result
+  negChain sres (fun i => v (res + i)) X cr
+def inters : List Inter :=
+  [stateIn (v cPc) (v cTs) (v cS) act,
+   stateOut (v cPc + 1) (v cTs + 1) (v cS + v cFee) (2 * trap) act,
+   fetch (v cPc) op (v cH) (v cFee) zeros4 act,
+   stkRecv (v cH - 2) (v is64) (limbsOf a) (v ta) act,
+   stkRecv (v cH - 1) (v is64) (limbsOf b) (v tb) act] ++
+  timeChk (v cTs) (v ta) (v ha) act ++ timeChk (v cTs) (v tb) (v hb) act ++
+  [stkSend (v cH - 2) (v is64) (limbsOf res) (v cTs) (act * (1 - trap)),
+   r16 (2 * v ra) act, r16 (2 * v rb) act, r16 (2 * v rq) act] ++
+  (List.range 4).map (fun i => byteQ 0 (v (AB + 2 * i)) (v (AB + 2 * i + 1)) 0 act) ++
+  (List.range 4).map (fun i => byteQ 0 (v (BB + 2 * i)) (v (BB + 2 * i + 1)) 0 act) ++
+  (List.range 4).map (fun i => byteQ 0 (v (QB + 2 * i)) (v (QB + 2 * i + 1)) 0 act) ++
+  (List.range 4).map (fun i => byteQ 0 (v (RB + 2 * i)) (v (RB + 2 * i + 1)) 0 act) ++
+  (List.range 4).map (fun i => r16 (v (dd + i)) act) ++
+  (List.range 4).map (fun i => r16 (v (res + i)) act) ++
+  -- product carries (≤ ~2^11): without this the product chain only holds mod p
+  (List.range 8).map (fun k => r16 (v (cy + k)) act)
+def table : Table := ⟨"DIV", cols, constraints, inters⟩
+end Div
+
+
+/-! ## DRAIN: after a trap (`status = 2`) the operand stack is not returned; each DRAIN row consumes
+one leftover stack message (count `act · (status − 1)`, zero for a normal return). -/
+namespace Drain
+def act : Nat := 0
+def slot : Nat := 1
+def tag : Nat := 2
+def val : Nat := 3   -- 3..6
+def tp : Nat := 7
+def cols : List String := ["act", "slot", "tag", "v0", "v1", "v2", "v3", "tp"]
+def table : Table :=
+  ⟨"DRAIN", cols, [bool (v act)],
+   [chRecv 0 (v slot) (v tag) (limbsOf val) (v tp) (v act * (pv Boundary.pubStatus - 1))]⟩
+end Drain
+
 end Chips
 
 open Chips in
@@ -576,7 +715,8 @@ open Chips in
 height). -/
 def wasmBaseAir (nloc _ncode : Nat) : Air where
   tables := [Boundary.table nloc, Add.table, Bit.table, Mul.table, Shift.table, Cmp.table,
-    Const.table, Stack.table, Ctrl.table, Local.table, Range16.table, Byte.table, Code.table]
+    Const.table, Stack.table, Ctrl.table, Local.table, Div.table, Range16.table, Byte.table, Code.table,
+    Drain.table]
   numPub := Boundary.pubLoc + nloc
 
 end WasmBase

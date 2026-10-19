@@ -272,3 +272,89 @@ verifier circuit.
 * Lean: the base-faithful theorem is complete for this family. Extending to the full instruction set
   reuses `exec_of_rows`, `looks_of` and the `Main.Rows` infrastructure; each new chip needs a local
   soundness lemma and a `*_rowfacts` lemma.
+
+## 9. After the checkpoint (2026-10-19): decisions applied
+
+The coordinator decided (a) to make CODE a cached table bound through the statement, (b) to keep
+BYTE/RANGE16 committed, (c) to stay on SWIRL Ext12, and (d) to fan out the next instruction families.
+`lane/pq-nv-preprocessed` @ 9761585a5 (which includes the G1 fix, `lane/pq-recursion-sha384` @ 717eb518e)
+is merged.
+
+### 9.1 (a) CODE cached, bound through the statement (`wasm-base-v2`)
+
+See `STATEMENT.md`.
+* The code records live in a cached CODE trace, and its commitment `code_root` is a statement
+  component that V_d recomputes from the contract code. The vk no longer depends on the program,
+  only on `nloc`.
+* Lean: one new hypothesis `CodeOK` (the binding V_d's check provides). The FETCH soundness
+  (`looks_of`) is re-proven from it.
+* Tamper: a forged CODE row that no instruction fetches passes the AIR and the native verifier; only
+  the `code_root` check rejects it.
+* The base proof grows to 970–976 KB (small shape) and 1,263 KB (pinned 2^24 shape). Base proofs are
+  not sent to V_d.
+
+### 9.2 Family 1: i32/i64 `div_s`, `div_u`, `rem_s`, `rem_u`, with traps
+
+**AIR.**
+* DIV chip (table 10): 95 columns, 106 constraints, 45 interactions, degree 6.
+* Magnitudes come from negation chains: `A + a ∈ {0, 2^w}` for signed operands. The byte product is
+  `Q·B + R = A`, with the high convolution sums and the top carry forced to zero and the carries
+  range-checked. `R < B` comes from a borrow chain.
+* The result is `±Q` or `±R`, built by a negation chain with the result sign.
+* Traps: `tz = [B = 0]` (an inverse test; the division is enforced only when `tz = 0`), and
+  `tov = div_s · sign(a) · sign(b) · topbit(Q)`. For `div_s`, `Q ≤ 2^(w−1)` holds, with equality
+  exactly when `a = MIN` and `|b| = 1`, so `tov` is exact.
+* A trapping row ends the execution with `halted = 2`.
+* There is a new public `status` (1 = return, 2 = trap). After a trap the result is not received, and a
+  DRAIN table (table 14) consumes the leftover operand-stack messages, with count `act·(status − 1)`.
+
+**A soundness hole found by the proof attempt, before any proof existed.** The product carries were
+not range-checked, so the chain held only mod p. Example: `5 / 1` with `Q = 5 + p` passed every
+constraint. Fix: 8 R16 lookups on the carries.
+
+**Lean** (no `sorry`, standard axioms):
+* `Local.Div.div_sound`: the row semantics, including the exact trap characterisation.
+* `StepOps.step_binop_trap`: a trapping binop gives `.abort` with the fee charged.
+* `Main.RowDiv`: `div_counts`, `div_inactive` and `div_rowfacts` (`RowFacts2`, a third outcome `hb = 2`).
+* `Main.Abstract.exec_of_rows` handles the trap outcome.
+* `Main.Final.wasm_base_sound`: with status 1 the run returns with the public result; with status 2
+  it ends in `.abort` after `N − 1` steps with `R·S` gas charged.
+
+**Tests.**
+* KAT 63/63 (`logs/kat.log`): 8 div/rem programs × 30 operand pairs, including MIN/−1 for `rem_s` and
+  `div_s` at MIN/1; 6 trap programs (division by zero for `div_u`/`rem_s`, `div_s` overflow,
+  i32/i64), each with a value left on the stack to exercise DRAIN; plus all the earlier programs.
+* Difftest: 480 points, 10,720 constraint values and 6,560 interactions agree.
+* Tamper: 31/31 on hashloop8, 28/28 on `kat_i64_div_s` and 25/25 on `trap_i32_zero_u`. On a trap, the
+  result public value is deliberately not a statement component.
+
+**Cost** (`logs/prove-divloop*-small-z0.log`, marginal between 9,994 and 39,946 steps, about 15% of
+ops are div/rem):
+
+| | committed cells/op | fractions/op | cell-eq/op at E = 12 |
+|---|---:|---:|---:|
+| mixed div loop, active rows | 33.2 | 15.7 | **430** |
+| mixed div loop, padded heights | 44.1 | 20.7 | 568 |
+
+A DIV row alone (an adversarial div-only stream) costs **1,226 cell-eq at E = 12**, 2.2× the 546
+model; the univariate estimate is 667. This is the costliest chip. The levers:
+* The 45 fractions break down as 16 BYTE byte-pair checks (A, B, Q, R), 8 carry checks, 4 D, 4
+  result, 3 pinning and 2×2 time checks.
+* Halving the byte checks by checking A and Q only is possible if B and R are derived. Packing
+  carries with a 2^12-wide lookup needs preprocessing, ruled out by (b).
+* An i32-only DIV variant (half the bytes) and dropping the explicit `A` bytes (reconstructing them
+  from limbs and range-checking only Q, R and B) are the next optimisation candidates. They are
+  queued with the SHIFT/CMP work.
+
+### 9.3 Not done yet (this lane, in the coordinator's order)
+
+* Family 2 (linear memory with offline memory checking, lifting D3), family 3 (globals; locals are
+  done) and family 4 (calls with a call stack) all need the simulation relation `RelW` to grow:
+  * memory pages for family 2;
+  * a globals view for family 3;
+  * more than one frame for family 4.
+
+  So they start with a refactor of `Event.RelW` and the generic step lemmas, after which the
+  per-chip row lemmas carry over.
+* SHIFT/CMP (and now DIV) optimisation.
+

@@ -1,1 +1,1 @@
-DIFFTEST OK: 416 points, 7296 constraint values and 5088 interactions agree (Lean wasmBaseAir 3 40 = Rust vk DAG)
+DIFFTEST OK: 480 points, 10720 constraint values and 6560 interactions agree (Lean wasmBaseAir 3 40 = Rust vk DAG)

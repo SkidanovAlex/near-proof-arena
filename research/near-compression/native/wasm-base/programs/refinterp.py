@@ -9,6 +9,15 @@ def sg(v, w):
     return v - (1 << w) if v >> (w - 1) else v
 
 
+class Trap(Exception):
+    pass
+
+
+def tdiv(x, y):
+    q = abs(x) // abs(y)
+    return q if (x >= 0) == (y >= 0) else -q
+
+
 def binop(name, a, b):
     w = 64 if name.startswith('i64') else 32
     m = (1 << w) - 1
@@ -17,6 +26,16 @@ def binop(name, a, b):
     if op == 'add': return (a + b) & m
     if op == 'sub': return (a - b) & m
     if op == 'mul': return (a * b) & m
+    if op in ('div_s', 'div_u', 'rem_s', 'rem_u'):
+        if b == 0: raise Trap('div by zero')
+        if op == 'div_u': return a // b
+        if op == 'rem_u': return a % b
+        x, y = sg(a, w), sg(b, w)
+        q = tdiv(x, y)
+        if op == 'div_s':
+            if q == 1 << (w - 1): raise Trap('overflow')
+            return q & m
+        return (x - q * y) & m
     if op == 'and': return a & b
     if op == 'or': return a | b
     if op == 'xor': return a ^ b
@@ -105,4 +124,9 @@ def run(prog, fuel=10 ** 8):
         elif op == 'return':
             return (st[-1] if st else None), n
         else:
-            b = st.pop(); a = st.pop(); st.append(binop(op, a, b)); pc += 1
+            b = st.pop(); a = st.pop()
+            try:
+                st.append(binop(op, a, b))
+            except Trap:
+                return 'trap', n
+            pc += 1

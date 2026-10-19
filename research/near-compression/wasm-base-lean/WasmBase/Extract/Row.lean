@@ -25,7 +25,7 @@ theorem table_constr {A : Air} {pub : List F} {tr : Trace} (H : Holds A pub tr) 
 
 section
 variable (nloc ncode : Nat)
-theorem air_len : (wasmBaseAir nloc ncode).tables.length = 13 := rfl
+theorem air_len : (wasmBaseAir nloc ncode).tables.length = 15 := rfl
 theorem air_t0 : (wasmBaseAir nloc ncode).tables[0]'(by simp [air_len]) = Boundary.table nloc := rfl
 theorem air_t1 : (wasmBaseAir nloc ncode).tables[1]'(by simp [air_len]) = Add.table := rfl
 theorem air_t2 : (wasmBaseAir nloc ncode).tables[2]'(by simp [air_len]) = Bit.table := rfl
@@ -36,9 +36,11 @@ theorem air_t6 : (wasmBaseAir nloc ncode).tables[6]'(by simp [air_len]) = Const.
 theorem air_t7 : (wasmBaseAir nloc ncode).tables[7]'(by simp [air_len]) = Stack.table := rfl
 theorem air_t8 : (wasmBaseAir nloc ncode).tables[8]'(by simp [air_len]) = Ctrl.table := rfl
 theorem air_t9 : (wasmBaseAir nloc ncode).tables[9]'(by simp [air_len]) = Local.table := rfl
-theorem air_t10 : (wasmBaseAir nloc ncode).tables[10]'(by simp [air_len]) = Range16.table := rfl
-theorem air_t11 : (wasmBaseAir nloc ncode).tables[11]'(by simp [air_len]) = Byte.table := rfl
-theorem air_t12 : (wasmBaseAir nloc ncode).tables[12]'(by simp [air_len]) = Code.table := rfl
+theorem air_t10 : (wasmBaseAir nloc ncode).tables[10]'(by simp [air_len]) = Div.table := rfl
+theorem air_t11r : (wasmBaseAir nloc ncode).tables[11]'(by simp [air_len]) = Range16.table := rfl
+theorem air_t12b : (wasmBaseAir nloc ncode).tables[12]'(by simp [air_len]) = Byte.table := rfl
+theorem air_t13 : (wasmBaseAir nloc ncode).tables[13]'(by simp [air_len]) = Code.table := rfl
+theorem air_t14 : (wasmBaseAir nloc ncode).tables[14]'(by simp [air_len]) = Drain.table := rfl
 end
 
 /-! ## The RANGE16 table is exactly `0 .. 2^16 - 1` -/

@@ -20,10 +20,13 @@ for w in "$OUT"/progs/*.wasm; do
   python3 - "$OUT/progs/$n.json" "$OUT/progs/$n.prep.json" <<'PY'
 import json, sys
 ref = json.load(open(sys.argv[1])); sp = json.load(open(sys.argv[2]))
-assert sp['status'] == 'fin', sp['status']
 assert sp['steps'] == ref['steps'], (sp['steps'], ref['steps'])
-l = sp['stack'][-1]['limbs']; v = l[0] | l[1] << 16 | l[2] << 32 | l[3] << 48
-assert v == ref['result'], (v, ref['result'])
+if ref['result'] == 'trap':
+    assert sp['status'].startswith('abort WasmTrap'), sp['status']
+else:
+    assert sp['status'] == 'fin', sp['status']
+    l = sp['stack'][-1]['limbs']; v = l[0] | l[1] << 16 | l[2] << 32 | l[3] << 48
+    assert v == ref['result'], (v, ref['result'])
 PY
   if "$BIN" check "$OUT/air-$nloc-$ncode.json" "$OUT/progs/$n.prep.json" > "$OUT/progs/$n.check.log" 2>&1; then
     pass=$((pass+1))

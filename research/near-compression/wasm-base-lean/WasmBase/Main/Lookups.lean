@@ -23,16 +23,16 @@ repeating the last record) and checks it equals the cached commitment the proof 
 the binding of the commitment, every CODE row's record columns are a record of the checked code.
 This is the one hypothesis the commitment contributes. -/
 def CodeOK (X : Ctx) (tr : Trace) : Prop :=
-  ∀ r, r < tr.height 12 → ∃ j, j < X.pf.code.size ∧
-    (List.range Boundary.recWidth).map (fun k => tr.cell 12 r k) = codeRec X j
+  ∀ r, r < tr.height 13 → ∃ j, j < X.pf.code.size ∧
+    (List.range Boundary.recWidth).map (fun k => tr.cell 13 r k) = codeRec X j
 
 /-! ## Which tables receive on the lookup buses (decidable) -/
 
 theorem recv_only_code_fetch :
     ∀ T ∈ [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table,
-      Local.table, Range16.table, Byte.table], ∀ i ∈ T.inters, i.bus = busFetch → i.send = true := by
+      Local.table, Div.table, Range16.table, Byte.table, Drain.table], ∀ i ∈ T.inters, i.bus = busFetch → i.send = true := by
   simp only [List.mem_cons, List.mem_nil_iff, or_false]
-  rintro T (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;>
+  rintro T (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;>
   · intro i hi
     have := List.all_eq_true.mp (show (List.all _ fun i : Inter => i.bus != busFetch || i.send) = true by decide) i hi
     intro hb
@@ -43,9 +43,9 @@ theorem recv_only_code_fetch :
 
 theorem recv_only_range16 :
     ∀ T ∈ [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table,
-      Local.table, Byte.table, Code.table], ∀ i ∈ T.inters, i.bus = busR16 → i.send = true := by
+      Local.table, Div.table, Byte.table, Code.table, Drain.table], ∀ i ∈ T.inters, i.bus = busR16 → i.send = true := by
   simp only [List.mem_cons, List.mem_nil_iff, or_false]
-  rintro T (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;>
+  rintro T (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;>
   · intro i hi
     have := List.all_eq_true.mp (show (List.all _ fun i : Inter => i.bus != busR16 || i.send) = true by decide) i hi
     intro hb
@@ -56,9 +56,9 @@ theorem recv_only_range16 :
 
 theorem recv_only_byte :
     ∀ T ∈ [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table,
-      Local.table, Range16.table, Code.table], ∀ i ∈ T.inters, i.bus = busByte → i.send = true := by
+      Local.table, Div.table, Range16.table, Code.table, Drain.table], ∀ i ∈ T.inters, i.bus = busByte → i.send = true := by
   simp only [List.mem_cons, List.mem_nil_iff, or_false]
-  rintro T (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;>
+  rintro T (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;>
   · intro i hi
     have := List.all_eq_true.mp (show (List.all _ fun i : Inter => i.bus != busByte || i.send) = true by decide) i hi
     intro hb
@@ -80,7 +80,7 @@ theorem boundary_lookups (nloc : Nat) :
 /-- The occurrence list splits by table index. -/
 theorem occ_table {nloc ncode : Nat} {tr : Trace} {pub : List F} {o : Occ}
     (ho : o ∈ occs (wasmBaseAir nloc ncode) tr pub) :
-    ∃ t, ∃ ht : t < 13, ∃ r, r < tr.height t ∧
+    ∃ t, ∃ ht : t < 15, ∃ r, r < tr.height t ∧
       ∃ i ∈ ((wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht)).inters,
         o = (i.bus, i.send, i.msg.map (·.eval (tr.row pub t r)), (i.count.eval (tr.row pub t r)).toNat) := by
   obtain ⟨t, ht, r, hr, i, hi, rfl⟩ := mem_occs.mp ho
@@ -159,35 +159,38 @@ theorem byte_row_msgs {A : Air} {pub : List F} {tr : Trace} (H : Holds A pub tr)
 /-! ## The lookup facts from `Holds` -/
 
 def instrTables : List Table :=
-  [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table, Local.table]
+  [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table, Local.table,
+    Div.table]
 
-theorem table_class (nloc ncode t : Nat) (ht : t < 13) :
+theorem table_class (nloc ncode t : Nat) (ht : t < 15) :
     (t = 0 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Boundary.table nloc) ∨
-    (t = 12 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Code.table) ∨
-    (t = 10 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Range16.table) ∨
-    (t = 11 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Byte.table) ∨
-    (1 ≤ t ∧ t ≤ 9 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) ∈ instrTables) := by
+    (t = 13 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Code.table) ∨
+    (t = 14 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Drain.table) ∨
+    (t = 11 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Range16.table) ∨
+    (t = 12 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) = Byte.table) ∨
+    (1 ≤ t ∧ t ≤ 10 ∧ (wasmBaseAir nloc ncode).tables[t]'(by simp [air_len]; exact ht) ∈ instrTables) := by
   rcases (show t = 0 ∨ t = 1 ∨ t = 2 ∨ t = 3 ∨ t = 4 ∨ t = 5 ∨ t = 6 ∨ t = 7 ∨ t = 8 ∨ t = 9 ∨ t = 10 ∨ t = 11
-    ∨ t = 12 by omega) with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    ∨ t = 12 ∨ t = 13 ∨ t = 14 by omega) with
+    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
   simp [wasmBaseAir, instrTables]
 
 theorem instr_sub1 (T : Table) (h : T ∈ instrTables) :
     T ∈ [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table,
-      Local.table, Range16.table, Byte.table] := by
+      Local.table, Div.table, Range16.table, Byte.table, Drain.table] := by
   simp only [instrTables, List.mem_cons, List.mem_nil_iff, or_false] at h ⊢
-  rcases h with h | h | h | h | h | h | h | h | h <;> simp [h]
+  rcases h with h | h | h | h | h | h | h | h | h | h <;> simp [h]
 
 theorem instr_sub2 (T : Table) (h : T ∈ instrTables) :
     T ∈ [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table,
-      Local.table, Byte.table, Code.table] := by
+      Local.table, Div.table, Byte.table, Code.table, Drain.table] := by
   simp only [instrTables, List.mem_cons, List.mem_nil_iff, or_false] at h ⊢
-  rcases h with h | h | h | h | h | h | h | h | h <;> simp [h]
+  rcases h with h | h | h | h | h | h | h | h | h | h <;> simp [h]
 
 theorem instr_sub3 (T : Table) (h : T ∈ instrTables) :
     T ∈ [Add.table, Bit.table, Mul.table, Shift.table, Cmp.table, Const.table, Stack.table, Ctrl.table,
-      Local.table, Range16.table, Code.table] := by
+      Local.table, Div.table, Range16.table, Code.table, Drain.table] := by
   simp only [instrTables, List.mem_cons, List.mem_nil_iff, or_false] at h ⊢
-  rcases h with h | h | h | h | h | h | h | h | h <;> simp [h]
+  rcases h with h | h | h | h | h | h | h | h | h | h <;> simp [h]
 
 theorem looks_of {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : Holds (wasmBaseAir nloc ncode) pub tr)
     (hcode : CodeOK X tr)
@@ -200,7 +203,7 @@ theorem looks_of {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : H
     intro o' ho' hb' hs' _
     obtain ⟨t, ht, r, hr, i, hi, rfl⟩ := occ_table ho'
     simp only at hb' hs' ⊢
-    rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨_, _, hT⟩
+    rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨_, _, hT⟩
     · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc i hi).2.2
     · rw [hT] at hi
       simp only [Code.table, List.mem_cons, List.mem_nil_iff, or_false] at hi
@@ -211,14 +214,16 @@ theorem looks_of {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : H
       simp [List.map_map, Function.comp, v, Expr.eval_col, Trace.row, Boundary.recWidth]
     · rw [hT] at hi; exact absurd (recv_only_code_fetch _ (by simp) i hi hb') (by simp [hs'])
     · rw [hT] at hi; exact absurd (recv_only_code_fetch _ (by simp) i hi hb') (by simp [hs'])
+    · rw [hT] at hi; exact absurd (recv_only_code_fetch _ (by simp) i hi hb') (by simp [hs'])
     · exact absurd (recv_only_code_fetch _ (instr_sub1 _ hT) i hi hb') (by simp [hs'])
   · refine lookup_sound H busR16 (fun m => ∃ x : F, m = [x] ∧ x.toNat < 65536) ?_
       (fun o' ho' _ hs' => hsend o' ho' hs') ho hb hs hc
     intro o' ho' hb' hs' _
     obtain ⟨t, ht, r, hr, i, hi, rfl⟩ := occ_table ho'
     simp only at hb' hs' ⊢
-    rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨_, _, hT⟩
+    rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨_, _, hT⟩
     · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc i hi).1
+    · rw [hT] at hi; exact absurd (recv_only_range16 _ (by simp) i hi hb') (by simp [hs'])
     · rw [hT] at hi; exact absurd (recv_only_range16 _ (by simp) i hi hb') (by simp [hs'])
     · have hT' := hT
       rw [hT] at hi
@@ -238,8 +243,9 @@ theorem looks_of {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : H
     intro o' ho' hb' hs' _
     obtain ⟨t, ht, r, hr, i, hi, rfl⟩ := occ_table ho'
     simp only at hb' hs' ⊢
-    rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨_, _, hT⟩
+    rcases table_class nloc ncode t ht with ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨rfl, hT⟩ | ⟨_, _, hT⟩
     · rw [hT] at hi; exact absurd hb' (boundary_lookups nloc i hi).2.1
+    · rw [hT] at hi; exact absurd (recv_only_byte _ (by simp) i hi hb') (by simp [hs'])
     · rw [hT] at hi; exact absurd (recv_only_byte _ (by simp) i hi hb') (by simp [hs'])
     · rw [hT] at hi; exact absurd (recv_only_byte _ (by simp) i hi hb') (by simp [hs'])
     · have hT' := hT

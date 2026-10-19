@@ -18,6 +18,15 @@ def edge(w, rng):
     return [v & m for v in vals]
 
 
+DIV = ['div_s', 'div_u', 'rem_s', 'rem_u']
+
+
+def no_trap(op, a, b, w):
+    if b == 0:
+        return False
+    return not (op == 'div_s' and a == 1 << (w - 1) and b == (1 << w) - 1)
+
+
 def kat(t, op, rng, npairs=24):
     w = 64 if t == 'i64' else 32
     rel = op in REL or op == 'eqz'
@@ -25,6 +34,14 @@ def kat(t, op, rng, npairs=24):
     body = []
     vals = edge(w, rng)
     pairs = [(rng.choice(vals), rng.choice(vals)) for _ in range(npairs)]
+    if op in DIV:
+        m = (1 << w) - 1
+        pairs = [(1 << (w - 1), m), (m, 1), (1 << (w - 1), 1), (7, m), (m - 6, 3), (5, 7)] + pairs
+        pairs = [(a, b) for a, b in pairs if no_trap(op, a, b, w)]
+        if op == 'div_s':
+            pairs = [p for p in pairs]
+        if op == 'rem_s':
+            pairs = [(1 << (w - 1), m)] + pairs   # MIN rem -1 = 0 (no trap)
     for a, b in pairs:
         body += [('local.get', 0), (f'{acc_t}.const', 31), f'{acc_t}.mul', (f'{t}.const', a)]
         if op != 'eqz':
@@ -91,13 +108,45 @@ def hashloop(n):
     return {'name': f'hashloop{n}', 'result': 'i64', 'locals': ['i64', 'i64', 'i32'], 'body': b}
 
 
+def divloop(n):
+    """A div/rem-heavy loop (i64 div_u/rem_u/div_s/rem_s, i32 div_s/rem_u), n iterations."""
+    i, h, x = 0, 1, 2
+    b = [
+        ('i64.const', 0x123456789abcdef1), ('local.set', h), ('i32.const', 0x7654321), ('local.set', x),
+        ('loop',),
+          ('local.get', h), ('local.get', i), ('i64.const', 3), 'i64.add', 'i64.div_u',
+          ('local.get', h), ('i64.const', 1000003), 'i64.rem_u', 'i64.add',
+          ('i64.const', 0x9e3779b97f4a7c15), 'i64.mul', ('local.set', h),
+          ('local.get', h), ('i64.const', -7), 'i64.div_s', ('local.get', h), ('i64.const', 13), 'i64.rem_s',
+          'i64.xor', ('local.get', h), 'i64.add', ('local.set', h),
+          ('local.get', x), ('i32.const', -3), 'i32.div_s', ('local.get', x), ('i32.const', 97), 'i32.rem_u',
+          'i32.add', ('i32.const', 0x9e3779b9), 'i32.xor', ('local.set', x),
+          ('local.get', i), ('i64.const', 1), 'i64.add', ('local.tee', i),
+          ('i64.const', n), 'i64.lt_u', ('br_if', 0),
+        ('end',),
+        ('local.get', h), ('local.get', x), 'drop',
+    ]
+    return {'name': f'divloop{n}', 'result': 'i64', 'locals': ['i64', 'i64', 'i32'], 'body': b}
+
+
+def trap(t, kind):
+    """A trapping program: some values left on the stack, then a trapping div/rem."""
+    w = 64 if t == 'i64' else 32
+    m = (1 << w) - 1
+    a, b, op = {'zero_u': (12345, 0, 'div_u'), 'zero_rem': (7, 0, 'rem_s'), 'ovf': (1 << (w - 1), m, 'div_s')}[kind]
+    body = [('local.get', 0), (f'{t}.const', 3), f'{t}.add', ('local.set', 0),
+            (f'{t}.const', 99), (f'{t}.const', a), (f'{t}.const', b), f'{t}.{op}', f'{t}.add']
+    return {'name': f'trap_{t}_{kind}', 'result': t, 'locals': [t], 'body': body}
+
+
 def main():
     out = sys.argv[1]
     iters = [int(a) for a in sys.argv[2:]] or [8, 64]
     os.makedirs(out, exist_ok=True)
     rng = random.Random(20261018)
-    progs = [kat(t, op, rng) for t in ('i32', 'i64') for op in BIN + REL + ['eqz']]
-    progs += [ctrl()] + [hashloop(n) for n in iters]
+    progs = [kat(t, op, rng) for t in ('i32', 'i64') for op in BIN + DIV + REL + ['eqz']]
+    progs += [trap(t, k) for t in ('i32', 'i64') for k in ('zero_u', 'zero_rem', 'ovf')]
+    progs += [ctrl()] + [hashloop(n) for n in iters] + [divloop(n) for n in iters]
     for p in progs:
         res, steps = run(p)
         with open(os.path.join(out, p['name'] + '.wasm'), 'wb') as f:

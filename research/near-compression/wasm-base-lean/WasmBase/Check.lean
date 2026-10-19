@@ -31,8 +31,7 @@ deriving instance DecidableEq for NearSpecV3.Wasm.Label
 /-- Numeric opcodes of family F1. -/
 def isFamilyNum (op : Nat) : Bool :=
   (0x45 ≤ op && op ≤ 0x5A) ||
-  op == 0x6A || op == 0x6B || op == 0x6C || (0x71 ≤ op && op ≤ 0x78) ||
-  op == 0x7C || op == 0x7D || op == 0x7E || (0x83 ≤ op && op ≤ 0x8A)
+  (0x6A ≤ op && op ≤ 0x78) || (0x7C ≤ op && op ≤ 0x8A)
 
 /-- Operands popped by a numeric family opcode. -/
 def numPops (op : Nat) : Nat := if op = 0x45 ∨ op = 0x50 then 1 else 2
