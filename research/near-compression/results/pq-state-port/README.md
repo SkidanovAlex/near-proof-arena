@@ -14,7 +14,7 @@ Labels: **[M]** measured here, **[K]** kernel-checked in Lean, **[E]** estimate.
 |---|---|---|---|
 | 1 | D0a: all 25 `nearAirV3` tables, no stand-in, honest fixtures, prove + verify + tamper | **done** | §1 |
 | 2 | Lean bridge: generic SWIRL⇒`HoldsP`, `multBoundP < p`, composition with `extractV3` | **done** | §2 |
-| 3 | D1: the remaining 7 tables incl. the 2^22 scheduler/receipt tables | **not started** | §4 |
+| 3 | D1: all 30 tables, no stand-in, prove + verify + tamper | **done** | §4 |
 | 4 | Ed25519 / hint design options | **written, not implemented** | §5 |
 | 5 | Wasm join | **not started** (out of scope here) | §6 |
 
@@ -149,14 +149,39 @@ Still engineering, not proof: the vk ⇔ Lean-AIR identity (P3) and the TAPE com
 (P4).  The Rust demo already interprets the Lean export, which is the P3 content at the value
 level.
 
-## 3. D1
+## 3. D1 [M]
 
-Not started here.  The port path is the same driver with `ORDER_D1`, the 30-table export, and the
-remaining 7 tables (`codec`, `scandist`, `proc`, `mem`, `cmp`, `rcptD1`, `mrkD1`) — six of which
-are the fixed-2^22 renders.  `Bounds.lean` already carries the D1 P2 fact.  The envelope study
-measured 2.51 G cells at the D1 fixture, so this needs the natural-height re-cut (which
-`statedump.rs` already implements for D0a and D1) and 24 GB.  The D1 phase-2 admission work is the
-backend-independent prerequisite (`lane/v3-d1-phase2`).
+The same driver, driven by a `d0a|d1` variant flag, runs the 30-table `nearAirV3D1` export with
+the `ORDER_D1` table order.  Nothing else changes: no stand-in table, the 30 tables plus the
+cached tape, the same bus offset, the same height re-cut.
+
+Measured on `public-d1/d1/00-h10007-s3` (13 transactions, 11 ops) with 8 threads:
+
+| cells | proof | prove | verify | peak RSS | bits |
+|---:|---:|---:|---:|---:|---:|
+| 4,474,016 | **1,289,274 B** | 20.3 s | 0.10 s | 1.2 GB | 268.2 |
+
+* **Pre-check**: every classical constraint on every row of all 30 tables; every bus balances
+  over the 30 tables + tape (16,932 distinct messages).  The envelope demo could only do 23
+  tables with an `EXT` stand-in.
+* **Tamper 23/23 rejected**: one active cell in each table family plus the forged public message
+  and the changed header byte.
+* **V_d statement check OK**: the TAPE root recomputed from the public messages matches the
+  proof's cached commitment, and the public values are the claim's.
+* LogUp 329.3 bits; total 268.2.
+* The D1 fixture has no local receipt ids, so `rid` is all-zero padding; the tamper suite reports
+  that explicitly instead of claiming a vacuous rejection (see below).
+
+The 30 tables here are at natural heights, so the six fixed-2^22 renders (codec, scandist, proc,
+mem, cmp, rcpt) collapse to their used rows — the same mechanism as D0a.  On this fixture that is
+4.5 M cells rather than the 2.5 G the fixed renders would need.
+
+**One honest note on `rid`.**  `rid`'s interactions (`PRID` on bus 69, `RIDS` on bus 8) carry
+multiplicity `c0`, and on a fixture with no local receipt ids every `c0` is `0`.  A mutation of
+the payload column `c8` on such a row is then *legitimately* accepted: the interaction sends
+nothing, so nothing constrains the payload.  That is the AIR as designed, not a port bug.  The
+tamper suite now mutates a nonzero row and reports an all-zero table as skipped, so it cannot
+silently pass on an inert table.
 
 ## 4. Ed25519 and the hint (design only, per the brief)
 
@@ -183,7 +208,7 @@ reserved split.  The Lean side needs the D3α-style `runCall` fold over the D1 e
 
 ## 6. Files
 
-* `research/near-compression/native/pq-state-port/` — the driver (`src/main.rs`, `src/air.rs`,
+* `research/near-compression/native/pq-state-port/` — the driver (`src/main.rs` with the `d0a|d1` variant, `src/air.rs`,
   `src/config.rs`), `setup.sh`, `run_demo.sh`.
 * `examples/np-udr-stark-v2/source/examples/statedump.rs` — the honest trace dump with the
   natural-height re-cut (a cargo example, so the shipped package is unchanged).

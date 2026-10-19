@@ -18,4 +18,4 @@ nice -n 10 $HEAVY "$DEPS/target-classical/release/examples/statedump" d0a "$AIR"
 # 2. SWIRL: pre-check, keygen, prove, native verify, V_d statement check (+ tamper cases)
 ( cd "$HERE" && CARGO_TARGET_DIR=$DEPS/target nice -n 10 $HEAVY cargo build --release --offline -j 8 )
 nice -n 10 $HEAVY env RAYON_NUM_THREADS=${RAYON_NUM_THREADS:-8} PQD1_DEBUG=1 "$DEPS/target/release/nearproof-pq-state-port" \
-  "$AIR" "$OUT/dump" "$MODE" "${SHAPE:-small}" | tee "$OUT/$MODE.log"
+  "$AIR" "$OUT/dump" "$MODE" "${VARIANT:-d0a}" "${SHAPE:-small}" | tee "$OUT/$MODE.log"

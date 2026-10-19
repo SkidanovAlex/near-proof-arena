@@ -50,6 +50,38 @@ const ORDER: &[&str] = &[
     "mrk", "sort",
 ];
 
+/// `v3::d1::ORDER_D1` (the 30 tables of `nearAirV3D1`, by position; D1).
+const ORDER_D1: &[&str] = &[
+    "sha_t", "sha_r", "node", "head", "val", "walk", "uniq", "ups", "chacha", "rng", "shuf",
+    "codec", "scandist", "proc", "mem", "cmp", "rcpt", "acct", "akey", "bnd", "srcp", "size", "qv",
+    "mrk", "sort", "tx", "akm", "kib", "plf", "rid",
+];
+
+/// Which classical AIR the dump belongs to: the D0a set (25 tables) or the D1 set (30).
+#[derive(Clone, Copy, PartialEq)]
+enum Variant {
+    D0a,
+    D1,
+}
+
+impl Variant {
+    fn order(self) -> &'static [&'static str] {
+        match self {
+            Variant::D0a => ORDER,
+            Variant::D1 => ORDER_D1,
+        }
+    }
+    fn len(self) -> usize {
+        self.order().len()
+    }
+    fn name(self) -> &'static str {
+        match self {
+            Variant::D0a => "nearAirV3 (D0a, 25 tables)",
+            Variant::D1 => "nearAirV3D1 (D1, 30 tables)",
+        }
+    }
+}
+
 /// Reserved bus range for the later direct-Wasm join (`pq-wasm-base` uses ids 0-4; the classical
 /// buses are 0-76).  Every classical interaction is shifted up by this offset so the two families
 /// can never collide on a bus id.
@@ -244,9 +276,9 @@ fn offset_buses(cl: &mut ClassicalAir) {
     }
 }
 
-fn load(air_path: &str, dir: &str) -> Inst {
-    let mut cl = ClassicalAir::parse(&std::fs::read_to_string(air_path).unwrap(), ORDER);
-    assert_eq!(cl.tables.len(), 25, "not nearAirV3 (D0a)");
+fn load(air_path: &str, dir: &str, v: Variant) -> Inst {
+    let mut cl = ClassicalAir::parse(&std::fs::read_to_string(air_path).unwrap(), v.order());
+    assert_eq!(cl.tables.len(), v.len(), "not {}", v.name());
     offset_buses(&mut cl);
     let d = std::path::Path::new(dir);
     let pb = std::fs::read(d.join("pubs.bin")).unwrap();
@@ -525,10 +557,10 @@ fn precheck(inst: &Inst) {
     );
 }
 
-fn cmd(air_path: &str, dir: &str, mode: &str, which: &str) {
+fn cmd(air_path: &str, dir: &str, mode: &str, which: &str, v: Variant) {
     set_levers();
     let t0 = Instant::now();
-    let inst = load(air_path, dir);
+    let inst = load(air_path, dir, v);
     report(&inst);
     precheck(&inst);
     println!("TIME load+precheck {:.2}s", t0.elapsed().as_secs_f64());
@@ -625,12 +657,32 @@ fn cmd(air_path: &str, dir: &str, mode: &str, which: &str) {
         ("rcpt", 1, 9),
         ("size", 0, 0),
         ("srcp", 1, 1),
+        ("tx", 0, 5),
+        ("akm", 1, 4),
+        ("kib", 0, 2),
+        ("plf", 0, 1),
+        ("rid", 0, 1),
     ] {
         if let Some(t) = idx(name) {
             let mut mats = inst.mats.clone();
             let w = mats[t].width;
             let h = mats[t].values.len() / w;
-            let (r, c) = (row % h, col % w);
+            // Prefer a row that is actually live.  A table can be empty on a fixture (e.g. `rid`
+            // has no local receipt ids), and then its rows are all-zero padding: interactions
+            // carry multiplicity 0, so mutating a payload cell is legitimately free and the proof
+            // still verifies.  Mutating any nonzero cell is the meaningful test; if the table is
+            // entirely zero we skip it and say so, rather than report a vacuous accept/reject.
+            let active = (0..h).find(|&r| {
+                mats[t].values[r * w..(r + 1) * w]
+                    .iter()
+                    .any(|x| *x != F::ZERO)
+            });
+            let Some(r0) = active else {
+                println!("TAMPER {name}: skipped (table is all-zero padding on this fixture)");
+                continue;
+            };
+            let r = (r0 + row) % h;
+            let c = col % w;
             mats[t].values[r * w + c] += F::ONE;
             cases.push((format!("{name}[{r}][{c}]+1"), mats, inst.pubs.clone()));
         }
@@ -685,17 +737,26 @@ fn cmd(air_path: &str, dir: &str, mode: &str, which: &str) {
 
 fn main() {
     let a: Vec<String> = std::env::args().collect();
-    if a.len() < 4 {
+    if a.len() < 5 {
         eprintln!(
-            "usage: {} <nearAirV3.json> <dump_dir> check|prove|tamper [small|pinned]",
+            "usage: {} <air.json> <dump_dir> check|prove|tamper <d0a|d1> [small|pinned]",
             a[0]
         );
         std::process::exit(2);
     }
+    let v = match a[4].as_str() {
+        "d0a" => Variant::D0a,
+        "d1" => Variant::D1,
+        m => {
+            eprintln!("variant {m}: expected d0a or d1");
+            std::process::exit(2);
+        }
+    };
     cmd(
         &a[1],
         &a[2],
         &a[3],
-        a.get(4).map(|s| s.as_str()).unwrap_or("small"),
+        a.get(5).map(|s| s.as_str()).unwrap_or("small"),
+        v,
     );
 }
