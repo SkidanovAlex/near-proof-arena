@@ -225,7 +225,7 @@ build it); "fast" is this lane's binary (`target-cpu=native`).
 | backend fixtures (Mixture + Fib, log h 8/12/14) | 42 B and 48 B | FAST=0 | FAST=1, generic and native builds | = |
 | PoW fixtures (query 18, logup 12, mu 10, fold 8 bits) | 42 B | FAST=0 | FAST=1 (8- and 16-lane grind) | = |
 | `nv::stream_tests` b = 2 (streamed vs in-memory) | 42 B + coset leaf | — | 36/36 identical | = |
-| recursion head 71060036c: q42 / s48 / real | 42 / 48 B | §7 | `565dc85a…` / `bc2f39bf…` / `97026bf4…` | §7 |
+| recursion head 71060036c: q42 / s48 / real | 42 / 48 B | `565dc85a…` / `bc2f39bf…` / `97026bf4…` | same | = |
 
 Unit tests: `sha384::mb` (SHA-384 vs `sha2` on lengths 0..300 and 104/105/109/768/1000/4096,
 mixed lengths; hasher batches vs one-by-one in both digest modes; grind vs `pow_step`);
@@ -288,7 +288,20 @@ stream tests and the FINAL proof hash kept; the per-level save and regime prints
 saves proofs itself). The cpu-fast patches only moved by offsets. A fresh `setup_cpu_fast_deps.sh`
 on the merged branch verifies.
 
-PENDING: base shas on the new head.
+Identity on the merged head [M, 8 threads]:
+
+| fixture | base (new head, generic build) | fast |
+|---|---|---|
+| q42 | `565dc85a…` (202 s) | `565dc85a…` (4.7–11 s), also at `NEARPROOF_CPU_PLE_ROUNDS` = 1/2/3 |
+| s48 | `bc2f39bf…` (267 s, 5.29 GB) | `bc2f39bf…` (21 s, 1.04 GB) |
+| real | `97026bf4…` (2,860 s wall, 16,853 CPU-s, 18.30 GB) | `97026bf4…` (65–78 s, ~125 CPU-s, 3.6 GB) |
+| backend fixtures, l_skip 2/3/4, 42/48 B, PoW | FAST=0 | FAST=1, identical |
+
+Test suites run with the fast backend: stark-backend (all lib + integration tests, incl.
+`tests/stream_commit.rs`: streamed vs in-memory trees and whole proofs, BabyBear-Poseidon2),
+cpu-backend (86 tests), recursion `sha384::mb`, `nv::stream_tests` (36/36 identical), and the
+recursion lane's fast suite with the fast binary: 67/67 passed at 48 B and 67/67 at 42 B + coset leaves
+(`logs/head2/fast-suite-*.summary.log`).
 
 ## 8. What is left
 
