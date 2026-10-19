@@ -1,0 +1,10 @@
+NV_PREP_ELEMENTS default fixture=0 elements=1530 both_reject=1529 both_accept=1
+NV_PREP_ELEMENTS default fixture=1 elements=2663 both_reject=2663 both_accept=0
+NV_PREP_ELEMENTS default fixture=2 elements=2280 both_reject=2280 both_accept=0
+NV_PREP_ELEMENTS x15+multiproof+whir_y+widepow fixture=0 elements=937 both_reject=937 both_accept=0
+NV_PREP_ELEMENTS x15+multiproof+whir_y+widepow fixture=1 elements=1582 both_reject=1582 both_accept=0
+NV_PREP_ELEMENTS x15+multiproof+whir_y+widepow fixture=2 elements=1455 both_reject=1455 both_accept=0
+NV_PREP_ELEMENTS gruen+derive+mask+k1 fixture=0 elements=2287 both_reject=2287 both_accept=0
+NV_PREP_ELEMENTS gruen+derive+mask+k1 fixture=1 elements=3541 both_reject=3541 both_accept=0
+NV_PREP_ELEMENTS gruen+derive+mask+k1 fixture=2 elements=3090 both_reject=3090 both_accept=0
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 83 filtered out; finished in 124.47s

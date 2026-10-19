@@ -1,0 +1,12 @@
+== B1, app table removed, Merkle 5 rows/level (prep lane figure)
+  final 295,741 B (whir 229,420 gkr 34,952 L=25 certified=True, final shape {'b': 7, 'k1': 1, 'k': 4, 'log_h': 20, 'lf': 7} q=[41, 38, 29, 23]) | pen (7, 18, 4, 2, 6) q=[44, 35, 27, 22] | prog 130,846 NvAir 263,261 (-0.4% to 2^18) SHA 975,872
+  final 296,117 B (whir 229,748 gkr 34,952 L=25 certified=True, final shape {'b': 7, 'k1': 1, 'k': 4, 'log_h': 20, 'lf': 7} q=[41, 38, 29, 23]) | pen (7, 18, 4, 1, 7) q=[44, 38, 29, 23] | prog 138,028 NvAir 274,258 (-4.6% to 2^18) SHA 979,456
+  final 297,245 B (whir 230,732 gkr 34,952 L=25 certified=True, final shape {'b': 7, 'k1': 1, 'k': 4, 'log_h': 20, 'lf': 7} q=[41, 38, 29, 23]) | pen (7, 18, 4, 2, 10) q=[44, 37, 28] | prog 226,320 NvAir 401,656 (-53.2% to 2^18) SHA 898,816
+== B1, app table removed, Merkle 4 rows/level (SibWS4 starts the node job)
+  final 293,197 B (whir 229,420 gkr 32,408 L=24 certified=True, final shape {'b': 7, 'k1': 1, 'k': 4, 'log_h': 20, 'lf': 7} q=[41, 38, 29, 23]) | pen (7, 18, 4, 2, 6) q=[44, 35, 27, 22] | prog 126,026 NvAir 256,031 (+2.3% to 2^18) SHA 975,872
+  final 296,117 B (whir 229,748 gkr 34,952 L=25 certified=True, final shape {'b': 7, 'k1': 1, 'k': 4, 'log_h': 20, 'lf': 7} q=[41, 38, 29, 23]) | pen (7, 18, 4, 1, 7) q=[44, 38, 29, 23] | prog 132,958 NvAir 266,653 (-1.7% to 2^18) SHA 979,456
+  final 296,869 B (whir 230,404 gkr 34,952 L=25 certified=True, final shape {'b': 7, 'k1': 1, 'k': 4, 'log_h': 20, 'lf': 7} q=[41, 38, 29, 23]) | pen (7, 18, 4, 2, 10) q=[44, 37, 28] | prog 221,836 NvAir 394,578 (-50.5% to 2^18) SHA 893,184
+== + app-binding role removed (NvAir 76 cols, 48 interactions/row)
+  final 293,101 B (whir 229,420 gkr 32,408 L=24 certified=True, final shape {'b': 7, 'k1': 1, 'k': 4, 'log_h': 20, 'lf': 7} q=[41, 38, 29, 23]) | pen (7, 18, 4, 2, 6) q=[44, 35, 27, 22] | prog 126,026 NvAir 256,031 (+2.3% to 2^18) SHA 975,872
+  final 296,021 B (whir 229,748 gkr 34,952 L=25 certified=True, final shape {'b': 7, 'k1': 1, 'k': 4, 'log_h': 20, 'lf': 7} q=[41, 38, 29, 23]) | pen (7, 18, 4, 1, 7) q=[44, 38, 29, 23] | prog 132,958 NvAir 266,653 (-1.7% to 2^18) SHA 979,456
+  final 296,773 B (whir 230,404 gkr 34,952 L=25 certified=True, final shape {'b': 7, 'k1': 1, 'k': 4, 'log_h': 20, 'lf': 7} q=[41, 38, 29, 23]) | pen (7, 18, 4, 2, 10) q=[44, 37, 28] | prog 221,836 NvAir 394,578 (-50.5% to 2^18) SHA 893,184

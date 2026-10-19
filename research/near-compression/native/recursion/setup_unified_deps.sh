@@ -19,7 +19,7 @@ if [ ! -d "$U/.git" ]; then
   cp -a "$B" "$U"; rm -rf "$U/target"
   git -C "$U" -c user.name=nearproof -c user.email=nearproof@localhost commit -q -a -m "nearproof base patch"
   git -C "$U" apply "$P"
-  git -C "$U" add -N .
+  git -C "$U" add -N .   # track new files so `git diff HEAD` reproduces the patch
 fi
 diff <(git -C "$U" diff HEAD -- crates | grep -v '^index ') <(grep -v '^index ' "$P") >/dev/null \
   || { echo "stark-backend-unified differs from patch" >&2; exit 1; }

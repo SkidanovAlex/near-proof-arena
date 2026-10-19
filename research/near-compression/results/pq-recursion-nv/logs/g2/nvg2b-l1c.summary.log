@@ -1,0 +1,50 @@
+NV_PHASE before_dag 1416
+NV_DAG air=0 nodes=21 rows_so_far=1466
+NV_PHASE after_dag 1479
+NV_PHASE after_stacking 1787
+NV_PHASE end 8788
+NV_PHASE before_dag 1416
+NV_DAG air=0 nodes=21 rows_so_far=1466
+NV_PHASE after_dag 1479
+NV_PHASE after_stacking 1787
+NV_PHASE end 8788
+NV_L1C C_L1 = setup commitment of the L1 program part
+NV_PHASE before_dag 16803
+NV_DAG air=0 nodes=4517 rows_so_far=22887
+NV_DAG air=1 nodes=5848 rows_so_far=30332
+NV_DAG air=3 nodes=32 rows_so_far=30877
+NV_DAG air=2 nodes=1234 rows_so_far=32191
+NV_PHASE after_dag 32273
+NV_PHASE after_stacking 35033
+NV_PHASE end 72412
+NV_L1C honest level 2 accepted (C_L1 check)
+NV_PHASE before_dag 16803
+NV_DAG air=0 nodes=4517 rows_so_far=22887
+NV_DAG air=1 nodes=5848 rows_so_far=30332
+NV_DAG air=3 nodes=32 rows_so_far=30877
+NV_DAG air=2 nodes=1234 rows_so_far=32191
+NV_PHASE after_dag 32273
+NV_PHASE after_stacking 35033
+NV_PHASE end 72412
+NV_STATEMENT L1 = L2 = statement digest ok
+NV_PHASE before_dag 16803
+NV_DAG air=0 nodes=4517 rows_so_far=22887
+NV_DAG air=1 nodes=5848 rows_so_far=30332
+NV_DAG air=3 nodes=32 rows_so_far=30877
+NV_DAG air=2 nodes=1234 rows_so_far=32191
+NV_PHASE after_dag 32273
+NV_PHASE after_stacking 35033
+NV_PHASE end 72412
+NV_TAMPER_REJECTED level-2 re-exposes a different statement digest
+NV_PHASE before_dag 16803
+NV_DAG air=0 nodes=4517 rows_so_far=22887
+NV_DAG air=1 nodes=5848 rows_so_far=30332
+NV_DAG air=3 nodes=32 rows_so_far=30877
+NV_DAG air=2 nodes=1234 rows_so_far=32191
+NV_PHASE after_dag 32273
+NV_PHASE after_stacking 35033
+NV_PHASE end 72412
+NV_TAMPER_REJECTED wrong C_L1 constant
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 82 filtered out; finished in 1214.49s
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 20:14.57
+	Maximum resident set size (kbytes): 17747844

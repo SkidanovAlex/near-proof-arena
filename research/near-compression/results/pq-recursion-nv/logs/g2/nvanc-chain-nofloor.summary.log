@@ -1,0 +1,20 @@
+NV_PHASE end 8788
+NV_G2 L1 program rows 8788 committed heights [262144, 65536, 128, 65536] cached root [18060828552501015637, 7692659926701311789, 62237679644
+NV_G2_ANCHOR L2: anchor level M = 1 (child bound by its root = C_M)
+NV_PHASE end 82736
+NV_G2 L2 program rows 82736 committed heights [262144, 1048576, 128, 65536] cached root [6247242529610767093, 9996435097468505553, 811169881
+NV_PHASE end 93677
+NV_G2_ANCHOR L3: anchor level M = 2 (child bound by its root = C_M)
+NV_PHASE end 93677
+NV_G2 L3 program rows 93678 committed heights [262144, 1048576, 128, 65536] cached root [9742442081633084284, 14061670881211549485, 99689651
+NV_PHASE end 94961
+NV_G2_ANCHOR L4: anchor level M = 3 (child bound by its root = C_M)
+NV_PHASE end 94961
+NV_G2 L4 program rows 94962 committed heights [262144, 1048576, 128, 65536] cached root [12689747750030173500, 13965249682895925840, 6578374
+NV_PHASE end 92038
+NV_G2_ANCHOR L5: anchor level M = 4 (child bound by its root = C_M)
+NV_PHASE end 92038
+NV_G2 L5 program rows 92038 committed heights [262144, 1048576, 128, 65536] cached root [17785519352925316108, 9269271955750825653, 19717015
+NV_PHASE end 93471
+NV_G2_ANCHOR L6: anchor level M = 5 (child bound by its root = C_M)
+NV_PHASE end 93471
