@@ -188,10 +188,25 @@ The Lean side, `Tape.lean`, now defines the **canonical TAPE** V_d must reconstr
   `canonKeys_count_le`, `canonMsgs_count_le` give uniqueness of every key and message;
 * `canonKey_mem` — every canonical message's key is in the canonical key list.
 
-**Not yet landed**: `tapeNet_canon : TapeNet off AP pub (tapeCanon AP pub)`, i.e. that the field
-sum of those rows on `off + b` and `m` is `netF AP pub b m`.  With the uniqueness lemmas above it
-is mechanical list work (`List.zip` + "the one matching key"); it is the remaining piece of P4's
-Lean side and does not bear on soundness, since `TapeNet` is already a hypothesis of `VdChecks`.
+`TapeCollapse.lean` adds the **selector collapse** (`sel_fsum_eq`): on a nodup key list, summing
+`cnt * sel` over paired keys picks the one matching key and gives `cnt`; every other key
+contributes `cnt * 0 = 0` regardless of the message guard.  Plus `canonKeys_nodup`,
+`canonMsgs_nodup` (from `count_eraseDups_le_one`).
+
+**Not yet landed**: `tapeNet_canon : TapeNet off AP pub (tapeCanon off AP pub)`, the final
+one-step assembly of the row contributions.  Two things surfaced while proving it, and both are
+worth recording:
+
+* **A definition fix.**  TAPE's keys must be on the **translated** buses (`off + bus`), because
+  `TapeNet` looks up `off + b`.  The first version of `canonKeys`/`canonMsgs` used raw
+  `pubMsgs` buses; that cannot satisfy `TapeNet` and would have been a real bug.  The fix is
+  written and type-checks, but I reverted `Tape.lean` to its committed form rather than land a
+  half-edited module; it belongs in the same commit as `tapeNet_canon`.
+* **One trap**: `m.take n = m` gives `m.length ≤ n`, not `n = m.length`; the message-match
+  guard is a prefix test, not an equality.  The selector collapse sidesteps it entirely (only the
+  row's own key has a nonzero selector), which is why that lemma is the one that closes.
+
+This does not bear on soundness: `TapeNet` is a hypothesis of `VdChecks`.
 
 ## 3. D1 [M]
 
@@ -265,7 +280,7 @@ reserved split.  The Lean side needs the D3α-style `runCall` fold over the D1 e
   `src/config.rs`), `setup.sh`, `run_demo.sh`.
 * `examples/np-udr-stark-v2/source/examples/statedump.rs` — the honest trace dump with the
   natural-height re-cut (a cargo example, so the shipped package is unchanged).
-* `zk-formal/ZkFormal/PQ/StatePort/{Swirl,Bridge,Bounds,D0a,D1}.lean`,
+* `zk-formal/ZkFormal/PQ/StatePort/{Swirl,Bridge,Bounds,D0a,D1,Tape,TapeCollapse,Tool}.lean`,
   `zk-formal/test/AuditPQStatePort.lean`.
 * `logs/` — the prove and tamper logs and the per-table height maps.
 
