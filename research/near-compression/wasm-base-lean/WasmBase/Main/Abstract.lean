@@ -17,8 +17,9 @@ namespace WasmBase
 open NearSpecV3.Wasm
 set_option linter.unusedSimpArgs false
 
-/-- STATE message `[pc, ts, S, halted]`. -/
-def stMsg (pc t S h : Nat) : List F := [(pc : F), (t : F), (S : F), (h : F)]
+/-- STATE message `[pc, ts, S, halted, sb, cid]`: `sb` is the current frame's stack base, `cid`
+the current activation id (0 = the entry frame). -/
+def stMsg (pc t S h sb cid : Nat) : List F := [(pc : F), (t : F), (S : F), (h : F), (sb : F), (cid : F)]
 
 /-- The level (timestamp) field of a STATE message. -/
 def lvl (m : List F) : F := m.getD 1 0
@@ -26,18 +27,22 @@ def lvl (m : List F) : F := m.getD 1 0
 def gasF (m : List F) : F := m.getD 2 0
 
 /-- What one active instruction row guarantees about the spec, given the spec state it is related
-to at the row's input STATE message and given that the messages it consumes are live. -/
+to at the row's input STATE message and given that the messages it consumes are live.  The frame
+environment `E` (stack base, activation id, caller frames, outer live messages) is universally
+quantified: a row lemma sees it only through `RelW` and the STATE message.  On a normal return
+(`hb = 1`) the live set is the final stack, the entry frame's locals (space 16) and an outer part `G`
+in other spaces. -/
 def RowSpec (X : Ctx) (inS outS : List F) (cons prod : List Msg) : Prop :=
-  ∀ (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat) (live : Msg → Prop),
-    RelW X s f tps tpl t pc S live → inS = stMsg pc t S 0 → (∀ x ∈ cons, live x) →
+  ∀ (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat) (live : Msg → Prop),
+    RelW X E s f tps tpl t pc S live → inS = stMsg pc t S 0 E.sb E.cid → (∀ x ∈ cons, live x) →
     t + 1 < ZkFormal.Algebra.P → S + X.ck.maxFee < ZkFormal.Algebra.P → X.g0 < 2 ^ 64 →
-    ∃ pc' fee hb, fee ≤ X.ck.maxFee ∧ hb ≤ 1 ∧ outS = stMsg pc' (t + 1) (S + fee) hb ∧
+    ∃ pc' fee hb sb' cid', fee ≤ X.ck.maxFee ∧ hb ≤ 1 ∧ outS = stMsg pc' (t + 1) (S + fee) hb sb' cid' ∧
       (X.R * (S + fee) ≤ X.g0 →
         (hb = 0 → ∃ s', step X.cfg X.p s = .cont s' ∧
-          Rel X s' (t + 1) pc' (S + fee) (stepLive live cons prod)) ∧
+          Rel X s' (t + 1) pc' (S + fee) sb' cid' (stepLive live cons prod)) ∧
         (hb = 1 → ∃ sN, step X.cfg X.p s = .fin sN ∧ sN.frames = [] ∧
-          X.R * (S + fee) + sN.gas.g = X.g0 ∧
-          ∀ x, stepLive live cons prod x ↔ x ∈ stackView sN.stack tps ∨ x ∈ localView f.locals tpl))
+          X.R * (S + fee) + sN.gas.g = X.g0 ∧ ∃ G : Msg → Prop, (∀ x, G x → x.space ≠ 0 ∧ x.space ≠ 16) ∧
+          ∀ x, stepLive live cons prod x ↔ x ∈ stackView sN.stack tps ∨ x ∈ localView 16 f.locals tpl ∨ G x))
 
 structure RowFacts (X : Ctx) (inS outS : List F) (cons prod : List Msg) : Prop where
   spec : RowSpec X inS outS cons prod
@@ -50,23 +55,23 @@ structure RowFacts (X : Ctx) (inS outS : List F) (cons prod : List Msg) : Prop w
 
 /-- `RowSpec` with a third outcome: the row traps (`halted = 2`), the spec step aborts. -/
 def RowSpec2 (X : Ctx) (inS outS : List F) (cons prod : List Msg) : Prop :=
-  ∀ (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat) (live : Msg → Prop),
-    RelW X s f tps tpl t pc S live → inS = stMsg pc t S 0 → (∀ x ∈ cons, live x) →
+  ∀ (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat) (live : Msg → Prop),
+    RelW X E s f tps tpl t pc S live → inS = stMsg pc t S 0 E.sb E.cid → (∀ x ∈ cons, live x) →
     t + 1 < ZkFormal.Algebra.P → S + X.ck.maxFee < ZkFormal.Algebra.P → X.g0 < 2 ^ 64 →
-    ∃ pc' fee hb, fee ≤ X.ck.maxFee ∧ hb ≤ 2 ∧ outS = stMsg pc' (t + 1) (S + fee) hb ∧
+    ∃ pc' fee hb sb' cid', fee ≤ X.ck.maxFee ∧ hb ≤ 2 ∧ outS = stMsg pc' (t + 1) (S + fee) hb sb' cid' ∧
       (X.R * (S + fee) ≤ X.g0 →
         (hb = 0 → ∃ s', step X.cfg X.p s = .cont s' ∧
-          Rel X s' (t + 1) pc' (S + fee) (stepLive live cons prod)) ∧
+          Rel X s' (t + 1) pc' (S + fee) sb' cid' (stepLive live cons prod)) ∧
         (hb = 1 → ∃ sN, step X.cfg X.p s = .fin sN ∧ sN.frames = [] ∧
-          X.R * (S + fee) + sN.gas.g = X.g0 ∧
-          ∀ x, stepLive live cons prod x ↔ x ∈ stackView sN.stack tps ∨ x ∈ localView f.locals tpl) ∧
+          X.R * (S + fee) + sN.gas.g = X.g0 ∧ ∃ G : Msg → Prop, (∀ x, G x → x.space ≠ 0 ∧ x.space ≠ 16) ∧
+          ∀ x, stepLive live cons prod x ↔ x ∈ stackView sN.stack tps ∨ x ∈ localView 16 f.locals tpl ∨ G x) ∧
         (hb = 2 → ∃ sN e, step X.cfg X.p s = .abort sN e ∧ X.R * (S + fee) + sN.gas.g = X.g0))
 
 theorem RowSpec.two {X : Ctx} {inS outS : List F} {cons prod : List Msg} (h : RowSpec X inS outS cons prod) :
     RowSpec2 X inS outS cons prod := by
-  intro s f tps tpl t pc S live R hin hl h1 h2 h3
-  obtain ⟨pc', fee, hb, hfl, hbl, hout, hsp⟩ := h s f tps tpl t pc S live R hin hl h1 h2 h3
-  exact ⟨pc', fee, hb, hfl, by omega, hout, fun hg => ⟨(hsp hg).1, (hsp hg).2, fun h2 => absurd h2 (by omega)⟩⟩
+  intro E s f tps tpl t pc S live R hin hl h1 h2 h3
+  obtain ⟨pc', fee, hb, sb', cid', hfl, hbl, hout, hsp⟩ := h E s f tps tpl t pc S live R hin hl h1 h2 h3
+  exact ⟨pc', fee, hb, sb', cid', hfl, by omega, hout, fun hg => ⟨(hsp hg).1, (hsp hg).2, fun h2 => absurd h2 (by omega)⟩⟩
 
 structure RowFacts2 (X : Ctx) (inS outS : List F) (cons prod : List Msg) : Prop where
   spec : RowSpec2 X inS outS cons prod
@@ -128,8 +133,9 @@ theorem run_cont {cfg : NearCfg} {p : Prepared} {s s' : St} (h : step cfg p s = 
     run cfg p (n + 1) s = run cfg p n s' := by
   simp only [run, h]
 
-theorem stMsg_inj {pc t S h pc' t' S' h' : Nat} (e : stMsg pc t S h = stMsg pc' t' S' h') :
-    (pc : F) = pc' ∧ (t : F) = t' ∧ (S : F) = S' ∧ (h : F) = h' := by
+theorem stMsg_inj {pc t S h sb cid pc' t' S' h' sb' cid' : Nat}
+    (e : stMsg pc t S h sb cid = stMsg pc' t' S' h' sb' cid') :
+    (pc : F) = pc' ∧ (t : F) = t' ∧ (S : F) = S' ∧ (h : F) = h' ∧ (sb : F) = sb' ∧ (cid : F) = cid' := by
   simp only [stMsg, List.cons.injEq, and_true] at e
   exact e
 
@@ -157,17 +163,19 @@ variable (X : Ctx) {ρ : Type} [DecidableEq ρ] (act : List ρ) (inS outS : ρ �
 
 theorem exec_of_rows (st : Nat) (hst12 : st = 1 ∨ st = 2)
     (hrows : ∀ r ∈ act, RowFacts2 X (inS r) (outS r) (cons r) (prod r))
-    (hst : (stMsg 0 1 0 0 :: act.map outS).Perm ([pcf, N, Sf, (st : F)] :: act.map inS))
+    (sbf cidf : F)
+    (hst : (stMsg 0 1 0 0 0 0 :: act.map outS).Perm ([pcf, N, Sf, (st : F), sbf, cidf] :: act.map inS))
     (hch : (init ++ act.flatMap prod).Perm (fin ++ act.flatMap cons))
     (hinit : init.Nodup) (hinitTp : ∀ x ∈ init, x.tp = 0)
     (hlen : act.length < 2 ^ 28)
     (hfee : (act.length + 1) * (X.ck.maxFee + 1) < ZkFormal.Algebra.P)
     (hgas : X.R * Sf.toNat ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
-    {s0 : St} {f0 : Frame} (h0 : RelW X s0 f0 (fun _ => 0) (fun _ => 0) 1 0 0 (· ∈ init)) :
+    {E0 : Env} (hE0 : E0.sb = 0 ∧ E0.cid = 0)
+    {s0 : St} {f0 : Frame} (h0 : RelW X E0 s0 f0 (fun _ => 0) (fun _ => 0) 1 0 0 (· ∈ init)) :
     act.length + 1 = N.toNat ∧
     (st = 1 → ∃ sN tps tpl locs, run X.cfg X.p act.length s0 = .fin sN ∧ sN.frames = [] ∧
-      X.R * Sf.toNat + sN.gas.g = X.g0 ∧
-      ∀ x, x ∈ fin ↔ x ∈ stackView sN.stack tps ∨ x ∈ localView locs tpl) ∧
+      X.R * Sf.toNat + sN.gas.g = X.g0 ∧ ∃ G : Msg → Prop, (∀ x, G x → x.space ≠ 0 ∧ x.space ≠ 16) ∧
+      ∀ x, x ∈ fin ↔ x ∈ stackView sN.stack tps ∨ x ∈ localView 16 locs tpl ∨ G x) ∧
     (st = 2 → ∃ sN e, run X.cfg X.p act.length s0 = .abort sN e ∧ X.R * Sf.toNat + sN.gas.g = X.g0) := by
   have hP' := P_val
   -- (A) the chain
@@ -178,7 +186,7 @@ theorem exec_of_rows (st : Nat) (hst12 : st = 1 ∨ st = 2)
     intro e he
     obtain ⟨r, hr, rfl⟩ := List.mem_map.mp he
     exact (hrows r hr).tsOut
-  obtain ⟨es, hes, hpath⟩ := chain (act.map g) (stMsg 0 1 0 0) [pcf, N, Sf, (st : F)] lvl
+  obtain ⟨es, hes, hpath⟩ := chain (act.map g) (stMsg 0 1 0 0 0 0) [pcf, N, Sf, (st : F), sbf, cidf] lvl
     (by rw [hE1, hE2]; exact hst) hstepE (by simp; omega)
   obtain ⟨rs, hrs, rfl⟩ := perm_map_lift g es act hes
   have hlenrs : rs.length = act.length := hrs.length_eq
@@ -188,7 +196,7 @@ theorem exec_of_rows (st : Nat) (hst12 : st = 1 ∨ st = 2)
   obtain ⟨lk, lfin⟩ := path_levels lvl (rs.map g) _ _ hpath (fun e he => hstepE e (hes.subset he))
   obtain ⟨link, ends, _⟩ := path_link (rs.map g) _ _ hpath
   simp only [List.length_map, List.getElem_map] at lk lfin link ends
-  have l0 : lvl (stMsg 0 1 0 0) = 1 := rfl
+  have l0 : lvl (stMsg 0 1 0 0 0 0) = 1 := rfl
   have lvlk : ∀ k (hk : k < rs.length), lvl (inS rs[k]) = ((k + 1 : Nat) : F) := by
     intro k hk; rw [lk k hk, l0, Lean.Grind.Semiring.natCast_add, cast_one]; grind
   have hpos : 0 < rs.length := by
@@ -198,11 +206,11 @@ theorem exec_of_rows (st : Nat) (hst12 : st = 1 ∨ st = 2)
     rcases hst12 with rfl | rfl <;> exact absurd this.2.2.2.1 (by decide)
   have hN : act.length + 1 = N.toNat := by
     have : N = ((rs.length + 1 : Nat) : F) := by
-      have e : lvl [pcf, N, Sf, (st : F)] = N := rfl
+      have e : lvl [pcf, N, Sf, (st : F), sbf, cidf] = N := rfl
       rw [← e, lfin, l0, Lean.Grind.Semiring.natCast_add, cast_one]; grind
     rw [this, Fp.toNat_cast_of_lt (by omega), hlenrs]
   -- position messages: `pos k` is the STATE message entering step `k` (the final one at `k = n`)
-  let pos : Nat → List F := fun k => if h : k < rs.length then inS rs[k] else [pcf, N, Sf, (st : F)]
+  let pos : Nat → List F := fun k => if h : k < rs.length then inS rs[k] else [pcf, N, Sf, (st : F), sbf, cidf]
   have pos_in : ∀ k (hk : k < rs.length), pos k = inS rs[k] := fun k hk => by simp [pos, hk]
   have pos_out : ∀ k (hk : k < rs.length), pos (k + 1) = outS rs[k] := by
     intro k hk
@@ -211,7 +219,7 @@ theorem exec_of_rows (st : Nat) (hst12 : st = 1 ∨ st = 2)
     · have : k = rs.length - 1 := by omega
       subst this
       simp only [pos, h1, dite_false]; exact (ends hpos).2.symm
-  have pos0 : pos 0 = stMsg 0 1 0 0 := by rw [pos_in 0 hpos]; exact (ends hpos).1
+  have pos0 : pos 0 = stMsg 0 1 0 0 0 0 := by rw [pos_in 0 hpos]; exact (ends hpos).1
   -- gas units along the path: no wrap-around, monotone up to `Sf`
   have gasB : ∀ k, k ≤ rs.length → (gasF (pos k)).toNat ≤ k * X.ck.maxFee ∧
       ∀ j, k ≤ j → j ≤ rs.length → (gasF (pos k)).toNat ≤ (gasF (pos j)).toNat := by
@@ -249,7 +257,7 @@ theorem exec_of_rows (st : Nat) (hst12 : st = 1 ∨ st = 2)
         obtain ⟨fee, hfl, he⟩ := step1 j (by omega) (bnd j (by omega))
         rw [he]
         omega
-  have posN : pos rs.length = [pcf, N, Sf, (st : F)] := by simp [pos]
+  have posN : pos rs.length = [pcf, N, Sf, (st : F), sbf, cidf] := by simp [pos]
   have gasN : (gasF (pos rs.length)).toNat = Sf.toNat := by rw [posN]; rfl
   -- (B) the channel
   let prodL := rs.map prod
@@ -295,21 +303,23 @@ theorem exec_of_rows (st : Nat) (hst12 : st = 1 ∨ st = 2)
       have := natEq he (by omega) (by omega)
       omega
   -- (C) induction along the path
-  have IH : ∀ k (hk : k < rs.length), ∃ s pc, (∀ m, run X.cfg X.p (m + k) s0 = run X.cfg X.p m s) ∧
-      inS rs[k] = stMsg pc (k + 1) (gasF (pos k)).toNat 0 ∧
-      Rel X s (k + 1) pc (gasF (pos k)).toNat (live init prodL consL k) := by
+  have IH : ∀ k (hk : k < rs.length), ∃ s pc sb cid, (∀ m, run X.cfg X.p (m + k) s0 = run X.cfg X.p m s) ∧
+      inS rs[k] = stMsg pc (k + 1) (gasF (pos k)).toNat 0 sb cid ∧
+      Rel X s (k + 1) pc (gasF (pos k)).toNat sb cid (live init prodL consL k) := by
     intro k
     induction k with
     | zero =>
       intro hk
-      refine ⟨s0, 0, fun m => rfl, ?_, ?_⟩
+      refine ⟨s0, 0, 0, 0, fun m => rfl, ?_, ?_⟩
       · rw [← pos_in 0 hk, pos0]; rfl
       · rw [pos0]
-        refine Rel_of_RelW_congr h0 ?_
-        funext x; simp [live, prodBefore, consBefore]
+        have h0' := Rel_of_RelW_congr h0 (live' := live init prodL consL 0)
+          (by funext x; simp [live, prodBefore, consBefore])
+        rw [hE0.1, hE0.2] at h0'
+        exact h0'
     | succ k ih =>
       intro hk
-      obtain ⟨s, pc, hrun, hin, f, tps, tpl, R⟩ := ih (by omega)
+      obtain ⟨s, pc, sb, cid, hrun, hin, E, f, tps, tpl, rfl, rfl, R⟩ := ih (by omega)
       have gb := (gasB k (by omega)).1
       have hm : (k + 1) * (X.ck.maxFee + 1) ≤ (act.length + 1) * (X.ck.maxFee + 1) := Nat.mul_le_mul_right _ (by omega)
       have hS : (gasF (pos k)).toNat + X.ck.maxFee < ZkFormal.Algebra.P := by
@@ -318,9 +328,9 @@ theorem exec_of_rows (st : Nat) (hst12 : st = 1 ∨ st = 2)
         omega
       have hlive : ∀ x ∈ cons rs[k], live init prodL consL k x := fun x hx =>
         C.consumed_live (k := k) (by simp [consL]; omega) (by simpa [consL] using hx)
-      obtain ⟨pc', fee, hb, hfl, hbl, hout, hspec⟩ :=
-        (RF k (by omega)).spec s f tps tpl (k + 1) pc _ _ R hin hlive (by omega) hS hg64
-      have hout' : pos (k + 1) = stMsg pc' (k + 1 + 1) ((gasF (pos k)).toNat + fee) hb := by
+      obtain ⟨pc', fee, hb, sb', cid', hfl, hbl, hout, hspec⟩ :=
+        (RF k (by omega)).spec E s f tps tpl (k + 1) pc _ _ R hin hlive (by omega) hS hg64
+      have hout' : pos (k + 1) = stMsg pc' (k + 1 + 1) ((gasF (pos k)).toNat + fee) hb sb' cid' := by
         rw [pos_out k (by omega), hout]
       have hg1 : (gasF (pos (k + 1))).toNat = (gasF (pos k)).toNat + fee := by
         rw [hout']; simp only [gasF, stMsg, List.getD_cons_succ, List.getD_cons_zero]
@@ -334,19 +344,19 @@ theorem exec_of_rows (st : Nat) (hst12 : st = 1 ∨ st = 2)
         rw [hout'] at h3
         simp only [stMsg, List.getD_cons_succ, List.getD_cons_zero] at h3
         exact natEq (h3.trans rfl) (by omega) (by decide)
-      obtain ⟨s', hs', f', tps', tpl', R'⟩ := (hspec hgas').1 hb0
-      refine ⟨s', pc', ?_, ?_, ?_⟩
+      obtain ⟨s', hs', E', f', tps', tpl', hsb', hcid', R'⟩ := (hspec hgas').1 hb0
+      refine ⟨s', pc', sb', cid', ?_, ?_, ?_⟩
       · intro m
         rw [show m + (k + 1) = (m + 1) + k by omega, hrun, run_cont hs']
       · rw [hg1, ← pos_in (k + 1) hk, hout', hb0]
-      · rw [hg1]
+      · rw [hg1, ← hsb', ← hcid']
         refine Rel_of_RelW_congr R' ?_
         funext x
         have := (C.live_succ (k := k) (by simp [consL]; omega) x).symm
         simp only [consL, prodL, List.getElem_map] at this
         exact propext this
   -- (D) the last step halts
-  obtain ⟨s, pc, hrun, hin, f, tps, tpl, R⟩ := IH (rs.length - 1) (by omega)
+  obtain ⟨s, pc, sb, cid, hrun, hin, E, f, tps, tpl, rfl, rfl, R⟩ := IH (rs.length - 1) (by omega)
   have gb := (gasB (rs.length - 1) (by omega)).1
   have hS : (gasF (pos (rs.length - 1))).toNat + X.ck.maxFee < ZkFormal.Algebra.P := by
     have : (rs.length - 1) * X.ck.maxFee + X.ck.maxFee ≤ rs.length * (X.ck.maxFee + 1) := by
@@ -357,15 +367,15 @@ theorem exec_of_rows (st : Nat) (hst12 : st = 1 ∨ st = 2)
     omega
   have hlive : ∀ x ∈ cons rs[rs.length - 1], live init prodL consL (rs.length - 1) x := fun x hx =>
     C.consumed_live (k := rs.length - 1) (by simp [consL]; omega) (by simpa [consL] using hx)
-  obtain ⟨pc', fee, hb, hfl, hbl, hout, hspec⟩ :=
-    (RF (rs.length - 1) (by omega)).spec s f tps tpl (rs.length - 1 + 1) pc _ _ R hin hlive (by omega) hS hg64
-  have hout' : pos rs.length = stMsg pc' (rs.length - 1 + 1 + 1) ((gasF (pos (rs.length - 1))).toNat + fee) hb := by
+  obtain ⟨pc', fee, hb, sb', cid', hfl, hbl, hout, hspec⟩ :=
+    (RF (rs.length - 1) (by omega)).spec E s f tps tpl (rs.length - 1 + 1) pc _ _ R hin hlive (by omega) hS hg64
+  have hout' : pos rs.length = stMsg pc' (rs.length - 1 + 1 + 1) ((gasF (pos (rs.length - 1))).toNat + fee) hb sb' cid' := by
     rw [show rs.length = rs.length - 1 + 1 by omega, pos_out (rs.length - 1) (by omega), hout]
     simp only [show rs.length - 1 + 1 - 1 = rs.length - 1 by omega]
   rw [posN] at hout'
   have e := hout'.symm
   simp only [stMsg, List.cons.injEq, and_true] at e
-  obtain ⟨-, -, eS, eH⟩ := e
+  obtain ⟨-, -, eS, eH, -⟩ := e
   have hbP : hb < ZkFormal.Algebra.P := Nat.lt_of_le_of_lt hbl (by rw [hP']; decide)
   have hstP : st < ZkFormal.Algebra.P := by rcases hst12 with rfl | rfl <;> rw [hP'] <;> decide
   have hbst : hb = st := by
@@ -379,8 +389,8 @@ theorem exec_of_rows (st : Nat) (hst12 : st = 1 ∨ st = 2)
     simp only [run, hr]
     try (cases r <;> simp_all)
   refine ⟨hN, fun h1 => ?_, fun h2 => ?_⟩
-  · obtain ⟨sN, hsN, hfr, hg, hview⟩ := (hspec hgas').2.1 (by omega)
-    refine ⟨sN, tps, tpl, f.locals, hrunlen _ hsN (by simp), hfr, by rw [← hSf]; exact hg, ?_⟩
+  · obtain ⟨sN, hsN, hfr, hg, G, hG, hview⟩ := (hspec hgas').2.1 (by omega)
+    refine ⟨sN, tps, tpl, f.locals, hrunlen _ hsN (by simp), hfr, by rw [← hSf]; exact hg, G, hG, ?_⟩
     intro x
     rw [← hview x, ← C.live_final x]
     have := C.live_succ (k := rs.length - 1) (by simp [consL]; omega) x

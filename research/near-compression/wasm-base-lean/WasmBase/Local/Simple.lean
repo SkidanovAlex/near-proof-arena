@@ -76,16 +76,17 @@ theorem ctrl_sound (c : Nat → Nat) (rw : Row) (hP : ∀ i, c i < P)
     (c Ctrl.fJif = 0 ∨ c Ctrl.fJif = 1) ∧ (c Ctrl.fHalt = 0 ∨ c Ctrl.fHalt = 1) ∧
     (c Ctrl.fHif = 0 ∨ c Ctrl.fHif = 1) ∧
     (c Ctrl.fNext + c Ctrl.fJump + c Ctrl.fJif + c Ctrl.fHalt + c Ctrl.fHif ≤ 1) ∧
-    Ctrl.nz.eval (natRow c rw) = ((if c Ctrl.c + c (Ctrl.c + 1) = 0 then 0 else 1 : Nat) : F) := by
+    Ctrl.nz.eval (natRow c rw) = ((if c Ctrl.c + c (Ctrl.c + 1) = 0 then 0 else 1 : Nat) : F) ∧
+    (c Ctrl.fHalt + c Ctrl.fHif = 0 ∨ c Ctrl.kCid = 0) := by
   simp only [Ctrl.constraints, List.mem_cons, List.mem_nil_iff, or_false, forall_eq_or_imp, forall_eq,
     Chips.bool, v, Ctrl.act, Ctrl.nz, Expr.eval_add', Expr.eval_sub', Expr.eval_mul', Expr.eval_ofNat',
     Expr.eval_col, natRow] at hc
-  obtain ⟨bN, bJ, bI, bH, bF, bAct, hnz⟩ := hc
+  obtain ⟨bN, bJ, bI, bH, bF, bAct, hnz, hcid⟩ := hc
   have hz : c Ctrl.c + c (Ctrl.c + 1) < P := by have := P_val; omega
   have hn := nz_val (inv := c Ctrl.inv) hz (by simpa only [Lean.Grind.Semiring.natCast_add] using hnz)
   have n := bool_nat (hP _) bN; have j := bool_nat (hP _) bJ; have i := bool_nat (hP _) bI
   have h := bool_nat (hP _) bH; have f := bool_nat (hP _) bF
-  refine ⟨n, j, i, h, f, ?_, ?_⟩
+  refine ⟨n, j, i, h, f, ?_, ?_, ?_⟩
   · have hs : c Ctrl.fNext + c Ctrl.fJump + c Ctrl.fJif + c Ctrl.fHalt + c Ctrl.fHif < P := by
       have := P_val; omega
     have := bool_nat hs (by simpa only [Lean.Grind.Semiring.natCast_add] using bAct)
@@ -93,6 +94,8 @@ theorem ctrl_sound (c : Nat → Nat) (rw : Row) (hP : ∀ i, c i < P)
   · simp only [Ctrl.nz, v, Expr.eval_add', Expr.eval_mul', Expr.eval_col, natRow]
     rw [show ((c Ctrl.c : F) + (c (Ctrl.c + 1) : F)) = ((c Ctrl.c + c (Ctrl.c + 1) : Nat) : F) by
       simp only [Lean.Grind.Semiring.natCast_add], hn]
+  · have hs : c Ctrl.fHalt + c Ctrl.fHif < P := by have := P_val; omega
+    exact zero_of_mul_nat hs (hP _) (by simpa only [Lean.Grind.Semiring.natCast_add] using hcid)
 
 theorem local_sound (c : Nat → Nat) (rw : Row) (hP : ∀ i, c i < P)
     (hc : ∀ e ∈ Local.constraints, e.eval (natRow c rw) = 0) :
@@ -100,17 +103,24 @@ theorem local_sound (c : Nat → Nat) (rw : Row) (hP : ∀ i, c i < P)
     (c Local.fTee = 0 ∨ c Local.fTee = 1) ∧ c Local.fGet + c Local.fSet + c Local.fTee ≤ 1 ∧
     (c Local.tagL = 0 ∨ c Local.tagL = 1) ∧ (c Local.tagV = 0 ∨ c Local.tagV = 1) ∧
     (c Local.tagL = 0 → c (Local.L + 2) = 0 ∧ c (Local.L + 3) = 0) ∧
-    (c Local.tagV = 0 → c (Local.V + 2) = 0 ∧ c (Local.V + 3) = 0) := by
+    (c Local.tagV = 0 → c (Local.V + 2) = 0 ∧ c (Local.V + 3) = 0) ∧
+    (c Local.fGet + c Local.fSet + c Local.fTee = 1 → ((16 : Nat) : F) + ((c Local.kCid : Nat) : F) ≠ 0) := by
   simp only [Local.constraints, List.mem_cons, List.mem_nil_iff, or_false, forall_eq_or_imp, forall_eq,
     Chips.bool, v, Local.act, Expr.eval_add', Expr.eval_sub', Expr.eval_mul', Expr.eval_ofNat',
     Expr.eval_col, natRow] at hc
-  obtain ⟨bG, bS, bT, bAct, bL, bV, zL2, zL3, zV2, zV3⟩ := hc
+  obtain ⟨bG, bS, bT, bAct, bL, bV, zL2, zL3, zV2, zV3, hInv⟩ := hc
   have g := bool_nat (hP _) bG; have s := bool_nat (hP _) bS; have t := bool_nat (hP _) bT
-  refine ⟨g, s, t, ?_, bool_nat (hP _) bL, bool_nat (hP _) bV, fun h0 => ?_, fun h0 => ?_⟩
+  refine ⟨g, s, t, ?_, bool_nat (hP _) bL, bool_nat (hP _) bV, fun h0 => ?_, fun h0 => ?_, fun h1 => ?_⟩
   · have hs : c Local.fGet + c Local.fSet + c Local.fTee < P := by have := P_val; omega
     have := bool_nat hs (by simpa only [Lean.Grind.Semiring.natCast_add] using bAct)
     omega
   · simp only [h0] at zL2 zL3; exact ⟨zero_of_sel0 (hP _) zL2, zero_of_sel0 (hP _) zL3⟩
   · simp only [h0] at zV2 zV3; exact ⟨zero_of_sel0 (hP _) zV2, zero_of_sel0 (hP _) zV3⟩
+  · intro hz
+    have e1 : ((c Local.fGet : Nat) : F) + ((c Local.fSet : Nat) : F) + ((c Local.fTee : Nat) : F) = ((1 : Nat) : F) := by
+      rw [← Lean.Grind.Semiring.natCast_add, ← Lean.Grind.Semiring.natCast_add, h1]
+    have : ((16 : Nat) : F) + ((c Local.kCid : Nat) : F) = ((16 : Nat) : F) + ((c Local.kCid : Nat) : F) := rfl
+    rw [e1, hz] at hInv
+    exact absurd (show ((1 : Nat) : F) = ((0 : Nat) : F) by grind) (by decide)
 
 end WasmBase.Local

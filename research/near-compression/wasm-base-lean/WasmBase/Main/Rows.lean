@@ -147,6 +147,21 @@ theorem toNat_cast_sub {h k : Nat} (hk : k ≤ h) (hh : h < ZkFormal.Algebra.P) 
     rw [e]; grind
   rw [this, Fp.toNat_cast_of_lt (by omega)]
 
+/-- A stack slot `sb + h − k` of the AIR (field arithmetic) is the spec slot `size − k`. -/
+theorem slot_toNat {a b k sb sz : Nat} (ha : a = sb) (hb : b = sz - sb) (hle : sb ≤ sz) (hk : k ≤ sz - sb)
+    (hsz : sz < ZkFormal.Algebra.P) :
+    ((((a : Nat) : F) + ((b : Nat) : F)) - ((k : Nat) : F)).toNat = sz - k := by
+  subst ha hb
+  rw [← Lean.Grind.Semiring.natCast_add, toNat_cast_sub (by omega) (by omega)]
+  omega
+
+theorem slot_toNat0 {a b sb sz : Nat} (ha : a = sb) (hb : b = sz - sb) (hle : sb ≤ sz)
+    (hsz : sz < ZkFormal.Algebra.P) :
+    ((((a : Nat) : F) + ((b : Nat) : F))).toNat = sz := by
+  subst ha hb
+  rw [← Lean.Grind.Semiring.natCast_add, Fp.toNat_cast_of_lt (by omega)]
+  omega
+
 theorem cell_cast (tr : Trace) (t r i : Nat) : tr.cell t r i = ((rowNat tr t r i : Nat) : F) := by
   simp only [rowNat, Fp.cast_toNat]
 
@@ -194,8 +209,9 @@ theorem fetch_pc {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (_hpub
   obtain ⟨op, x0, x1, x2, x3, hre, -⟩ := recordOf_spec hrec
   exact ⟨j, hjc, by rw [hm, hre]; rfl⟩
 
-theorem stMsg_cons {a b c d : F} {pc t S h : Nat} (e : [a, b, c, d] = stMsg pc t S h) :
-    a = ((pc : Nat) : F) ∧ b = ((t : Nat) : F) ∧ c = ((S : Nat) : F) ∧ d = ((h : Nat) : F) := by
+theorem stMsg_cons {a b c d e1 e2 : F} {pc t S h sb cid : Nat} (e : [a, b, c, d, e1, e2] = stMsg pc t S h sb cid) :
+    a = ((pc : Nat) : F) ∧ b = ((t : Nat) : F) ∧ c = ((S : Nat) : F) ∧ d = ((h : Nat) : F) ∧
+      e1 = ((sb : Nat) : F) ∧ e2 = ((cid : Nat) : F) := by
   simp only [stMsg, List.cons.injEq, and_true] at e; exact e
 
 theorem decMsg_cast (a0 a1 a2 a3 a4 a5 a6 a7 : Nat) (h0 : a0 < ZkFormal.Algebra.P) (h1 : a1 < ZkFormal.Algebra.P)

@@ -359,7 +359,8 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
         ("SHIFT", "kb0"), ("CMP", "d0"), ("CMP", "br0"), ("CMP", "inv"), ("CONST", "imm0"), ("LOCAL", "L0"),
         ("CTRL", "tgt"), ("STACK", "V1_0"), ("STACK", "A0"), ("ADD", "ta"), ("ADD", "h"), ("ADD", "fee"), ("CMP", "S"),
         ("DIV", "Q0"), ("DIV", "R0"), ("DIV", "tz"), ("DIV", "tov"), ("DIV", "res0"), ("DIV", "cy0"), ("DIV", "hbA"),
-        ("DRAIN", "v0"), ("DRAIN", "act")] {
+        ("DRAIN", "v0"), ("DRAIN", "act"), ("ADD", "fr_sb"), ("ADD", "fr_cid"), ("LOCAL", "fr_cid"),
+        ("LOCAL", "inv_sp"), ("CTRL", "fr_cid"), ("BOUNDARY", "sbf"), ("BOUNDARY", "cidf")] {
         let t = tb(name);
         if g.rows_per_table[t].1 == 0 {
             continue;

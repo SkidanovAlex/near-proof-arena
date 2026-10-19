@@ -34,20 +34,22 @@ theorem const_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have cnt : (Expr.eval (tr.row pub 6 r) (v Const.act)).toNat = 1 := by
     simp only [v, Expr.eval_col, Trace.row, Const.act]; exact a1
   have hIn : rowIn Const.table tr pub 6 r =
-      [((rowNat tr 6 r 0 : Nat) : F), ((rowNat tr 6 r 1 : Nat) : F), ((rowNat tr 6 r 2 : Nat) : F), ((0 : Nat) : F)] := by
+      [((rowNat tr 6 r 0 : Nat) : F), ((rowNat tr 6 r 1 : Nat) : F), ((rowNat tr 6 r 2 : Nat) : F), ((0 : Nat) : F),
+        ((rowNat tr 6 r 11 : Nat) : F), ((rowNat tr 6 r 12 : Nat) : F)] := by
     simp only [rowIn, Const.table, Const.inters, stdState, stateIn, List.cons_append, List.getD_cons_zero,
-      List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_ofNat', cell_cast, Trace.row, cPc, cTs, cS]
+      List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_ofNat', cell_cast, Trace.row, Const.kSb, Const.kCid, cPc, cTs, cS]
   have hOut : rowOut Const.table tr pub 6 r =
       [((rowNat tr 6 r 0 : Nat) : F) + ((1 : Nat) : F), ((rowNat tr 6 r 1 : Nat) : F) + ((1 : Nat) : F),
-        ((rowNat tr 6 r 2 : Nat) : F) + ((rowNat tr 6 r 4 : Nat) : F), ((0 : Nat) : F)] := by
+        ((rowNat tr 6 r 2 : Nat) : F) + ((rowNat tr 6 r 4 : Nat) : F), ((0 : Nat) : F),
+        ((rowNat tr 6 r 11 : Nat) : F), ((rowNat tr 6 r 12 : Nat) : F)] := by
     simp only [rowOut, Const.table, Const.inters, stdState, stateOut, List.cons_append, List.getD_cons_succ,
       List.getD_cons_zero, List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_add', Expr.eval_ofNat',
-      cell_cast, Trace.row, cPc, cTs, cS, cFee]
+      cell_cast, Trace.row, Const.kSb, Const.kCid, cPc, cTs, cS, cFee]
   have hCons : rowCons Const.table tr pub 6 r = [] := by
     rw [rowCons, rowMsgs_eq]
     simp [Const.table, Const.inters, stdState, stateIn, stateOut, fetch, stkSend, chSend, busState, busFetch, busStk]
   have hProd : rowProd Const.table tr pub 6 r =
-      [⟨0, rowNat tr 6 r 3, rowNat tr 6 r 6, rowNat tr 6 r 7, rowNat tr 6 r 8, rowNat tr 6 r 9, rowNat tr 6 r 10,
+      [⟨0, (((rowNat tr 6 r 11 : Nat) : F) + ((rowNat tr 6 r 3 : Nat) : F)).toNat, rowNat tr 6 r 6, rowNat tr 6 r 7, rowNat tr 6 r 8, rowNat tr 6 r 9, rowNat tr 6 r 10,
         rowNat tr 6 r 1⟩] := by
     rw [rowProd, rowMsgs_eq]
     simp only [Const.table, Const.inters, stdState, stateIn, stateOut, fetch, stkSend, chSend, List.cons_append,
@@ -56,10 +58,10 @@ theorem const_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       decide_false, Bool.false_eq_true, ite_false, true_and, decide_true, ite_true, List.filterMap_cons,
       List.filterMap_nil, cnt, List.map_cons, List.map_nil]
     simp only [limbsOf, List.range, List.range.loop, List.map_cons, List.map_nil, List.cons_append,
-      List.nil_append, v, Expr.eval_col, Expr.eval_ofNat', cell_cast, Trace.row, cH, cTs, Const.is64, Const.imm,
-      Nat.reduceAdd]
-    rw [show ((0 : Nat) : F) = ((0 : Nat) : F) from rfl,
-      decMsg_cast _ _ _ _ _ _ _ _ (by omega) (hcP _) (hcP _) (hcP _) (hcP _) (hcP _) (hcP _) (hcP _)]
+      List.nil_append, v, Expr.eval_col, Expr.eval_add', Expr.eval_ofNat', cell_cast, Trace.row, Const.kSb, Const.kCid, cH, cTs,
+      Const.is64, Const.imm, Nat.reduceAdd]
+    simp only [decMsg, List.getD_cons_zero, List.getD_cons_succ, Fp.toNat_cast_of_lt (hcP _),
+      Fp.toNat_cast_of_lt (show (0 : Nat) < P by omega)]
   -- the FETCH query
   have hfetch := hocc (fetch (v cPc) Const.op (v cH) (v cFee) (limbsOf Const.imm) (v Const.act))
     (by simp [Const.inters, stdState])
@@ -71,7 +73,7 @@ theorem const_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   obtain ⟨op, x0, x1, x2, x3, hre, hcase⟩ := recordOf_spec hrc
   rw [hre] at hm
   simp only [List.cons_append, List.nil_append, List.map_cons, List.map_nil, limbsOf, List.range,
-    List.range.loop, v, Expr.eval_col, Expr.eval_add', Expr.eval_mul', Expr.eval_ofNat', cell_cast, Trace.row,
+    List.range.loop, v, Expr.eval_col, Expr.eval_add', Expr.eval_mul', Expr.eval_ofNat', cell_cast, Trace.row, Const.kSb, Const.kCid,
     cPc, cH, cFee, Const.op, Const.is64, Const.imm, Nat.reduceAdd, List.cons.injEq, and_true] at hm
   obtain ⟨e0, eop, eh, efee, ex0, ex1, ex2, ex3⟩ := hm
   have fee16 := feeUnits_lt hfee
@@ -83,14 +85,18 @@ theorem const_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   · rw [hProd, hIn]; simp only [List.mem_cons, List.mem_nil_iff, or_false, forall_eq, lvl,
       List.getD_cons_succ, List.getD_cons_zero]; exact ⟨hcP _, trivial⟩
   -- the spec step
-  intro s f tps tpl t pc S live R hin _ ht1 hS hg64
+  intro E s f tps tpl t pc S live R hin _ ht1 hS hg64
   rw [hIn] at hin
-  obtain ⟨i0, i1, i2, -⟩ := stMsg_cons hin
+  obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
   have CF := X.facts
   have hpcl := R.pcLt
+  obtain ⟨ls0, hL0, hfl0⟩ := R.labels
   have p0 : rowNat tr 6 r 0 = pc := natEq i0 (hcP _) (by have := CF.codeLt; omega)
   have p1 : rowNat tr 6 r 1 = t := natEq i1 (hcP _) (by omega)
   have p2 : rowNat tr 6 r 2 = S := natEq i2 (hcP _) (by omega)
+  have psb : rowNat tr 6 r 11 = E.sb := natEq i4 (hcP _) (by have := R.sbLt; omega)
+  have pcid : rowNat tr 6 r 12 = E.cid := natEq i5 (hcP _) (by have := R.cidLt; omega)
+  have hsbR := R.sbLe
   have hpc : pc0 = pc := by
     have := natEq (e0.symm.trans i0) (by have := CF.codeLt; omega) (by have := CF.codeLt; omega)
     exact this
@@ -99,18 +105,19 @@ theorem const_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have hHb := CF.hBound pc0 hpcl
   rw [hH] at eh hHb
   simp only [Option.getD_some] at eh hHb
-  have p3 : rowNat tr 6 r 3 = s.stack.size := natEq eh (hcP _) (by omega)
+  have p3 : rowNat tr 6 r 3 = s.stack.size - E.sb := natEq eh (hcP _) (by omega)
+  have hszP : s.stack.size < P := by have := R.sbLt; omega
   -- the operation: op = 0x41 + is64
   have hop : op = 0x41 + rowNat tr 6 r 6 := by
     have hlt := recordOf_op_lt hrc
     rw [hre] at hlt; simp only [List.getD_cons_succ, List.getD_cons_zero] at hlt
     rw [← Lean.Grind.Semiring.natCast_add] at eop
     exact (natEq eop (by omega) (by omega)).symm
-  have hout : rowOut Const.table tr pub 6 r = stMsg (pc0 + 1) (t + 1) (S + fee) 0 := by
-    rw [hOut, p0, p1, p2, efee']
+  have hout : rowOut Const.table tr pub 6 r = stMsg (pc0 + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
+    rw [hOut, p0, p1, p2, efee', psb, pcid]
     simp only [stMsg, Lean.Grind.Semiring.natCast_add]
   rw [hCons, hProd]
-  refine ⟨pc0 + 1, fee, 0, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
+  refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
   have hx : ∀ x : Nat, x < 65536 → ∀ y, ((y : Nat) : F) = ((x : Nat) : F) → y < P → y = x :=
     fun x hx y hy hyP => natEq hy hyP (by omega)
   have q : ∀ (x0 x1 x2 x3 : Nat) (n : Nat), n < 2 ^ 64 → [x0, x1, x2, x3] = limbs4 n →
@@ -136,15 +143,15 @@ theorem const_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     have hvl := v.toNat_lt
     obtain ⟨q7, q8, q9, q10⟩ := q x0 x1 x2 x3 v.toNat (by omega) hl ex0 ex1 ex2 ex3
     obtain ⟨s', hs', hrel⟩ := step_const X R (Or.inl ⟨v, hv, rfl⟩) hins hfee hg hg64
-      ⟨0, rowNat tr 6 r 3, rowNat tr 6 r 6, rowNat tr 6 r 7, rowNat tr 6 r 8, rowNat tr 6 r 9, rowNat tr 6 r 10,
-        rowNat tr 6 r 1⟩ (by simp only [enc, vTag, vNum]; rw [p3, g, q7, q8, q9, q10, p1])
+      ⟨0, (((rowNat tr 6 r 11 : Nat) : F) + ((rowNat tr 6 r 3 : Nat) : F)).toNat, rowNat tr 6 r 6, rowNat tr 6 r 7, rowNat tr 6 r 8, rowNat tr 6 r 9, rowNat tr 6 r 10,
+        rowNat tr 6 r 1⟩ (by simp only [enc, vTag, vNum]; rw [slot_toNat0 psb p3 hsbR hszP, g, q7, q8, q9, q10, p1])
     exact ⟨s', hs', hrel⟩
   · -- i64.const
     have hvl := v.toNat_lt
     obtain ⟨q7, q8, q9, q10⟩ := q x0 x1 x2 x3 v.toNat hvl hl ex0 ex1 ex2 ex3
     obtain ⟨s', hs', hrel⟩ := step_const X R (Or.inr ⟨v, hv, rfl⟩) hins hfee hg hg64
-      ⟨0, rowNat tr 6 r 3, rowNat tr 6 r 6, rowNat tr 6 r 7, rowNat tr 6 r 8, rowNat tr 6 r 9, rowNat tr 6 r 10,
-        rowNat tr 6 r 1⟩ (by simp only [enc, vTag, vNum]; rw [p3, g, q7, q8, q9, q10, p1])
+      ⟨0, (((rowNat tr 6 r 11 : Nat) : F) + ((rowNat tr 6 r 3 : Nat) : F)).toNat, rowNat tr 6 r 6, rowNat tr 6 r 7, rowNat tr 6 r 8, rowNat tr 6 r 9, rowNat tr 6 r 10,
+        rowNat tr 6 r 1⟩ (by simp only [enc, vTag, vNum]; rw [slot_toNat0 psb p3 hsbR hszP, g, q7, q8, q9, q10, p1])
     exact ⟨s', hs', hrel⟩
 
 end WasmBase

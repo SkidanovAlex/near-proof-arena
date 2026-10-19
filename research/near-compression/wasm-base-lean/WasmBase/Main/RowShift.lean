@@ -103,15 +103,17 @@ theorem shift_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     omega
   -- the row's messages
   have hIn : rowIn Shift.table tr pub 4 r =
-      [((rowNat tr 4 r 0 : Nat) : F), ((rowNat tr 4 r 1 : Nat) : F), ((rowNat tr 4 r 2 : Nat) : F), ((0 : Nat) : F)] := by
+      [((rowNat tr 4 r 0 : Nat) : F), ((rowNat tr 4 r 1 : Nat) : F), ((rowNat tr 4 r 2 : Nat) : F), ((0 : Nat) : F),
+        ((rowNat tr 4 r 80 : Nat) : F), ((rowNat tr 4 r 81 : Nat) : F)] := by
     simp only [rowIn, Shift.table, Shift.inters, stdState, stateIn, List.cons_append, List.append_assoc,
-      List.getD_cons_zero, List.map_cons, List.map_nil, hev, Expr.eval_ofNat', cPc, cTs, cS]
+      List.getD_cons_zero, List.map_cons, List.map_nil, hev, Expr.eval_ofNat', cPc, cTs, cS, Shift.kSb, Shift.kCid]
   have hOut : rowOut Shift.table tr pub 4 r =
       [((rowNat tr 4 r 0 : Nat) : F) + ((1 : Nat) : F), ((rowNat tr 4 r 1 : Nat) : F) + ((1 : Nat) : F),
-        ((rowNat tr 4 r 2 : Nat) : F) + ((rowNat tr 4 r 4 : Nat) : F), ((0 : Nat) : F)] := by
+        ((rowNat tr 4 r 2 : Nat) : F) + ((rowNat tr 4 r 4 : Nat) : F), ((0 : Nat) : F),
+        ((rowNat tr 4 r 80 : Nat) : F), ((rowNat tr 4 r 81 : Nat) : F)] := by
     simp only [rowOut, Shift.table, Shift.inters, stdState, stateOut, List.cons_append, List.append_assoc,
       List.getD_cons_succ, List.getD_cons_zero, List.map_cons, List.map_nil, hev, Expr.eval_add', Expr.eval_ofNat',
-      cPc, cTs, cS, cFee]
+      cPc, cTs, cS, cFee, Shift.kSb, Shift.kCid]
   have tn : ∀ x : Nat, x < 65536 → (((x : Nat) : F)).toNat = x := fun x hx => Fp.toNat_cast_of_lt (by omega)
   have la : ∀ i, i < 4 → rowNat tr 4 r (11 + 2 * i) + 256 * rowNat tr 4 r (11 + 2 * i + 1) < 65536 := by
     intro i hi
@@ -136,19 +138,19 @@ theorem shift_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     exact of_decide_eq_true (List.all_eq_true.mp
       (show Shift.inters.all (fun i => decide (i.count = Shift.act)) = true by decide) i (List.mem_filter.mp hi).1)
   have hCons : rowCons Shift.table tr pub 4 r =
-      [⟨0, (((rowNat tr 4 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 4 r 10,
+      [⟨0, (((rowNat tr 4 r 80 : Nat) : F) + ((rowNat tr 4 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 4 r 10,
         rowNat tr 4 r (11 + 2 * 0) + 256 * rowNat tr 4 r (11 + 2 * 0 + 1),
         rowNat tr 4 r (11 + 2 * 1) + 256 * rowNat tr 4 r (11 + 2 * 1 + 1),
         rowNat tr 4 r (11 + 2 * 2) + 256 * rowNat tr 4 r (11 + 2 * 2 + 1),
         rowNat tr 4 r (11 + 2 * 3) + 256 * rowNat tr 4 r (11 + 2 * 3 + 1), rowNat tr 4 r 19⟩,
-       ⟨0, (((rowNat tr 4 r 3 : Nat) : F) - ((1 : Nat) : F)).toNat, rowNat tr 4 r 10,
+       ⟨0, (((rowNat tr 4 r 80 : Nat) : F) + ((rowNat tr 4 r 3 : Nat) : F) - ((1 : Nat) : F)).toNat, rowNat tr 4 r 10,
         rowNat tr 4 r 21, rowNat tr 4 r 22, rowNat tr 4 r 23, rowNat tr 4 r 24, rowNat tr 4 r 25⟩] := by
     rw [rowCons, filt]
     have a0 := la 0 (by decide); have a1' := la 1 (by decide); have a2 := la 2 (by decide); have a3 := la 3 (by decide)
     simp only [Nat.reduceAdd, Nat.reduceMul] at a0 a1' a2 a3
     simp [Shift.table, Shift.inters, stdState, stateIn, stateOut, fetch, stkSend, stkRecv, chSend, chRecv, timeChk,
       r16, byteQ, busState, busFetch, busStk, busR16, busByte, List.range, List.range.loop, limbsB, limbB, limbsOf,
-      hev, cH, Shift.is64, Shift.ab, Shift.b, Shift.ta, Shift.tb, mul_limb_cast, decMsg, tn _ a0, tn _ a1',
+      hev, cH, Shift.kSb, Shift.is64, Shift.ab, Shift.b, Shift.ta, Shift.tb, mul_limb_cast, decMsg, tn _ a0, tn _ a1',
       tn _ a2, tn _ a3, Fp.toNat_cast_of_lt (hcP _)]
     rfl
   have hrb : ∀ j, (Shift.rbyte j).eval (tr.row pub 4 r) = ((shiftR (rowNat tr 4 r) j : Nat) : F) := by
@@ -156,12 +158,12 @@ theorem shift_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   let Rr : Nat → Nat := fun i =>
     (((shiftR (rowNat tr 4 r) (2 * i) + 256 * shiftR (rowNat tr 4 r) (2 * i + 1) : Nat) : F)).toNat
   have hProd : rowProd Shift.table tr pub 4 r =
-      [⟨0, (((rowNat tr 4 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 4 r 10, Rr 0, Rr 1, Rr 2, Rr 3,
+      [⟨0, (((rowNat tr 4 r 80 : Nat) : F) + ((rowNat tr 4 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 4 r 10, Rr 0, Rr 1, Rr 2, Rr 3,
         rowNat tr 4 r 1⟩] := by
     rw [rowProd, filt]
     simp [Shift.table, Shift.inters, stdState, stateIn, stateOut, fetch, stkSend, stkRecv, chSend, chRecv, timeChk,
       r16, byteQ, busState, busFetch, busStk, busR16, busByte, List.range, List.range.loop, Shift.rlimb, hrb,
-      hev, cH, cTs, Shift.is64, mul_limb_cast, decMsg, Fp.toNat_cast_of_lt (hcP _), Rr]
+      hev, cH, Shift.kSb, cTs, Shift.is64, mul_limb_cast, decMsg, Fp.toNat_cast_of_lt (hcP _), Rr]
     rfl
   have hfo := hocc (fetch (v cPc) Shift.op (v cH) (v cFee) zeros4 Shift.act) (by simp [Shift.inters, stdState])
   simp only [fetch, zeros4, Shift.op, List.cons_append, List.nil_append, List.map_cons, List.map_nil, hev,
@@ -192,7 +194,7 @@ theorem shift_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (0x74 + 18 * rowNat tr 4 r 10 + rowNat tr 4 r 6 + 2 * rowNat tr 4 r 7 + 3 * rowNat tr 4 r 8 + 4 * rowNat tr 4 r 9)
     (rowNat tr 4 r 10)
     (fun i => rowNat tr 4 r (11 + 2 * i) + 256 * rowNat tr 4 r (11 + 2 * i + 1))
-    (fun i => rowNat tr 4 r (21 + i)) Rr 19 20 25 26
+    (fun i => rowNat tr 4 r (21 + i)) Rr 19 20 25 26 80 81
     hIn hOut hCons hProd hfo hta1 hta2 htb1 htb2 ?_ ?_ ?_
   · rcases w64 with g | g <;>
     rcases hflags with ⟨g5, g6, g7, g8, g9⟩ | ⟨g5, g6, g7, g8, g9⟩ | ⟨g5, g6, g7, g8, g9⟩ | ⟨g5, g6, g7, g8, g9⟩ |

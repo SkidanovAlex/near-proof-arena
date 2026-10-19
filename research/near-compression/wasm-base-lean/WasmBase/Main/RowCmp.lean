@@ -171,15 +171,17 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     simp only [v, Expr.eval_col, Trace.row, cell_cast, Cmp.fEqz]
     rw [toNat_cast_sub (by omega) (by omega)]; omega
   have hIn : rowIn Cmp.table tr pub 5 r =
-      [((rowNat tr 5 r 0 : Nat) : F), ((rowNat tr 5 r 1 : Nat) : F), ((rowNat tr 5 r 2 : Nat) : F), ((0 : Nat) : F)] := by
+      [((rowNat tr 5 r 0 : Nat) : F), ((rowNat tr 5 r 1 : Nat) : F), ((rowNat tr 5 r 2 : Nat) : F), ((0 : Nat) : F),
+        ((rowNat tr 5 r 42 : Nat) : F), ((rowNat tr 5 r 43 : Nat) : F)] := by
     simp only [rowIn, Cmp.table, Cmp.inters, stdState, stateIn, List.cons_append, List.getD_cons_zero,
-      List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_ofNat', cell_cast, Trace.row, cPc, cTs, cS]
+      List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_ofNat', cell_cast, Trace.row, Cmp.kSb, Cmp.kCid, cPc, cTs, cS]
   have hOut : rowOut Cmp.table tr pub 5 r =
       [((rowNat tr 5 r 0 : Nat) : F) + ((1 : Nat) : F), ((rowNat tr 5 r 1 : Nat) : F) + ((1 : Nat) : F),
-        ((rowNat tr 5 r 2 : Nat) : F) + ((rowNat tr 5 r 4 : Nat) : F), ((0 : Nat) : F)] := by
+        ((rowNat tr 5 r 2 : Nat) : F) + ((rowNat tr 5 r 4 : Nat) : F), ((0 : Nat) : F),
+        ((rowNat tr 5 r 42 : Nat) : F), ((rowNat tr 5 r 43 : Nat) : F)] := by
     simp only [rowOut, Cmp.table, Cmp.inters, stdState, stateOut, List.cons_append, List.getD_cons_succ,
       List.getD_cons_zero, List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_add', Expr.eval_ofNat',
-      cell_cast, Trace.row, cPc, cTs, cS, cFee]
+      cell_cast, Trace.row, Cmp.kSb, Cmp.kCid, cPc, cTs, cS, cFee]
   -- the FETCH query
   have hfetch := hocc (fetch (v cPc) Cmp.op (v cH) (v cFee) zeros4 Cmp.act)
     (by simp [Cmp.inters, stdState])
@@ -248,35 +250,35 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     exact this
   have fC : (Cmp.table.inters.filter fun i => i.bus = busStk ∧ i.send = false) =
       [stkRecv Cmp.slotA (v Cmp.is64) (limbsOf Cmp.a) (v Cmp.ta) Cmp.act,
-       stkRecv (v cH - 1) (v Cmp.is64) (limbsOf Cmp.b) (v Cmp.tb) (Cmp.act - v Cmp.fEqz)] := by decide
+       stkRecv (v Cmp.kSb + v cH - 1) (v Cmp.is64) (limbsOf Cmp.b) (v Cmp.tb) (Cmp.act - v Cmp.fEqz)] := by decide
   have fP : (Cmp.table.inters.filter fun i => i.bus = busStk ∧ i.send = true) =
       [stkSend Cmp.slotA 0 [Cmp.res, 0, 0, 0] (v cTs) Cmp.act] := by decide
   have rawCons : rowMsgs Cmp.table tr pub 5 r busStk false =
-      ([[((0 : Nat) : F), tr.cell 5 r 3 - ((2 : Nat) : F) + tr.cell 5 r 5, tr.cell 5 r 16, tr.cell 5 r 17,
+      ([[((0 : Nat) : F), tr.cell 5 r 42 + tr.cell 5 r 3 - ((2 : Nat) : F) + tr.cell 5 r 5, tr.cell 5 r 16, tr.cell 5 r 17,
           tr.cell 5 r 18, tr.cell 5 r 19, tr.cell 5 r 20, tr.cell 5 r 21]] ++
        (if rowNat tr 5 r 5 = 0 then
-        [[((0 : Nat) : F), tr.cell 5 r 3 - ((1 : Nat) : F), tr.cell 5 r 16, tr.cell 5 r 23, tr.cell 5 r 24,
+        [[((0 : Nat) : F), tr.cell 5 r 42 + tr.cell 5 r 3 - ((1 : Nat) : F), tr.cell 5 r 16, tr.cell 5 r 23, tr.cell 5 r 24,
           tr.cell 5 r 25, tr.cell 5 r 26, tr.cell 5 r 27]] else [])) := by
     rw [rowMsgs_eq, fC]
     simp only [List.filterMap_cons, List.filterMap_nil, stkRecv, chRecv, cntA, cntB, ite_true]
     by_cases h5 : rowNat tr 5 r 5 = 0
     · simp only [h5, show 1 - 0 = 1 from rfl, ite_true, limbsOf, List.range, List.range.loop,
         List.map_cons, List.map_nil, List.cons_append, List.nil_append, List.append_nil, v, Expr.eval_sub',
-        Expr.eval_add', Expr.eval_col, Expr.eval_ofNat', Trace.row, cH, Cmp.slotA, Cmp.fEqz, Cmp.is64, Cmp.a,
+        Expr.eval_add', Expr.eval_col, Expr.eval_ofNat', Trace.row, cH, Cmp.kSb, Cmp.slotA, Cmp.fEqz, Cmp.is64, Cmp.a,
         Cmp.ta, Cmp.b, Cmp.tb, Nat.reduceAdd]
     · have h51 : rowNat tr 5 r 5 = 1 := by omega
       simp only [h51, show ¬ (1 - 1 = 1) by decide, show ¬ ((1 : Nat) = 0) by decide, ite_false, limbsOf,
         List.range, List.range.loop,
         List.map_cons, List.map_nil, List.cons_append, List.nil_append, List.append_nil, v, Expr.eval_sub',
-        Expr.eval_add', Expr.eval_col, Expr.eval_ofNat', Trace.row, cH, Cmp.slotA, Cmp.fEqz, Cmp.is64, Cmp.a,
+        Expr.eval_add', Expr.eval_col, Expr.eval_ofNat', Trace.row, cH, Cmp.kSb, Cmp.slotA, Cmp.fEqz, Cmp.is64, Cmp.a,
         Cmp.ta, Nat.reduceAdd]
   have rawProd : rowMsgs Cmp.table tr pub 5 r busStk true =
-      [[((0 : Nat) : F), tr.cell 5 r 3 - ((2 : Nat) : F) + tr.cell 5 r 5, ((0 : Nat) : F),
+      [[((0 : Nat) : F), tr.cell 5 r 42 + tr.cell 5 r 3 - ((2 : Nat) : F) + tr.cell 5 r 5, ((0 : Nat) : F),
         Expr.eval (tr.row pub 5 r) Cmp.res, ((0 : Nat) : F), ((0 : Nat) : F), ((0 : Nat) : F), tr.cell 5 r 1]] := by
     rw [rowMsgs_eq, fP]
     simp only [List.filterMap_cons, List.filterMap_nil, stkSend, chSend, cntA, ite_true]
     simp only [List.map_cons, List.map_nil, List.cons_append, List.nil_append, v, Expr.eval_sub',
-      Expr.eval_add', Expr.eval_col, Expr.eval_ofNat', cH, cTs, Cmp.slotA, Cmp.fEqz]
+      Expr.eval_add', Expr.eval_col, Expr.eval_ofNat', cH, Cmp.kSb, cTs, Cmp.slotA, Cmp.fEqz]
     rfl
   have z0 : (((0 : Nat) : F)).toNat = 0 := Fp.toNat_cast_of_lt (by omega)
   have hIn1 : lvl (rowIn Cmp.table tr pub 5 r) = ((rowNat tr 5 r 1 : Nat) : F) := by rw [hIn]; rfl
@@ -285,7 +287,7 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have hts : lvl (rowOut Cmp.table tr pub 5 r) = lvl (rowIn Cmp.table tr pub 5 r) + 1 := by
     rw [hIn, hOut]; rfl
   have hProd : rowProd Cmp.table tr pub 5 r =
-      [⟨0, (tr.cell 5 r 3 - ((2 : Nat) : F) + tr.cell 5 r 5).toNat, 0,
+      [⟨0, (tr.cell 5 r 42 + tr.cell 5 r 3 - ((2 : Nat) : F) + tr.cell 5 r 5).toNat, 0,
         (Expr.eval (tr.row pub 5 r) Cmp.res).toNat, 0, 0, 0, rowNat tr 5 r 1⟩] := by
     rw [rowProd, rawProd]
     simp only [List.map_cons, List.map_nil, decMsg, List.getD_cons_zero, List.getD_cons_succ, z0]
@@ -297,19 +299,25 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     subst hx
     exact ⟨hcP 1, by rw [hIn1]⟩
   have hprodNd : (rowProd Cmp.table tr pub 5 r).Nodup := by rw [hProd]; simp
-  have spec_pre : ∀ (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat) (live : Msg → Prop),
-      RelW X s f tps tpl t pc S live → rowIn Cmp.table tr pub 5 r = stMsg pc t S 0 → t + 1 < P →
-      S + X.ck.maxFee < P → pc0 = pc ∧ rowNat tr 5 r 1 = t ∧ rowNat tr 5 r 3 = s.stack.size ∧
-        s.stack.size < 65536 ∧
-        rowOut Cmp.table tr pub 5 r = stMsg (pc + 1) (t + 1) (S + fee) 0 := by
-    intro s f tps tpl t pc S live R hin ht1 hS
+  have spec_pre : ∀ (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat) (live : Msg → Prop),
+      RelW X E s f tps tpl t pc S live → rowIn Cmp.table tr pub 5 r = stMsg pc t S 0 E.sb E.cid → t + 1 < P →
+      S + X.ck.maxFee < P → pc0 = pc ∧ rowNat tr 5 r 1 = t ∧
+        (1 ≤ s.stack.size - E.sb → (tr.cell 5 r 42 + tr.cell 5 r 3 - ((1 : Nat) : F)).toNat = s.stack.size - 1) ∧
+        (2 ≤ s.stack.size - E.sb + rowNat tr 5 r 5 →
+          (tr.cell 5 r 42 + tr.cell 5 r 3 - ((2 : Nat) : F) + tr.cell 5 r 5).toNat = s.stack.size + rowNat tr 5 r 5 - 2) ∧
+        rowOut Cmp.table tr pub 5 r = stMsg (pc + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
+    intro E s f tps tpl t pc S live R hin ht1 hS
     rw [hIn] at hin
-    obtain ⟨i0, i1, i2, -⟩ := stMsg_cons hin
+    obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
     have CF := X.facts
     have hpcl := R.pcLt
+    obtain ⟨ls0, hL0, hfl0⟩ := R.labels
     have p0 : rowNat tr 5 r 0 = pc := natEq i0 (hcP _) (by have := CF.codeLt; omega)
     have p1 : rowNat tr 5 r 1 = t := natEq i1 (hcP _) (by omega)
     have p2 : rowNat tr 5 r 2 = S := natEq i2 (hcP _) (by omega)
+    have psb : rowNat tr 5 r 42 = E.sb := natEq i4 (hcP _) (by have := R.sbLt; omega)
+    have pcid : rowNat tr 5 r 43 = E.cid := natEq i5 (hcP _) (by have := R.cidLt; omega)
+    have hsbR := R.sbLe
     have hpc : pc0 = pc := natEq (e0.symm.trans i0) (by have := CF.codeLt; omega) (by have := CF.codeLt; omega)
     subst hpc
     have hH := R.height
@@ -317,23 +325,20 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     have eh' := eh
     rw [hH] at eh' hHb
     simp only [Option.getD_some] at eh' hHb
-    refine ⟨rfl, p1, natEq eh' (hcP _) (by omega), hHb, ?_⟩
-    rw [hOut, p0, p1, p2, efee']
+    have p3 : rowNat tr 5 r 3 = s.stack.size - E.sb := natEq eh' (hcP _) (by omega)
+    have hszP : s.stack.size + 2 < P := by have := R.sbLt; omega
+    refine ⟨rfl, p1, fun hk => by rw [cell_cast, cell_cast]; exact slot_toNat psb p3 hsbR hk (by omega), fun hk => ?_, ?_⟩
+    · rw [cell_cast, cell_cast, cell_cast, psb, p3]
+      have : ((E.sb : Nat) : F) + ((s.stack.size - E.sb : Nat) : F) - ((2 : Nat) : F) + ((rowNat tr 5 r 5 : Nat) : F) =
+          ((s.stack.size + rowNat tr 5 r 5 - 2 : Nat) : F) := by
+        have e2 : ((s.stack.size + rowNat tr 5 r 5 - 2 : Nat) : F) + ((2 : Nat) : F) =
+            ((E.sb : Nat) : F) + ((s.stack.size - E.sb : Nat) : F) + ((rowNat tr 5 r 5 : Nat) : F) := by
+          rw [← Lean.Grind.Semiring.natCast_add, ← Lean.Grind.Semiring.natCast_add, ← Lean.Grind.Semiring.natCast_add]
+          congr 1; omega
+        grind
+      rw [this, Fp.toNat_cast_of_lt (by omega)]
+    rw [hOut, p0, p1, p2, efee', psb, pcid]
     simp only [stMsg, Lean.Grind.Semiring.natCast_add]
-  have slot1 : ∀ (n : Nat), 1 ≤ n → n < 65536 → rowNat tr 5 r 3 = n →
-      (tr.cell 5 r 3 - ((1 : Nat) : F)).toNat = n - 1 := by
-    intro n hk hn e
-    rw [cell_cast, e, toNat_cast_sub hk (by omega)]
-  have slotA : ∀ (n : Nat), 2 ≤ n + rowNat tr 5 r 5 → n < 65536 → rowNat tr 5 r 3 = n →
-      (tr.cell 5 r 3 - ((2 : Nat) : F) + tr.cell 5 r 5).toNat = n + rowNat tr 5 r 5 - 2 := by
-    intro n hk hn e
-    rw [cell_cast, cell_cast, e]
-    have : ((n : Nat) : F) - ((2 : Nat) : F) + ((rowNat tr 5 r 5 : Nat) : F) =
-        ((n + rowNat tr 5 r 5 - 2 : Nat) : F) := by
-      have e2 : ((n + rowNat tr 5 r 5 - 2 : Nat) : F) + ((2 : Nat) : F) = ((n : Nat) : F) + ((rowNat tr 5 r 5 : Nat) : F) := by
-        rw [← Lean.Grind.Semiring.natCast_add, ← Lean.Grind.Semiring.natCast_add, Nat.sub_add_cancel hk]
-      grind
-    rw [this, Fp.toNat_cast_of_lt (by omega)]
   have hres : ∀ hA : (∀ i, i < 4 → rowNat tr 5 r (Cmp.a + i) < 65536),
       ∀ hB : (∀ i, i < 4 → rowNat tr 5 r (Cmp.b + i) < 65536),
       (Expr.eval (tr.row pub 5 r) Cmp.res).toNat =
@@ -381,7 +386,7 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   rcases (show rowNat tr 5 r 5 = 1 ∨ rowNat tr 5 r 5 = 0 by omega) with g5 | g5
   · -- eqz
     have hCons : rowCons Cmp.table tr pub 5 r =
-        [⟨0, (tr.cell 5 r 3 - ((2 : Nat) : F) + tr.cell 5 r 5).toNat, rowNat tr 5 r 16, rowNat tr 5 r 17,
+        [⟨0, (tr.cell 5 r 42 + tr.cell 5 r 3 - ((2 : Nat) : F) + tr.cell 5 r 5).toNat, rowNat tr 5 r 16, rowNat tr 5 r 17,
           rowNat tr 5 r 18, rowNat tr 5 r 19, rowNat tr 5 r 20, rowNat tr 5 r 21⟩] := by
       rw [rowCons, rawCons, if_neg (by omega : ¬ rowNat tr 5 r 5 = 0)]
       simp only [List.append_nil, List.map_cons, List.map_nil, decMsg, List.getD_cons_zero, List.getD_cons_succ, z0]
@@ -391,8 +396,9 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     · rw [hCons, hIn1]
       simp only [List.mem_cons, List.mem_nil_iff, or_false, forall_eq]
       exact tA
-    intro s f tps tpl t pc S live R hin hlive ht1 hS hg64
-    obtain ⟨hpc, p1, p3, hsz, hout⟩ := spec_pre s f tps tpl t pc S live R hin ht1 hS
+    intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
+    obtain ⟨hpc, p1, slot1, slotA, hout⟩ := spec_pre E s f tps tpl t pc S live R hin ht1 hS
+    obtain ⟨ls0, hL0, -⟩ := R.labels
     subst hpc
     have hidx0 : 1 * rowNat tr 5 r 6 + 2 * rowNat tr 5 r 7 + 3 * rowNat tr 5 r 8 + 4 * rowNat tr 5 r 9 +
       5 * rowNat tr 5 r 10 + 6 * rowNat tr 5 r 11 + 7 * rowNat tr 5 r 12 + 8 * rowNat tr 5 r 13 +
@@ -400,14 +406,14 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     rw [hidx0] at hop
     have hop' : op = 0x45 ∨ op = 0x50 := by omega
     have hfam : isFamilyNum op = true ∧ numPops op = 1 := by rcases hop' with rfl | rfl <;> decide
-    obtain ⟨h1, -, -, -⟩ := verify_straight X R.pcLt hins R.labels R.height (pops := 1) (pushes := 1)
+    obtain ⟨h1, -, -, -⟩ := verify_straight X R.pcLt hins hL0 R.height (pops := 1) (pushes := 1)
       (by simp [kindOf, hfam.1, hfam.2]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
       (by intro l; simp)
     rw [hCons, hProd] at *
     have hma := hlive _ (List.mem_singleton_self _)
-    have sl := slotA _ (by omega) hsz p3
+    have sl := slotA (by omega)
     rw [g5] at sl
-    refine ⟨pc0 + 1, fee, 0, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
+    refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
     refine step_eqz X R hins hop' hfee hg hg64 _ _ hma ⟨rfl, by simp only [sl]; omega⟩ ?_
     intro r' hr'
     obtain ⟨-, oka, -, -⟩ := R.stack_dec hma (i := s.stack.size - 1) rfl (by simp only [sl]; omega) (by omega)
@@ -423,9 +429,9 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     have cB1 : (Expr.eval (tr.row pub 5 r) (Cmp.act - v Cmp.fEqz)).toNat = 1 := by rw [cntB, g5]
     have tB := tchk Cmp.tb Cmp.hb (Cmp.act - v Cmp.fEqz) cB1 (by decide)
     have hCons : rowCons Cmp.table tr pub 5 r =
-        [⟨0, (tr.cell 5 r 3 - ((2 : Nat) : F) + tr.cell 5 r 5).toNat, rowNat tr 5 r 16, rowNat tr 5 r 17,
+        [⟨0, (tr.cell 5 r 42 + tr.cell 5 r 3 - ((2 : Nat) : F) + tr.cell 5 r 5).toNat, rowNat tr 5 r 16, rowNat tr 5 r 17,
           rowNat tr 5 r 18, rowNat tr 5 r 19, rowNat tr 5 r 20, rowNat tr 5 r 21⟩,
-         ⟨0, (tr.cell 5 r 3 - ((1 : Nat) : F)).toNat, rowNat tr 5 r 16, rowNat tr 5 r 23,
+         ⟨0, (tr.cell 5 r 42 + tr.cell 5 r 3 - ((1 : Nat) : F)).toNat, rowNat tr 5 r 16, rowNat tr 5 r 23,
           rowNat tr 5 r 24, rowNat tr 5 r 25, rowNat tr 5 r 26, rowNat tr 5 r 27⟩] := by
       rw [rowCons, rawCons, if_pos g5]
       simp only [List.cons_append, List.nil_append, List.map_cons, List.map_nil, decMsg, List.getD_cons_zero,
@@ -436,8 +442,9 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     · rw [hCons, hIn1]
       simp only [List.mem_cons, List.mem_nil_iff, or_false, forall_eq_or_imp, forall_eq]
       exact ⟨tA, tB⟩
-    intro s f tps tpl t pc S live R hin hlive ht1 hS hg64
-    obtain ⟨hpc, p1, p3, hsz, hout⟩ := spec_pre s f tps tpl t pc S live R hin ht1 hS
+    intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
+    obtain ⟨hpc, p1, slot1, slotA, hout⟩ := spec_pre E s f tps tpl t pc S live R hin ht1 hS
+    obtain ⟨ls0, hL0, -⟩ := R.labels
     subst hpc
     have hrel : op ∈ relops := by
       simp only [relops, List.mem_cons, List.mem_nil_iff, or_false]; omega
@@ -445,16 +452,16 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       simp only [relops, List.mem_cons, List.mem_nil_iff, or_false] at hrel
       rcases hrel with h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h <;>
       subst h <;> decide
-    obtain ⟨h2, -, -, -⟩ := verify_straight X R.pcLt hins R.labels R.height (pops := 2) (pushes := 1)
+    obtain ⟨h2, -, -, -⟩ := verify_straight X R.pcLt hins hL0 R.height (pops := 2) (pushes := 1)
       (by simp [kindOf, hfam.1, hfam.2]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
       (by intro l; simp)
     rw [hCons, hProd] at *
     have hma := hlive _ List.mem_cons_self
     have hmb := hlive _ (List.mem_cons_of_mem _ List.mem_cons_self)
-    have sl := slotA _ (by omega) hsz p3
+    have sl := slotA (by omega)
     rw [g5] at sl
-    have sl1 := slot1 _ (by omega) hsz p3
-    refine ⟨pc0 + 1, fee, 0, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
+    have sl1 := slot1 (by omega)
+    refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
     refine step_relop X R hins hrel hfee hg hg64 _ _ _ hma hmb ⟨rfl, by simp only [sl]; omega⟩
       ⟨rfl, sl1⟩ ?_ trivial
     intro r' hr'

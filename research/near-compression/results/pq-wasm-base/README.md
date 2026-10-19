@@ -83,9 +83,9 @@ local transition (`verifyAt`); proofs use only `verifyAt` (`check_sound`, proved
 
 | bus | message | producers / consumers |
 |---|---|---|
-| 0 STATE | `[pc, ts, S, halted]` | each instruction row receives its input state and sends its output state; BOUNDARY sends `(0, 1, 0, 0)` and receives `(pc_f, N, S_final, 1)` |
+| 0 STATE | `[pc, ts, S, halted, sb, cid]` | each instruction row receives its input state and sends its output state; BOUNDARY sends `(0, 1, 0, 0, 0, 0)` and receives `(pc_f, N, S_final, status, sb_f, cid_f)` (frame fields since refactor R, §10) |
 | 1 FETCH | `[pc, op, h, fee, x0..x3]` | instruction rows query; BOUNDARY answers with the public code records (count `first · mult_j`) |
-| 2 CH | `[space, slot, tag, v0..v3, tp]` | value channel: operand stack (space 0, slot = static height index) and locals (space 1); producer sends with `tp = ts`, consumer receives and range-checks `ts - tp - 1` |
+| 2 CH | `[space, slot, tag, v0..v3, tp]` | value channel: operand stack (space 0, slot = `sb + h − k`) and the locals of activation `cid` (space `16 + cid`); producer sends with `tp = ts`, consumer receives and range-checks `ts - tp - 1` |
 | 3 R16 | `[v]` | 16-bit range lookups into RANGE16 |
 | 4 BYTE | `[kind, x, y, z]` | byte-pair range (0), and (1), or (2), xor (3) into BYTE |
 
@@ -104,6 +104,9 @@ is fine inside one proof; PERF's per-slice `(slice, t)` time is not needed for t
 
 m = columns, f = interactions per row (LogUp fractions), deg = max constraint/interaction degree.
 
+(Widths as of v1. Since refactor R (§10) every instruction chip has two more columns `fr_sb, fr_cid`,
+LOCAL also `inv_sp`, BOUNDARY `sbf, cidf`; CTRL and LOCAL have one more constraint each.)
+
 | # | AIR | ops | m | f | constraints | deg | notes |
 |---|---|---|---:|---:|---:|---:|---|
 | 0 | BOUNDARY | init/final state, final stack, locals in/out, code records | 2 + 6·nloc + ncode | 3 + 2·nloc + ncode | 0 | 2 | height 4; public-value messages |
@@ -115,7 +118,7 @@ m = columns, f = interactions per row (LogUp fractions), deg = max constraint/in
 | 6 | CONST | i32/i64.const | 11 | 4 | 4 | 2 | immediate from the code record |
 | 7 | STACK | drop, select | 28 | 13 | 13 | 3 | |
 | 8 | CTRL | block, loop, end, br, br_if, return | 16 | 6 | 7 | 4 | labels static; no stack traffic except the `br_if` condition |
-| 9 | LOCAL | local.get/set/tee | 23 | 11 | 10 | 2 | locals = channel space 1 |
+| 9 | LOCAL | local.get/set/tee | 23 | 11 | 10 | 2 | locals = channel space 1 (since R: space `16 + cid`, +3 columns, +1 constraint) |
 | 10 | RANGE16 | — | 2 | 1 | 3 | 2 | committed, derived (`v = row`, height exactly 2^16) |
 | 11 | BYTE | — | 20 | 4 | 19 | 2 | committed, derived from 16 bit columns, height 2^16 |
 
@@ -437,3 +440,47 @@ message that is still needed leaves its later consumer without a producer, so th
 4. Family 2: LOAD/STORE/MEMINIT/DATA.
 5. Family 3: GLOBAL.
 6. Family 4: CALL/RETURN, module-level `check`.
+
+### 10.1 As implemented (R1–R3 done, 2026-10-19)
+
+* **Relation.** `RelW X E s f tps tpl t pc S live` with a frame environment
+  `E : Env = {sb, cid, rest, live}`. The design above listed every view in one structure. The
+  implementation keeps only the current frame explicit. Caller frames' locals, call records and,
+  later, globals, memory words and `Dead` form an outer predicate `E.live`, which lives in spaces
+  other than 0 and `16 + cid` (`envSep`). Straight-line and control step lemmas carry `E` unchanged.
+  Families 2–4 add their views as invariants on `E.live`.
+  * Frame fields: `s.frames = f :: E.rest`; `f.base = E.sb`; `f.labels = shiftLabels E.sb ls`,
+    where `ls` comes from `check`; the stored height is relative (`size − sb`).
+  * `entry`: `cid = 0 → rest = [] ∧ sb = 0`.
+  * `sbLt`, `cidLt`: `sb, cid < 2^28`. These are field-size domain conditions; family 4 must
+    re-establish them at each call.
+  * `Rel X s t pc S sb cid live` hides `E, f, tps, tpl` and fixes `E.sb = sb`, `E.cid = cid`.
+* **Row lemmas.**
+  * `RowSpec`/`RowSpec2` quantify over `E`. The input STATE is `stMsg pc t S 0 E.sb E.cid`, and the
+    output may carry a different `sb', cid'` (for calls).
+  * Normal return: the live set is the final stack, plus `localView 16` (the entry frame's locals),
+    plus an outer part `G` in other spaces.
+  * The per-chip proofs use the same API as before. The only new helper is `slot_toNat`
+    (`sb + h − k` ↦ `size − k`).
+* **AIR.** Lean is the source of truth; the Rust side follows through the JSON export.
+  * Each instruction chip gets `fr_sb, fr_cid` as its last two columns, passed through unchanged.
+  * Stack slots are `fr_sb + h − k`.
+  * LOCAL:
+    * uses space `16 + fr_cid`;
+    * adds a column `inv_sp` with the constraint `act·((16 + cid)·inv_sp − 1) = 0`. This makes the
+      produced local message and the produced stack message distinct, which the per-row `Nodup`
+      needs; without it, a range check on `cid` would be required.
+  * CTRL: HALT/HALTIF only at `cid = 0`, via `(f_halt + f_hif)·cid = 0`. A callee's return is
+    family 4.
+  * BOUNDARY:
+    * sends `(0, 1, 0, 0, 0, 0)`;
+    * receives `(pc_f, N, S, status, sb_f, cid_f)`, where `sb_f, cid_f` are free columns because a
+      trap can happen in any frame;
+    * initial and final locals use space 16.
+  * Not yet: the generalised DRAIN. It arrives with family 2, the first source of non-stack
+    messages that are still live at the end.
+* **Evidence.**
+  * `lake build`; `wasm_base_sound` axioms: `[propext, Classical.choice, Quot.sound]`.
+  * KAT 63/63.
+  * difftest: 480 points; 10,784 constraint values and 6,560 interactions agree.
+  * Tamper suites, including the new frame columns: `logs/tamper-*.log`.

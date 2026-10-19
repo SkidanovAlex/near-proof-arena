@@ -175,22 +175,23 @@ theorem flatMap_single {α β : Type} (f : α → β) (l : List α) : (l.flatMap
   | cons a l ih => simp [ih]
 
 theorem bnd_filters (nloc : Nat) :
-    (Boundary.inters nloc).filter (fun i => i.bus = busState ∧ i.send = true) = [stateOut 0 1 0 0 .first] ∧
+    (Boundary.inters nloc).filter (fun i => i.bus = busState ∧ i.send = true) = [stateOut 0 1 0 0 0 0 .first] ∧
     (Boundary.inters nloc).filter (fun i => i.bus = busState ∧ i.send = false) =
-      [⟨busState, false, .first, [v Boundary.pcf, pv Boundary.pubN, pv Boundary.pubS, pv Boundary.pubStatus]⟩] ∧
+      [⟨busState, false, .first, [v Boundary.pcf, pv Boundary.pubN, pv Boundary.pubS, pv Boundary.pubStatus,
+        v Boundary.sbf, v Boundary.cidf]⟩] ∧
     (Boundary.inters nloc).filter (fun i => i.bus = busStk ∧ i.send = true) =
-      (List.range nloc).map (fun j => chSend 1 (Expr.c j) (pv (Boundary.pubLoc + j)) zeros4 0 .first) ∧
+      (List.range nloc).map (fun j => chSend 16 (Expr.c j) (pv (Boundary.pubLoc + j)) zeros4 0 .first) ∧
     (Boundary.inters nloc).filter (fun i => i.bus = busStk ∧ i.send = false) =
       stkRecv 0 (pv Boundary.pubTag) ((List.range 4).map fun i => pv (Boundary.pubR + i)) (v Boundary.tpr)
         (.first * pv Boundary.pubNres * (2 - pv Boundary.pubStatus)) ::
-      (List.range nloc).map (fun j => chRecv 1 (Expr.c j) (v (Boundary.fin j))
+      (List.range nloc).map (fun j => chRecv 16 (Expr.c j) (v (Boundary.fin j))
         ((List.range 4).map fun i => v (Boundary.fin j + 1 + i)) (v (Boundary.fin j + 5)) .first) := by
   refine ⟨?_, ?_, ?_, ?_⟩ <;> unfold Boundary.inters <;>
     rw [List.filter_append, List.filter_flatMap] <;>
     simp [stateOut, chSend, chRecv, stkRecv, busState, busStk, flatMap_single]
 
 def initRaw (nloc : Nat) (pub : List F) : List (List F) :=
-  (List.range nloc).map fun j => [((1 : Nat) : F), ((j : Nat) : F), pub.getD (Boundary.pubLoc + j) 0,
+  (List.range nloc).map fun j => [((16 : Nat) : F), ((j : Nat) : F), pub.getD (Boundary.pubLoc + j) 0,
     ((0 : Nat) : F), ((0 : Nat) : F), ((0 : Nat) : F), ((0 : Nat) : F), ((0 : Nat) : F)]
 
 def resRaw (pub : List F) (tr : Trace) : List F :=
@@ -199,7 +200,7 @@ def resRaw (pub : List F) (tr : Trace) : List F :=
     tr.cell 0 0 Boundary.tpr]
 
 def finRaw (nloc : Nat) (tr : Trace) : List (List F) :=
-  (List.range nloc).map fun j => [((1 : Nat) : F), ((j : Nat) : F), tr.cell 0 0 (Boundary.fin j),
+  (List.range nloc).map fun j => [((16 : Nat) : F), ((j : Nat) : F), tr.cell 0 0 (Boundary.fin j),
     tr.cell 0 0 (Boundary.fin j + 1 + 0), tr.cell 0 0 (Boundary.fin j + 1 + 1), tr.cell 0 0 (Boundary.fin j + 1 + 2),
     tr.cell 0 0 (Boundary.fin j + 1 + 3), tr.cell 0 0 (Boundary.fin j + 5)]
 
@@ -223,10 +224,10 @@ theorem filterMap_none_of {α β : Type} (g : α → Option β) (l : List α)
   rw [List.filterMap_eq_nil_iff]; exact h
 
 theorem bnd_msgs {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (hpub : PubOK X nloc ncode pub) (r : Nat) :
-    rowMsgs (Boundary.table nloc) tr pub 0 r busState true = (if r = 0 then [stMsg 0 1 0 0] else []) ∧
+    rowMsgs (Boundary.table nloc) tr pub 0 r busState true = (if r = 0 then [stMsg 0 1 0 0 0 0] else []) ∧
     rowMsgs (Boundary.table nloc) tr pub 0 r busState false =
       (if r = 0 then [[tr.cell 0 0 Boundary.pcf, pub.getD Boundary.pubN 0, pub.getD Boundary.pubS 0,
-        pub.getD Boundary.pubStatus 0]] else []) ∧
+        pub.getD Boundary.pubStatus 0, tr.cell 0 0 Boundary.sbf, tr.cell 0 0 Boundary.cidf]] else []) ∧
     rowMsgs (Boundary.table nloc) tr pub 0 r busStk true = (if r = 0 then initRaw nloc pub else []) ∧
     rowMsgs (Boundary.table nloc) tr pub 0 r busStk false =
       (if r = 0 then (if X.ck.arity = 1 ∧ pub.getD Boundary.pubStatus 0 = ((1 : Nat) : F) then [resRaw pub tr]
@@ -276,7 +277,7 @@ theorem bnd_msgs {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace} (hpub 
           · intro h; exact absurd h (by decide)
           · rintro ⟨-, h⟩; exact absurd h (by decide)
       have hrest : (List.range nloc).filterMap (((fun i => if (i.count.eval (tr.row pub 0 0)).toNat = 1 then
-          some (i.msg.map (·.eval (tr.row pub 0 0))) else none) ∘ fun j => chRecv 1 (Expr.c j) (v (Boundary.fin j))
+          some (i.msg.map (·.eval (tr.row pub 0 0))) else none) ∘ fun j => chRecv 16 (Expr.c j) (v (Boundary.fin j))
           ((List.range 4).map fun i => v (Boundary.fin j + 1 + i)) (v (Boundary.fin j + 5)) .first)) = finRaw nloc tr := by
         apply filterMap_some_of
         intro j _
@@ -402,9 +403,10 @@ def drainRaw (tr : Trace) (pub : List F) : List (List F) := part Drain.table tr 
 theorem msgs_state {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub) :
     msgs (wasmBaseAir nloc ncode) tr pub busState true =
-      stMsg 0 1 0 0 :: (actList tr pub).map (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) ∧
+      stMsg 0 1 0 0 0 0 :: (actList tr pub).map (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) ∧
     msgs (wasmBaseAir nloc ncode) tr pub busState false =
-      [tr.cell 0 0 Boundary.pcf, pub.getD Boundary.pubN 0, pub.getD Boundary.pubS 0, pub.getD Boundary.pubStatus 0] ::
+      [tr.cell 0 0 Boundary.pcf, pub.getD Boundary.pubN 0, pub.getD Boundary.pubS 0, pub.getD Boundary.pubStatus 0,
+        tr.cell 0 0 Boundary.sbf, tr.cell 0 0 Boundary.cidf] ::
         (actList tr pub).map (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2) := by
   have h0 : 1 ≤ tr.height 0 := by have := H.heightPos 0 (by simp [air_len]); omega
   obtain ⟨n1, n2, n1'⟩ := part_fixed tr pub busState (Or.inl rfl) true
@@ -413,21 +415,22 @@ theorem msgs_state {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have d2 := part_drain_nil tr pub busState false (Or.inl rfl)
   constructor
   · rw [msgs_air, n1, n2, n1', d1, actList_map]
-    have hb : part (Boundary.table nloc) tr pub 0 busState true = [stMsg 0 1 0 0] := by
+    have hb : part (Boundary.table nloc) tr pub 0 busState true = [stMsg 0 1 0 0 0 0] := by
       unfold part
       rw [show (fun r => rowMsgs (Boundary.table nloc) tr pub 0 r busState true) =
-        (fun r => if r = 0 then [stMsg 0 1 0 0] else []) from funext fun r => (bnd_msgs hpub r).1]
+        (fun r => if r = 0 then [stMsg 0 1 0 0 0 0] else []) from funext fun r => (bnd_msgs hpub r).1]
       exact flatMap_range_first _ h0 _
     rw [hb]
     simp only [part, chip_part_true 1 (by omega) (by omega), chip_part_true 2 (by omega) (by omega), chip_part_true 3 (by omega) (by omega), chip_part_true 4 (by omega) (by omega), chip_part_true 5 (by omega) (by omega), chip_part_true 6 (by omega) (by omega), chip_part_true 7 (by omega) (by omega), chip_part_true 8 (by omega) (by omega), chip_part_true 9 (by omega) (by omega), chip_part_true 10 (by omega) (by omega), List.append_nil, List.cons_append, List.nil_append]
   · rw [msgs_air, n3, n4, n3', d2, actList_map]
     have hb : part (Boundary.table nloc) tr pub 0 busState false =
         [[tr.cell 0 0 Boundary.pcf, pub.getD Boundary.pubN 0, pub.getD Boundary.pubS 0,
-          pub.getD Boundary.pubStatus 0]] := by
+          pub.getD Boundary.pubStatus 0, tr.cell 0 0 Boundary.sbf, tr.cell 0 0 Boundary.cidf]] := by
       unfold part
       rw [show (fun r => rowMsgs (Boundary.table nloc) tr pub 0 r busState false) =
         (fun r => if r = 0 then [[tr.cell 0 0 Boundary.pcf, pub.getD Boundary.pubN 0, pub.getD Boundary.pubS 0,
-          pub.getD Boundary.pubStatus 0]] else []) from funext fun r => (bnd_msgs hpub r).2.1]
+          pub.getD Boundary.pubStatus 0, tr.cell 0 0 Boundary.sbf, tr.cell 0 0 Boundary.cidf]] else [])
+          from funext fun r => (bnd_msgs hpub r).2.1]
       exact flatMap_range_first _ h0 _
     rw [hb]
     simp only [part, chip_part_false 1 (by omega) (by omega), chip_part_false 2 (by omega) (by omega), chip_part_false 3 (by omega) (by omega), chip_part_false 4 (by omega) (by omega), chip_part_false 5 (by omega) (by omega), chip_part_false 6 (by omega) (by omega), chip_part_false 7 (by omega) (by omega), chip_part_false 8 (by omega) (by omega), chip_part_false 9 (by omega) (by omega), chip_part_false 10 (by omega) (by omega), List.append_nil, List.cons_append, List.nil_append]
@@ -471,7 +474,7 @@ theorem init_rel {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X nlo
     {s0 : St} {f0 : Frame} (hfr : s0.frames = [f0]) (hfn : f0.fn = X.fn) (hpc : f0.pc = 0)
     (hlab : f0.labels = [rootLabel X.pf]) (hbase : f0.base = 0) (hloc : f0.locals = X.pf.locals.map Val.default)
     (hstk : s0.stack = #[]) (hg : s0.gas.g = X.g0) :
-    RelW X s0 f0 (fun _ => 0) (fun _ => 0) 1 0 0 (· ∈ (initRaw nloc pub).map decMsg) := by
+    RelW X ⟨0, 0, [], fun _ => False⟩ s0 f0 (fun _ => 0) (fun _ => 0) 1 0 0 (· ∈ (initRaw nloc pub).map decMsg) := by
   have CF := X.facts
   have hP' := P_val
   have hcode : 0 < X.pf.code.size := by
@@ -484,9 +487,9 @@ theorem init_rel {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X nlo
     intro j hj
     have := CF.locTypes (X.pf.locals[j]'hj) (Array.getElem_mem_toList hj)
     rw [Array.getElem?_eq_getElem hj]; simpa using this
-  refine ⟨hfr, hfn, hpc, hcode, by rw [hlab]; exact CF.l0, hbase,
-    by rw [hstk]; exact CF.h0, hnl, by simp [hg, Ctx.R], by simp [hstk], ?_, by simp [hstk],
-    fun _ _ => by decide, ?_⟩
+  refine ⟨hfr, hfn, hpc, hcode, ⟨_, CF.l0, by rw [hlab]; exact (shiftLabels_zero _).symm⟩, hbase,
+    Nat.zero_le _, by rw [hstk]; exact CF.h0, hnl, by simp [hg, Ctx.R], by simp [hstk], ?_, by simp [hstk],
+    fun _ _ => by decide, fun _ h => h.elim, fun _ => ⟨rfl, rfl⟩, by decide, by decide, ?_⟩
   · intro j hj
     rw [hnl] at hj
     rw [hloc, Array.getElem?_map, Array.getElem?_eq_getElem hj]
@@ -494,8 +497,9 @@ theorem init_rel {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X nlo
     rcases hdef j hj with h | h <;> rw [Array.getElem?_eq_getElem hj] at h <;> simp only [Option.getD_some] at h <;>
       rw [h] <;> trivial
   · intro x
-    simp only [hstk, stackView, List.range_zero, List.map_nil, List.not_mem_nil, false_or]
-    suffices e : (initRaw nloc pub).map decMsg = localView f0.locals (fun _ => 0) by rw [e]; simp
+    simp only [hstk, stackView, List.range_zero, List.map_nil, List.not_mem_nil, false_or, or_false,
+      Env.lsp, Nat.add_zero]
+    suffices e : (initRaw nloc pub).map decMsg = localView 16 f0.locals (fun _ => 0) by rw [e]; simp
     unfold initRaw localView
     rw [hnl, ← hpub.hnloc, List.map_map]
     apply List.map_congr_left
@@ -522,9 +526,9 @@ theorem init_rel {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X nlo
 
 /-! ## Counting the steps from the STATE chain -/
 
-theorem chain_len {ρ : Type} [DecidableEq ρ] (act : List ρ) (inS outS : ρ → List F) (pcf N Sf hf : F)
+theorem chain_len {ρ : Type} [DecidableEq ρ] (act : List ρ) (inS outS : ρ → List F) (pcf N Sf hf sbf cidf : F)
     (hts : ∀ r ∈ act, lvl (outS r) = lvl (inS r) + 1)
-    (hst : (stMsg 0 1 0 0 :: act.map outS).Perm ([pcf, N, Sf, hf] :: act.map inS))
+    (hst : (stMsg 0 1 0 0 0 0 :: act.map outS).Perm ([pcf, N, Sf, hf, sbf, cidf] :: act.map inS))
     (hlen : act.length < 2 ^ 28) : act.length + 1 = N.toNat := by
   have hP' := P_val
   let g : ρ → List F × List F := fun r => (inS r, outS r)
@@ -534,12 +538,12 @@ theorem chain_len {ρ : Type} [DecidableEq ρ] (act : List ρ) (inS outS : ρ �
     intro e he
     obtain ⟨r, hr, rfl⟩ := List.mem_map.mp he
     exact hts r hr
-  obtain ⟨es, hes, hpath⟩ := chain (act.map g) (stMsg 0 1 0 0) [pcf, N, Sf, hf] lvl
+  obtain ⟨es, hes, hpath⟩ := chain (act.map g) (stMsg 0 1 0 0 0 0) [pcf, N, Sf, hf, sbf, cidf] lvl
     (by rw [hE1, hE2]; exact hst) hstepE (by simp; omega)
   obtain ⟨-, lfin⟩ := path_levels lvl es _ _ hpath (fun e he => hstepE e (hes.subset he))
   have hl : es.length = act.length := by rw [hes.length_eq]; simp
-  have e : lvl [pcf, N, Sf, hf] = N := rfl
-  have l0 : lvl (stMsg 0 1 0 0) = 1 := rfl
+  have e : lvl [pcf, N, Sf, hf, sbf, cidf] = N := rfl
+  have l0 : lvl (stMsg 0 1 0 0 0 0) = 1 := rfl
   rw [e, l0, hl] at lfin
   rw [lfin, show (1 : F) + ((act.length : Nat) : F) = ((act.length + 1 : Nat) : F) by
     rw [Lean.Grind.Semiring.natCast_add, cast_one]; grind, Fp.toNat_cast_of_lt (by omega)]
@@ -592,7 +596,7 @@ theorem init_facts {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X n
   constructor
   · unfold initRaw
     rw [List.map_map]
-    have hslot : ∀ j, j < nloc → (decMsg [((1 : Nat) : F), ((j : Nat) : F), pub.getD (Boundary.pubLoc + j) 0,
+    have hslot : ∀ j, j < nloc → (decMsg [((16 : Nat) : F), ((j : Nat) : F), pub.getD (Boundary.pubLoc + j) 0,
         ((0 : Nat) : F), ((0 : Nat) : F), ((0 : Nat) : F), ((0 : Nat) : F), ((0 : Nat) : F)]).slot = j := by
       intro j hj; simp only [decMsg, List.getD_cons_succ, List.getD_cons_zero]; exact Fp.toNat_cast_of_lt (by omega)
     refine nodup_map_on _ _ ?_ List.nodup_range
@@ -638,19 +642,19 @@ theorem perm_swap3 {α : Type} (A C D : List α) : ((A ++ C) ++ D).Perm ((A ++ D
   rw [List.append_assoc, List.append_assoc]; exact List.Perm.append_left A List.perm_append_comm
 
 theorem final_stack {X : Ctx} {nloc : Nat} {pub : List F} {tr : Trace} {sN : St} {tps tpl : Nat → Nat}
-    {locs : Array Val}
+    {locs : Array Val} {G : Msg → Prop} (hG : ∀ x, G x → x.space ≠ 0 ∧ x.space ≠ 16)
     (hfin : ∀ x, x ∈ (if X.ck.arity = 1 then [resRaw pub tr] else []).map decMsg ++ (finRaw nloc tr).map decMsg ↔
-      x ∈ stackView sN.stack tps ∨ x ∈ localView locs tpl) :
+      x ∈ stackView sN.stack tps ∨ x ∈ localView 16 locs tpl ∨ G x) :
     sN.stack.size = X.ck.arity ∧
       (X.ck.arity = 1 → ∃ v, sN.stack[0]? = some v ∧ vTag v = (pub.getD Boundary.pubTag 0).toNat ∧
         vNum v = val4 (pub.getD (Boundary.pubR + 0) 0).toNat (pub.getD (Boundary.pubR + 1) 0).toNat
           (pub.getD (Boundary.pubR + 2) 0).toNat (pub.getD (Boundary.pubR + 3) 0).toNat) := by
   have har := X.facts.results
   have harity := X.facts.arity
-  have hfinsp : ∀ x ∈ (finRaw nloc tr).map decMsg, x.space = 1 := by
+  have hfinsp : ∀ x ∈ (finRaw nloc tr).map decMsg, x.space = 16 := by
     intro x hx
     simp only [finRaw, List.map_map, List.mem_map, List.mem_range] at hx
-    obtain ⟨j, _, rfl⟩ := hx; rfl
+    obtain ⟨j, _, rfl⟩ := hx; exact Fp.toNat_cast_of_lt (by rw [P_val]; omega)
   have hres : (decMsg (resRaw pub tr)).space = 0 ∧ (decMsg (resRaw pub tr)).slot = 0 := ⟨rfl, rfl⟩
   have hstk1 : ∀ i, i < sN.stack.size → X.ck.arity = 1 ∧ i = 0 ∧
       enc 0 i (sN.stack[i]?.getD default) (tps i) = decMsg (resRaw pub tr) := by
@@ -687,9 +691,11 @@ theorem final_stack {X : Ctx} {nloc : Nat} {pub : List F} {tr : Trace} {sN : St}
         have e3 := congrArg Msg.l2 he; have e4 := congrArg Msg.l3 he
         simp only [enc] at e1 e2 e3 e4
         rw [← val4_limbs _ hv, ← e1, ← e2, ← e3, ← e4]; rfl
-    · obtain ⟨j, _, he⟩ := mem_localView.mp h
-      have := congrArg Msg.space he; simp only [enc] at this
-      rw [hres.1] at this; exact absurd this (by decide)
+    · rcases h with h | h
+      · obtain ⟨j, _, he⟩ := mem_localView.mp h
+        have := congrArg Msg.space he; simp only [enc] at this
+        rw [hres.1] at this; exact absurd this (by decide)
+      · exact absurd hres.1 (hG _ h).1
   · have hsz : sN.stack.size = 0 := by
       rcases Nat.eq_zero_or_pos sN.stack.size with h | h
       · exact h
@@ -749,27 +755,27 @@ theorem wasm_base_exec (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
   · intro hs
     rw [hs] at hstP
     have hN := chain_len (actList tr pub) (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
-      (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ (fun ρ hρ => (hrows ρ hρ).tsOut) hstP hlen
+      (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ _ _ (fun ρ hρ => (hrows ρ hρ).tsOut) hstP hlen
     have hfee : ((actList tr pub).length + 1) * (X.ck.maxFee + 1) < P := by rw [hN]; exact hfeeN
     obtain ⟨-, h1, -⟩ := exec_of_rows X (actList tr pub) (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
       (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) (fun ρ => rowCons (chipT ρ.1) tr pub ρ.1 ρ.2)
-      (fun ρ => rowProd (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ _ 1 (Or.inl rfl) hrows hstP hchP' hnd htp hlen hfee
-      hgas hg64 h0
-    obtain ⟨sN, tps, tpl, locs, hrun, hfrN, hgasN, hfin⟩ := h1 rfl
+      (fun ρ => rowProd (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ _ 1 (Or.inl rfl) hrows _ _ hstP hchP' hnd htp hlen hfee
+      hgas hg64 ⟨rfl, rfl⟩ h0
+    obtain ⟨sN, tps, tpl, locs, hrun, hfrN, hgasN, G, hG, hfin⟩ := h1 rfl
     refine ⟨sN, run_eq _ hrun hN, hfrN, hgasN, ?_⟩
     have hdr : drainRaw tr pub = [] := drain_nil_of_status1 hs
     rw [hdr, List.map_nil, List.append_nil] at hfin
     simp only [hs, and_true] at hfin
-    exact final_stack hfin
+    exact final_stack hG hfin
   · intro hs
     rw [hs] at hstP
     have hN := chain_len (actList tr pub) (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
-      (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ (fun ρ hρ => (hrows ρ hρ).tsOut) hstP hlen
+      (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ _ _ (fun ρ hρ => (hrows ρ hρ).tsOut) hstP hlen
     have hfee : ((actList tr pub).length + 1) * (X.ck.maxFee + 1) < P := by rw [hN]; exact hfeeN
     obtain ⟨-, -, h2⟩ := exec_of_rows X (actList tr pub) (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
       (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) (fun ρ => rowCons (chipT ρ.1) tr pub ρ.1 ρ.2)
-      (fun ρ => rowProd (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ _ 2 (Or.inr rfl) hrows hstP hchP' hnd htp hlen hfee
-      hgas hg64 h0
+      (fun ρ => rowProd (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ _ 2 (Or.inr rfl) hrows _ _ hstP hchP' hnd htp hlen hfee
+      hgas hg64 ⟨rfl, rfl⟩ h0
     obtain ⟨sN, e, hrun, hgasN⟩ := h2 rfl
     exact ⟨sN, e, run_eq _ hrun hN, hgasN⟩
 

@@ -10,8 +10,8 @@ namespace WasmBase
 open NearSpecV3.Wasm
 set_option linter.unusedSimpArgs false
 
-theorem step_eq_exec (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X s f tps tpl t pc S live) {ins : Instr} {fee : Nat}
+theorem step_eq_exec (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {ins : Instr} {fee : Nat}
     (hins : X.pf.code[pc]? = some ins) (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee)
     (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) :
     step X.cfg X.p s = exec X.cfg X.p { s with gas := { s.gas with g := s.gas.g - X.R * fee } } f X.pf ins := by
@@ -49,35 +49,37 @@ theorem step_eq_exec (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t p
 
 /-- The view relation after an instruction that keeps the labels, moves to `pc + 1`, pops `k` stack
 entries and pushes the entries of `stk'` beyond `n - k`, and changes locals at most at `J`. -/
-theorem straight_rel (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S fee k : Nat}
-    {live : Msg → Prop} (R : RelW X s f tps tpl t pc S live)
+theorem straight_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S fee k : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
     (hk : k ≤ s.stack.size) (stk' locs' : Array Val) (J : Option Nat)
     (keep : ∀ i, i < s.stack.size - k → stk'[i]? = s.stack[i]?) (hsz : s.stack.size - k ≤ stk'.size)
     (hnum : ∀ i, i < stk'.size → isNum (stk'[i]?.getD default))
     (lsz : locs'.size = f.locals.size) (lkeep : ∀ j, some j ≠ J → locs'[j]? = f.locals[j]?)
     (hJ : ∀ j, J = some j → j < f.locals.size)
     (lnum : ∀ j, j < locs'.size → isNum (locs'[j]?.getD default))
-    (hnext : pc + 1 < X.pf.code.size) (hL : X.ck.labels[pc + 1]? = some f.labels)
-    (hH : X.ck.heights[pc + 1]? = some stk'.size)
+    (hnext : pc + 1 < X.pf.code.size)
+    (hL : ∃ ls, X.ck.labels[pc + 1]? = some ls ∧ f.labels = shiftLabels E.sb ls)
+    (hsb : E.sb ≤ stk'.size) (hH : X.ck.heights[pc + 1]? = some (stk'.size - E.sb))
     (hgs : X.R * (S + fee) ≤ X.g0)
-    (s' : St) (hs'stk : s'.stack = stk') (hs'fr : s'.frames = [{ f with pc := pc + 1, locals := locs' }])
+    (s' : St) (hs'stk : s'.stack = stk') (hs'fr : s'.frames = { f with pc := pc + 1, locals := locs' } :: E.rest)
     (hs'g : s'.gas.g = s.gas.g - X.R * fee) :
-    RelW X s' { f with pc := pc + 1, locals := locs' }
+    RelW X E s' { f with pc := pc + 1, locals := locs' }
       (fun i => if i < s.stack.size - k then tps i else t) (fun j => if some j = J then t else tpl j)
       (t + 1) (pc + 1) (S + fee)
       (stepLive live
         (((List.range k).map fun d => enc 0 (s.stack.size - k + d)
             (s.stack[s.stack.size - k + d]?.getD default) (tps (s.stack.size - k + d))) ++
-          J.toList.map (fun j => enc 1 j (f.locals[j]?.getD default) (tpl j)))
+          J.toList.map (fun j => enc E.lsp j (f.locals[j]?.getD default) (tpl j)))
         (((List.range (stk'.size - (s.stack.size - k))).map fun d =>
             enc 0 (s.stack.size - k + d) (stk'[s.stack.size - k + d]?.getD default) t) ++
-          J.toList.map (fun j => enc 1 j (locs'[j]?.getD default) t))) where
+          J.toList.map (fun j => enc E.lsp j (locs'[j]?.getD default) t))) where
   frames := hs'fr
   fn := R.fn
   pcEq := rfl
   pcLt := hnext
   labels := hL
   base := R.base
+  sbLe := by rw [hs'stk]; exact hsb
   height := by rw [hs'stk]; exact hH
   nloc := by simp [lsz, R.nloc]
   gas := by
@@ -98,17 +100,56 @@ theorem straight_rel (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t p
     split
     · omega
     · have := R.tplLt j (by simpa [lsz] using hj); omega
+  envSep := R.envSep
+  entry := R.entry
+  sbLt := R.sbLt
+  cidLt := R.cidLt
   live := by
     intro x
     rw [hs'stk]
     simp only [stepLive]
-    rw [view_update J hk keep hsz lsz lkeep hJ R.tpsLt R.tplLt x]
+    have vu := view_update (sp := E.lsp) (by simp [Env.lsp]) J hk keep hsz lsz lkeep hJ R.tpsLt R.tplLt x
+    -- environment messages are never consumed or produced here (other spaces)
+    have hcons : E.live x → x ∉ (((List.range k).map fun d => enc 0 (s.stack.size - k + d)
+        (s.stack[s.stack.size - k + d]?.getD default) (tps (s.stack.size - k + d))) ++
+        J.toList.map (fun j => enc E.lsp j (f.locals[j]?.getD default) (tpl j))) := by
+      intro he hx
+      obtain ⟨h0, h1⟩ := R.envSep x he
+      simp only [List.mem_append, List.mem_map, List.mem_range, Option.mem_toList] at hx
+      rcases hx with ⟨d, _, rfl⟩ | ⟨j, _, rfl⟩
+      · exact h0 rfl
+      · exact h1 rfl
+    have hprod : E.live x → x ∉ (((List.range (stk'.size - (s.stack.size - k))).map fun d =>
+        enc 0 (s.stack.size - k + d) (stk'[s.stack.size - k + d]?.getD default) t) ++
+        J.toList.map (fun j => enc E.lsp j (locs'[j]?.getD default) t)) := by
+      intro he hx
+      obtain ⟨h0, h1⟩ := R.envSep x he
+      simp only [List.mem_append, List.mem_map, List.mem_range, Option.mem_toList] at hx
+      rcases hx with ⟨d, _, rfl⟩ | ⟨j, _, rfl⟩
+      · exact h0 rfl
+      · exact h1 rfl
+    have toLive : x ∈ stackView s.stack tps ∨ x ∈ localView E.lsp f.locals tpl → live x := fun h =>
+      (R.live x).mpr (h.elim Or.inl (fun h => Or.inr (Or.inl h)))
     constructor
     · rintro (⟨h1, h2⟩ | h3)
-      · exact Or.inl ⟨(R.live x).mp h1, h2⟩
-      · exact Or.inr h3
-    · rintro (⟨h1, h2⟩ | h3)
-      · exact Or.inl ⟨(R.live x).mpr h1, h2⟩
-      · exact Or.inr h3
+      · rcases (R.live x).mp h1 with h | h | h
+        · rcases vu.mpr (Or.inl ⟨Or.inl h, h2⟩) with h' | h'
+          · exact Or.inl h'
+          · exact Or.inr (Or.inl h')
+        · rcases vu.mpr (Or.inl ⟨Or.inr h, h2⟩) with h' | h'
+          · exact Or.inl h'
+          · exact Or.inr (Or.inl h')
+        · exact Or.inr (Or.inr h)
+      · rcases vu.mpr (Or.inr h3) with h' | h'
+        · exact Or.inl h'
+        · exact Or.inr (Or.inl h')
+    · rintro (h1 | h1 | h3)
+      · rcases vu.mp (Or.inl h1) with ⟨h, h2⟩ | h
+        · exact Or.inl ⟨toLive h, h2⟩
+        · exact Or.inr h
+      · rcases vu.mp (Or.inr h1) with ⟨h, h2⟩ | h
+        · exact Or.inl ⟨toLive h, h2⟩
+        · exact Or.inr h
+      · exact Or.inl ⟨(R.live x).mpr (Or.inr (Or.inr h3)), hcons h3⟩
 
 end WasmBase

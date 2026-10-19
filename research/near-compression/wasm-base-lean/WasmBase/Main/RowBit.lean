@@ -105,7 +105,7 @@ theorem bit_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       unfold Bit.inters; exact List.mem_append_right _ (List.mem_map.mpr ⟨k, List.mem_range.mpr hk, rfl⟩))
     simp only [byteQ, cnt] at h
     simp only [List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_add', Expr.eval_mul', Expr.eval_ofNat',
-      cell_cast, Trace.row, Bit.kind, Bit.ab, Bit.bb, Bit.rb, Bit.fAnd, Bit.fOr, Bit.fXor] at h
+      cell_cast, Trace.row, Bit.kSb, Bit.kCid, Bit.kind, Bit.ab, Bit.bb, Bit.rb, Bit.fAnd, Bit.fOr, Bit.fXor] at h
     obtain ⟨K, x, y, hK, hx, hy, hm⟩ := L.byte _ h rfl rfl rfl
     simp only [List.cons.injEq, and_true] at hm
     obtain ⟨eK, ex, ey, ez⟩ := hm
@@ -129,42 +129,44 @@ theorem bit_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   simp only [Nat.reduceAdd] at a0 a1 a2 a3 a4 a5 a6 a7 b0 b1 b2 b3 b4 b5 b6 b7 r0 r1 r2 r3 r4 r5 r6 r7
   -- messages
   have hIn : rowIn Bit.table tr pub 2 r =
-      [((rowNat tr 2 r 0 : Nat) : F), ((rowNat tr 2 r 1 : Nat) : F), ((rowNat tr 2 r 2 : Nat) : F), ((0 : Nat) : F)] := by
+      [((rowNat tr 2 r 0 : Nat) : F), ((rowNat tr 2 r 1 : Nat) : F), ((rowNat tr 2 r 2 : Nat) : F), ((0 : Nat) : F),
+        ((rowNat tr 2 r 37 : Nat) : F), ((rowNat tr 2 r 38 : Nat) : F)] := by
     simp only [rowIn, Bit.table, Bit.inters, stdState, stateIn, List.cons_append, List.getD_cons_zero,
-      List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_ofNat', cell_cast, Trace.row, cPc, cTs, cS]
+      List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_ofNat', cell_cast, Trace.row, Bit.kSb, Bit.kCid, cPc, cTs, cS]
   have hOut : rowOut Bit.table tr pub 2 r =
       [((rowNat tr 2 r 0 : Nat) : F) + ((1 : Nat) : F), ((rowNat tr 2 r 1 : Nat) : F) + ((1 : Nat) : F),
-        ((rowNat tr 2 r 2 : Nat) : F) + ((rowNat tr 2 r 4 : Nat) : F), ((0 : Nat) : F)] := by
+        ((rowNat tr 2 r 2 : Nat) : F) + ((rowNat tr 2 r 4 : Nat) : F), ((0 : Nat) : F),
+        ((rowNat tr 2 r 37 : Nat) : F), ((rowNat tr 2 r 38 : Nat) : F)] := by
     simp only [rowOut, Bit.table, Bit.inters, stdState, stateOut, List.cons_append, List.getD_cons_succ,
       List.getD_cons_zero, List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_add', Expr.eval_ofNat',
-      cell_cast, Trace.row, cPc, cTs, cS, cFee]
+      cell_cast, Trace.row, Bit.kSb, Bit.kCid, cPc, cTs, cS, cFee]
   have hCons : rowCons Bit.table tr pub 2 r =
-      [⟨0, (((rowNat tr 2 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 2 r 8,
+      [⟨0, (((rowNat tr 2 r 37 : Nat) : F) + ((rowNat tr 2 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 2 r 8,
           rowNat tr 2 r 9 + 256 * rowNat tr 2 r 10, rowNat tr 2 r 11 + 256 * rowNat tr 2 r 12,
           rowNat tr 2 r 13 + 256 * rowNat tr 2 r 14, rowNat tr 2 r 15 + 256 * rowNat tr 2 r 16, rowNat tr 2 r 17⟩,
-        ⟨0, (((rowNat tr 2 r 3 : Nat) : F) - ((1 : Nat) : F)).toNat, rowNat tr 2 r 8,
+        ⟨0, (((rowNat tr 2 r 37 : Nat) : F) + ((rowNat tr 2 r 3 : Nat) : F) - ((1 : Nat) : F)).toNat, rowNat tr 2 r 8,
           rowNat tr 2 r 19 + 256 * rowNat tr 2 r 20, rowNat tr 2 r 21 + 256 * rowNat tr 2 r 22,
           rowNat tr 2 r 23 + 256 * rowNat tr 2 r 24, rowNat tr 2 r 25 + 256 * rowNat tr 2 r 26, rowNat tr 2 r 27⟩] := by
     rw [rowCons, rowMsgs_eq, show Bit.table.inters.filter (fun i => i.bus = busStk ∧ i.send = false) =
-      [stkRecv (v cH - 2) (v Bit.is64) (limbsB Bit.ab) (v Bit.ta) Bit.act,
-       stkRecv (v cH - 1) (v Bit.is64) (limbsB Bit.bb) (v Bit.tb) Bit.act] by decide]
+      [stkRecv (v Bit.kSb + v cH - 2) (v Bit.is64) (limbsB Bit.ab) (v Bit.ta) Bit.act,
+       stkRecv (v Bit.kSb + v cH - 1) (v Bit.is64) (limbsB Bit.bb) (v Bit.tb) Bit.act] by decide]
     simp only [List.filterMap_cons, List.filterMap_nil, stkRecv, chRecv, cnt, ite_true]
     simp only [List.map_cons, List.map_nil, limbsB, limbB, List.range, List.range.loop, List.cons_append,
       List.nil_append, v, Expr.eval_col, Expr.eval_add', Expr.eval_mul', Expr.eval_sub', Expr.eval_ofNat',
-      cell_cast, Trace.row, cH, Bit.is64, Bit.ab, Bit.ta, Bit.bb, Bit.tb, Nat.reduceAdd, Nat.reduceMul, decMsg,
+      cell_cast, Trace.row, Bit.kSb, Bit.kCid, cH, Bit.is64, Bit.ab, Bit.ta, Bit.bb, Bit.tb, Nat.reduceAdd, Nat.reduceMul, decMsg,
       List.getD_cons_zero, List.getD_cons_succ, bit_rnToNat, bit_zeroToNat,
       bit_limbToNat a0 a1, bit_limbToNat a2 a3, bit_limbToNat a4 a5, bit_limbToNat a6 a7,
       bit_limbToNat b0 b1, bit_limbToNat b2 b3, bit_limbToNat b4 b5, bit_limbToNat b6 b7]
   have hProd : rowProd Bit.table tr pub 2 r =
-      [⟨0, (((rowNat tr 2 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 2 r 8,
+      [⟨0, (((rowNat tr 2 r 37 : Nat) : F) + ((rowNat tr 2 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 2 r 8,
           rowNat tr 2 r 29 + 256 * rowNat tr 2 r 30, rowNat tr 2 r 31 + 256 * rowNat tr 2 r 32,
           rowNat tr 2 r 33 + 256 * rowNat tr 2 r 34, rowNat tr 2 r 35 + 256 * rowNat tr 2 r 36, rowNat tr 2 r 1⟩] := by
     rw [rowProd, rowMsgs_eq, show Bit.table.inters.filter (fun i => i.bus = busStk ∧ i.send = true) =
-      [stkSend (v cH - 2) (v Bit.is64) (limbsB Bit.rb) (v cTs) Bit.act] by decide]
+      [stkSend (v Bit.kSb + v cH - 2) (v Bit.is64) (limbsB Bit.rb) (v cTs) Bit.act] by decide]
     simp only [List.filterMap_cons, List.filterMap_nil, stkSend, chSend, cnt, ite_true]
     simp only [List.map_cons, List.map_nil, limbsB, limbB, List.range, List.range.loop, List.cons_append,
       List.nil_append, v, Expr.eval_col, Expr.eval_add', Expr.eval_mul', Expr.eval_sub', Expr.eval_ofNat',
-      cell_cast, Trace.row, cH, cTs, Bit.is64, Bit.rb, Nat.reduceAdd, Nat.reduceMul, decMsg,
+      cell_cast, Trace.row, Bit.kSb, Bit.kCid, cH, cTs, Bit.is64, Bit.rb, Nat.reduceAdd, Nat.reduceMul, decMsg,
       List.getD_cons_zero, List.getD_cons_succ, bit_rnToNat, bit_zeroToNat,
       bit_limbToNat r0 r1, bit_limbToNat r2 r3, bit_limbToNat r4 r5, bit_limbToNat r6 r7]
   -- time checks of the consumed values
@@ -173,8 +175,8 @@ theorem bit_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have tB := hocc _ (show r16 (v cTs - v Bit.tb - 1 - B16 * v Bit.hb) Bit.act ∈ Bit.inters by simp [Bit.inters, timeChk])
   have tB' := hocc _ (show r16 (4 * v Bit.hb) Bit.act ∈ Bit.inters by simp [Bit.inters, timeChk])
   simp only [r16, cnt] at tA tA' tB tB'
-  simp only [List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_sub', Expr.eval_mul',
-    Expr.eval_ofNat', B16, cell_cast, Trace.row, cTs, Bit.ta, Bit.ha, Bit.tb, Bit.hb] at tA tA' tB tB'
+  simp only [List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_add', Expr.eval_sub', Expr.eval_mul',
+    Expr.eval_ofNat', B16, cell_cast, Trace.row, Bit.kSb, Bit.kCid, cTs, Bit.ta, Bit.ha, Bit.tb, Bit.hb] at tA tA' tB tB'
   obtain ⟨nA, hnA, eA⟩ := time_chk L tA tA'
   obtain ⟨nB, hnB, eB⟩ := time_chk L tB tB'
   rw [bit_rnToNat] at eA eB
@@ -188,7 +190,7 @@ theorem bit_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   rw [hre] at hm hlt
   simp only [List.getD_cons_succ, List.getD_cons_zero] at hlt
   simp only [List.cons_append, List.nil_append, List.map_cons, List.map_nil, zeros4, v, Expr.eval_col,
-    Expr.eval_add', Expr.eval_mul', Expr.eval_ofNat', cell_cast, Trace.row, cPc, cH, cFee, Bit.op, Bit.is64,
+    Expr.eval_add', Expr.eval_mul', Expr.eval_ofNat', cell_cast, Trace.row, Bit.kSb, Bit.kCid, cPc, cH, cFee, Bit.op, Bit.is64,
     Bit.fOr, Bit.fXor, List.cons.injEq, and_true] at hm
   obtain ⟨e0, eop, eh, efee, -⟩ := hm
   have fee16 := feeUnits_lt hfee
@@ -207,26 +209,31 @@ theorem bit_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   · rw [hProd, hIn]; simp only [List.mem_cons, List.mem_nil_iff, or_false, forall_eq, lvl,
       List.getD_cons_succ, List.getD_cons_zero]; exact ⟨hcP _, trivial⟩
   -- the spec step
-  intro s f tps tpl t pc S live R hin hlive ht1 hS hg64
+  intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
   rw [hIn] at hin
-  obtain ⟨i0, i1, i2, -⟩ := stMsg_cons hin
+  obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
   have CF := X.facts
   have hpcl := R.pcLt
+  obtain ⟨ls0, hL0, hfl0⟩ := R.labels
   have p0 : rowNat tr 2 r 0 = pc := natEq i0 (hcP _) (by have := CF.codeLt; omega)
   have p1 : rowNat tr 2 r 1 = t := natEq i1 (hcP _) (by omega)
   have p2 : rowNat tr 2 r 2 = S := natEq i2 (hcP _) (by omega)
+  have psb : rowNat tr 2 r 37 = E.sb := natEq i4 (hcP _) (by have := R.sbLt; omega)
+  have pcid : rowNat tr 2 r 38 = E.cid := natEq i5 (hcP _) (by have := R.cidLt; omega)
+  have hsbR := R.sbLe
   have hpc : pc0 = pc := natEq (e0.symm.trans i0) (by have := CF.codeLt; omega) (by have := CF.codeLt; omega)
   subst hpc
   have hH := R.height
   have hHb := CF.hBound pc0 hpcl
   rw [hH] at eh hHb
   simp only [Option.getD_some] at eh hHb
-  have p3 : rowNat tr 2 r 3 = s.stack.size := natEq eh (hcP _) (by omega)
-  have hout : rowOut Bit.table tr pub 2 r = stMsg (pc0 + 1) (t + 1) (S + fee) 0 := by
-    rw [hOut, p0, p1, p2, efee']
+  have p3 : rowNat tr 2 r 3 = s.stack.size - E.sb := natEq eh (hcP _) (by omega)
+  have hszP : s.stack.size < P := by have := R.sbLt; omega
+  have hout : rowOut Bit.table tr pub 2 r = stMsg (pc0 + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
+    rw [hOut, p0, p1, p2, efee', psb, pcid]
     simp only [stMsg, Lean.Grind.Semiring.natCast_add]
   rw [hCons, hProd] at *
-  refine ⟨pc0 + 1, fee, 0, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
+  refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
   have hins' : ins = .num op := by
     rcases hcase with ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ |
       ⟨_, _, h, _⟩ | ⟨h, _, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, h, _⟩
@@ -241,13 +248,13 @@ theorem bit_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     rw [hop]; rcases hcases with ⟨g6, g7⟩ | ⟨g6, g7⟩ | ⟨g6, g7⟩ <;> rcases f8 with g8 | g8 <;>
       rw [g6, g7, g8] <;> simp [isBinop, binops]
   obtain ⟨hfam, hpops⟩ := isFamilyNum_of_binop hbin
-  have hk : kindOf f.labels (.num op) = some (.straight 2 1) := by simp [kindOf, hfam, hpops]
-  obtain ⟨h2, -⟩ := verify_straight X hpcl hins R.labels R.height hk (by intro bt; simp) (by simp)
+  have hk : kindOf ls0 (.num op) = some (.straight 2 1) := by simp [kindOf, hfam, hpops]
+  obtain ⟨h2, -⟩ := verify_straight X hpcl hins hL0 R.height hk (by intro bt; simp) (by simp)
     (by simp) (by simp) (by intro l; simp) (by intro l; simp)
-  have sl2 : (((rowNat tr 2 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat = s.stack.size - 2 := by
-    rw [p3]; exact toNat_cast_sub h2 (by omega)
-  have sl1 : (((rowNat tr 2 r 3 : Nat) : F) - ((1 : Nat) : F)).toNat = s.stack.size - 1 := by
-    rw [p3]; exact toNat_cast_sub (by omega) (by omega)
+  have sl2 : (((rowNat tr 2 r 37 : Nat) : F) + ((rowNat tr 2 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat = s.stack.size - 2 := by
+    exact slot_toNat psb p3 hsbR h2 hszP
+  have sl1 : (((rowNat tr 2 r 37 : Nat) : F) + ((rowNat tr 2 r 3 : Nat) : F) - ((1 : Nat) : F)).toNat = s.stack.size - 1 := by
+    exact slot_toNat psb p3 hsbR (by omega) hszP
   have hwk : opW op = 32 + 32 * rowNat tr 2 r 8 ∧ opK op = 7 + rowNat tr 2 r 6 + 2 * rowNat tr 2 r 7 := by
     rw [hop]; rcases hcases with ⟨g6, g7⟩ | ⟨g6, g7⟩ | ⟨g6, g7⟩ <;> rcases f8 with g8 | g8 <;>
       rw [g6, g7, g8] <;> simp [opW, opK]
@@ -256,13 +263,13 @@ theorem bit_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have eR8 := val4_bytes (fun k => rowNat tr 2 r (29 + k))
   simp only [Nat.reduceAdd] at eA8 eB8 eR8
   obtain ⟨s', hs', hrel⟩ := step_binop X R hins hbin hfee hg hg64
-    ⟨0, (((rowNat tr 2 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 2 r 8,
+    ⟨0, (((rowNat tr 2 r 37 : Nat) : F) + ((rowNat tr 2 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 2 r 8,
           rowNat tr 2 r 9 + 256 * rowNat tr 2 r 10, rowNat tr 2 r 11 + 256 * rowNat tr 2 r 12,
           rowNat tr 2 r 13 + 256 * rowNat tr 2 r 14, rowNat tr 2 r 15 + 256 * rowNat tr 2 r 16, rowNat tr 2 r 17⟩
-    ⟨0, (((rowNat tr 2 r 3 : Nat) : F) - ((1 : Nat) : F)).toNat, rowNat tr 2 r 8,
+    ⟨0, (((rowNat tr 2 r 37 : Nat) : F) + ((rowNat tr 2 r 3 : Nat) : F) - ((1 : Nat) : F)).toNat, rowNat tr 2 r 8,
           rowNat tr 2 r 19 + 256 * rowNat tr 2 r 20, rowNat tr 2 r 21 + 256 * rowNat tr 2 r 22,
           rowNat tr 2 r 23 + 256 * rowNat tr 2 r 24, rowNat tr 2 r 25 + 256 * rowNat tr 2 r 26, rowNat tr 2 r 27⟩
-    ⟨0, (((rowNat tr 2 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 2 r 8,
+    ⟨0, (((rowNat tr 2 r 37 : Nat) : F) + ((rowNat tr 2 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 2 r 8,
           rowNat tr 2 r 29 + 256 * rowNat tr 2 r 30, rowNat tr 2 r 31 + 256 * rowNat tr 2 r 32,
           rowNat tr 2 r 33 + 256 * rowNat tr 2 r 34, rowNat tr 2 r 35 + 256 * rowNat tr 2 r 36, rowNat tr 2 r 1⟩
     (hlive _ (by simp)) (hlive _ (by simp)) ⟨rfl, sl2⟩ ⟨rfl, sl1⟩

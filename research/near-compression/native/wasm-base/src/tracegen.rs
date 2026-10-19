@@ -541,6 +541,8 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                 hdr(&mut r);
                 r.u("f_get", (op == 0x20) as u64).u("f_set", (op == 0x21) as u64).u("f_tee", (op == 0x22) as u64);
                 r.u("idx", x as u64).u("tagL", old.tag).limbs("L", limbs(old.val)).u("tL", old.tp).u("hL", hl);
+                // locals space `16 + cid`; the entry frame has cid = 0 (no calls yet)
+                r.s("inv_sp", fe(16).inverse());
                 if op == 0x20 {
                     locals[x] = Ent { tag: old.tag, val: old.val, tp: ts };
                     stack.push(Ent { tag: old.tag, val: old.val, tp: ts });

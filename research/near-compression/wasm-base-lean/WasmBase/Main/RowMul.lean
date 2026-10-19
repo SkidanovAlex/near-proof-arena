@@ -14,14 +14,15 @@ messages (slots `h-2`, `h-1`, same tag), one produced message (slot `h-2`), a FE
 opcode, two channel time checks, and the chip's local semantic guarantee `sem`. -/
 theorem mul_binop_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (L : Looks X nloc ncode pub tr) (hpub : PubOK X nloc ncode pub)
-    (c : Nat → Nat) (hcP : ∀ i, c i < P) (op tag : Nat) (A B Rr : Nat → Nat) (ta ha tb hb : Nat)
+    (c : Nat → Nat) (hcP : ∀ i, c i < P) (op tag : Nat) (A B Rr : Nat → Nat) (ta ha tb hb ksb kcid : Nat)
     {inS outS : List F} {cons prod : List Msg}
-    (hIn : inS = [((c 0 : Nat) : F), ((c 1 : Nat) : F), ((c 2 : Nat) : F), ((0 : Nat) : F)])
+    (hIn : inS = [((c 0 : Nat) : F), ((c 1 : Nat) : F), ((c 2 : Nat) : F), ((0 : Nat) : F),
+      ((c ksb : Nat) : F), ((c kcid : Nat) : F)])
     (hOut : outS = [((c 0 : Nat) : F) + ((1 : Nat) : F), ((c 1 : Nat) : F) + ((1 : Nat) : F),
-      ((c 2 : Nat) : F) + ((c 4 : Nat) : F), ((0 : Nat) : F)])
-    (hcons : cons = [⟨0, (((c 3 : Nat) : F) - ((2 : Nat) : F)).toNat, tag, A 0, A 1, A 2, A 3, c ta⟩,
-      ⟨0, (((c 3 : Nat) : F) - ((1 : Nat) : F)).toNat, tag, B 0, B 1, B 2, B 3, c tb⟩])
-    (hprod : prod = [⟨0, (((c 3 : Nat) : F) - ((2 : Nat) : F)).toNat, tag, Rr 0, Rr 1, Rr 2, Rr 3, c 1⟩])
+      ((c 2 : Nat) : F) + ((c 4 : Nat) : F), ((0 : Nat) : F), ((c ksb : Nat) : F), ((c kcid : Nat) : F)])
+    (hcons : cons = [⟨0, (((c ksb : Nat) : F) + ((c 3 : Nat) : F) - ((2 : Nat) : F)).toNat, tag, A 0, A 1, A 2, A 3, c ta⟩,
+      ⟨0, (((c ksb : Nat) : F) + ((c 3 : Nat) : F) - ((1 : Nat) : F)).toNat, tag, B 0, B 1, B 2, B 3, c tb⟩])
+    (hprod : prod = [⟨0, (((c ksb : Nat) : F) + ((c 3 : Nat) : F) - ((2 : Nat) : F)).toNat, tag, Rr 0, Rr 1, Rr 2, Rr 3, c 1⟩])
     (hfo : (busFetch, true, [((c 0 : Nat) : F), ((op : Nat) : F), ((c 3 : Nat) : F), ((c 4 : Nat) : F),
       ((0 : Nat) : F), ((0 : Nat) : F), ((0 : Nat) : F), ((0 : Nat) : F)], 1) ∈ occs (wasmBaseAir nloc ncode) tr pub)
     (hta1 : (busR16, true, [((c 1 : Nat) : F) - ((c ta : Nat) : F) - ((1 : Nat) : F) - ((65536 : Nat) : F) * ((c ha : Nat) : F)], 1) ∈
@@ -68,20 +69,25 @@ theorem mul_binop_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Tra
   · rw [hprod, hIn]; simp only [List.mem_cons, List.mem_nil_iff, or_false, forall_eq, lvl,
       List.getD_cons_succ, List.getD_cons_zero]; exact ⟨hcP _, trivial⟩
   -- the spec step
-  intro s f tps tpl t pc S live R hin hlive ht1 hS hg64
+  intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
   rw [hIn] at hin
-  obtain ⟨i0, i1, i2, -⟩ := stMsg_cons hin
+  obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
   have hpcl := R.pcLt
+  obtain ⟨ls0, hL0, hfl0⟩ := R.labels
   have p0 : c 0 = pc := natEq i0 (hcP _) (by have := CF.codeLt; omega)
   have p1 : c 1 = t := natEq i1 (hcP _) (by omega)
   have p2 : c 2 = S := natEq i2 (hcP _) (by omega)
+  have psb : c ksb = E.sb := natEq i4 (hcP _) (by have := R.sbLt; omega)
+  have pcid : c kcid = E.cid := natEq i5 (hcP _) (by have := R.cidLt; omega)
+  have hsbR := R.sbLe
   have hpc : pc0 = pc := natEq (e0.symm.trans i0) (by have := CF.codeLt; omega) (by have := CF.codeLt; omega)
   subst hpc
   have hH := R.height
   have hHb := CF.hBound pc0 hpcl
   rw [hH] at eh hHb
   simp only [Option.getD_some] at eh hHb
-  have p3 : c 3 = s.stack.size := natEq eh (hcP _) (by omega)
+  have p3 : c 3 = s.stack.size - E.sb := natEq eh (hcP _) (by omega)
+  have hszP : s.stack.size < P := by have := R.sbLt; omega
   -- the instruction is `.num op`
   have hinsn : ins = .num op := by
     rcases hcase with ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ | ⟨_, _, h, _⟩ |
@@ -94,20 +100,20 @@ theorem mul_binop_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Tra
   -- two operands on the stack
   obtain ⟨hfam, hpops⟩ := isFamilyNum_of_binop hop
   have hv := CF.verify pc0 hpcl
-  have hL := R.labels
+  obtain ⟨ls0, hL, -⟩ := R.labels
   simp only [verifyAt, hins, hL, hH, kindOf, hfam, ite_true, hpops, Bool.and_eq_true,
     decide_eq_true_eq] at hv
   have h2 := hv.1
-  have s2 : (((c 3 : Nat) : F) - ((2 : Nat) : F)).toNat = s.stack.size - 2 := by
-    rw [p3]; exact toNat_cast_sub h2 (by omega)
-  have s1 : (((c 3 : Nat) : F) - ((1 : Nat) : F)).toNat = s.stack.size - 1 := by
-    rw [p3]; exact toNat_cast_sub (by omega) (by omega)
-  have hout : outS = stMsg (pc0 + 1) (t + 1) (S + fee) 0 := by
-    rw [hOut, p0, p1, p2, efee']
+  have s2 : (((c ksb : Nat) : F) + ((c 3 : Nat) : F) - ((2 : Nat) : F)).toNat = s.stack.size - 2 := by
+    exact slot_toNat psb p3 hsbR h2 hszP
+  have s1 : (((c ksb : Nat) : F) + ((c 3 : Nat) : F) - ((1 : Nat) : F)).toNat = s.stack.size - 1 := by
+    exact slot_toNat psb p3 hsbR (by omega) hszP
+  have hout : outS = stMsg (pc0 + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
+    rw [hOut, p0, p1, p2, efee', psb, pcid]
     simp only [stMsg, Lean.Grind.Semiring.natCast_add]
   rw [hcons] at hlive ⊢
   rw [hprod]
-  refine ⟨pc0 + 1, fee, 0, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
+  refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
   rw [s2, s1, p1]
   rw [s2, s1] at hlive
   exact step_binop X R hins hop hfee hg hg64 _ _ _
@@ -185,15 +191,17 @@ theorem mul_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     exact mul_r16 L (hcP _) this
   -- the row's messages
   have hIn : rowIn Mul.table tr pub 3 r =
-      [((rowNat tr 3 r 0 : Nat) : F), ((rowNat tr 3 r 1 : Nat) : F), ((rowNat tr 3 r 2 : Nat) : F), ((0 : Nat) : F)] := by
+      [((rowNat tr 3 r 0 : Nat) : F), ((rowNat tr 3 r 1 : Nat) : F), ((rowNat tr 3 r 2 : Nat) : F), ((0 : Nat) : F),
+        ((rowNat tr 3 r 43 : Nat) : F), ((rowNat tr 3 r 44 : Nat) : F)] := by
     simp only [rowIn, Mul.table, Mul.inters, stdState, stateIn, List.cons_append, List.append_assoc, List.getD_cons_zero,
-      List.map_cons, List.map_nil, hev, Expr.eval_ofNat', cPc, cTs, cS]
+      List.map_cons, List.map_nil, hev, Expr.eval_ofNat', cPc, cTs, cS, Mul.kSb, Mul.kCid]
   have hOut : rowOut Mul.table tr pub 3 r =
       [((rowNat tr 3 r 0 : Nat) : F) + ((1 : Nat) : F), ((rowNat tr 3 r 1 : Nat) : F) + ((1 : Nat) : F),
-        ((rowNat tr 3 r 2 : Nat) : F) + ((rowNat tr 3 r 4 : Nat) : F), ((0 : Nat) : F)] := by
+        ((rowNat tr 3 r 2 : Nat) : F) + ((rowNat tr 3 r 4 : Nat) : F), ((0 : Nat) : F),
+        ((rowNat tr 3 r 43 : Nat) : F), ((rowNat tr 3 r 44 : Nat) : F)] := by
     simp only [rowOut, Mul.table, Mul.inters, stdState, stateOut, List.cons_append, List.append_assoc,
       List.getD_cons_succ, List.getD_cons_zero, List.map_cons, List.map_nil, hev, Expr.eval_add', Expr.eval_ofNat',
-      cPc, cTs, cS, cFee]
+      cPc, cTs, cS, cFee, Mul.kSb, Mul.kCid]
   have hab := hbyte Mul.ab (Or.inl rfl)
   have hbb := hbyte Mul.bb (Or.inr (Or.inl rfl))
   have hrb := hbyte Mul.rb (Or.inr (Or.inr rfl))
@@ -205,12 +213,12 @@ theorem mul_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     rw [← Nat.add_assoc] at *; omega
   have tn : ∀ x : Nat, x < 65536 → (((x : Nat) : F)).toNat = x := fun x hx => Fp.toNat_cast_of_lt (by omega)
   have hCons : rowCons Mul.table tr pub 3 r =
-      [⟨0, (((rowNat tr 3 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 3 r 6,
+      [⟨0, (((rowNat tr 3 r 43 : Nat) : F) + ((rowNat tr 3 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 3 r 6,
         rowNat tr 3 r (7 + 2 * 0) + 256 * rowNat tr 3 r (7 + 2 * 0 + 1),
         rowNat tr 3 r (7 + 2 * 1) + 256 * rowNat tr 3 r (7 + 2 * 1 + 1),
         rowNat tr 3 r (7 + 2 * 2) + 256 * rowNat tr 3 r (7 + 2 * 2 + 1),
         rowNat tr 3 r (7 + 2 * 3) + 256 * rowNat tr 3 r (7 + 2 * 3 + 1), rowNat tr 3 r 15⟩,
-       ⟨0, (((rowNat tr 3 r 3 : Nat) : F) - ((1 : Nat) : F)).toNat, rowNat tr 3 r 6,
+       ⟨0, (((rowNat tr 3 r 43 : Nat) : F) + ((rowNat tr 3 r 3 : Nat) : F) - ((1 : Nat) : F)).toNat, rowNat tr 3 r 6,
         rowNat tr 3 r (17 + 2 * 0) + 256 * rowNat tr 3 r (17 + 2 * 0 + 1),
         rowNat tr 3 r (17 + 2 * 1) + 256 * rowNat tr 3 r (17 + 2 * 1 + 1),
         rowNat tr 3 r (17 + 2 * 2) + 256 * rowNat tr 3 r (17 + 2 * 2 + 1),
@@ -225,7 +233,7 @@ theorem mul_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       decide_false, Bool.false_eq_true, ite_false, true_and, and_true, decide_true, ite_true, List.filterMap_cons,
       List.filterMap_nil, cnt, List.nil_append, List.append_nil, List.cons_append]
     simp only [limbsB, limbB, List.range, List.range.loop, List.map_cons, List.map_nil, List.cons_append,
-      List.nil_append, hev, Expr.eval_add', Expr.eval_sub', Expr.eval_mul', Expr.eval_ofNat', cH, Mul.is64, Mul.ab,
+      List.nil_append, hev, Expr.eval_add', Expr.eval_sub', Expr.eval_mul', Expr.eval_ofNat', cH, Mul.kSb, Mul.is64, Mul.ab,
       Mul.bb, Mul.ta, Mul.tb, mul_limb_cast, decMsg, List.getD_cons_zero, List.getD_cons_succ, Nat.reduceAdd,
       Nat.reduceMul]
     have la := fun i hi => lim 7 hab i hi
@@ -237,7 +245,7 @@ theorem mul_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       tn _ a0, tn _ a1, tn _ a2, tn _ a3, tn _ b0, tn _ b1, tn _ b2, tn _ b3, Fp.toNat_cast_of_lt (hcP _),
       show (((0 : Nat) : F)).toNat = 0 from rfl]
   have hProd : rowProd Mul.table tr pub 3 r =
-      [⟨0, (((rowNat tr 3 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 3 r 6,
+      [⟨0, (((rowNat tr 3 r 43 : Nat) : F) + ((rowNat tr 3 r 3 : Nat) : F) - ((2 : Nat) : F)).toNat, rowNat tr 3 r 6,
         rowNat tr 3 r (27 + 2 * 0) + 256 * rowNat tr 3 r (27 + 2 * 0 + 1),
         rowNat tr 3 r (27 + 2 * 1) + 256 * rowNat tr 3 r (27 + 2 * 1 + 1),
         rowNat tr 3 r (27 + 2 * 2) + 256 * rowNat tr 3 r (27 + 2 * 2 + 1),
@@ -252,7 +260,7 @@ theorem mul_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       decide_false, Bool.false_eq_true, ite_false, true_and, and_true, decide_true, ite_true, List.filterMap_cons,
       List.filterMap_nil, cnt, List.nil_append, List.append_nil, List.cons_append, Bool.true_eq_false]
     simp only [limbsB, limbB, List.range, List.range.loop, List.map_cons, List.map_nil, List.cons_append,
-      List.nil_append, hev, Expr.eval_add', Expr.eval_sub', Expr.eval_mul', Expr.eval_ofNat', cH, cTs, Mul.is64,
+      List.nil_append, hev, Expr.eval_add', Expr.eval_sub', Expr.eval_mul', Expr.eval_ofNat', cH, Mul.kSb, cTs, Mul.is64,
       Mul.rb, mul_limb_cast, decMsg, List.getD_cons_zero, List.getD_cons_succ, Nat.reduceAdd, Nat.reduceMul]
     have lr := fun i hi => lim 27 hrb i hi
     have r0 := lr 0 (by decide); have r1 := lr 1 (by decide); have r2 := lr 2 (by decide); have r3 := lr 3 (by decide)
@@ -284,7 +292,7 @@ theorem mul_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   refine mul_binop_rowfacts L hpub (rowNat tr 3 r) hcP (0x6C + 18 * rowNat tr 3 r 6) (rowNat tr 3 r 6)
     (fun i => rowNat tr 3 r (7 + 2 * i) + 256 * rowNat tr 3 r (7 + 2 * i + 1))
     (fun i => rowNat tr 3 r (17 + 2 * i) + 256 * rowNat tr 3 r (17 + 2 * i + 1))
-    (fun i => rowNat tr 3 r (27 + 2 * i) + 256 * rowNat tr 3 r (27 + 2 * i + 1)) 15 16 25 26
+    (fun i => rowNat tr 3 r (27 + 2 * i) + 256 * rowNat tr 3 r (27 + 2 * i + 1)) 15 16 25 26 43 44
     hIn hOut hCons hProd hfo hta1 hta2 htb1 htb2 ?_ ?_ ?_
   · rcases w64 with g | g <;> rw [g] <;> simp [isBinop, binops]
   · rcases w64 with g | g <;> rw [g] <;> simp [opW]

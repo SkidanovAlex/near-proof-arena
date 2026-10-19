@@ -6,15 +6,17 @@ Fifteen AIRs (≤ 32), max degree 8, no preprocessed or cached traces.  Buses:
 
 | bus | name | message | role |
 |---|---|---|---|
-| 0 | STATE | `[pc, ts, S, halted]` | execution-state chain: each instruction row receives once, sends once |
+| 0 | STATE | `[pc, ts, S, halted, sb, cid]` | execution-state chain: each instruction row receives once, sends once |
 | 1 | FETCH | `[pc, op, h, fee, x0, x1, x2, x3]` | code records; queried by instruction rows, answered by the cached CODE table |
-| 2 | CH | `[space, slot, tag, v0, v1, v2, v3, tp]` | value channel: operand stack (space 0) and locals (space 1); producer → consumer (P-PERF-5) |
+| 2 | CH | `[space, slot, tag, v0, v1, v2, v3, tp]` | value channel: operand stack (space 0, absolute slot `sb + h − k`) and the locals of activation `cid` (space `16 + cid`); producer → consumer (P-PERF-5) |
 | 3 | R16 | `[v]` | 16-bit range lookups into RANGE16 |
 | 4 | BYTE | `[kind, x, y, z]` | byte-pair range (kind 0) / and (1) / or (2) / xor (3) into BYTE |
 
 Values are 4 limbs of 16 bits (i32: limbs 2, 3 are 0); `tag` = 1 for i64.  `S` is the number of
 gas units (`regular_op_cost`) charged so far; `h` is the static operand-stack height at `pc` (from
-the code record); `ts` is the row clock.  A consumer of a stack value receives `(slot, tag, v, tp)`
+the code record); `sb` is the current frame's stack base and `cid` its activation id (0 = entry
+frame; every chip appends the two columns `sb, cid` and passes them through unchanged); `ts` is the
+row clock.  A consumer of a stack value receives `(slot, tag, v, tp)`
 and range-checks `ts - tp - 1 = lo + 2^16 hi` with `lo, 4·hi < 2^16`.
 -/
 namespace WasmBase
@@ -34,11 +36,12 @@ def busByte : Nat := 4
 def B16 : Expr := 65536
 def bool (x : Expr) : Expr := x * (x - 1)
 
-def stateIn (pc ts s : Expr) (cnt : Expr) : Inter := ⟨busState, false, cnt, [pc, ts, s, 0]⟩
-def stateOut (pc ts s halted : Expr) (cnt : Expr) : Inter := ⟨busState, true, cnt, [pc, ts, s, halted]⟩
+def stateIn (pc ts s sb cid : Expr) (cnt : Expr) : Inter := ⟨busState, false, cnt, [pc, ts, s, 0, sb, cid]⟩
+def stateOut (pc ts s halted sb cid : Expr) (cnt : Expr) : Inter :=
+  ⟨busState, true, cnt, [pc, ts, s, halted, sb, cid]⟩
 def fetch (pc op h fee : Expr) (xs : List Expr) (cnt : Expr) : Inter :=
   ⟨busFetch, true, cnt, [pc, op, h, fee] ++ xs⟩
-/-- Space 0 = operand stack, space 1 = locals. -/
+/-- Space 0 = operand stack, space `16 + cid` = locals of activation `cid`. -/
 def chRecv (space slot tag : Expr) (val : List Expr) (tp cnt : Expr) : Inter :=
   ⟨busStk, false, cnt, [space, slot, tag] ++ val ++ [tp]⟩
 def chSend (space slot tag : Expr) (val : List Expr) (ts cnt : Expr) : Inter :=
@@ -58,11 +61,13 @@ def cS : Nat := 2
 def cH : Nat := 3
 def cFee : Nat := 4
 def headerCols : List String := ["pc", "ts", "S", "h", "fee"]
+/-- Frame columns `sb, cid`, appended last by every instruction chip (indices `kSb`, `kCid`). -/
+def frameCols : List String := ["fr_sb", "fr_cid"]
 
-/-- Standard state transition `pc → pc+1` plus fetch. -/
-def stdState (op : Expr) (xs : List Expr) (act : Expr) : List Inter :=
-  [stateIn (v cPc) (v cTs) (v cS) act,
-   stateOut (v cPc + 1) (v cTs + 1) (v cS + v cFee) 0 act,
+/-- Standard state transition `pc → pc+1` plus fetch; the frame columns pass through. -/
+def stdState (sb cid : Nat) (op : Expr) (xs : List Expr) (act : Expr) : List Inter :=
+  [stateIn (v cPc) (v cTs) (v cS) (v sb) (v cid) act,
+   stateOut (v cPc + 1) (v cTs + 1) (v cS + v cFee) 0 (v sb) (v cid) act,
    fetch (v cPc) op (v cH) (v cFee) xs act]
 
 def zeros4 : List Expr := [0, 0, 0, 0]
@@ -73,6 +78,8 @@ def limbsB (base : Nat) : List Expr := (List.range 4).map (limbB base)
 
 /-! ## ADD: i32/i64 add, sub -/
 namespace Add
+def kSb : Nat := 28
+def kCid : Nat := 29
 def fAdd : Nat := 5
 def fSub : Nat := 6
 def is64 : Nat := 7
@@ -85,7 +92,7 @@ def hb : Nat := 19
 def r : Nat := 20    -- r[4] 20..23
 def cy : Nat := 24   -- carries 24..27
 def cols : List String := headerCols ++ ["f_add", "f_sub", "is64", "a0", "a1", "a2", "a3", "ta", "ha",
-  "b0", "b1", "b2", "b3", "tb", "hb", "r0", "r1", "r2", "r3", "c0", "c1", "c2", "c3"]
+  "b0", "b1", "b2", "b3", "tb", "hb", "r0", "r1", "r2", "r3", "c0", "c1", "c2", "c3"] ++ frameCols
 def act : Expr := v fAdd + v fSub
 def op : Expr := 0x6A + 18 * v is64 + v fSub
 /-- add: `a + b = r (+ carry)`, sub: `r + b = a (+ borrow)`; `X + b + c_in = Z + 2^16 c_out`. -/
@@ -103,17 +110,19 @@ def constraints : List Expr :=
    v is64 * (X 2 + v (b + 2) + v (cy + 1) - Z 2 - B16 * v (cy + 2)),
    v is64 * (X 3 + v (b + 3) + v (cy + 2) - Z 3 - B16 * v (cy + 3))]
 def inters : List Inter :=
-  stdState op zeros4 act ++
-  [stkRecv (v cH - 2) (v is64) (limbsOf a) (v ta) act,
-   stkRecv (v cH - 1) (v is64) (limbsOf b) (v tb) act] ++
+  stdState kSb kCid op zeros4 act ++
+  [stkRecv (v kSb + v cH - 2) (v is64) (limbsOf a) (v ta) act,
+   stkRecv (v kSb + v cH - 1) (v is64) (limbsOf b) (v tb) act] ++
   timeChk (v cTs) (v ta) (v ha) act ++ timeChk (v cTs) (v tb) (v hb) act ++
-  [stkSend (v cH - 2) (v is64) (limbsOf r) (v cTs) act] ++
+  [stkSend (v kSb + v cH - 2) (v is64) (limbsOf r) (v cTs) act] ++
   (List.range 4).map (fun i => r16 (v (r + i)) act)
 def table : Table := ⟨"ADD", cols, constraints, inters⟩
 end Add
 
 /-! ## BIT: i32/i64 and, or, xor (byte lookups) -/
 namespace Bit
+def kSb : Nat := 37
+def kCid : Nat := 38
 def fAnd : Nat := 5
 def fOr : Nat := 6
 def fXor : Nat := 7
@@ -127,7 +136,7 @@ def hb : Nat := 28
 def rb : Nat := 29   -- 29..36
 def byteNames (p : String) : List String := (List.range 8).map fun i => p ++ toString i
 def cols : List String := headerCols ++ ["f_and", "f_or", "f_xor", "is64"] ++ byteNames "ab" ++
-  ["ta", "ha"] ++ byteNames "bb" ++ ["tb", "hb"] ++ byteNames "rb"
+  ["ta", "ha"] ++ byteNames "bb" ++ ["tb", "hb"] ++ byteNames "rb" ++ frameCols
 def act : Expr := v fAnd + v fOr + v fXor
 def op : Expr := 0x71 + 18 * v is64 + v fOr + 2 * v fXor
 def kind : Expr := v fAnd + 2 * v fOr + 3 * v fXor
@@ -137,17 +146,19 @@ def constraints : List Expr :=
   ((List.range 4).flatMap fun k =>
     [(1 - v is64) * v (ab + 4 + k), (1 - v is64) * v (bb + 4 + k), (1 - v is64) * v (rb + 4 + k)])
 def inters : List Inter :=
-  stdState op zeros4 act ++
-  [stkRecv (v cH - 2) (v is64) (limbsB ab) (v ta) act,
-   stkRecv (v cH - 1) (v is64) (limbsB bb) (v tb) act] ++
+  stdState kSb kCid op zeros4 act ++
+  [stkRecv (v kSb + v cH - 2) (v is64) (limbsB ab) (v ta) act,
+   stkRecv (v kSb + v cH - 1) (v is64) (limbsB bb) (v tb) act] ++
   timeChk (v cTs) (v ta) (v ha) act ++ timeChk (v cTs) (v tb) (v hb) act ++
-  [stkSend (v cH - 2) (v is64) (limbsB rb) (v cTs) act] ++
+  [stkSend (v kSb + v cH - 2) (v is64) (limbsB rb) (v cTs) act] ++
   (List.range 8).map (fun k => byteQ kind (v (ab + k)) (v (bb + k)) (v (rb + k)) act)
 def table : Table := ⟨"BIT", cols, constraints, inters⟩
 end Bit
 
 /-! ## MUL: i32/i64 mul (byte limbs, carries range-checked) -/
 namespace Mul
+def kSb : Nat := 43
+def kCid : Nat := 44
 def act : Nat := 5
 def is64 : Nat := 6
 def ab : Nat := 7    -- 7..14
@@ -159,7 +170,7 @@ def hb : Nat := 26
 def rb : Nat := 27   -- 27..34
 def cy : Nat := 35   -- 35..42
 def cols : List String := headerCols ++ ["act", "is64"] ++ Bit.byteNames "ab" ++ ["ta", "ha"] ++
-  Bit.byteNames "bb" ++ ["tb", "hb"] ++ Bit.byteNames "rb" ++ Bit.byteNames "cy"
+  Bit.byteNames "bb" ++ ["tb", "hb"] ++ Bit.byteNames "rb" ++ Bit.byteNames "cy" ++ frameCols
 def op : Expr := 0x6C + 18 * v is64
 /-- Column convolution `Σ_{i+j=k} a_i b_j`. -/
 def conv (k : Nat) : Expr :=
@@ -174,11 +185,11 @@ def constraints : List Expr :=
   (List.range 4).map limbEq ++
   (List.range 4).map (fun k => v is64 * limbEq (k + 4))
 def inters : List Inter :=
-  stdState op zeros4 (v act) ++
-  [stkRecv (v cH - 2) (v is64) (limbsB ab) (v ta) (v act),
-   stkRecv (v cH - 1) (v is64) (limbsB bb) (v tb) (v act)] ++
+  stdState kSb kCid op zeros4 (v act) ++
+  [stkRecv (v kSb + v cH - 2) (v is64) (limbsB ab) (v ta) (v act),
+   stkRecv (v kSb + v cH - 1) (v is64) (limbsB bb) (v tb) (v act)] ++
   timeChk (v cTs) (v ta) (v ha) (v act) ++ timeChk (v cTs) (v tb) (v hb) (v act) ++
-  [stkSend (v cH - 2) (v is64) (limbsB rb) (v cTs) (v act)] ++
+  [stkSend (v kSb + v cH - 2) (v is64) (limbsB rb) (v cTs) (v act)] ++
   (List.range 4).map (fun i => byteQ 0 (v (ab + 2 * i)) (v (ab + 2 * i + 1)) 0 (v act)) ++
   (List.range 4).map (fun i => byteQ 0 (v (bb + 2 * i)) (v (bb + 2 * i + 1)) 0 (v act)) ++
   (List.range 4).map (fun i => byteQ 0 (v (rb + 2 * i)) (v (rb + 2 * i + 1)) 0 (v act)) ++
@@ -193,6 +204,8 @@ with `t` one-hot (`el`) and `pow = 2^eb`.  `A` = `a` extended to `2w` bits (sign
 `P = A·2^e mod 2^(2w)` byte by byte with carries; the result is the low half (shl), the high half
 (shr_s, shr_u) or their sum (rotl, rotr). -/
 namespace Shift
+def kSb : Nat := 80
+def kCid : Nat := 81
 def fShl : Nat := 5
 def fShrS : Nat := 6
 def fShrU : Nat := 7
@@ -217,7 +230,7 @@ def cols : List String := headerCols ++ ["f_shl", "f_shrs", "f_shru", "f_rotl", 
   Bit.byteNames "ab" ++ ["ta", "ha", "b0", "b1", "b2", "b3", "tb", "hb"] ++
   ((List.range 6).map fun i => s!"kb{i}") ++ ["q"] ++ ((List.range 3).map fun i => s!"eb{i}") ++
   ((List.range 9).map fun i => s!"el{i}") ++ ["sgn", "rest"] ++
-  ((List.range 16).map fun i => s!"P{i}") ++ ((List.range 16).map fun i => s!"cy{i}")
+  ((List.range 16).map fun i => s!"P{i}") ++ ((List.range 16).map fun i => s!"cy{i}") ++ frameCols
 def left : Expr := v fShl + v fRotl
 def right : Expr := v fShrS + v fShrU + v fRotr
 def act : Expr := left + right
@@ -266,11 +279,11 @@ def constraints : List Expr :=
   (List.range 8).map limbEq ++
   (List.range 8).map (fun j => v is64 * limbEq (j + 8))
 def inters : List Inter :=
-  stdState op zeros4 act ++
-  [stkRecv (v cH - 2) (v is64) (limbsB ab) (v ta) act,
-   stkRecv (v cH - 1) (v is64) (limbsOf b) (v tb) act] ++
+  stdState kSb kCid op zeros4 act ++
+  [stkRecv (v kSb + v cH - 2) (v is64) (limbsB ab) (v ta) act,
+   stkRecv (v kSb + v cH - 1) (v is64) (limbsOf b) (v tb) act] ++
   timeChk (v cTs) (v ta) (v ha) act ++ timeChk (v cTs) (v tb) (v hb) act ++
-  [stkSend (v cH - 2) (v is64) ((List.range 4).map rlimb) (v cTs) act,
+  [stkSend (v kSb + v cH - 2) (v is64) ((List.range 4).map rlimb) (v cTs) act,
    -- `q < 2^16` itself (v1 range-checked `w·q`, which is unsound: `q` is free, so `w·q` can be any
    -- small residue and the shift count `k` was unconstrained; found by the Lean proof)
    r16 (v q) act,
@@ -284,6 +297,8 @@ end Shift
 
 /-! ## CMP: i32/i64 eqz, eq, ne, lt/gt/le/ge _s/_u -/
 namespace Cmp
+def kSb : Nat := 42
+def kCid : Nat := 43
 def fEqz : Nat := 5
 def fEq : Nat := 6
 def fNe : Nat := 7
@@ -312,7 +327,7 @@ def inv : Nat := 41
 def cols : List String := headerCols ++ ["f_eqz", "f_eq", "f_ne", "f_lts", "f_ltu", "f_gts", "f_gtu",
   "f_les", "f_leu", "f_ges", "f_geu", "is64", "a0", "a1", "a2", "a3", "ta", "ha",
   "b0", "b1", "b2", "b3", "tb", "hb", "sa", "ra", "sb", "rb", "d0", "d1", "d2", "d3",
-  "br0", "br1", "br2", "br3", "inv"]
+  "br0", "br1", "br2", "br3", "inv"] ++ frameCols
 def flags : List Nat := [fEqz, fEq, fNe, fLtS, fLtU, fGtS, fGtU, fLeS, fLeU, fGeS, fGeU]
 def act : Expr := (flags.map v).foldl (· + ·) 0
 def op : Expr := 0x45 + 11 * v is64 +
@@ -336,7 +351,7 @@ def res : Expr := (v fEqz + v fEq) * eqf + v fNe * (1 - eqf) +
   (v fLtS + v fLtU + v fGtS + v fGtU) * lt + (v fLeS + v fLeU + v fGeS + v fGeU) * (1 - lt)
 def topA : Expr := v is64 * v (a + 3) + (1 - v is64) * v (a + 1)
 def topB : Expr := v is64 * v (b + 3) + (1 - v is64) * v (b + 1)
-def slotA : Expr := v cH - 2 + v fEqz
+def slotA : Expr := v kSb + v cH - 2 + v fEqz
 def constraints : List Expr :=
   (flags.map fun f => bool (v f)) ++ [bool act, bool (v is64)] ++
   ((List.range 4).map fun i => v fEqz * v (b + i)) ++
@@ -349,9 +364,9 @@ def constraints : List Expr :=
    limbEq 0, limbEq 1, v is64 * limbEq 2, v is64 * limbEq 3,
    zsum * eqf]
 def inters : List Inter :=
-  stdState op zeros4 act ++
+  stdState kSb kCid op zeros4 act ++
   [stkRecv slotA (v is64) (limbsOf a) (v ta) act,
-   stkRecv (v cH - 1) (v is64) (limbsOf b) (v tb) (act - v fEqz)] ++
+   stkRecv (v kSb + v cH - 1) (v is64) (limbsOf b) (v tb) (act - v fEqz)] ++
   timeChk (v cTs) (v ta) (v ha) act ++ timeChk (v cTs) (v tb) (v hb) (act - v fEqz) ++
   [stkSend slotA 0 [res, 0, 0, 0] (v cTs) act] ++
   ((List.range 4).map fun i => r16 (v (d + i)) act) ++
@@ -361,20 +376,24 @@ end Cmp
 
 /-! ## CONST: i32.const, i64.const (immediate from the code record) -/
 namespace Const
+def kSb : Nat := 11
+def kCid : Nat := 12
 def act : Nat := 5
 def is64 : Nat := 6
 def imm : Nat := 7   -- 7..10
-def cols : List String := headerCols ++ ["act", "is64", "imm0", "imm1", "imm2", "imm3"]
+def cols : List String := headerCols ++ ["act", "is64", "imm0", "imm1", "imm2", "imm3"] ++ frameCols
 def op : Expr := 0x41 + v is64
 def constraints : List Expr :=
   [bool (v act), bool (v is64), (1 - v is64) * v (imm + 2), (1 - v is64) * v (imm + 3)]
 def inters : List Inter :=
-  stdState op (limbsOf imm) (v act) ++ [stkSend (v cH) (v is64) (limbsOf imm) (v cTs) (v act)]
+  stdState kSb kCid op (limbsOf imm) (v act) ++ [stkSend (v kSb + v cH) (v is64) (limbsOf imm) (v cTs) (v act)]
 def table : Table := ⟨"CONST", cols, constraints, inters⟩
 end Const
 
 /-! ## STACK: drop, select -/
 namespace Stack
+def kSb : Nat := 28
+def kCid : Nat := 29
 def fDrop : Nat := 5
 def fSel : Nat := 6
 def tagA : Nat := 7
@@ -390,7 +409,7 @@ def t1 : Nat := 25
 def h1 : Nat := 26
 def inv : Nat := 27
 def cols : List String := headerCols ++ ["f_drop", "f_sel", "tagA", "A0", "A1", "A2", "A3", "tA", "hA",
-  "tagV", "V2_0", "V2_1", "V2_2", "V2_3", "t2", "h2", "V1_0", "V1_1", "V1_2", "V1_3", "t1", "h1", "inv"]
+  "tagV", "V2_0", "V2_1", "V2_2", "V2_3", "t2", "h2", "V1_0", "V1_1", "V1_2", "V1_3", "t1", "h1", "inv"] ++ frameCols
 def act : Expr := v fDrop + v fSel
 def op : Expr := 0x1A * v fDrop + 0x1B * v fSel
 def cz : Expr := v A + v (A + 1)
@@ -404,12 +423,12 @@ def constraints : List Expr :=
    (1 - v tagV) * v (V1 + 2), (1 - v tagV) * v (V1 + 3),
    cz * (1 - nz)]
 def inters : List Inter :=
-  stdState op zeros4 act ++
-  [stkRecv (v cH - 1) (v tagA) (limbsOf A) (v tA) act] ++ timeChk (v cTs) (v tA) (v hA) act ++
-  [stkRecv (v cH - 2) (v tagV) (limbsOf V2) (v t2) (v fSel),
-   stkRecv (v cH - 3) (v tagV) (limbsOf V1) (v t1) (v fSel)] ++
+  stdState kSb kCid op zeros4 act ++
+  [stkRecv (v kSb + v cH - 1) (v tagA) (limbsOf A) (v tA) act] ++ timeChk (v cTs) (v tA) (v hA) act ++
+  [stkRecv (v kSb + v cH - 2) (v tagV) (limbsOf V2) (v t2) (v fSel),
+   stkRecv (v kSb + v cH - 3) (v tagV) (limbsOf V1) (v t1) (v fSel)] ++
   timeChk (v cTs) (v t2) (v h2) (v fSel) ++ timeChk (v cTs) (v t1) (v h1) (v fSel) ++
-  [stkSend (v cH - 3) (v tagV) ((List.range 4).map out) (v cTs) (v fSel)]
+  [stkSend (v kSb + v cH - 3) (v tagV) ((List.range 4).map out) (v cTs) (v fSel)]
 def table : Table := ⟨"STACK", cols, constraints, inters⟩
 end Stack
 
@@ -418,6 +437,8 @@ return / br to the function label (HALT), br_if to the function label (HALTIF). 
 pcs are static (code record field `x0`); under the no-discard domain condition branches do not
 touch the operand stack. -/
 namespace Ctrl
+def kSb : Nat := 16
+def kCid : Nat := 17
 def fNext : Nat := 5
 def fJump : Nat := 6
 def fJif : Nat := 7
@@ -429,7 +450,7 @@ def tc : Nat := 13
 def hc : Nat := 14
 def inv : Nat := 15
 def cols : List String := headerCols ++ ["f_next", "f_jump", "f_jif", "f_halt", "f_hif", "tgt",
-  "c0", "c1", "tc", "hc", "inv"]
+  "c0", "c1", "tc", "hc", "inv"] ++ frameCols
 def opNext : Nat := 0x101
 def opJump : Nat := 0x102
 def opJif : Nat := 0x103
@@ -446,19 +467,23 @@ def pcNext : Expr := v fNext * pc1 + v fJump * v tgt + v fJif * (nz * v tgt + (1
 def halted : Expr := v fHalt + v fHif * nz
 def constraints : List Expr :=
   [bool (v fNext), bool (v fJump), bool (v fJif), bool (v fHalt), bool (v fHif), bool act,
-   (v c + v (c + 1)) * (1 - nz)]
+   (v c + v (c + 1)) * (1 - nz),
+   -- HALT / HALTIF (end of the function) only in the entry frame (calls: family 4)
+   (v fHalt + v fHif) * v kCid]
 def inters : List Inter :=
-  [stateIn (v cPc) (v cTs) (v cS) act,
-   stateOut pcNext (v cTs + 1) (v cS + v cFee) halted act,
+  [stateIn (v cPc) (v cTs) (v cS) (v kSb) (v kCid) act,
+   stateOut pcNext (v cTs + 1) (v cS + v cFee) halted (v kSb) (v kCid) act,
    fetch (v cPc) op (v cH) (v cFee) [v tgt, 0, 0, 0] act,
-   stkRecv (v cH - 1) 0 [v c, v (c + 1), 0, 0] (v tc) cnd] ++
+   stkRecv (v kSb + v cH - 1) 0 [v c, v (c + 1), 0, 0] (v tc) cnd] ++
   timeChk (v cTs) (v tc) (v hc) cnd
 def table : Table := ⟨"CTRL", cols, constraints, inters⟩
 end Ctrl
 
-/-! ## LOCAL: local.get, local.set, local.tee (locals are channel space 1: every access consumes
-the current record and produces a fresh one) -/
+/-! ## LOCAL: local.get, local.set, local.tee (locals are channel space `16 + cid`: every access
+consumes the current record and produces a fresh one) -/
 namespace Local
+def kSb : Nat := 23
+def kCid : Nat := 24
 def fGet : Nat := 5
 def fSet : Nat := 6
 def fTee : Nat := 7
@@ -472,7 +497,10 @@ def V : Nat := 17    -- 17..20 (stack value, set/tee)
 def tV : Nat := 21
 def hV : Nat := 22
 def cols : List String := headerCols ++ ["f_get", "f_set", "f_tee", "idx", "tagL", "L0", "L1", "L2", "L3",
-  "tL", "hL", "tagV", "V0", "V1", "V2", "V3", "tV", "hV"]
+  "tL", "hL", "tagV", "V0", "V1", "V2", "V3", "tV", "hV"] ++ frameCols ++ ["inv_sp"]
+/-- inverse of the locals space `16 + cid` (it is non-zero, so the produced local and stack messages
+differ) -/
+def invSp : Nat := 25
 def act : Expr := v fGet + v fSet + v fTee
 def wr : Expr := v fSet + v fTee
 def op : Expr := 0x20 + v fSet + 2 * v fTee
@@ -481,22 +509,27 @@ def newVal (i : Nat) : Expr := v fGet * v (L + i) + wr * v (V + i)
 def constraints : List Expr :=
   [bool (v fGet), bool (v fSet), bool (v fTee), bool act, bool (v tagL), bool (v tagV),
    (1 - v tagL) * v (L + 2), (1 - v tagL) * v (L + 3),
-   (1 - v tagV) * v (V + 2), (1 - v tagV) * v (V + 3)]
+   (1 - v tagV) * v (V + 2), (1 - v tagV) * v (V + 3),
+   act * ((16 + v kCid) * v invSp - 1)]
 def inters : List Inter :=
-  stdState op [v idx, 0, 0, 0] act ++
-  [chRecv 1 (v idx) (v tagL) (limbsOf L) (v tL) act] ++ timeChk (v cTs) (v tL) (v hL) act ++
-  [chSend 1 (v idx) newTag ((List.range 4).map newVal) (v cTs) act,
-   stkRecv (v cH - 1) (v tagV) (limbsOf V) (v tV) wr] ++ timeChk (v cTs) (v tV) (v hV) wr ++
-  [stkSend (v cH - 1 + v fGet) newTag ((List.range 4).map newVal) (v cTs) (v fGet + v fTee)]
+  stdState kSb kCid op [v idx, 0, 0, 0] act ++
+  [chRecv (16 + v kCid) (v idx) (v tagL) (limbsOf L) (v tL) act] ++ timeChk (v cTs) (v tL) (v hL) act ++
+  [chSend (16 + v kCid) (v idx) newTag ((List.range 4).map newVal) (v cTs) act,
+   stkRecv (v kSb + v cH - 1) (v tagV) (limbsOf V) (v tV) wr] ++ timeChk (v cTs) (v tV) (v hV) wr ++
+  [stkSend (v kSb + v cH - 1 + v fGet) newTag ((List.range 4).map newVal) (v cTs) (v fGet + v fTee)]
 def table : Table := ⟨"LOCAL", cols, constraints, inters⟩
 end Local
 
-/-! ## BOUNDARY (height 4): initial / final state, final stack value, initial / final locals. -/
+/-! ## BOUNDARY (height 4): initial / final state, final stack value, initial / final locals of the
+entry frame (space 16). -/
 namespace Boundary
 def pcf : Nat := 0
 def tpr : Nat := 1
-/-- per local `j`: final tag, value limbs, producer time (6 columns from `2 + 6 j`) -/
-def fin (j : Nat) : Nat := 2 + 6 * j
+/-- the final STATE message's frame fields (free: a trap may happen in any frame) -/
+def sbf : Nat := 2
+def cidf : Nat := 3
+/-- per local `j`: final tag, value limbs, producer time (6 columns from `4 + 6 j`) -/
+def fin (j : Nat) : Nat := 4 + 6 * j
 /-- Public values: `[N, S_final, nres, rtag, r0, r1, r2, r3, status]`, then one tag per local
 (`status` = 1: the function returned; 2: it trapped).  The code is not public: it is the cached CODE
 table, whose commitment is a statement component (`code_root`).  The first instruction row has
@@ -509,17 +542,17 @@ def pubR : Nat := 4
 def pubStatus : Nat := 8
 def pubLoc : Nat := 9
 def recWidth : Nat := 8
-def cols (nloc : Nat) : List String := ["pcf", "tpr"] ++
+def cols (nloc : Nat) : List String := ["pcf", "tpr", "sbf", "cidf"] ++
   ((List.range nloc).flatMap fun j => [s!"ftag{j}", s!"fv{j}_0", s!"fv{j}_1", s!"fv{j}_2", s!"fv{j}_3", s!"ftp{j}"])
 def inters (nloc : Nat) : List Inter :=
-  [stateOut 0 1 0 0 .first,
-   ⟨busState, false, .first, [v pcf, pv pubN, pv pubS, pv pubStatus]⟩,
+  [stateOut 0 1 0 0 0 0 .first,
+   ⟨busState, false, .first, [v pcf, pv pubN, pv pubS, pv pubStatus, v sbf, v cidf]⟩,
    -- the result is returned only if the function did not trap
    stkRecv 0 (pv pubTag) ((List.range 4).map fun i => pv (pubR + i)) (v tpr)
      (.first * pv pubNres * (2 - pv pubStatus))] ++
   ((List.range nloc).flatMap fun j =>
-    [chSend 1 (Expr.c j) (pv (pubLoc + j)) zeros4 0 .first,
-     chRecv 1 (Expr.c j) (v (fin j)) ((List.range 4).map fun i => v (fin j + 1 + i)) (v (fin j + 5)) .first])
+    [chSend 16 (Expr.c j) (pv (pubLoc + j)) zeros4 0 .first,
+     chRecv 16 (Expr.c j) (v (fin j)) ((List.range 4).map fun i => v (fin j + 1 + i)) (v (fin j + 5)) .first])
 def table (nloc : Nat) : Table := ⟨"BOUNDARY", cols nloc, [], inters nloc⟩
 end Boundary
 
@@ -583,6 +616,8 @@ enforced when `tz = 0`) and `tov = div_s · sign(a) · sign(b) · topbit(Q)` (fo
 with equality exactly when `a = MIN`, `b = ±1`).  A trapping row consumes its operands, produces
 nothing and ends the execution (`halted = 2`). -/
 namespace Div
+def kSb : Nat := 95
+def kCid : Nat := 96
 def fDivS : Nat := 5
 def fDivU : Nat := 6
 def fRemS : Nat := 7
@@ -618,7 +653,7 @@ def names (p : String) (n : Nat) : List String := (List.range n).map fun i => p 
 def cols : List String := headerCols ++ ["f_divs", "f_divu", "f_rems", "f_remu", "is64"] ++ names "a" 4 ++
   ["ta", "ha"] ++ names "b" 4 ++ ["tb", "hb", "hbA", "ra", "hbB", "rb"] ++ names "A" 8 ++ names "B" 8 ++
   names "Q" 8 ++ names "R" 8 ++ names "ca" 4 ++ names "cb" 4 ++ names "cy" 8 ++ names "d" 4 ++ names "bw" 4 ++
-  ["tz", "invB", "hbQ", "rq", "tov"] ++ names "res" 4 ++ names "cr" 4
+  ["tz", "invB", "hbQ", "rq", "tov"] ++ names "res" 4 ++ names "cr" 4 ++ frameCols
 def act : Expr := v fDivS + v fDivU + v fRemS + v fRemU
 def signed : Expr := v fDivS + v fRemS
 def trap : Expr := v tz + v tov
@@ -674,13 +709,13 @@ def constraints : List Expr :=
   -- the result
   negChain sres (fun i => v (res + i)) X cr
 def inters : List Inter :=
-  [stateIn (v cPc) (v cTs) (v cS) act,
-   stateOut (v cPc + 1) (v cTs + 1) (v cS + v cFee) (2 * trap) act,
+  [stateIn (v cPc) (v cTs) (v cS) (v kSb) (v kCid) act,
+   stateOut (v cPc + 1) (v cTs + 1) (v cS + v cFee) (2 * trap) (v kSb) (v kCid) act,
    fetch (v cPc) op (v cH) (v cFee) zeros4 act,
-   stkRecv (v cH - 2) (v is64) (limbsOf a) (v ta) act,
-   stkRecv (v cH - 1) (v is64) (limbsOf b) (v tb) act] ++
+   stkRecv (v kSb + v cH - 2) (v is64) (limbsOf a) (v ta) act,
+   stkRecv (v kSb + v cH - 1) (v is64) (limbsOf b) (v tb) act] ++
   timeChk (v cTs) (v ta) (v ha) act ++ timeChk (v cTs) (v tb) (v hb) act ++
-  [stkSend (v cH - 2) (v is64) (limbsOf res) (v cTs) (act * (1 - trap)),
+  [stkSend (v kSb + v cH - 2) (v is64) (limbsOf res) (v cTs) (act * (1 - trap)),
    r16 (2 * v ra) act, r16 (2 * v rb) act, r16 (2 * v rq) act] ++
   (List.range 4).map (fun i => byteQ 0 (v (AB + 2 * i)) (v (AB + 2 * i + 1)) 0 act) ++
   (List.range 4).map (fun i => byteQ 0 (v (BB + 2 * i)) (v (BB + 2 * i + 1)) 0 act) ++

@@ -3,10 +3,12 @@ import WasmBase.Check
 /-!
 # WasmBase.Event — channel messages, the spec-state relation, and the gas/charge step
 
-The value channel (bus CH) carries `Msg`s.  A spec state `s` (one frame `f`) is related to a set
-`live` of channel messages when `live` is exactly the encoding of the operand stack (space 0,
-slot = stack index) and of the locals (space 1, slot = local index), each with some producer time
-`< t`.
+The value channel (bus CH) carries `Msg`s.  A spec state `s` with current frame `f` is related to a
+set `live` of channel messages (`RelW`, README §10) when `live` is exactly the encoding of the whole
+operand stack (space 0, slot = absolute stack index), of the current frame's locals (space
+`16 + cid`, slot = local index), each with some producer time `< t`, and of an outer part `E.live`
+(caller frames' locals, and later globals, memory words and call records) in other spaces.  The
+frame environment `E : Env` carries the stack base, the activation id and the caller frames.
 -/
 namespace WasmBase
 open NearSpecV3.Wasm
@@ -115,8 +117,9 @@ set_option linter.unusedSimpArgs false
 def stackView (stk : Array Val) (tps : Nat → Nat) : List Msg :=
   (List.range stk.size).map fun i => enc 0 i (stk[i]?.getD default) (tps i)
 
-def localView (locs : Array Val) (tpl : Nat → Nat) : List Msg :=
-  (List.range locs.size).map fun j => enc 1 j (locs[j]?.getD default) (tpl j)
+/-- The locals of one activation, in channel space `sp` (`16 + cid`). -/
+def localView (sp : Nat) (locs : Array Val) (tpl : Nat → Nat) : List Msg :=
+  (List.range locs.size).map fun j => enc sp j (locs[j]?.getD default) (tpl j)
 
 theorem mem_stackView {x : Msg} {stk : Array Val} {tps : Nat → Nat} :
     x ∈ stackView stk tps ↔ ∃ i, i < stk.size ∧ x = enc 0 i (stk[i]?.getD default) (tps i) := by
@@ -125,8 +128,8 @@ theorem mem_stackView {x : Msg} {stk : Array Val} {tps : Nat → Nat} :
   · rintro ⟨i, hi, rfl⟩; exact ⟨i, hi, rfl⟩
   · rintro ⟨i, hi, rfl⟩; exact ⟨i, hi, rfl⟩
 
-theorem mem_localView {x : Msg} {locs : Array Val} {tpl : Nat → Nat} :
-    x ∈ localView locs tpl ↔ ∃ j, j < locs.size ∧ x = enc 1 j (locs[j]?.getD default) (tpl j) := by
+theorem mem_localView {x : Msg} {sp : Nat} {locs : Array Val} {tpl : Nat → Nat} :
+    x ∈ localView sp locs tpl ↔ ∃ j, j < locs.size ∧ x = enc sp j (locs[j]?.getD default) (tpl j) := by
   simp only [localView, List.mem_map, List.mem_range]
   constructor
   · rintro ⟨i, hi, rfl⟩; exact ⟨i, hi, rfl⟩
@@ -154,51 +157,81 @@ structure Ctx where
 
 def Ctx.R (X : Ctx) : Nat := X.cfg.regularOpCost
 
-/-- **The simulation relation** between a spec state and the AIR view at time `t`. -/
-structure RelW (X : Ctx) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat) (live : Msg → Prop) :
-    Prop where
-  frames : s.frames = [f]
+/-- The part of the machine a straight-line instruction does not touch: the current frame's stack
+base and activation id, the caller frames, and the live channel messages of everything except the
+operand stack and the current locals (callers' locals, call records, globals, memory words, dead
+activations).  Families 2–4 refine `live` by their views. -/
+structure Env where
+  sb : Nat
+  cid : Nat
+  rest : List Frame
+  live : Msg → Prop
+
+/-- Channel space of the current activation's locals. -/
+def Env.lsp (E : Env) : Nat := 16 + E.cid
+
+/-- Spec label heights are absolute; the checker's are relative to the frame base. -/
+def shiftLabels (sb : Nat) (ls : List Label) : List Label := ls.map fun l => { l with height := l.height + sb }
+
+@[simp] theorem shiftLabels_zero (ls : List Label) : shiftLabels 0 ls = ls := by
+  simp [shiftLabels]
+
+/-- **The simulation relation** between a spec state and the AIR view at time `t` (design note:
+results/pq-wasm-base/README.md §10). -/
+structure RelW (X : Ctx) (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat)
+    (live : Msg → Prop) : Prop where
+  frames : s.frames = f :: E.rest
   fn : f.fn = X.fn
   pcEq : f.pc = pc
   pcLt : pc < X.pf.code.size
-  labels : X.ck.labels[pc]? = some f.labels
-  base : f.base = 0
-  height : X.ck.heights[pc]? = some s.stack.size
+  labels : ∃ ls, X.ck.labels[pc]? = some ls ∧ f.labels = shiftLabels E.sb ls
+  base : f.base = E.sb
+  sbLe : E.sb ≤ s.stack.size
+  height : X.ck.heights[pc]? = some (s.stack.size - E.sb)
   nloc : f.locals.size = X.pf.locals.size
   gas : X.R * S + s.gas.g = X.g0
   numS : ∀ i, i < s.stack.size → isNum (s.stack[i]?.getD default)
   numL : ∀ j, j < f.locals.size → isNum (f.locals[j]?.getD default)
   tpsLt : ∀ i, i < s.stack.size → tps i < t
   tplLt : ∀ j, j < f.locals.size → tpl j < t
-  live : ∀ x, live x ↔ x ∈ stackView s.stack tps ∨ x ∈ localView f.locals tpl
+  envSep : ∀ x, E.live x → x.space ≠ 0 ∧ x.space ≠ E.lsp
+  /-- Activation id 0 is the entry frame: no caller frames, stack base 0. -/
+  entry : E.cid = 0 → E.rest = [] ∧ E.sb = 0
+  /-- Field-size bounds on the frame fields (the AIR carries `sb`, `cid` as field elements). -/
+  sbLt : E.sb < 2 ^ 28
+  cidLt : E.cid < 2 ^ 28
+  live : ∀ x, live x ↔ x ∈ stackView s.stack tps ∨ x ∈ localView E.lsp f.locals tpl ∨ E.live x
 
-def Rel (X : Ctx) (s : St) (t pc S : Nat) (live : Msg → Prop) : Prop :=
-  ∃ f tps tpl, RelW X s f tps tpl t pc S live
+/-- The relation with the frame data existential; `sb`/`cid` are the AIR state's. -/
+def Rel (X : Ctx) (s : St) (t pc S sb cid : Nat) (live : Msg → Prop) : Prop :=
+  ∃ E f tps tpl, E.sb = sb ∧ E.cid = cid ∧ RelW X E s f tps tpl t pc S live
 
 /-- A live stack message at slot `i` is the encoding of stack entry `i`. -/
-theorem RelW.stack_msg {X : Ctx} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X s f tps tpl t pc S live) {x : Msg} (hx : live x)
+theorem RelW.stack_msg {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {x : Msg} (hx : live x)
     (hs : x.space = 0) (hi : x.slot < s.stack.size) :
     x = enc 0 x.slot (s.stack[x.slot]?.getD default) (tps x.slot) := by
-  rcases (R.live x).mp hx with h | h
+  rcases (R.live x).mp hx with h | h | h
   · obtain ⟨i, hi', rfl⟩ := mem_stackView.mp h
     rfl
   · obtain ⟨j, _, rfl⟩ := mem_localView.mp h
-    simp at hs
+    exfalso; simp only [enc_space, Env.lsp] at hs; omega
+  · exact absurd hs (R.envSep x h).1
 
-theorem RelW.local_msg {X : Ctx} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X s f tps tpl t pc S live) {x : Msg} (hx : live x)
-    (hs : x.space = 1) (hj : x.slot < f.locals.size) :
-    x = enc 1 x.slot (f.locals[x.slot]?.getD default) (tpl x.slot) := by
-  rcases (R.live x).mp hx with h | h
+theorem RelW.local_msg {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {x : Msg} (hx : live x)
+    (hs : x.space = E.lsp) (hj : x.slot < f.locals.size) :
+    x = enc E.lsp x.slot (f.locals[x.slot]?.getD default) (tpl x.slot) := by
+  rcases (R.live x).mp hx with h | h | h
   · obtain ⟨i, _, rfl⟩ := mem_stackView.mp h
-    simp at hs
+    exfalso; simp only [enc_space, Env.lsp] at hs; omega
   · obtain ⟨j, hj', rfl⟩ := mem_localView.mp h
     rfl
+  · exact absurd hs (R.envSep x h).2
 
 /-- **General view update.** The new stack keeps the first `n - k` entries and appends new ones
 (producer time `t`); the locals change at most at index `J` (fresh producer time `t`). -/
-theorem view_update {stk stk' locs locs' : Array Val} {tps tpl : Nat → Nat} {t k : Nat}
+theorem view_update {stk stk' locs locs' : Array Val} {tps tpl : Nat → Nat} {t k sp : Nat} (hsp : sp ≠ 0)
     (J : Option Nat) (hk : k ≤ stk.size)
     (keep : ∀ i, i < stk.size - k → stk'[i]? = stk[i]?) (hsz : stk.size - k ≤ stk'.size)
     (lsz : locs'.size = locs.size) (lkeep : ∀ j, some j ≠ J → locs'[j]? = locs[j]?)
@@ -206,13 +239,13 @@ theorem view_update {stk stk' locs locs' : Array Val} {tps tpl : Nat → Nat} {t
     (tpsLt : ∀ i, i < stk.size → tps i < t) (tplLt : ∀ j, j < locs.size → tpl j < t)
     (x : Msg) :
     (x ∈ stackView stk' (fun i => if i < stk.size - k then tps i else t) ∨
-      x ∈ localView locs' (fun j => if some j = J then t else tpl j)) ↔
-      ((x ∈ stackView stk tps ∨ x ∈ localView locs tpl) ∧
+      x ∈ localView sp locs' (fun j => if some j = J then t else tpl j)) ↔
+      ((x ∈ stackView stk tps ∨ x ∈ localView sp locs tpl) ∧
         x ∉ ((List.range k).map fun d => enc 0 (stk.size - k + d) (stk[stk.size - k + d]?.getD default)
-          (tps (stk.size - k + d))) ++ J.toList.map (fun j => enc 1 j (locs[j]?.getD default) (tpl j))) ∨
+          (tps (stk.size - k + d))) ++ J.toList.map (fun j => enc sp j (locs[j]?.getD default) (tpl j))) ∨
       x ∈ ((List.range (stk'.size - (stk.size - k))).map fun d =>
         enc 0 (stk.size - k + d) (stk'[stk.size - k + d]?.getD default) t) ++
-        J.toList.map (fun j => enc 1 j (locs'[j]?.getD default) t) := by
+        J.toList.map (fun j => enc sp j (locs'[j]?.getD default) t) := by
   simp only [mem_stackView, mem_localView, List.mem_append, List.mem_map, List.mem_range,
     Option.mem_toList]
   constructor
@@ -223,7 +256,7 @@ theorem view_update {stk stk' locs locs' : Array Val} {tps tpl : Nat → Nat} {t
         · simp [hlt, keep i hlt]
         · rintro (⟨d, hd, he⟩ | ⟨j, _, he⟩)
           · have := congrArg Msg.slot he; simp at this; omega
-          · have := congrArg Msg.space he; simp at this
+          · have := congrArg Msg.space he; simp at this; omega
       · right; left
         refine ⟨i - (stk.size - k), ?_, ?_⟩
         · exact Nat.sub_lt_sub_right (Nat.le_of_not_lt hlt) hi
@@ -236,7 +269,7 @@ theorem view_update {stk stk' locs locs' : Array Val} {tps tpl : Nat → Nat} {t
         refine ⟨Or.inr ⟨j, by omega, ?_⟩, ?_⟩
         · simp [hj', lkeep j hj']
         · rintro (⟨d, hd, he⟩ | ⟨j0, hj0, he⟩)
-          · have := congrArg Msg.space he; simp at this
+          · have := congrArg Msg.space he; simp at this; omega
           · have := congrArg Msg.slot he; simp at this; subst this; exact hj' hj0.symm
   · rintro (⟨(⟨i, hi, rfl⟩ | ⟨j, hj, rfl⟩), hn⟩ | (⟨d, hd, rfl⟩ | ⟨j0, hj0, rfl⟩))
     · have hlt : i < stk.size - k := by

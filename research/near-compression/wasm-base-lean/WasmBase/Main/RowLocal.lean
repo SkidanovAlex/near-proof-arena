@@ -17,13 +17,13 @@ theorem local_enc {m : Msg} (hm : m.ok) (sp sl tp : Nat) :
 
 theorem local_filterC :
     Local.inters.filter (fun i => decide (i.bus = busStk ∧ i.send = false)) =
-      [chRecv 1 (v Local.idx) (v Local.tagL) (limbsOf Local.L) (v Local.tL) Local.act,
-       stkRecv (v cH - 1) (v Local.tagV) (limbsOf Local.V) (v Local.tV) Local.wr] := by decide
+      [chRecv (16 + v Local.kCid) (v Local.idx) (v Local.tagL) (limbsOf Local.L) (v Local.tL) Local.act,
+       stkRecv (v Local.kSb + v cH - 1) (v Local.tagV) (limbsOf Local.V) (v Local.tV) Local.wr] := by decide
 
 theorem local_filterP :
     Local.inters.filter (fun i => decide (i.bus = busStk ∧ i.send = true)) =
-      [chSend 1 (v Local.idx) Local.newTag ((List.range 4).map Local.newVal) (v cTs) Local.act,
-       stkSend (v cH - 1 + v Local.fGet) Local.newTag ((List.range 4).map Local.newVal) (v cTs)
+      [chSend (16 + v Local.kCid) (v Local.idx) Local.newTag ((List.range 4).map Local.newVal) (v cTs) Local.act,
+       stkSend (v Local.kSb + v cH - 1 + v Local.fGet) Local.newTag ((List.range 4).map Local.newVal) (v cTs)
          (v Local.fGet + v Local.fTee)] := by decide
 
 theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
@@ -36,7 +36,7 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have hcP : ∀ i, rowNat tr 9 r i < P := rowNat_lt tr 9 r
   have hcon : ∀ e ∈ Local.table.constraints, e.eval (natRow (rowNat tr 9 r) (tr.row pub 9 r)) = 0 :=
     table_constr H ht hr
-  obtain ⟨bG, bS, bT, hsum, bL, bV, zL, zV⟩ := local_sound (rowNat tr 9 r) (tr.row pub 9 r) hcP hcon
+  obtain ⟨bG, bS, bT, hsum, bL, bV, zL, zV, hne⟩ := local_sound (rowNat tr 9 r) (tr.row pub 9 r) hcP hcon
   replace bG : rowNat tr 9 r 5 = 0 ∨ rowNat tr 9 r 5 = 1 := bG
   replace bS : rowNat tr 9 r 6 = 0 ∨ rowNat tr 9 r 6 = 1 := bS
   replace bT : rowNat tr 9 r 7 = 0 ∨ rowNat tr 9 r 7 = 1 := bT
@@ -90,39 +90,41 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       · rename_i h
         rcases bS with g' | g' <;> rcases bT with g'' | g'' <;> simp only [g', g''] <;> (try omega) <;> grind
   have hIn : rowIn Local.table tr pub 9 r =
-      [((rowNat tr 9 r 0 : Nat) : F), ((rowNat tr 9 r 1 : Nat) : F), ((rowNat tr 9 r 2 : Nat) : F), ((0 : Nat) : F)] := by
+      [((rowNat tr 9 r 0 : Nat) : F), ((rowNat tr 9 r 1 : Nat) : F), ((rowNat tr 9 r 2 : Nat) : F), ((0 : Nat) : F),
+        ((rowNat tr 9 r 23 : Nat) : F), ((rowNat tr 9 r 24 : Nat) : F)] := by
     simp only [rowIn, Local.table, Local.inters, stdState, stateIn, List.cons_append, List.getD_cons_zero,
-      List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_ofNat', cell_cast, Trace.row, cPc, cTs, cS]
+      List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_ofNat', cell_cast, Trace.row, Local.kSb, Local.kCid, cPc, cTs, cS]
   have hOut : rowOut Local.table tr pub 9 r =
       [((rowNat tr 9 r 0 : Nat) : F) + ((1 : Nat) : F), ((rowNat tr 9 r 1 : Nat) : F) + ((1 : Nat) : F),
-        ((rowNat tr 9 r 2 : Nat) : F) + ((rowNat tr 9 r 4 : Nat) : F), ((0 : Nat) : F)] := by
+        ((rowNat tr 9 r 2 : Nat) : F) + ((rowNat tr 9 r 4 : Nat) : F), ((0 : Nat) : F),
+        ((rowNat tr 9 r 23 : Nat) : F), ((rowNat tr 9 r 24 : Nat) : F)] := by
     simp only [rowOut, Local.table, Local.inters, stdState, stateOut, List.cons_append, List.getD_cons_succ,
       List.getD_cons_zero, List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_add', Expr.eval_ofNat',
-      cell_cast, Trace.row, cPc, cTs, cS, cFee]
+      cell_cast, Trace.row, Local.kSb, Local.kCid, cPc, cTs, cS, cFee]
   -- the consumed and produced messages
   let c := rowNat tr 9 r
   let NT := if c 5 = 1 then c 9 else c 16
   let NV := fun i => if c 5 = 1 then c (10 + i) else c (17 + i)
   have hNTl : NT < P := by simp only [NT]; split <;> exact hcP _
   have hNVl : ∀ i, NV i < P := fun i => by simp only [NV]; split <;> exact hcP _
-  let mL : Msg := ⟨1, c 8, c 9, c 10, c 11, c 12, c 13, c 14⟩
-  let mV : Msg := ⟨0, (((c 3 : Nat) : F) - ((1 : Nat) : F)).toNat, c 16, c 17, c 18, c 19, c 20, c 21⟩
-  let mo : Msg := ⟨1, c 8, NT, NV 0, NV 1, NV 2, NV 3, c 1⟩
-  let ms : Msg := ⟨0, (((c 3 : Nat) : F) - ((1 : Nat) : F) + ((c 5 : Nat) : F)).toNat, NT, NV 0, NV 1, NV 2, NV 3, c 1⟩
+  let mL : Msg := ⟨(((16 : Nat) : F) + ((c 24 : Nat) : F)).toNat, c 8, c 9, c 10, c 11, c 12, c 13, c 14⟩
+  let mV : Msg := ⟨0, (((c 23 : Nat) : F) + ((c 3 : Nat) : F) - ((1 : Nat) : F)).toNat, c 16, c 17, c 18, c 19, c 20, c 21⟩
+  let mo : Msg := ⟨(((16 : Nat) : F) + ((c 24 : Nat) : F)).toNat, c 8, NT, NV 0, NV 1, NV 2, NV 3, c 1⟩
+  let ms : Msg := ⟨0, (((c 23 : Nat) : F) + ((c 3 : Nat) : F) - ((1 : Nat) : F) + ((c 5 : Nat) : F)).toNat, NT, NV 0, NV 1, NV 2, NV 3, c 1⟩
   have hCons : rowCons Local.table tr pub 9 r = mL :: (if c 6 + c 7 = 1 then [mV] else []) := by
     rw [rowCons, rowMsgs_eq]
     show (List.filterMap _ (Local.inters.filter (fun i => decide (i.bus = busStk ∧ i.send = false)))).map decMsg = _
     rw [local_filterC]
     simp only [List.filterMap_cons, List.filterMap_nil, chRecv, stkRecv, cntA, cntW, ite_true]
-    have eL : decMsg ([1, v Local.idx, v Local.tagL] ++ limbsOf Local.L ++ [v Local.tL] |>.map (·.eval (tr.row pub 9 r))) = mL := by
+    have eL : decMsg ([16 + v Local.kCid, v Local.idx, v Local.tagL] ++ limbsOf Local.L ++ [v Local.tL] |>.map (·.eval (tr.row pub 9 r))) = mL := by
       simp only [limbsOf, List.range, List.range.loop, List.map_cons, List.map_nil, List.cons_append,
-        List.nil_append, v, Expr.eval_col, Expr.eval_ofNat', cell_cast, Trace.row, Local.idx, Local.tagL, Local.L,
-        Local.tL, Nat.reduceAdd]
-      exact decMsg_cast _ _ _ _ _ _ _ _ (by omega) (hcP _) (hcP _) (hcP _) (hcP _) (hcP _) (hcP _) (hcP _)
+        List.nil_append, v, Expr.eval_col, Expr.eval_add', Expr.eval_ofNat', cell_cast, Trace.row, Local.kSb, Local.kCid,
+        Local.idx, Local.tagL, Local.L, Local.tL, Nat.reduceAdd]
+      simp only [decMsg, List.getD_cons_zero, List.getD_cons_succ, Fp.toNat_cast_of_lt (hcP _), mL, c]
     by_cases hw : rowNat tr 9 r 6 + rowNat tr 9 r 7 = 1
     · simp only [hw, ite_true, List.filterMap_cons, List.map_cons, List.map_nil, eL, List.cons.injEq, true_and, c]
       simp only [limbsOf, List.range, List.range.loop, List.map_cons, List.map_nil, List.cons_append,
-        List.nil_append, v, Expr.eval_col, Expr.eval_sub', Expr.eval_ofNat', cell_cast, Trace.row, Local.tagV,
+        List.nil_append, v, Expr.eval_col, Expr.eval_add', Expr.eval_sub', Expr.eval_ofNat', cell_cast, Trace.row, Local.kSb, Local.kCid, Local.tagV,
         Local.V, Local.tV, cH, Nat.reduceAdd, decMsg, List.getD_cons_zero, List.getD_cons_succ,
         Fp.toNat_cast_of_lt (hcP _), mV, c]
       exact ⟨rfl, trivial⟩
@@ -132,17 +134,18 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     show (List.filterMap _ (Local.inters.filter (fun i => decide (i.bus = busStk ∧ i.send = true)))).map decMsg = _
     rw [local_filterP]
     simp only [List.filterMap_cons, List.filterMap_nil, chSend, stkSend, cntA, cntS, ite_true]
-    have eO : decMsg ([1, v Local.idx, Local.newTag] ++ (List.range 4).map Local.newVal ++ [v cTs] |>.map
+    have eO : decMsg ([16 + v Local.kCid, v Local.idx, Local.newTag] ++ (List.range 4).map Local.newVal ++ [v cTs] |>.map
         (·.eval (tr.row pub 9 r))) = mo := by
       simp only [List.range, List.range.loop, List.map_cons, List.map_nil, List.cons_append,
         List.nil_append, hNT, hNV]
-      simp only [v, Expr.eval_col, Expr.eval_ofNat', cell_cast, Trace.row, Local.idx, cTs]
-      exact decMsg_cast _ _ _ _ _ _ _ _ (by omega) (hcP _) hNTl (hNVl _) (hNVl _) (hNVl _) (hNVl _) (hcP _)
+      simp only [v, Expr.eval_col, Expr.eval_add', Expr.eval_ofNat', cell_cast, Trace.row, Local.kSb, Local.kCid, Local.idx, cTs]
+      simp only [decMsg, List.getD_cons_zero, List.getD_cons_succ, Fp.toNat_cast_of_lt (hcP _), Fp.toNat_cast_of_lt hNTl,
+        Fp.toNat_cast_of_lt (hNVl _), mo, c, NT, NV]
     by_cases hw : rowNat tr 9 r 5 + rowNat tr 9 r 7 = 1
     · simp only [hw, ite_true, List.filterMap_cons, List.map_cons, List.map_nil, eO, List.cons.injEq, true_and, c]
       simp only [List.range, List.range.loop, List.map_cons, List.map_nil, List.cons_append,
         List.nil_append, hNT, hNV]
-      simp only [v, Expr.eval_col, Expr.eval_add', Expr.eval_sub', Expr.eval_ofNat', cell_cast, Trace.row,
+      simp only [v, Expr.eval_col, Expr.eval_add', Expr.eval_sub', Expr.eval_ofNat', cell_cast, Trace.row, Local.kSb, Local.kCid,
         Local.fGet, cH, cTs, decMsg, List.getD_cons_zero, List.getD_cons_succ,
         Fp.toNat_cast_of_lt (hcP _), ms, c]
       exact ⟨by rw [Msg.mk.injEq]; exact ⟨Fp.toNat_cast_of_lt (by omega), rfl, Fp.toNat_cast_of_lt hNTl,
@@ -172,7 +175,7 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   rw [hre] at hm hoplt
   simp only [List.getD_cons_succ, List.getD_cons_zero] at hoplt
   simp only [List.cons_append, List.nil_append, List.map_cons, List.map_nil, v, Expr.eval_col, Expr.eval_add',
-    Expr.eval_mul', Expr.eval_ofNat', cell_cast, Trace.row, cPc, cH, cFee, Local.op, Local.idx, Local.fSet,
+    Expr.eval_mul', Expr.eval_ofNat', cell_cast, Trace.row, Local.kSb, Local.kCid, cPc, cH, cFee, Local.op, Local.idx, Local.fSet,
     Local.fTee, List.cons.injEq, and_true] at hm
   obtain ⟨e0, eop, eh, efee, ex0, ex1, ex2, ex3⟩ := hm
   have fee16 := feeUnits_lt hfee
@@ -208,31 +211,41 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     split
     · simp only [List.nodup_cons, List.mem_singleton, List.not_mem_nil, not_false_eq_true, List.nodup_nil,
         and_true]
-      intro h; have := congrArg Msg.space h; simp [mo, ms] at this
+      intro h; have := congrArg Msg.space h; simp only [mo, ms, c] at this
+      refine hne a1 ?_
+      rw [← Fp.cast_toNat (((16 : Nat) : F) + ((rowNat tr 9 r Local.kCid : Nat) : F))]
+      simp only [Local.kCid]; rw [this]; rfl
     · simp
   -- the spec step
-  intro s f tps tpl t pc S live R hin hlive ht1 hS hg64
+  intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
   rw [hIn] at hin
-  obtain ⟨i0, i1, i2, -⟩ := stMsg_cons hin
+  obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
   have CF := X.facts
   have hpcl := R.pcLt
+  obtain ⟨ls0, hL0, hfl0⟩ := R.labels
   have p0 : rowNat tr 9 r 0 = pc := natEq i0 (hcP _) (by have := CF.codeLt; omega)
   have p1 : rowNat tr 9 r 1 = t := natEq i1 (hcP _) (by omega)
   have p2 : rowNat tr 9 r 2 = S := natEq i2 (hcP _) (by omega)
+  have psb : rowNat tr 9 r 23 = E.sb := natEq i4 (hcP _) (by have := R.sbLt; omega)
+  have pcid : rowNat tr 9 r 24 = E.cid := natEq i5 (hcP _) (by have := R.cidLt; omega)
+  have hsbR := R.sbLe
   have hpc : pc0 = pc := natEq (e0.symm.trans i0) (by have := CF.codeLt; omega) (by have := CF.codeLt; omega)
   subst hpc
   have hH := R.height
   have hHb := CF.hBound pc0 hpcl
   rw [hH] at eh hHb
   simp only [Option.getD_some] at eh hHb
-  have p3 : rowNat tr 9 r 3 = s.stack.size := natEq eh (hcP _) (by omega)
-  have hout : rowOut Local.table tr pub 9 r = stMsg (pc0 + 1) (t + 1) (S + fee) 0 := by
-    rw [hOut, p0, p1, p2, efee']
+  have p3 : rowNat tr 9 r 3 = s.stack.size - E.sb := natEq eh (hcP _) (by omega)
+  have hszP : s.stack.size < P := by have := R.sbLt; omega
+  have hout : rowOut Local.table tr pub 9 r = stMsg (pc0 + 1) (t + 1) (S + fee) 0 E.sb E.cid := by
+    rw [hOut, p0, p1, p2, efee', psb, pcid]
     simp only [stMsg, Lean.Grind.Semiring.natCast_add]
   rw [hCons] at hlive
   rw [hCons, hProd]
-  refine ⟨pc0 + 1, fee, 0, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
+  refine ⟨pc0 + 1, fee, 0, E.sb, E.cid, hfl, by omega, hout, fun hg => ⟨fun _ => ?_, fun h => absurd h (by decide)⟩⟩
   have hlL : live mL := hlive mL List.mem_cons_self
+  have hsp : (((16 : Nat) : F) + ((rowNat tr 9 r 24 : Nat) : F)).toNat = E.lsp := by
+    rw [pcid, ← Lean.Grind.Semiring.natCast_add, Fp.toNat_cast_of_lt (by have := R.cidLt; omega)]; rfl
   -- the local index
   have hxl : ∀ x, (X.pf.code[pc0]? = some (.localGet x) ∨ X.pf.code[pc0]? = some (.localSet x) ∨
       X.pf.code[pc0]? = some (.localTee x)) → x < f.locals.size := by
@@ -247,13 +260,17 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have hx0 : ∀ x, x0 = x → x < 64 → rowNat tr 9 r 8 = x := fun x h hlt => by
     subst h; exact natEq ex0 (hcP _) (by omega)
   have hnl : f.locals.size ≤ 64 := by rw [R.nloc]; exact CF.nloc
-  have e3 : ∀ a : Nat, a < P → (((a : Nat) : F) - ((1 : Nat) : F) + ((1 : Nat) : F)).toNat = a := by
-    intro a ha
-    rw [show ((a : Nat) : F) - ((1 : Nat) : F) + ((1 : Nat) : F) = ((a : Nat) : F) by grind, Fp.toNat_cast_of_lt ha]
-  have e3' : ∀ a : Nat, 1 ≤ a → a < P → (((a : Nat) : F) - ((1 : Nat) : F) + ((0 : Nat) : F)).toNat = a - 1 := by
-    intro a h1 ha
-    rw [show ((a : Nat) : F) - ((1 : Nat) : F) + ((0 : Nat) : F) = ((a : Nat) : F) - ((1 : Nat) : F) by grind,
-      toNat_cast_sub h1 ha]
+  have e3 : (((rowNat tr 9 r 23 : Nat) : F) + ((rowNat tr 9 r 3 : Nat) : F) - ((1 : Nat) : F) +
+      ((1 : Nat) : F)).toNat = s.stack.size := by
+    rw [show ((rowNat tr 9 r 23 : Nat) : F) + ((rowNat tr 9 r 3 : Nat) : F) - ((1 : Nat) : F) + ((1 : Nat) : F) =
+      ((rowNat tr 9 r 23 : Nat) : F) + ((rowNat tr 9 r 3 : Nat) : F) by grind]
+    exact slot_toNat0 psb p3 hsbR hszP
+  have e3' : 1 ≤ s.stack.size - E.sb → (((rowNat tr 9 r 23 : Nat) : F) + ((rowNat tr 9 r 3 : Nat) : F) - ((1 : Nat) : F) +
+      ((0 : Nat) : F)).toNat = s.stack.size - 1 := by
+    intro h1
+    rw [show ((rowNat tr 9 r 23 : Nat) : F) + ((rowNat tr 9 r 3 : Nat) : F) - ((1 : Nat) : F) + ((0 : Nat) : F) =
+      ((rowNat tr 9 r 23 : Nat) : F) + ((rowNat tr 9 r 3 : Nat) : F) - ((1 : Nat) : F) by grind]
+    exact slot_toNat psb p3 hsbR h1 hszP
   rcases (show (rowNat tr 9 r 5 = 1 ∧ rowNat tr 9 r 6 = 0 ∧ rowNat tr 9 r 7 = 0) ∨
       (rowNat tr 9 r 5 = 0 ∧ rowNat tr 9 r 6 = 1 ∧ rowNat tr 9 r 7 = 0) ∨
       (rowNat tr 9 r 5 = 0 ∧ rowNat tr 9 r 6 = 0 ∧ rowNat tr 9 r 7 = 1) by omega) with
@@ -270,11 +287,11 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     have hv' : X.pf.code[pc0]? = some (.localGet x) := hv ▸ hins
     have hxv := hxl x (Or.inl hv')
     have e8 : rowNat tr 9 r 8 = x := hx0 x hl.1 (by omega)
-    obtain ⟨s', hs', hrel⟩ := step_localGet X R hv' hxv hfee hg hg64 mL hlL ⟨rfl, e8⟩ mo ms
-      (fun hok => by rw [local_enc hok]; simp only [mo, mL, NT, NV, c, g5, ite_true, e8, p1, Nat.reduceAdd])
+    obtain ⟨s', hs', hrel⟩ := step_localGet X R hv' hxv hfee hg hg64 mL hlL ⟨hsp, e8⟩ mo ms
+      (fun hok => by rw [local_enc hok]; simp only [mo, mL, NT, NV, c, g5, ite_true, e8, p1, hsp, Nat.reduceAdd])
       (fun hok => by
         rw [local_enc hok]; simp only [ms, mL, NT, NV, c, g5, ite_true, p1, Nat.reduceAdd]
-        rw [e3 _ (hcP _), p3])
+        rw [e3])
     refine ⟨s', hs', ?_⟩
     have i1 : (if c 6 + c 7 = 1 then [mV] else []) = [] := by simp [c, g6, g7]
     have i2 : (if c 5 + c 7 = 1 then [ms] else []) = [ms] := by simp [c, g5, g7]
@@ -286,12 +303,12 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     have hv' : X.pf.code[pc0]? = some (.localSet x) := hv ▸ hins
     have hxv := hxl x (Or.inr (Or.inl hv'))
     have e8 : rowNat tr 9 r 8 = x := hx0 x hl.1 (by omega)
-    obtain ⟨h1, -⟩ := verify_straight X hpcl hv' R.labels R.height (pops := 1) (pushes := 0)
+    obtain ⟨h1, -⟩ := verify_straight X hpcl hv' hL0 R.height (pops := 1) (pushes := 0)
       (by simp [kindOf]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp) (by intro l; simp)
     have hmV : live mV := hlive mV (by simp [c, g6, g7])
     obtain ⟨s', hs', hrel⟩ := step_localSet X R hv' hxv hfee hg hg64 mV mL mo hmV hlL
-      ⟨rfl, by simp only [mV, c]; rw [toNat_cast_sub (by omega) (hcP _), p3]⟩ ⟨rfl, e8⟩
-      (fun hok => by rw [local_enc hok]; simp only [mo, mV, NT, NV, c, g5, e8, p1, Nat.reduceAdd]; rfl)
+      ⟨rfl, by simp only [mV, c]; exact slot_toNat psb p3 hsbR h1 hszP⟩ ⟨hsp, e8⟩
+      (fun hok => by rw [local_enc hok]; simp only [mo, mV, NT, NV, c, g5, e8, p1, hsp, Nat.reduceAdd]; rfl)
     refine ⟨s', hs', ?_⟩
     have i1 : (if c 6 + c 7 = 1 then [mV] else []) = [mV] := by simp [c, g6, g7]
     have i2 : (if c 5 + c 7 = 1 then [ms] else []) = [] := by simp [c, g5, g7]
@@ -303,15 +320,15 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     have hv' : X.pf.code[pc0]? = some (.localTee x) := hv ▸ hins
     have hxv := hxl x (Or.inr (Or.inr hv'))
     have e8 : rowNat tr 9 r 8 = x := hx0 x hl.1 (by omega)
-    obtain ⟨h1, -⟩ := verify_straight X hpcl hv' R.labels R.height (pops := 1) (pushes := 1)
+    obtain ⟨h1, -⟩ := verify_straight X hpcl hv' hL0 R.height (pops := 1) (pushes := 1)
       (by simp [kindOf]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp) (by intro l; simp)
     have hmV : live mV := hlive mV (by simp [c, g6, g7])
     obtain ⟨s', hs', hrel⟩ := step_localTee X R hv' hxv hfee hg hg64 mV mL mo ms hmV hlL
-      ⟨rfl, by simp only [mV, c]; rw [toNat_cast_sub (by omega) (hcP _), p3]⟩ ⟨rfl, e8⟩
-      (fun hok => by rw [local_enc hok]; simp only [mo, mV, NT, NV, c, g5, e8, p1, Nat.reduceAdd]; rfl)
+      ⟨rfl, by simp only [mV, c]; exact slot_toNat psb p3 hsbR h1 hszP⟩ ⟨hsp, e8⟩
+      (fun hok => by rw [local_enc hok]; simp only [mo, mV, NT, NV, c, g5, e8, p1, hsp, Nat.reduceAdd]; rfl)
       (fun hok => by
         rw [local_enc hok]; simp only [ms, mV, NT, NV, c, g5, p1, Nat.reduceAdd]
-        rw [e3' _ (by omega) (hcP _), p3]; rfl)
+        rw [e3' h1]; rfl)
     refine ⟨s', hs', ?_⟩
     have i1 : (if c 6 + c 7 = 1 then [mV] else []) = [mV] := by simp [c, g6, g7]
     have i2 : (if c 5 + c 7 = 1 then [ms] else []) = [ms] := by simp [c, g5, g7]

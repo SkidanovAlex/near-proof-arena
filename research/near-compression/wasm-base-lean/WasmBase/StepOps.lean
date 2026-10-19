@@ -15,17 +15,17 @@ theorem stepLive_congr {live : Msg → Prop} {c1 c2 p1 p2 : List Msg}
     stepLive live c1 p1 = stepLive live c2 p2 := by
   funext x; simp only [stepLive, hc, hp]
 
-theorem Rel_of_RelW_congr {X : Ctx} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live live' : Msg → Prop} (h : RelW X s f tps tpl t pc S live) (e : live = live') :
-    Rel X s t pc S live' := ⟨f, tps, tpl, e ▸ h⟩
+theorem Rel_of_RelW_congr {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live live' : Msg → Prop} (h : RelW X E s f tps tpl t pc S live) (e : live = live') :
+    Rel X s t pc S E.sb E.cid live' := ⟨E, f, tps, tpl, rfl, rfl, e ▸ h⟩
 
 theorem isFamilyNum_of_binop {op : Nat} (h : isBinop op) : isFamilyNum op = true ∧ numPops op = 2 := by
   simp only [isBinop, binops, List.mem_cons, List.mem_nil_iff, or_false] at h
   rcases h with h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h <;>
   subst h <;> decide
 
-theorem step_binop (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X s f tps tpl t pc S live)
+theorem step_binop (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
     {op fee : Nat} (hins : X.pf.code[pc]? = some (.num op)) (hop : isBinop op)
     (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
     (hg64 : X.g0 < 2 ^ 64)
@@ -36,12 +36,13 @@ theorem step_binop (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc 
       mr.tag = (if opW op = 64 then 1 else 0))
     (sem : ma.ok → mb.ok → mr.ok ∧ Num.binop (opW op) (opK op) ma.val mb.val = some mr.val) :
     ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) (pc + 1) (S + fee) (stepLive live [ma, mb] [mr]) := by
+      Rel X s' (t + 1) (pc + 1) (S + fee) E.sb E.cid (stepLive live [ma, mb] [mr]) := by
   have F := X.facts
   obtain ⟨hfam, hpops⟩ := isFamilyNum_of_binop hop
   have hv := F.verify pc R.pcLt
-  have hL := R.labels
+  obtain ⟨ls0, hL, hfl⟩ := R.labels
   have hH := R.height
+  have hsb := R.sbLe
   simp only [verifyAt, hins, hL, hH, kindOf, hfam, ite_true, hpops, Bool.and_eq_true,
     decide_eq_true_eq] at hv
   obtain ⟨h2, ⟨hnext, hL1⟩, hH1⟩ := hv
@@ -87,7 +88,8 @@ theorem step_binop (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc 
           by_cases hi' : i = s.stack.size - 1 - 1
           · rw [if_pos hi']; rw [hvr]; exact isNum_toVal mr
           · rw [if_neg hi', if_pos (by omega), if_pos (by omega)]; exact R.numS i (by omega))
-      rfl (fun _ _ => rfl) (by simp) R.numL hnext hL1 (by rw [hsz', hH1]; congr 1; omega) hg
+      rfl (fun _ _ => rfl) (by simp) R.numL hnext ⟨ls0, hL1, hfl⟩ (by rw [hsz']; omega)
+      (by rw [hsz', hH1]; congr 1; omega) hg
       (setFrame ({ s with gas := { s.gas with g := s.gas.g - X.R * fee }, stack := s.stack.pop.pop.push v })
         { f with pc := f.pc + 1 })
       (by simp [setFrame, R.frames]) (by simp [setFrame, R.frames, R.pcEq]) (by simp [setFrame, R.frames])
@@ -124,8 +126,8 @@ open NearSpecV3.Wasm
 
 /-- A trapping binary op (div/rem by zero, signed overflow): the spec step aborts, having charged
 the fee. -/
-theorem step_binop_trap (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X s f tps tpl t pc S live)
+theorem step_binop_trap (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
     {op fee : Nat} (hins : X.pf.code[pc]? = some (.num op)) (hop : isBinop op)
     (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
     (hg64 : X.g0 < 2 ^ 64)
@@ -137,8 +139,9 @@ theorem step_binop_trap (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {
   have F := X.facts
   obtain ⟨hfam, hpops⟩ := isFamilyNum_of_binop hop
   have hv := F.verify pc R.pcLt
-  have hL := R.labels
+  obtain ⟨ls0, hL, hfl⟩ := R.labels
   have hH := R.height
+  have hsb := R.sbLe
   simp only [verifyAt, hins, hL, hH, kindOf, hfam, ite_true, hpops, Bool.and_eq_true,
     decide_eq_true_eq] at hv
   obtain ⟨h2, -, -⟩ := hv
