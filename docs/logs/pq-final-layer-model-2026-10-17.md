@@ -671,3 +671,15 @@ model 308.5 → 298.9 KB.
 * Claim to verify: measured 416 KB chain ran with program binding off at phase A/FINAL.
 * G3/G4 stubs (ctx, roots, receipt); G5/G6 code in statement, base vk varies with code length;
   G7 build_l1_linked not ported (28 rejected hunks).
+
+## 2026-10-19 — measured final 287,477 B, provisional (lane/pq-stream-commit @ 89a0045de)
+
+* Chain on 819beab10 + streamed overlays, certs + kernel-only exclude: penultimate b7 h20 k1=2
+  q[41,35,27,23(J)], final b7 h20 k1=1 q[41,38,29,23] all O-2. FINAL **287,477 B** vs model
+  287,037 (+0.15 %): WHIR 224,610 / GKR 32,408 / relations 24,244 / stacking 6,016.
+  NvAir A3 248,964, FINAL 252,636 rows (3.6 % under 2^18); interactions 2^24.87 → L=24.
+  1 h 55 min, 25.6 GB peak. A3 child saved (sha256 9ad8ad51…).
+* PROVISIONAL: `bind` (child-program binding check) off at A1–FINAL (app table rows present);
+  G1 (program depends on child PoW) unfixed. Re-run after G1 + binding-on.
+* Infeasible shapes found: b8/h20 (domain), b8/h19 (v4 SHA trace 2^20 > stacked 2^19 → penultimate
+  needs log_h ≥ 20; add to model). Backend soundness print (255.1) ignores the O-2 table — fix.
