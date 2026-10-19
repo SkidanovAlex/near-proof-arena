@@ -683,3 +683,16 @@ model 308.5 → 298.9 KB.
   G1 (program depends on child PoW) unfixed. Re-run after G1 + binding-on.
 * Infeasible shapes found: b8/h20 (domain), b8/h19 (v4 SHA trace 2^20 > stacked 2^19 → penultimate
   needs log_h ≥ 20; add to model). Backend soundness print (255.1) ignores the O-2 table — fix.
+
+## 2026-10-19 — WASM base first family proven (lane/pq-wasm-base @ 2ba1e2fe7)
+
+* Lean `wasm_base_sound` (no sorry, std axioms): checker-accepted fn + AIR relation + derived PIs
+  ⇒ spec `NearSpecV3.Wasm.run` finishes in N−1 steps, gas R·S, stack = public result; explicit
+  domain conditions D1–D5, N·(maxFee+1) < p, R·S ≤ g0 < 2^64. Lean→JSON→Rust replay + difftest.
+* Proof found a real SHIFT AIR bug (range-checked w·q instead of q) — fixed, no cost change.
+* Tests: 47/47 KAT (Python/Lean/Rust), 29/29 tamper; pinned 2^24 proof 948,706 B, 240 s, 9.9 GB.
+* Cost: 349 cell-eq/op active (529 padded); worst family op ~500–600 (≈ model 546); univariate
+  ≈ 1.6–1.7× cheaper. SHIFT/CMP 2× PERF drafts → first optimisation targets.
+* Checkpoint: preprocessed (or PREP-linked) code table REQUIRED before full ISA (code binding via
+  PV interactions grows with program; vk per program) → NV must verify preprocessed children
+  (also needed for G2 binding). Memory: stack/locals channel proven under D3 (no-discard).
