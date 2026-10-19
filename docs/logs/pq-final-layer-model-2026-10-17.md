@@ -654,3 +654,20 @@ model 308.5 → 298.9 KB.
   loader bug fixed (no longer counts keys inside `_no_certificate`); auditor hardening merged;
   slow app-binding/opening tests pass (17.4 GB). Model 287,037 B; NvAir 255,976 (2^17.97).
   Without O-2: 301,743 B at L=25 — the < 300 KB result now depends on the certificates.
+
+## 2026-10-19 — E2E slice result (lane/pq-e2e-slice @ 480bf27f4)
+
+* Test size, end to end: real direct-Wasm call (Lean fixture) → base (EXEC/CODE/RANGE + STUB
+  ChunkStmtAir) → L1 → L2 (bound) → FINAL (bound, fixed point) → native V_d with new
+  `check_final_program`. Accepts honest; rejects wrong S_S/ctx/S_0, swapped chunks, tampered
+  PV, inner-domain proof, wrong pinned level/program. Sizes: base 54,061 B, NV levels 136,089 B.
+* **G1 critical:** with child PoW, the NV program depends on the proof (PoW job ids from global
+  squeeze-block count; rejection sampling). Chunks A/B L1 programs differ in 4,609 rows; can't
+  pin program → V_d unsound (forged 776-row verify-nothing final accepted without the check).
+  Fix assigned to recursion lane (soundness fix, adopted). Stream-lane measurement provisional.
+* **G2 high:** real pinned base proof 921,857 B ([536,256,83,50,36]); L1 over it is 623,802
+  program rows (ISA ceiling 2^21 NvAir), ~190–230 GB est. — not provable here; app-table
+  binding makes L2 carry the L1 program. Needs a size-independent binding mechanism.
+* Claim to verify: measured 416 KB chain ran with program binding off at phase A/FINAL.
+* G3/G4 stubs (ctx, roots, receipt); G5/G6 code in statement, base vk varies with code length;
+  G7 build_l1_linked not ported (28 rejected hunks).
