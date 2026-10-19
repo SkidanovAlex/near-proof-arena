@@ -1,0 +1,31 @@
+NV_PARENT_PARAMS l_skip=2 n_stack=18 k=3 log_blowup=1 queries=[29, 15, 13, 13, 13, 13] pow(mu,fold,query,logup)=(0,0,0,0)
+L1_SUMMARY cols=169 opened=338 interactions=13762816 L=24 cells=25691264 sha_cells=5440640 other_cells=20250624 alu_used=8019 merkle_nodes=232 leaf_blocks=129 prove_s=403.6
+L1_PROOF_BYTES total=207617 gkr=44408 relations=26216 stacking=2468 whir=134272
+NV_G2 L1 program rows 8788 committed heights [262144, 65536, 128, 65536] cached root [18060828552501015637, 7692659926701311789, 6223767964482383790, 3779190734616077445, 2067066171567786025, 639661452416910486]
+NV_G2_ANCHOR L2: anchor level M = 1 (child bound by its root = C_M)
+NV_G2_FLOOR L2: natural committed [174032, 740480, 128, 65536] -> new floor [176752, 752052, 128, 65536]
+L2_SUMMARY cols=169 opened=338 interactions=30474496 L=25 cells=107283584 sha_cells=87032960 other_cells=20250624 alu_used=82735 merkle_nodes=2928 leaf_blocks=1000 prove_s=2179.9
+L2_PROOF_BYTES total=275665 gkr=48056 relations=27176 stacking=5588 whir=194592
+NV_G2 L2 program rows 82736 committed heights [262144, 1048576, 128, 65536] cached root [6247242529610767093, 9996435097468505553, 8111698818695818489, 3931940693846603570, 10234545530230556032, 4601008022306694933]
+NV_G2_ANCHOR L3: anchor level M = 2 (child bound by its root = C_M)
+NV_G2_FLOOR L3: natural committed [198804, 817664, 128, 65536] -> new floor [201912, 830440, 128, 65536]
+L3_SUMMARY cols=169 opened=338 interactions=30474496 L=25 cells=107283584 sha_cells=87032960 other_cells=20250624 alu_used=95881 merkle_nodes=2928 leaf_blocks=1464 prove_s=1967.3
+L3_PROOF_BYTES total=283473 gkr=48056 relations=27176 stacking=5972 whir=202016
+NV_G2 L3 program rows 95882 committed heights [262144, 1048576, 128, 65536] cached root [16948134290554689156, 5303885776793995358, 14591374221330973370, 3736315551529333871, 13648801865183985587, 6140102694122797906]
+NV_G2_ANCHOR L4: anchor level M = 3 (child bound by its root = C_M)
+NV_G2_FLOOR L4: natural committed [199636, 818688, 128, 65536] fits floor [201912, 830440, 128, 65536]
+L4_SUMMARY cols=169 opened=338 interactions=30474496 L=25 cells=107283584 sha_cells=87032960 other_cells=20250624 alu_used=96389 merkle_nodes=2928 leaf_blocks=1464 prove_s=1756.1
+L4_PROOF_BYTES total=283473 gkr=48056 relations=27176 stacking=5972 whir=202016
+NV_G2 L4 program rows 96390 committed heights [262144, 1048576, 128, 65536] cached root [16882040940178819876, 336309203819176440, 18437343709701566326, 1454125906533142421, 13012528633393047621, 11237192698555851330]
+NV_G2_ANCHOR L5: anchor level M = 3 (child bound by BIND)
+NV_G2_FLOOR L5: natural committed [199576, 817920, 128, 65536] fits floor [201912, 830440, 128, 65536]
+L5_SUMMARY cols=169 opened=338 interactions=30474496 L=25 cells=107283584 sha_cells=87032960 other_cells=20250624 alu_used=96389 merkle_nodes=2928 leaf_blocks=1464 prove_s=1764.6
+L5_PROOF_BYTES total=283473 gkr=48056 relations=27176 stacking=5972 whir=202016
+NV_G2 L5 program rows 96390 committed heights [262144, 1048576, 128, 65536] cached root [16882040940178819876, 336309203819176440, 18437343709701566326, 1454125906533142421, 13012528633393047621, 11237192698555851330]
+NV_G2 converged: 5 levels, 1 bound by BIND, anchor M = 3
+FINAL_SUMMARY cols=173 opened=346 interactions=30474496 L=25 cells=107283584 sha_cells=87032960 other_cells=20250624 alu_used=96389 merkle_nodes=2928 leaf_blocks=1464 prove_s=1728.8
+FINAL_PROOF_BYTES total=257377 gkr=48056 relations=27172 stacking=5920 whir=176024
+NV_VD final accepted: level 6, pinned program 96390 rows
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 82 filtered out; finished in 9801.93s
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:43:22
+	Maximum resident set size (kbytes): 19120336
