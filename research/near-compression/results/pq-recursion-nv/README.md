@@ -1133,3 +1133,41 @@ which includes the multi-commitment rule:
 The model predicted 243 and 340 rows per query: it is slightly conservative. On the head tree,
 the backend passes 230 tests and the fast NV suite passes 54 tests in each digest mode
 (`logs/cut/`).
+
+## Re-audit hardening merged; kernel-only certificates; adopted penultimate [measured: tests; model]
+
+**Auditor's hardening** (lane/pq-nv-circuit-soundness @ 90d08fa4f, merged at 657eaf1f1). This is
+a builder and test change only; the circuit is unchanged.
+* `assert_horner_chains` in `Builder::finish` refuses a broken Horner chain, and refuses a chain
+  op as the last program row.
+* It adds the tests `nv_horner_chain_shape` and `nv_dof_horn2`.
+* My regenerated patch equals the auditor's.
+* **Milestone check:** the fast suite passes 57/57 in 48-B and in 42-B + coset. `nv_app_binding`
+  and `nv_opening_formula` pass in both modes, with statement passthrough, the app-table tamper,
+  digest re-exposure, and all 4 openings (17.4 GB peak).
+
+**Certificate gating accepts only kernel-proved entries** (soundness rule).
+* `load_dkt_certs` now reads only the top-level `"n,k,A,1"` keys. Before, it scanned every
+  string, which would have counted the code key inside `_no_certificate` and the `_shapes`
+  entries as certificates.
+* `{prefix}_DKT_EXCLUDE` / `NEARPROOF_DKT_EXCLUDE` names a list of entries that have no kernel
+  proof; they are removed. lane/pq-dkt-verify's `lean/DKTCertsO2_big.keys` holds the 9 round-3
+  codes of the h20 k1 = 2 shapes, which are checked only by the engine and `#eval!`.
+* `dkt_cert_check.py` takes the same exclusion list. With it
+  (`dkt_cert_check_o2.out`), every round of every listed shape is kernel-covered, except round 3
+  of the penultimate b7 h20 k1 = 2. That round falls back to J64 (q 22 → 23, about 0 B).
+* `dkt_cert_loader` now covers metadata keys and the exclusion list.
+* **Config interface:** the new env `*_DKT_EXCLUDE` is the only change. The stream lane should
+  pass both `NEARPROOF_DKT_CERTS=.../calc/dkt_certs_o2.json` and
+  `NEARPROOF_DKT_EXCLUDE=.../lean/DKTCertsO2_big.keys`.
+
+**Penultimate domain bound and adopted shape.**
+* The model now asserts log_h + b ≤ 27 for the penultimate (`MAX_DOM`), and the searches skip
+  shapes that break it. The earlier b8 h20 pick needs a domain of 15·2^28, which is not a
+  BabyBear subgroup.
+* `CERT_SHAPES` gains (7, 20, 2, 4, 6) and (8, 19, 2, 4, 9).
+* **Adopted penultimate: b7 h20, k1 = 2, k = 4, log_final 6, queries [41, 35, 27, 22].** It is
+  certified except round 3 (J64).
+* **Backed final (O-2, certified, model): 287,037 B.** That breaks down as L = 24, program
+  130,476, NvAir 255,976 rows (2^17.97), and interactions 2^24.87 (`size_cut3.out`).
+* O-1 alone on the same penultimate would be 301,743 B, at L = 25 (NvAir 2^18.009).

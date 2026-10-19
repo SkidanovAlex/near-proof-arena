@@ -74,7 +74,11 @@ def bits_mca(rate, m):
 # O-2 is certificate-gated: shapes whose round codes are covered by lane/pq-dkt-verify
 # dkt_certs_o2.json (69e5df327); any other shape runs on the Johnson fallback (m64 bits).
 # (b, log_h, k1, k, lf)
-CERT_SHAPES = {(7, 20, 1, 4, 7), (8, 19, 1, 3, 9), (6, 19, 1, 4, 6), (6, 21, 1, 4, 8), (2, 20, 1, 4, 3), (2, 21, 1, 3, 8)}
+CERT_SHAPES = {(7, 20, 1, 4, 7), (8, 19, 1, 3, 9), (6, 19, 1, 4, 6), (6, 21, 1, 4, 8), (2, 20, 1, 4, 3), (2, 21, 1, 3, 8),
+               # penultimate candidates (fb0efdb11, kernel-proved except b7h20 k1=2 round 3, which
+               # runs on J64: +1 query, modelled as certified)
+               (7, 20, 2, 4, 6), (8, 19, 2, 4, 9)}
+MAX_DOM = 27   # BabyBear 2-adicity: the x15 domain 15 * 2^(log_h + b) needs log_h + b <= 27
 _REGIME = [None]
 
 
@@ -238,6 +242,7 @@ def schedule(cells, b, k1, k, log_h, lf, target):
 
 def fixed_point(pen_target, fin_target, digest, b, n_stack, k1=1, k=4, fin_bmax=None, lf=None):
     log_h = L_SKIP + n_stack
+    assert log_h + b <= MAX_DOM, f"penultimate domain 15*2^{log_h + b} is not a BabyBear subgroup"
     if lf is None:
         # penultimate log_final: the cheapest valid one (smaller -> cheaper final check, more rounds)
         best = None

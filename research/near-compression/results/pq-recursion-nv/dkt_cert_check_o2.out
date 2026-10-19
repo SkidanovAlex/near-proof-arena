@@ -30,3 +30,12 @@
   round 2: k_i=3 kdim=2^17 A=3321637 q=46  certs: OK
   round 3: k_i=3 kdim=2^14 A=1139244 q=35  certs: OK
   round 4: k_i=3 kdim=2^11 A=395254 q=29  certs: OK
+== penultimate b7 h20 k1=2 k4 lf6: n = 15*2^27
+  round 0: k_i=2 kdim=2^20 A=37140791 q=41  certs: OK
+  round 1: k_i=4 kdim=2^18 A=18228420 q=35  certs: OK
+  round 2: k_i=4 kdim=2^14 A=4453003 q=27  certs: OK
+  round 3: k_i=4 kdim=2^10 A=1099669 q=22  certs: MISSING s=0 (2013265920,1024,1099669); s=1 (1006632960,512,549835); s=2 (503316480,256,274918); s=3 (251658240,128,137459); s=4 (125829120,64,68730)
+== penultimate b8 h19 k1=2 k4 lf9: n = 15*2^27
+  round 0: k_i=2 kdim=2^19 A=26000207 q=38  certs: OK
+  round 1: k_i=4 kdim=2^17 A=12796101 q=33  certs: OK
+  round 2: k_i=4 kdim=2^13 A=3136899 q=26  certs: OK

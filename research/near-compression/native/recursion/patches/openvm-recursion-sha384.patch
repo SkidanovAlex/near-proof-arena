@@ -6334,10 +6334,10 @@ index 0000000..9823e17
 +mod faithful_tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..b4483bd
+index 0000000..1d520bb
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,1170 @@
+@@ -0,0 +1,1180 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -7366,7 +7366,8 @@ index 0000000..b4483bd
 +    }
 +}
 +
-+/// The DKT certificate loader reads every "n,k,A,1" key (top level and `_grid.certs`).
++/// The DKT certificate loader reads the top-level "n,k,A,1" keys only and drops excluded
++/// (not kernel-proved) entries.
 +#[test]
 +fn dkt_cert_loader() {
 +    let dir = std::env::temp_dir().join(format!("nv-dkt-{}", std::process::id()));
@@ -7375,12 +7376,21 @@ index 0000000..b4483bd
 +    std::fs::write(
 +        &path,
 +        r#"{"2013265920,1048576,37140791,1": {"E": "1/2", "list": "3"}, "x,1,2,1": {}, "5,6,7,2": {},
-+            "_grid": {"margin": 0.05, "n": 2013265920, "certs": {"251658240,4096,790689,1": {"m": 16}}}}"#,
++            "251658240,4096,790689,1": {"m": 16},
++            "_no_certificate": {"4026531840,1024,1552217,1": "no certificate"},
++            "_shapes": {"s": [{"n": 1, "A": 2}]}}"#,
 +    )
 +    .unwrap();
 +    let c = crate::sha384::e2e_tests::load_dkt_certs(path.to_str().unwrap());
-+    assert_eq!(c.len(), 2);
++    assert_eq!(c.len(), 2, "top-level certificate keys only (not _no_certificate's)");
 +    assert!(c.contains(&(2013265920, 1048576, 37140791)) && c.contains(&(251658240, 4096, 790689)));
++    assert!(!c.contains(&(4026531840, 1024, 1552217)));
++    // kernel-proof rule: excluded (engine / #eval!-only) entries are dropped
++    let ex = dir.join("big.keys");
++    std::fs::write(&ex, "251658240,4096,790689,1\n").unwrap();
++    let c = crate::sha384::e2e_tests::load_dkt_certs_excluding(path.to_str().unwrap(), Some(ex.to_str().unwrap()));
++    assert_eq!(c.len(), 1);
++    assert!(!c.contains(&(251658240, 4096, 790689)));
 +    std::fs::remove_dir_all(&dir).unwrap();
 +}
 +
@@ -15889,10 +15899,10 @@ index 0000000..f589e8d
 +}
 diff --git a/crates/recursion/src/sha384/e2e_tests.rs b/crates/recursion/src/sha384/e2e_tests.rs
 new file mode 100644
-index 0000000..3028606
+index 0000000..cd2d220
 --- /dev/null
 +++ b/crates/recursion/src/sha384/e2e_tests.rs
-@@ -0,0 +1,495 @@
+@@ -0,0 +1,545 @@
 +//! End-to-end: the ported verifier sub-circuit verifies real SHA-384/Ext12 child proofs.
 +//!
 +//!   cargo test --release -p openvm-recursion-circuit --lib e2e_ -- --nocapture
@@ -16097,15 +16107,63 @@ index 0000000..3028606
 +}
 +
 +/// SWIRL params from `{PREFIX}_*` env vars (defaults: native PQ profile shape).
-+/// Load a DKT certificate set (lane/pq-dkt-verify calc/dkt_certs.json): every key "n,k,A,1"
-+/// anywhere in the file (top level and `_grid.certs`).
++/// Load a DKT certificate set (lane/pq-dkt-verify calc/dkt_certs_o2.json): the TOP-LEVEL keys
++/// "n,k,A,1" only (metadata objects such as `_no_certificate` / `_shapes` hold code keys that are
++/// NOT certificates).  Soundness rule: only kernel-proved entries count, so `exclude` (a file of
++/// "n,k,A,ell" lines, e.g. lean/DKTCertsO2_big.keys: engine / #eval!-checked only) is removed.
 +pub fn load_dkt_certs(path: &str) -> openvm_stark_backend::CertSet {
++    load_dkt_certs_excluding(path, None)
++}
++
++pub fn load_dkt_certs_excluding(path: &str, exclude: Option<&str>) -> openvm_stark_backend::CertSet {
 +    let text = std::fs::read_to_string(path).unwrap_or_else(|e| panic!("DKT certificates {path}: {e}"));
-+    let mut out = openvm_stark_backend::CertSet::new();
-+    for key in text.split('"').skip(1).step_by(2) {
-+        let f: Vec<&str> = key.split(',').collect();
++    let parse = |key: &str| -> Option<(u64, u64, u64)> {
++        let f: Vec<&str> = key.trim().split(',').collect();
 +        if f.len() == 4 && f.iter().all(|x| !x.is_empty() && x.bytes().all(|c| c.is_ascii_digit())) && f[3] == "1" {
-+            out.insert((f[0].parse().unwrap(), f[1].parse().unwrap(), f[2].parse().unwrap()));
++            Some((f[0].parse().ok()?, f[1].parse().ok()?, f[2].parse().ok()?))
++        } else {
++            None
++        }
++    };
++    // top-level object keys: strings at brace depth 1 followed by ':'
++    let mut out = openvm_stark_backend::CertSet::new();
++    let b = text.as_bytes();
++    let (mut depth, mut i) = (0i32, 0usize);
++    while i < b.len() {
++        match b[i] {
++            b'{' | b'[' => depth += 1,
++            b'}' | b']' => depth -= 1,
++            b'"' => {
++                let start = i + 1;
++                let mut j = start;
++                while j < b.len() && b[j] != b'"' {
++                    if b[j] == b'\\' {
++                        j += 1;
++                    }
++                    j += 1;
++                }
++                let key = &text[start..j];
++                let mut k = j + 1;
++                while k < b.len() && (b[k] as char).is_whitespace() {
++                    k += 1;
++                }
++                if depth == 1 && k < b.len() && b[k] == b':' {
++                    if let Some(c) = parse(key) {
++                        out.insert(c);
++                    }
++                }
++                i = j;
++            }
++            _ => {}
++        }
++        i += 1;
++    }
++    if let Some(ex) = exclude {
++        let t = std::fs::read_to_string(ex).unwrap_or_else(|e| panic!("DKT exclusion list {ex}: {e}"));
++        for line in t.lines() {
++            if let Some(c) = parse(line) {
++                out.remove(&c);
++            }
 +        }
 +    }
 +    out
@@ -16154,7 +16212,9 @@ index 0000000..3028606
 +        // DKT certificate set (env `{prefix}_DKT_CERTS` or `NEARPROOF_DKT_CERTS`, a dkt_certs.json
 +        // path); every other round falls back to Johnson m = 64 (O-1)
 +        let path = std::env::var(format!("{prefix}_DKT_CERTS")).or_else(|_| std::env::var("NEARPROOF_DKT_CERTS")).ok();
-+        let certs = path.map(|p| load_dkt_certs(&p));
++        // entries without a kernel proof (e.g. lean/DKTCertsO2_big.keys) are excluded
++        let excl = std::env::var(format!("{prefix}_DKT_EXCLUDE")).or_else(|_| std::env::var("NEARPROOF_DKT_EXCLUDE")).ok();
++        let certs = path.map(|p| load_dkt_certs_excluding(&p, excl.as_deref()));
 +        p.whir = p.whir.clone().with_first_order(log_blowup, l_skip + n_stack, bits, e("O2_MARGIN_MILLI", 50) as u32, list_m as u32, certs.as_ref(), e("COMMITS", 1));
 +    }
 +    p
