@@ -111,7 +111,7 @@ diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384
  }
  
  #[derive(Clone, Debug)]
-@@ -378,6 +481,57 @@ pub fn pow_step(state: &[u8; 48], witness: &[u32], bits: usize) -> ([u8; 48], bo
+@@ -378,6 +481,65 @@ pub fn pow_step(state: &[u8; 48], witness: &[u32], bits: usize) -> ([u8; 48], bo
      };
      (s, leading_zero_bits(&s) >= bits)
  }
@@ -142,17 +142,25 @@ diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384
 +        for chunk in 0..limit.div_ceil(CH) {
 +            let lo = chunk * CH;
 +            let ngroups = (CH.min(limit - lo)) / 8;
-+            // groups of 16 candidates (two interleaved 8-lane SHA-384 compressions)
++            // groups of 16 candidates (two interleaved 8-lane SHA-384 compressions); the
++            // message words before the witness are shared, so their rounds run once
++            let n = tmpl.len();
++            assert!(n + 17 <= 128, "PoW message is one block");
++            let mut blk0 = [0u8; 128];
++            blk0[..n].copy_from_slice(&tmpl);
++            blk0[n] = 0x80;
++            blk0[112..].copy_from_slice(&((n as u128) * 8).to_be_bytes());
++            let k_shared = off / 8;
++            let s_k = crate::sha384::mb::state_after_rounds(&blk0, k_shared);
 +            let hit = (0..ngroups / 2).into_par_iter().find_map_first(|g| {
-+                let mut msgs = [[0u8; 128]; 16];
-+                let n = tmpl.len();
++                let mut msgs = [blk0; 16];
 +                for (l, m) in msgs.iter_mut().enumerate() {
-+                    m[..n].copy_from_slice(&tmpl);
 +                    m[off..off + 4].copy_from_slice(&(lo + 16 * g + l as u32).to_le_bytes());
 +                }
-+                let refs: [&[u8]; 16] = core::array::from_fn(|l| &msgs[l][..n]);
 +                #[cfg(all(target_arch = "x86_64", target_feature = "avx512f"))]
-+                let hs = crate::sha384::mb::sha384_x16(refs);
++                let hs = crate::sha384::mb::sha384_x16_blocks_from(&s_k, k_shared, &msgs);
++                #[cfg(not(all(target_arch = "x86_64", target_feature = "avx512f")))]
++                let refs: [&[u8]; 16] = core::array::from_fn(|l| &msgs[l][..n]);
 +                #[cfg(not(all(target_arch = "x86_64", target_feature = "avx512f")))]
 +                let hs: [[u8; 48]; 16] = core::array::from_fn(|l| Sha384::digest(refs[l]).into());
 +                (0..16).find(|&l| leading_zero_bits(&hs[l]) >= bits).map(|l| lo + 16 * g + l as u32)
@@ -169,7 +177,7 @@ diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384
  impl ShaTranscript {
      /// Fresh transcript of the inner or the final layer (U-12).
      pub fn new_layer(final_layer: bool) -> Self {
-@@ -389,6 +543,9 @@ impl ShaTranscript {
+@@ -389,6 +551,9 @@ impl ShaTranscript {
          use p3_maybe_rayon::prelude::*;
          self.flush();
          let base = self.state;
@@ -183,7 +191,7 @@ diff --git a/crates/recursion/src/sha384/mb.rs b/crates/recursion/src/sha384/mb.
 new file mode 100644
 --- /dev/null
 +++ b/crates/recursion/src/sha384/mb.rs
-@@ -0,0 +1,390 @@
+@@ -0,0 +1,492 @@
 +//! [pq-cpu-prover] Multi-buffer SHA-384: 8 independent messages per AVX-512 register lane
 +//! (one 64-bit word of each message per zmm lane), in the style of isa-l_crypto's mb_sha512.
 +//! Zen 5 has no SHA-512 instructions; one 8-lane compression costs about as much as two scalar
@@ -303,6 +311,49 @@ new file mode 100644
 +        _mm512_ternarylogic_epi64::<0x96>(a, b, c)
 +    }
 +
++    /// `compress2` starting at round `k` from the working state `v0` (rounds 0..k already
++    /// applied); `st` holds the chaining value added at the end.
++    #[inline(always)]
++    pub unsafe fn compress2_from(st: &mut [[__m512i; 8]; 2], v0: [[__m512i; 8]; 2], k: usize, w16: &[[[u64; 8]; 16]; 2]) {
++        let mut w = [[_mm512_setzero_si512(); 16]; 2];
++        for g in 0..2 {
++            for t in 0..16 {
++                w[g][t] = _mm512_loadu_si512(w16[g][t].as_ptr() as *const _);
++            }
++        }
++        let mut v = v0;
++        for t in k..80 {
++            let kt = _mm512_set1_epi64(K[t] as i64);
++            for g in 0..2 {
++                let wt = if t < 16 {
++                    w[g][t]
++                } else {
++                    let w15 = w[g][(t + 1) & 15];
++                    let w2 = w[g][(t + 14) & 15];
++                    let s0 = xor3(_mm512_ror_epi64::<1>(w15), _mm512_ror_epi64::<8>(w15), _mm512_srli_epi64::<7>(w15));
++                    let s1 = xor3(_mm512_ror_epi64::<19>(w2), _mm512_ror_epi64::<61>(w2), _mm512_srli_epi64::<6>(w2));
++                    let x = _mm512_add_epi64(_mm512_add_epi64(w[g][t & 15], s0), _mm512_add_epi64(w[g][(t + 9) & 15], s1));
++                    w[g][t & 15] = x;
++                    x
++                };
++                let [a, b, c, d, e, f, gg, h] = v[g];
++                let hkw = _mm512_add_epi64(h, _mm512_add_epi64(kt, wt));
++                let s1 = xor3(_mm512_ror_epi64::<14>(e), _mm512_ror_epi64::<18>(e), _mm512_ror_epi64::<41>(e));
++                let ch = _mm512_ternarylogic_epi64::<0xCA>(e, f, gg);
++                let t1 = _mm512_add_epi64(_mm512_add_epi64(hkw, ch), s1);
++                let s0 = xor3(_mm512_ror_epi64::<28>(a), _mm512_ror_epi64::<34>(a), _mm512_ror_epi64::<39>(a));
++                let maj = _mm512_ternarylogic_epi64::<0xE8>(a, b, c);
++                let t2 = _mm512_add_epi64(s0, maj);
++                v[g] = [_mm512_add_epi64(t1, t2), a, b, c, _mm512_add_epi64(d, t1), e, f, gg];
++            }
++        }
++        for g in 0..2 {
++            for i in 0..8 {
++                st[g][i] = _mm512_add_epi64(st[g][i], v[g][i]);
++            }
++        }
++    }
++
 +    /// Two independent 8-lane compressions interleaved (the round function is latency-bound).
 +    #[inline(always)]
 +    pub unsafe fn compress2(st: &mut [[__m512i; 8]; 2], w16: &[[[u64; 8]; 16]; 2]) {
@@ -343,6 +394,65 @@ new file mode 100644
 +                st[g][i] = _mm512_add_epi64(st[g][i], v[g][i]);
 +            }
 +        }
++    }
++}
++
++/// Scalar SHA-512 state after the first `k` rounds of the compression of `block` from the
++/// SHA-384 IV (for PoW candidates that agree on message words 0..k).
++pub fn state_after_rounds(block: &[u8; 128], k: usize) -> [u64; 8] {
++    let w: [u64; 16] = core::array::from_fn(|t| u64::from_be_bytes(block[8 * t..8 * t + 8].try_into().unwrap()));
++    let [mut a, mut b, mut c, mut d, mut e, mut f, mut g, mut h] = IV384;
++    for t in 0..k.min(16) {
++        let s1 = e.rotate_right(14) ^ e.rotate_right(18) ^ e.rotate_right(41);
++        let ch = (e & f) ^ (!e & g);
++        let t1 = h.wrapping_add(s1).wrapping_add(ch).wrapping_add(K[t]).wrapping_add(w[t]);
++        let s0 = a.rotate_right(28) ^ a.rotate_right(34) ^ a.rotate_right(39);
++        let maj = (a & b) ^ (a & c) ^ (b & c);
++        let t2 = s0.wrapping_add(maj);
++        h = g;
++        g = f;
++        f = e;
++        e = d.wrapping_add(t1);
++        d = c;
++        c = b;
++        b = a;
++        a = t1.wrapping_add(t2);
++    }
++    [a, b, c, d, e, f, g, h]
++}
++
++/// SHA-384 of 16 already padded single-block messages that agree on message words 0..k, given
++/// `s_k = state_after_rounds(block, k)` (the first k rounds are skipped; the result is the
++/// plain SHA-384 of each message).
++#[cfg(all(target_arch = "x86_64", target_feature = "avx512f"))]
++pub fn sha384_x16_blocks_from(s_k: &[u64; 8], k: usize, blocks: &[[u8; 128]; 16]) -> [[u8; 48]; 16] {
++    use core::arch::x86_64::*;
++    unsafe {
++        let mut w16 = [[[0u64; 8]; 16]; 2];
++        for (li, blk) in blocks.iter().enumerate() {
++            let (g, l) = (li / 8, li % 8);
++            for t in 0..16 {
++                w16[g][t][l] = u64::from_be_bytes(blk[8 * t..8 * t + 8].try_into().unwrap());
++            }
++        }
++        let iv: [__m512i; 8] = core::array::from_fn(|i| _mm512_set1_epi64(IV384[i] as i64));
++        let sk: [__m512i; 8] = core::array::from_fn(|i| _mm512_set1_epi64(s_k[i] as i64));
++        let mut st = [iv; 2];
++        x16::compress2_from(&mut st, [sk; 2], k, &w16);
++        let mut words = [[[0u64; 8]; 8]; 2];
++        for g in 0..2 {
++            for i in 0..8 {
++                _mm512_storeu_si512(words[g][i].as_mut_ptr() as *mut _, st[g][i]);
++            }
++        }
++        core::array::from_fn(|li| {
++            let (g, l) = (li / 8, li % 8);
++            let mut out = [0u8; 48];
++            for i in 0..6 {
++                out[8 * i..8 * i + 8].copy_from_slice(&words[g][i][l].to_be_bytes());
++            }
++            out
++        })
 +    }
 +}
 +
