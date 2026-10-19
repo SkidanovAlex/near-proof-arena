@@ -437,4 +437,254 @@ theorem msgs_ch {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       chip_part_ch CF 7 (by omega) (by omega), chip_part_ch CF 8 (by omega) (by omega),
       chip_part_ch CF 9 (by omega) (by omega), List.append_nil]
 
+/-! ## The initial state (function entry with an empty operand stack) -/
+
+theorem init_rel {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X nloc ncode pub)
+    {s0 : St} {f0 : Frame} (hfr : s0.frames = [f0]) (hfn : f0.fn = X.fn) (hpc : f0.pc = 0)
+    (hlab : f0.labels = [rootLabel X.pf]) (hbase : f0.base = 0) (hloc : f0.locals = X.pf.locals.map Val.default)
+    (hstk : s0.stack = #[]) (hg : s0.gas.g = X.g0) :
+    RelW X s0 f0 (fun _ => 0) (fun _ => 0) 1 0 0 (· ∈ (initRaw nloc pub).map decMsg) := by
+  have CF := X.facts
+  have hP' := P_val
+  have hcode : 0 < X.pf.code.size := by
+    have := CF.h0; rw [← CF.hsize]
+    rcases h : X.ck.heights[0]? with _ | x
+    · rw [h] at this; simp at this
+    · exact (Array.getElem?_eq_some_iff.mp h).1
+  have hnl : f0.locals.size = X.pf.locals.size := by rw [hloc]; simp
+  have hdef : ∀ j, j < X.pf.locals.size → (X.pf.locals[j]?.getD default = VT.i32 ∨ X.pf.locals[j]?.getD default = VT.i64) := by
+    intro j hj
+    have := CF.locTypes (X.pf.locals[j]'hj) (Array.getElem_mem_toList hj)
+    rw [Array.getElem?_eq_getElem hj]; simpa using this
+  refine ⟨hfr, hfn, hpc, hcode, by rw [hlab]; exact CF.l0, hbase,
+    by rw [hstk]; exact CF.h0, hnl, by simp [hg, Ctx.R], by simp [hstk], ?_, by simp [hstk],
+    fun _ _ => by decide, ?_⟩
+  · intro j hj
+    rw [hnl] at hj
+    rw [hloc, Array.getElem?_map, Array.getElem?_eq_getElem hj]
+    simp only [Option.map_some, Option.getD_some]
+    rcases hdef j hj with h | h <;> rw [Array.getElem?_eq_getElem hj] at h <;> simp only [Option.getD_some] at h <;>
+      rw [h] <;> trivial
+  · intro x
+    simp only [hstk, stackView, List.range_zero, List.map_nil, List.not_mem_nil, false_or]
+    suffices e : (initRaw nloc pub).map decMsg = localView f0.locals (fun _ => 0) by rw [e]; simp
+    unfold initRaw localView
+    rw [hnl, ← hpub.hnloc, List.map_map]
+    apply List.map_congr_left
+    intro j hj
+    rw [List.mem_range] at hj
+    have hj' : j < X.pf.locals.size := hpub.hnloc ▸ hj
+    have ht := hpub.locTags j hj
+    simp only [Function.comp, decMsg, List.getD_cons_zero, List.getD_cons_succ, ht]
+    rw [hloc, Array.getElem?_map, Array.getElem?_eq_getElem hj']
+    simp only [Option.map_some, Option.getD_some]
+    rcases hdef j hj' with h | h <;> rw [Array.getElem?_eq_getElem hj'] at h <;> simp only [Option.getD_some] at h
+    · have : X.ck.localTags.getD j 0 = 0 := by
+        rw [CF.localTags]; simp [List.getD_eq_getElem?_getD, hj', h]; decide
+      have hn := CF.nloc
+      rw [this]; simp only [h, enc, Val.default, vTag, vNum, Msg.mk.injEq]
+      refine ⟨Fp.toNat_cast_of_lt (by omega), Fp.toNat_cast_of_lt (by omega), Fp.toNat_cast_of_lt (by omega), ?_⟩
+      simp; rfl
+    · have : X.ck.localTags.getD j 0 = 1 := by
+        rw [CF.localTags]; simp [List.getD_eq_getElem?_getD, hj', h]; decide
+      have hn := CF.nloc
+      rw [this]; simp only [h, enc, Val.default, vTag, vNum, Msg.mk.injEq]
+      refine ⟨Fp.toNat_cast_of_lt (by omega), Fp.toNat_cast_of_lt (by omega), Fp.toNat_cast_of_lt (by omega), ?_⟩
+      simp; rfl
+
+/-! ## Counting the steps from the STATE chain -/
+
+theorem chain_len {ρ : Type} [DecidableEq ρ] (act : List ρ) (inS outS : ρ → List F) (pcf N Sf : F)
+    (hts : ∀ r ∈ act, lvl (outS r) = lvl (inS r) + 1)
+    (hst : (stMsg 0 1 0 0 :: act.map outS).Perm ([pcf, N, Sf, 1] :: act.map inS))
+    (hlen : act.length < 2 ^ 28) : act.length + 1 = N.toNat := by
+  have hP' := P_val
+  let g : ρ → List F × List F := fun r => (inS r, outS r)
+  have hE1 : (act.map g).map Prod.snd = act.map outS := by simp [g, List.map_map]
+  have hE2 : (act.map g).map Prod.fst = act.map inS := by simp [g, List.map_map]
+  have hstepE : ∀ e ∈ act.map g, lvl e.2 = lvl e.1 + 1 := by
+    intro e he
+    obtain ⟨r, hr, rfl⟩ := List.mem_map.mp he
+    exact hts r hr
+  obtain ⟨es, hes, hpath⟩ := chain (act.map g) (stMsg 0 1 0 0) [pcf, N, Sf, 1] lvl
+    (by rw [hE1, hE2]; exact hst) hstepE (by simp; omega)
+  obtain ⟨-, lfin⟩ := path_levels lvl es _ _ hpath (fun e he => hstepE e (hes.subset he))
+  have hl : es.length = act.length := by rw [hes.length_eq]; simp
+  have e : lvl [pcf, N, Sf, 1] = N := rfl
+  have l0 : lvl (stMsg 0 1 0 0) = 1 := rfl
+  rw [e, l0, hl] at lfin
+  rw [lfin, show (1 : F) + ((act.length : Nat) : F) = ((act.length + 1 : Nat) : F) by
+    rw [Lean.Grind.Semiring.natCast_add, cast_one]; grind, Fp.toNat_cast_of_lt (by omega)]
+
+/-! ## The active rows -/
+
+theorem mem_actList {tr : Trace} {pub : List F} {ρ : Nat × Nat} (h : ρ ∈ actList tr pub) :
+    1 ≤ ρ.1 ∧ ρ.1 ≤ 9 ∧ ρ.2 < tr.height ρ.1 ∧ rowAct (chipT ρ.1) tr pub ρ.1 ρ.2 := by
+  simp only [actList, actRows, List.mem_flatMap, List.mem_range, List.mem_map, List.mem_filter,
+    decide_eq_true_eq] at h
+  obtain ⟨k, hk, r, ⟨hr, ha⟩, rfl⟩ := h
+  exact ⟨by simp, by simp; omega, hr, ha⟩
+
+theorem actList_length {nloc ncode : Nat} {pub : List F} {tr : Trace} (H : Holds (wasmBaseAir nloc ncode) pub tr) :
+    (actList tr pub).length < 2 ^ 28 := by
+  have hb : ∀ t, 1 ≤ t → t ≤ 9 → (actRows tr pub t).length ≤ 2 ^ 24 := by
+    intro t h1 h9
+    have := H.heightLe t (by simp [air_len]; omega)
+    unfold maxLogHeight at this
+    exact Nat.le_trans (List.length_filter_le _ _) (by simp; exact this)
+  have e := congrArg List.length (actList_map tr pub id)
+  simp only [List.map_id, List.length_append, List.length_map] at e
+  rw [e]
+  have := hb 1 (by omega) (by omega); have := hb 2 (by omega) (by omega); have := hb 3 (by omega) (by omega)
+  have := hb 4 (by omega) (by omega); have := hb 5 (by omega) (by omega); have := hb 6 (by omega) (by omega)
+  have := hb 7 (by omega) (by omega); have := hb 8 (by omega) (by omega); have := hb 9 (by omega) (by omega)
+  omega
+
+theorem nodup_map_on {α β : Type} (f : α → β) : ∀ (l : List α), (∀ a ∈ l, ∀ b ∈ l, f a = f b → a = b) →
+    l.Nodup → (l.map f).Nodup := by
+  intro l
+  induction l with
+  | nil => intro _ _; simp
+  | cons a l ih =>
+    intro hinj hnd
+    rw [List.nodup_cons] at hnd
+    rw [List.map_cons, List.nodup_cons]
+    refine ⟨?_, ih (fun x hx y hy => hinj x (List.mem_cons_of_mem _ hx) y (List.mem_cons_of_mem _ hy)) hnd.2⟩
+    intro hm
+    obtain ⟨b, hb, he⟩ := List.mem_map.mp hm
+    have := hinj b (List.mem_cons_of_mem _ hb) a List.mem_cons_self he
+    subst this; exact hnd.1 hb
+
+theorem init_facts {X : Ctx} {nloc ncode : Nat} {pub : List F} (hpub : PubOK X nloc ncode pub) :
+    ((initRaw nloc pub).map decMsg).Nodup ∧ ∀ x ∈ (initRaw nloc pub).map decMsg, x.tp = 0 := by
+  have hn := X.facts.nloc
+  have hP' := P_val
+  rw [← hpub.hnloc] at hn
+  constructor
+  · unfold initRaw
+    rw [List.map_map]
+    have hslot : ∀ j, j < nloc → (decMsg [((1 : Nat) : F), ((j : Nat) : F), pub.getD (Boundary.pubLoc + j) 0,
+        ((0 : Nat) : F), ((0 : Nat) : F), ((0 : Nat) : F), ((0 : Nat) : F), ((0 : Nat) : F)]).slot = j := by
+      intro j hj; simp only [decMsg, List.getD_cons_succ, List.getD_cons_zero]; exact Fp.toNat_cast_of_lt (by omega)
+    refine nodup_map_on _ _ ?_ List.nodup_range
+    intro a ha b hb hab
+    rw [List.mem_range] at ha hb
+    have := congrArg Msg.slot hab
+    simp only [Function.comp] at this
+    rw [hslot a ha, hslot b hb] at this; exact this
+  · intro x hx
+    simp only [initRaw, List.map_map, List.mem_map, List.mem_range] at hx
+    obtain ⟨j, _, rfl⟩ := hx
+    rfl
+
+/-! ## The execution theorem -/
+
+theorem val4_limbs (n : Nat) (hn : n < 2 ^ 64) :
+    val4 (n % 65536) (n / 65536 % 65536) (n / 2 ^ 32 % 65536) (n / 2 ^ 48 % 65536) = n := by
+  unfold val4; omega
+
+theorem vNum_lt64 (v : Val) : vNum v < 2 ^ 64 := by
+  cases v with
+  | i32 x => have := x.toNat_lt; simp only [vNum]; omega
+  | i64 x => exact x.toNat_lt
+  | ref _ => simp [vNum]
+
+/-- **Base-faithful execution theorem.**  If the AIR relation holds for `wasmBaseAir` with the
+public inputs the verifier derives from the checker (`PubOK`), every instruction chip satisfies its
+row lemma (`ChipFacts`, proven per chip), and the explicit domain conditions on the public values
+hold, then the spec `run` from function entry finishes after exactly `N - 1` steps, with the gas
+`R · S` charged, and the operand stack equal to the public result (if the function has one). -/
+theorem wasm_base_exec (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
+    (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub)
+    (CF : ChipFacts X nloc ncode pub tr)
+    (hfeeN : (pub.getD Boundary.pubN 0).toNat * (X.ck.maxFee + 1) < P)
+    (hgas : X.R * (pub.getD Boundary.pubS 0).toNat ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    {s0 : St} {f0 : Frame} (hfr : s0.frames = [f0]) (hfn : f0.fn = X.fn) (hpc : f0.pc = 0)
+    (hlab : f0.labels = [rootLabel X.pf]) (hbase : f0.base = 0) (hloc : f0.locals = X.pf.locals.map Val.default)
+    (hstk : s0.stack = #[]) (hg : s0.gas.g = X.g0) :
+    ∃ sN, run X.cfg X.p ((pub.getD Boundary.pubN 0).toNat - 1) s0 = .fin sN ∧ sN.frames = [] ∧
+      X.R * (pub.getD Boundary.pubS 0).toNat + sN.gas.g = X.g0 ∧
+      sN.stack.size = X.ck.arity ∧
+      (X.ck.arity = 1 → ∃ v, sN.stack[0]? = some v ∧ vTag v = (pub.getD Boundary.pubTag 0).toNat ∧
+        vNum v = val4 (pub.getD (Boundary.pubR + 0) 0).toNat (pub.getD (Boundary.pubR + 1) 0).toNat
+          (pub.getD (Boundary.pubR + 2) 0).toNat (pub.getD (Boundary.pubR + 3) 0).toNat) := by
+  have hP' := P_val
+  have hbits := occ_bits hpub CF
+  have L := looks_of H (fun o ho hs => hbits o ho (Or.inl hs))
+  obtain ⟨ms1, ms2⟩ := msgs_state H hpub
+  have hstP := msgs_perm H busState (fun o ho hb => hbits o ho (Or.inr (Or.inl hb)))
+  rw [ms1, ms2] at hstP
+  obtain ⟨mc1, mc2⟩ := msgs_ch H hpub CF
+  have hchP := (msgs_perm H busStk (fun o ho hb => hbits o ho (Or.inr (Or.inr hb)))).map decMsg
+  rw [mc1, mc2] at hchP
+  simp only [List.map_append, List.map_flatMap] at hchP
+  have hrows : ∀ ρ ∈ actList tr pub, RowFacts X (rowIn (chipT ρ.1) tr pub ρ.1 ρ.2) (rowOut (chipT ρ.1) tr pub ρ.1 ρ.2)
+      (rowCons (chipT ρ.1) tr pub ρ.1 ρ.2) (rowProd (chipT ρ.1) tr pub ρ.1 ρ.2) := by
+    intro ρ hρ
+    obtain ⟨h1, h9, hr, ha⟩ := mem_actList hρ
+    exact CF.rows L hpub ρ.1 h1 h9 ρ.2 hr ha
+  have hlen := actList_length H
+  have hN := chain_len (actList tr pub) (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
+    (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ (fun ρ hρ => (hrows ρ hρ).tsOut) hstP hlen
+  have hfee : ((actList tr pub).length + 1) * (X.ck.maxFee + 1) < P := by rw [hN]; exact hfeeN
+  obtain ⟨hnd, htp⟩ := init_facts hpub
+  have h0 := init_rel hpub hfr hfn hpc hlab hbase hloc hstk hg
+  obtain ⟨sN, tps, tpl, locs, hrun, hfrN, hgasN, -, hfin⟩ :=
+    exec_of_rows X (actList tr pub) (fun ρ => rowIn (chipT ρ.1) tr pub ρ.1 ρ.2)
+      (fun ρ => rowOut (chipT ρ.1) tr pub ρ.1 ρ.2) (fun ρ => rowCons (chipT ρ.1) tr pub ρ.1 ρ.2)
+      (fun ρ => rowProd (chipT ρ.1) tr pub ρ.1 ρ.2) _ _ _ _ _ hrows hstP hchP hnd htp hlen hfee hgas hg64 h0
+  refine ⟨sN, by rw [show (pub.getD Boundary.pubN 0).toNat - 1 = (actList tr pub).length by omega]; exact hrun,
+    hfrN, hgasN, ?_⟩
+  -- the final operand stack is the boundary's result message
+  have har := X.facts.results
+  have harity := X.facts.arity
+  have hfinsp : ∀ x ∈ (finRaw nloc tr).map decMsg, x.space = 1 := by
+    intro x hx
+    simp only [finRaw, List.map_map, List.mem_map, List.mem_range] at hx
+    obtain ⟨j, _, rfl⟩ := hx; rfl
+  have hres : (decMsg (resRaw pub tr)).space = 0 ∧ (decMsg (resRaw pub tr)).slot = 0 := ⟨rfl, rfl⟩
+  have hstk1 : ∀ i, i < sN.stack.size → X.ck.arity = 1 ∧ i = 0 ∧
+      enc 0 i (sN.stack[i]?.getD default) (tps i) = decMsg (resRaw pub tr) := by
+    intro i hi
+    have hm : enc 0 i (sN.stack[i]?.getD default) (tps i) ∈ stackView sN.stack tps :=
+      mem_stackView.mpr ⟨i, hi, rfl⟩
+    have := (hfin _).mpr (Or.inl hm)
+    rw [List.mem_append] at this
+    rcases this with h | h
+    · by_cases ha : X.ck.arity = 1
+      · simp only [ha, ite_true] at h
+        simp only [List.map_cons, List.map_nil, List.mem_cons, List.mem_nil_iff, or_false] at h
+        refine ⟨ha, ?_, h⟩
+        have := congrArg Msg.slot h; simp only [enc] at this; rw [this]; exact hres.2
+      · simp only [ha, ite_false] at h; simp at h
+    · have := hfinsp _ h; simp [enc] at this
+  by_cases ha : X.ck.arity = 1
+  · -- the result message is a live stack message, at slot 0
+    have hm : decMsg (resRaw pub tr) ∈ (if X.ck.arity = 1 then [resRaw pub tr] else []).map decMsg ++
+        (finRaw nloc tr).map decMsg := by simp only [ha, ite_true]; simp
+    rcases (hfin _).mp hm with h | h
+    · obtain ⟨i, hi, he⟩ := mem_stackView.mp h
+      have hsz : sN.stack.size = 1 := by
+        rcases Nat.lt_or_ge 1 sN.stack.size with h2 | h2
+        · have := (hstk1 1 h2).2.1; omega
+        · omega
+      have hi0 : i = 0 := by omega
+      subst hi0
+      refine ⟨by rw [hsz, ha], fun _ => ⟨sN.stack[0]?.getD default, ?_, ?_, ?_⟩⟩
+      · rw [Array.getElem?_eq_getElem (by omega)]; rfl
+      · have := congrArg Msg.tag he; simp only [enc] at this; rw [← this]; rfl
+      · have hv := vNum_lt64 (sN.stack[0]?.getD default)
+        have e1 := congrArg Msg.l0 he; have e2 := congrArg Msg.l1 he
+        have e3 := congrArg Msg.l2 he; have e4 := congrArg Msg.l3 he
+        simp only [enc] at e1 e2 e3 e4
+        rw [← val4_limbs _ hv, ← e1, ← e2, ← e3, ← e4]; rfl
+    · obtain ⟨j, _, he⟩ := mem_localView.mp h
+      have := congrArg Msg.space he; simp only [enc] at this
+      rw [hres.1] at this; exact absurd this (by decide)
+  · have hsz : sN.stack.size = 0 := by
+      rcases Nat.eq_zero_or_pos sN.stack.size with h | h
+      · exact h
+      · exact absurd (hstk1 0 h).1 ha
+    exact ⟨by rw [hsz]; omega, fun h => absurd h ha⟩
+
 end WasmBase
