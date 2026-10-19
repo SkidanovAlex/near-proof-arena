@@ -3304,7 +3304,7 @@ index fb6d6cf..f13b0ff 100644
                          symbolic_constraints: constraints_with_counts(0, 1),
                          max_constraint_degree: 1,
 diff --git a/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs b/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs
-index 8428705..7336358 100644
+index 8428705..99fe3e1 100644
 --- a/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs
 +++ b/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs
 @@ -14,7 +14,7 @@ use crate::{
@@ -3326,7 +3326,8 @@ index 8428705..7336358 100644
              params.l_skip,
              params.n_stack,
              params.log_blowup,
-             params.k_whir(),
+-            params.k_whir(),
++            params.whir.k_first(), // [pq-nv-preprocessed] round-0 leaf size (k1 lever)
 +            params.whir.domain_odd_factor,
              &[&cached_trace],
 +            false,
@@ -3334,7 +3335,7 @@ index 8428705..7336358 100644
          .unwrap();
  
 diff --git a/crates/stark-backend/src/test_utils/mod.rs b/crates/stark-backend/src/test_utils/mod.rs
-index e6d2fbd..bc27a3e 100644
+index e6d2fbd..4c0829f 100644
 --- a/crates/stark-backend/src/test_utils/mod.rs
 +++ b/crates/stark-backend/src/test_utils/mod.rs
 @@ -18,7 +18,7 @@ use crate::{
@@ -3356,7 +3357,8 @@ index e6d2fbd..bc27a3e 100644
          params.l_skip,
          params.n_stack,
          params.log_blowup,
-         params.k_whir(),
+-        params.k_whir(),
++        params.whir.k_first(), // [pq-nv-preprocessed] round-0 leaf size (k1 lever)
 +        params.whir.domain_odd_factor,
          &[&trace],
 +        false,
@@ -3373,7 +3375,8 @@ index e6d2fbd..bc27a3e 100644
                      params.l_skip,
                      params.n_stack,
                      params.log_blowup,
-                     params.k_whir(),
+-                    params.k_whir(),
++                    params.whir.k_first(), // [pq-nv-preprocessed] round-0 leaf size (k1 lever)
 +                    params.whir.domain_odd_factor,
                      &[&cached],
 +                    false,

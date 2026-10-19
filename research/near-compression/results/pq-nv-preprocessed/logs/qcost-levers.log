@@ -1,0 +1,14 @@
+NV_QCOST round=0 queries=5 rows=1370 per_query=274 nbits=10 k=1 merkle_nodes=140
+NV_QCOST round=1 queries=2 rows=459 per_query=230 nbits=8 k=3 merkle_nodes=164
+NV_QCOST round=2 queries=1 rows=228 per_query=228 nbits=8 k=3 merkle_nodes=176
+NV_QCOST round=0 queries=5 rows=1370 per_query=274 nbits=10 k=1 merkle_nodes=140
+NV_QCOST round=1 queries=2 rows=459 per_query=230 nbits=8 k=3 merkle_nodes=164
+NV_QCOST round=2 queries=1 rows=228 per_query=228 nbits=8 k=3 merkle_nodes=176
+NV_QCOST round=0 queries=5 rows=975 per_query=195 nbits=10 k=1 merkle_nodes=70
+NV_QCOST round=1 queries=2 rows=459 per_query=230 nbits=8 k=3 merkle_nodes=94
+NV_QCOST round=2 queries=1 rows=228 per_query=228 nbits=8 k=3 merkle_nodes=106
+NV_PREP_ROWS prep=5518 jobs=190 merkle_nodes=176 | fib=4991 jobs=115 merkle_nodes=106
+NV_QCOST round=0 queries=5 rows=1370 per_query=274 nbits=10 k=1 merkle_nodes=140
+NV_QCOST round=1 queries=2 rows=459 per_query=230 nbits=8 k=3 merkle_nodes=164
+NV_QCOST round=2 queries=1 rows=228 per_query=228 nbits=8 k=3 merkle_nodes=176
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 83 filtered out; finished in 35.12s
