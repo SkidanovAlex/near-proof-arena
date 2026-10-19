@@ -15,3 +15,8 @@ import WasmBase.Local.Bit
 import WasmBase.Local.Mul
 import WasmBase.Local.Cmp
 import WasmBase.Local.Simple
+import WasmBase.Local.ShiftSem
+import WasmBase.Extract.Row
+import WasmBase.Extract.Bits
+import WasmBase.Extract.Byte
+import WasmBase.Extract.Occ
