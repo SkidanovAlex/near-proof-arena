@@ -649,3 +649,8 @@ model 308.5 → 298.9 KB.
 * dkt_certs_o2.json: 173 entries, 164 Lean-kernel proved; 9 round-3 codes (k=2^10, h20 k1=2)
   only engine/#eval checked (kernel OOM at 24 GB) → gated to J64 (+1 query, ≈0 B).
   Decision (soundness rule): certificate gating uses kernel-proved entries only.
+* lane/pq-recursion-sha384 @ 819beab10: domain bound in search; penultimate b7 h20 k1=2 lf6
+  (q [41,35,27,22→23]); kernel-only gating via NEARPROOF_DKT_EXCLUDE (DKTCertsO2_big.keys);
+  loader bug fixed (no longer counts keys inside `_no_certificate`); auditor hardening merged;
+  slow app-binding/opening tests pass (17.4 GB). Model 287,037 B; NvAir 255,976 (2^17.97).
+  Without O-2: 301,743 B at L=25 — the < 300 KB result now depends on the certificates.
