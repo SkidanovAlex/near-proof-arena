@@ -168,4 +168,349 @@ theorem step_drop (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S
       or_false, false_and, exists_false, Array.size_pop, List.mem_nil_iff, iff_false]
     rintro ⟨d, hd, _⟩; omega
 
+/-! ## pop-k-push-one helpers -/
+
+def popK (a : Array Val) : Nat → Array Val
+  | 0 => a
+  | k + 1 => (popK a k).pop
+
+theorem popK_size (a : Array Val) (k : Nat) : (popK a k).size = a.size - k := by
+  induction k with
+  | zero => rfl
+  | succ k ih => simp [popK, ih]; omega
+
+theorem popK_get (a : Array Val) (k i : Nat) (hi : i < a.size - k) : (popK a k)[i]? = a[i]? := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+    simp only [popK, Array.getElem?_pop, popK_size]
+    rw [if_pos (by omega)]; exact ih (by omega)
+
+theorem pushpop_keep (a : Array Val) (k : Nat) (v : Val) :
+    ∀ i, i < a.size - k → ((popK a k).push v)[i]? = a[i]? := by
+  intro i hi
+  rw [Array.getElem?_push, popK_size, if_neg (by omega), popK_get a k i hi]
+
+theorem pushpop_size (a : Array Val) (k : Nat) (v : Val) : ((popK a k).push v).size = a.size - k + 1 := by
+  simp [popK_size]
+
+theorem pushpop_num (a : Array Val) (k : Nat) (v : Val) (hv : isNum v)
+    (ha : ∀ i, i < a.size → isNum (a[i]?.getD default)) :
+    ∀ i, i < ((popK a k).push v).size → isNum (((popK a k).push v)[i]?.getD default) := by
+  intro i hi
+  rw [pushpop_size] at hi
+  rw [Array.getElem?_push, popK_size]
+  by_cases h : i = a.size - k
+  · rw [if_pos h]; exact hv
+  · rw [if_neg h, popK_get a k i (by omega)]; exact ha i (by omega)
+
+theorem pushpop_top (a : Array Val) (k : Nat) (v : Val) :
+    ((popK a k).push v)[a.size - k]?.getD default = v := by
+  rw [Array.getElem?_push, popK_size, if_pos rfl]; rfl
+
+theorem popK_two (a : Array Val) : popK a 2 = a.pop.pop := rfl
+theorem popK_one (a : Array Val) : popK a 1 = a.pop := rfl
+theorem popK_three (a : Array Val) : popK a 3 = a.pop.pop.pop := rfl
+
+/-- The produced-list equivalence for "push one value at slot `n - k`". -/
+theorem prod_one (a : Array Val) (k : Nat) (hk : k ≤ a.size) (v : Val) (t : Nat) (mr : Msg)
+    (hmr : mr = enc 0 (a.size - k) v t) (x : Msg) :
+    x ∈ ((List.range (((popK a k).push v).size - (a.size - k))).map fun d =>
+        enc 0 (a.size - k + d) (((popK a k).push v)[a.size - k + d]?.getD default) t) ++
+      (none : Option Nat).toList.map (fun j => enc 1 j (default : Val) t) ↔ x ∈ [mr] := by
+  simp only [pushpop_size, List.mem_append, List.mem_map, List.mem_range, Option.toList_none,
+    List.not_mem_nil, or_false, List.mem_cons, List.mem_nil_iff, false_and, exists_false]
+  constructor
+  · rintro ⟨d, hd, rfl⟩
+    have : d = 0 := by omega
+    subst this; rw [hmr, Nat.add_zero, pushpop_top]
+  · rintro rfl; exact ⟨0, by omega, by rw [hmr, Nat.add_zero, pushpop_top]⟩
+
+/-! ## relational ops and eqz -/
+
+theorem step_relop (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X s f tps tpl t pc S live)
+    {op fee : Nat} (hins : X.pf.code[pc]? = some (.num op)) (hop : op ∈ relops)
+    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
+    (hg64 : X.g0 < 2 ^ 64)
+    (ma mb mr : Msg) (hma : live ma) (hmb : live mb)
+    (sa : ma.space = 0 ∧ ma.slot = s.stack.size - 2)
+    (sb : mb.space = 0 ∧ mb.slot = s.stack.size - 1)
+    (hmr : ∀ r, (ma.ok → mb.ok → r = Num.b2 (Num.relop (relW op) (relK op) ma.val mb.val)) →
+      mr = enc 0 (s.stack.size - 2) (.i32 (UInt32.ofNat r)) t)
+    (sem : True) :
+    ∃ s', step X.cfg X.p s = .cont s' ∧
+      Rel X s' (t + 1) (pc + 1) (S + fee) (stepLive live [ma, mb] [mr]) := by
+  have hfam : isFamilyNum op = true ∧ numPops op = 2 := by
+    simp only [relops, List.mem_cons, List.mem_nil_iff, or_false] at hop
+    rcases hop with h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h | h <;>
+    subst h <;> decide
+  have hL := R.labels; have hH := R.height
+  obtain ⟨h2, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH (pops := 2) (pushes := 1)
+    (by simp [kindOf, hfam.1, hfam.2]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
+    (by intro l; simp)
+  obtain ⟨ea, oka, va, -⟩ := R.stack_dec hma sa.1 sa.2 (by omega)
+  obtain ⟨eb, okb, vb, -⟩ := R.stack_dec hmb sb.1 sb.2 (by omega)
+  obtain ⟨r, hr⟩ : ∃ r, r = Num.b2 (Num.relop (relW op) (relK op) ma.val mb.val) := ⟨_, rfl⟩
+  have emr := hmr r (fun _ _ => hr)
+  apply step_straight X R hins hfee hg hg64 2 h2 ((popK s.stack 2).push (.i32 (UInt32.ofNat r))) f.locals none
+    (pushpop_keep _ _ _) (by rw [pushpop_size]; omega) (pushpop_num _ _ _ trivial R.numS)
+    rfl (fun _ _ => rfl) (by simp) R.numL hnext hL1 (by rw [pushpop_size, hH1])
+  · rw [popK_two]
+    simp only [exec, execNum_relop _ _ hop, popN_eq, pushI32, pushV, setFrame, R.frames, R.pcEq]
+    rw [back_getD s.stack (by omega), back_getD s.stack.pop (by simp; omega)]
+    simp only [Array.size_pop, Array.getElem?_pop]
+    rw [if_pos (by omega), show s.stack.size - 1 - 1 = s.stack.size - 2 by omega, ← va, ← vb, hr]
+  · intro x
+    simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_none, List.not_mem_nil,
+      or_false, List.mem_cons, List.mem_nil_iff, false_and, exists_false]
+    constructor
+    · rintro ⟨d, hd, rfl⟩
+      rcases (show d = 0 ∨ d = 1 by omega) with rfl | rfl
+      · left; rw [ea, Nat.add_zero]
+      · right; rw [eb, show s.stack.size - 2 + 1 = s.stack.size - 1 by omega]
+    · rintro (rfl | rfl)
+      · exact ⟨0, by omega, by rw [ea, Nat.add_zero]⟩
+      · exact ⟨1, by omega, by rw [eb, show s.stack.size - 2 + 1 = s.stack.size - 1 by omega]⟩
+  · exact prod_one s.stack 2 h2 _ t mr emr
+
+theorem step_eqz (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X s f tps tpl t pc S live)
+    {op fee : Nat} (hins : X.pf.code[pc]? = some (.num op)) (hop : op = 0x45 ∨ op = 0x50)
+    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
+    (hg64 : X.g0 < 2 ^ 64)
+    (ma mr : Msg) (hma : live ma) (sa : ma.space = 0 ∧ ma.slot = s.stack.size - 1)
+    (hmr : ∀ r, (ma.ok → r = Num.b2 (ma.val = 0)) → mr = enc 0 (s.stack.size - 1) (.i32 (UInt32.ofNat r)) t) :
+    ∃ s', step X.cfg X.p s = .cont s' ∧
+      Rel X s' (t + 1) (pc + 1) (S + fee) (stepLive live [ma] [mr]) := by
+  have hfam : isFamilyNum op = true ∧ numPops op = 1 := by rcases hop with rfl | rfl <;> decide
+  have hL := R.labels; have hH := R.height
+  obtain ⟨h1, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH (pops := 1) (pushes := 1)
+    (by simp [kindOf, hfam.1, hfam.2]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
+    (by intro l; simp)
+  obtain ⟨ea, oka, va, -⟩ := R.stack_dec hma sa.1 sa.2 (by omega)
+  obtain ⟨r, hr⟩ : ∃ r, r = Num.b2 (ma.val = 0) := ⟨_, rfl⟩
+  have emr := hmr r (fun _ => hr)
+  apply step_straight X R hins hfee hg hg64 1 h1 ((popK s.stack 1).push (.i32 (UInt32.ofNat r))) f.locals none
+    (pushpop_keep _ _ _) (by rw [pushpop_size]; omega) (pushpop_num _ _ _ trivial R.numS)
+    rfl (fun _ _ => rfl) (by simp) R.numL hnext hL1 (by rw [pushpop_size, hH1])
+  · rw [popK_one]
+    simp only [exec, execNum_eqz _ _ hop, popN_eq, pushI32, pushV, setFrame, R.frames, R.pcEq]
+    rw [back_getD s.stack (by omega), ← va, hr]
+  · intro x
+    simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_none, List.not_mem_nil,
+      or_false, List.mem_cons, List.mem_nil_iff, false_and, exists_false]
+    constructor
+    · rintro ⟨d, hd, rfl⟩
+      have : d = 0 := by omega
+      subst this; rw [ea, Nat.add_zero]
+    · rintro rfl; exact ⟨0, by omega, by rw [ea, Nat.add_zero]⟩
+  · exact prod_one s.stack 1 h1 _ t mr emr
+
+/-! ## select -/
+
+theorem pop_get (a : Array Val) (i : Nat) (h : i + 1 < a.size) : a.pop[i]? = a[i]? := by
+  rw [Array.getElem?_pop, if_pos (by omega)]
+
+theorem step_select (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X s f tps tpl t pc S live) {ty : Option VT} {fee : Nat}
+    (hins : X.pf.code[pc]? = some (.select ty))
+    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (mc m2 m1 mr : Msg) (hmc : live mc) (hm2 : live m2) (hm1 : live m1)
+    (sc : mc.space = 0 ∧ mc.slot = s.stack.size - 1) (s2 : m2.space = 0 ∧ m2.slot = s.stack.size - 2)
+    (s1 : m1.space = 0 ∧ m1.slot = s.stack.size - 3)
+    (hmr : mc.ok → m1.ok → m2.ok →
+      mr = enc 0 (s.stack.size - 3) (if mc.val = 0 then m2.toVal else m1.toVal) t) :
+    ∃ s', step X.cfg X.p s = .cont s' ∧
+      Rel X s' (t + 1) (pc + 1) (S + fee) (stepLive live [mc, m2, m1] [mr]) := by
+  have hL := R.labels; have hH := R.height
+  obtain ⟨h3, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH (pops := 3) (pushes := 1)
+    (by simp [kindOf]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
+    (by intro l; simp)
+  obtain ⟨ec, okc, vc, -⟩ := R.stack_dec hmc sc.1 sc.2 (by omega)
+  obtain ⟨e2, ok2, -, tv2⟩ := R.stack_dec hm2 s2.1 s2.2 (by omega)
+  obtain ⟨e1, ok1, -, tv1⟩ := R.stack_dec hm1 s1.1 s1.2 (by omega)
+  have emr := hmr okc ok1 ok2
+  obtain ⟨v, hv⟩ : ∃ v, v = (if mc.val = 0 then m2.toVal else m1.toVal) := ⟨_, rfl⟩
+  have hnum : isNum v := by rw [hv]; split <;> exact isNum_toVal _
+  rw [← hv] at emr
+  apply step_straight X R hins hfee hg hg64 3 h3 ((popK s.stack 3).push v) f.locals none
+    (pushpop_keep _ _ _) (by rw [pushpop_size]; omega) (pushpop_num _ _ _ hnum R.numS)
+    rfl (fun _ _ => rfl) (by simp) R.numL hnext hL1 (by rw [pushpop_size, hH1])
+  · rw [popK_three]
+    simp only [exec, popN_eq, popV_eq, pushV, setFrame, R.frames, R.pcEq]
+    rw [back_getD s.stack (by omega), back_getD s.stack.pop (by simp; omega),
+      back_getD s.stack.pop.pop (by simp; omega)]
+    simp only [Array.size_pop]
+    rw [show s.stack.size - 1 - 1 = s.stack.size - 2 by omega,
+      show s.stack.size - 2 - 1 = s.stack.size - 3 by omega,
+      pop_get s.stack.pop (s.stack.size - 3) (by simp; omega), pop_get s.stack (s.stack.size - 3) (by omega),
+      pop_get s.stack (s.stack.size - 2) (by omega), ← vc, ← tv1, ← tv2, hv]
+    by_cases h0 : mc.val = 0 <;> simp [h0]
+  · intro x
+    simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_none, List.not_mem_nil,
+      or_false, List.mem_cons, List.mem_nil_iff, false_and, exists_false]
+    constructor
+    · rintro ⟨d, hd, rfl⟩
+      rcases (show d = 0 ∨ d = 1 ∨ d = 2 by omega) with rfl | rfl | rfl
+      · right; right; rw [e1, Nat.add_zero]
+      · right; left; rw [e2, show s.stack.size - 3 + 1 = s.stack.size - 2 by omega]
+      · left; rw [ec, show s.stack.size - 3 + 2 = s.stack.size - 1 by omega]
+    · rintro (rfl | rfl | rfl)
+      · exact ⟨2, by omega, by rw [ec, show s.stack.size - 3 + 2 = s.stack.size - 1 by omega]⟩
+      · exact ⟨1, by omega, by rw [e2, show s.stack.size - 3 + 1 = s.stack.size - 2 by omega]⟩
+      · exact ⟨0, by omega, by rw [e1, Nat.add_zero]⟩
+  · exact prod_one s.stack 3 h3 _ t mr emr
+
+/-! ## locals -/
+
+theorem set_getElem? (a : Array Val) (x j : Nat) (v : Val) (hx : x < a.size) :
+    (a.set! x v)[j]? = if j = x then some v else a[j]? := by
+  grind
+
+theorem step_localGet (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X s f tps tpl t pc S live) {x fee : Nat}
+    (hins : X.pf.code[pc]? = some (.localGet x)) (hx : x < f.locals.size)
+    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (ml : Msg) (hml : live ml) (sl : ml.space = 1 ∧ ml.slot = x)
+    (mo ms : Msg) (hmo : ml.ok → mo = enc 1 x ml.toVal t) (hms : ml.ok → ms = enc 0 s.stack.size ml.toVal t) :
+    ∃ s', step X.cfg X.p s = .cont s' ∧
+      Rel X s' (t + 1) (pc + 1) (S + fee) (stepLive live [ml] [ms, mo]) := by
+  have hL := R.labels; have hH := R.height
+  obtain ⟨-, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH (pops := 0) (pushes := 1)
+    (by simp [kindOf]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
+    (by intro l; simp)
+  obtain ⟨el, okl, -, tvl⟩ := R.local_dec hml sl.1 sl.2 hx
+  have emo := hmo okl; have ems := hms okl
+  rw [tvl] at emo ems
+  have hnum := R.numL x hx
+  apply step_straight X R hins hfee hg hg64 0 (Nat.zero_le _)
+    ((popK s.stack 0).push (f.locals[x]?.getD default)) f.locals (some x)
+    (pushpop_keep _ _ _) (by rw [pushpop_size]; omega) (pushpop_num _ _ _ hnum R.numS)
+    rfl (fun _ _ => rfl) (fun j hj => by cases hj; exact hx) R.numL hnext hL1 (by rw [pushpop_size, hH1])
+  · simp only [exec, pushV, setFrame, R.frames, R.pcEq, popK]; rfl
+  · intro y
+    simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_some, List.not_mem_nil,
+      or_false, List.mem_cons, List.mem_nil_iff, false_and, exists_false, List.range_zero, List.map_nil,
+      List.nil_append]
+    constructor
+    · rintro ⟨j, rfl, rfl⟩; rw [el]
+    · rintro rfl; exact ⟨x, rfl, el.symm⟩
+  · intro y
+    simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_some, List.mem_cons,
+      List.mem_nil_iff, or_false, pushpop_size, Nat.sub_zero]
+    constructor
+    · rintro (⟨d, hd, rfl⟩ | ⟨j, rfl, rfl⟩)
+      · left; have : d = 0 := by omega
+        subst this; rw [ems, Nat.add_zero]; simp [popK, Array.getElem?_push]
+      · right; rw [emo]
+    · rintro (rfl | rfl)
+      · left; exact ⟨0, by omega, by rw [ems, Nat.add_zero]; simp [popK, Array.getElem?_push]⟩
+      · right; exact ⟨x, rfl, by rw [emo]⟩
+
+theorem step_localSet (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X s f tps tpl t pc S live) {x fee : Nat}
+    (hins : X.pf.code[pc]? = some (.localSet x)) (hx : x < f.locals.size)
+    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (mv ml mo : Msg) (hmv : live mv) (hml : live ml) (sv : mv.space = 0 ∧ mv.slot = s.stack.size - 1)
+    (sl : ml.space = 1 ∧ ml.slot = x) (hmo : mv.ok → mo = enc 1 x mv.toVal t) :
+    ∃ s', step X.cfg X.p s = .cont s' ∧
+      Rel X s' (t + 1) (pc + 1) (S + fee) (stepLive live [mv, ml] [mo]) := by
+  have hL := R.labels; have hH := R.height
+  obtain ⟨h1, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH (pops := 1) (pushes := 0)
+    (by simp [kindOf]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
+    (by intro l; simp)
+  obtain ⟨ev, okv, -, tvv⟩ := R.stack_dec hmv sv.1 sv.2 (by omega)
+  obtain ⟨el, -, -, -⟩ := R.local_dec hml sl.1 sl.2 hx
+  have emo := hmo okv
+  rw [tvv] at emo
+  have hnum := R.numS (s.stack.size - 1) (by omega)
+  have hsz : s.stack.pop.size = s.stack.size - 1 + 0 := by simp
+  apply step_straight X R hins hfee hg hg64 1 h1 s.stack.pop
+    (f.locals.set! x (s.stack[s.stack.size - 1]?.getD default)) (some x)
+    (by intro i hi; simp only [Array.getElem?_pop]; rw [if_pos (by omega)]) (by simp)
+    (by intro i hi; simp only [Array.size_pop] at hi; simp only [Array.getElem?_pop]
+        rw [if_pos (by omega)]; exact R.numS i (by omega))
+    (by simp) (fun j hj => by rw [set_getElem? _ _ _ _ hx, if_neg (fun h => hj (by rw [h]))])
+    (fun j hj => by cases hj; exact hx)
+    (by intro j hj; simp only [Array.size_set!] at hj; rw [set_getElem? _ _ _ _ hx]
+        split
+        · exact hnum
+        · exact R.numL j hj)
+    hnext hL1 (by rw [hsz]; exact hH1)
+  · simp only [exec, popV_eq, setFrame, R.frames, R.pcEq]
+    rw [back_getD s.stack (by omega)]
+  · intro y
+    simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_some, List.mem_cons,
+      List.mem_nil_iff, or_false]
+    constructor
+    · rintro (⟨d, hd, rfl⟩ | ⟨j, rfl, rfl⟩)
+      · left; have : d = 0 := by omega
+        subst this; rw [ev, Nat.add_zero]
+      · right; rw [el]
+    · rintro (rfl | rfl)
+      · left; exact ⟨0, by omega, by rw [ev, Nat.add_zero]⟩
+      · right; exact ⟨x, rfl, el.symm⟩
+  · intro y
+    simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_some, List.mem_cons,
+      List.mem_nil_iff, or_false, Array.size_pop]
+    constructor
+    · rintro (⟨d, hd, _⟩ | ⟨j, rfl, rfl⟩)
+      · omega
+      · rw [emo, set_getElem? _ _ _ _ hx, if_pos rfl]; rfl
+    · rintro rfl; right; exact ⟨x, rfl, by rw [emo, set_getElem? _ _ _ _ hx, if_pos rfl]; rfl⟩
+
+theorem step_localTee (X : Ctx) {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X s f tps tpl t pc S live) {x fee : Nat}
+    (hins : X.pf.code[pc]? = some (.localTee x)) (hx : x < f.locals.size)
+    (hfee : feeUnits X.cfg X.pf.gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (mv ml mo ms : Msg) (hmv : live mv) (hml : live ml) (sv : mv.space = 0 ∧ mv.slot = s.stack.size - 1)
+    (sl : ml.space = 1 ∧ ml.slot = x) (hmo : mv.ok → mo = enc 1 x mv.toVal t)
+    (hms : mv.ok → ms = enc 0 (s.stack.size - 1) mv.toVal t) :
+    ∃ s', step X.cfg X.p s = .cont s' ∧
+      Rel X s' (t + 1) (pc + 1) (S + fee) (stepLive live [mv, ml] [ms, mo]) := by
+  have hL := R.labels; have hH := R.height
+  obtain ⟨h1, hnext, hL1, hH1⟩ := verify_straight X R.pcLt hins hL hH (pops := 1) (pushes := 1)
+    (by simp [kindOf]) (by intro bt; simp) (by simp) (by simp) (by simp) (by intro l; simp)
+    (by intro l; simp)
+  obtain ⟨ev, okv, -, tvv⟩ := R.stack_dec hmv sv.1 sv.2 (by omega)
+  obtain ⟨el, -, -, -⟩ := R.local_dec hml sl.1 sl.2 hx
+  have emo := hmo okv; have ems := hms okv
+  rw [tvv] at emo ems
+  have hnum := R.numS (s.stack.size - 1) (by omega)
+  apply step_straight X R hins hfee hg hg64 1 h1 s.stack
+    (f.locals.set! x (s.stack[s.stack.size - 1]?.getD default)) (some x)
+    (fun i _ => rfl) (by omega) R.numS
+    (by simp) (fun j hj => by rw [set_getElem? _ _ _ _ hx, if_neg (fun h => hj (by rw [h]))])
+    (fun j hj => by cases hj; exact hx)
+    (by intro j hj; simp only [Array.size_set!] at hj; rw [set_getElem? _ _ _ _ hx]
+        split
+        · exact hnum
+        · exact R.numL j hj)
+    hnext hL1 (by rw [hH1]; congr 1; omega)
+  · simp only [exec, setFrame, R.frames, R.pcEq]
+    rw [back_getD s.stack (by omega)]
+  · intro y
+    simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_some, List.mem_cons,
+      List.mem_nil_iff, or_false]
+    constructor
+    · rintro (⟨d, hd, rfl⟩ | ⟨j, rfl, rfl⟩)
+      · left; have : d = 0 := by omega
+        subst this; rw [ev, Nat.add_zero]
+      · right; rw [el]
+    · rintro (rfl | rfl)
+      · left; exact ⟨0, by omega, by rw [ev, Nat.add_zero]⟩
+      · right; exact ⟨x, rfl, el.symm⟩
+  · intro y
+    simp only [List.mem_append, List.mem_map, List.mem_range, Option.toList_some, List.mem_cons,
+      List.mem_nil_iff, or_false]
+    constructor
+    · rintro (⟨d, hd, rfl⟩ | ⟨j, rfl, rfl⟩)
+      · left; have : d = 0 := by omega
+        subst this; rw [ems, Nat.add_zero]
+      · right; rw [emo, set_getElem? _ _ _ _ hx, if_pos rfl]; rfl
+    · rintro (rfl | rfl)
+      · left; exact ⟨0, by omega, by rw [ems, Nat.add_zero]⟩
+      · right; exact ⟨x, rfl, by rw [emo, set_getElem? _ _ _ _ hx, if_pos rfl]; rfl⟩
+
 end WasmBase
