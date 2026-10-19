@@ -33,6 +33,7 @@ open ZkFormal.PQ.StatePort
 #check @nearAirV3_buses_below_128
 #check @nearAirV3D1_buses_below_128
 #check @join_partition
+#check @tapeNet_canon
 #check @tablesSum_eq_sides
 #check @balance_step
 #check @nearAirV3_multBoundP_lt
@@ -52,3 +53,4 @@ open ZkFormal.PQ.StatePort
 #print axioms ZkFormal.PQ.StatePort.canonKeys_nodup
 #print axioms ZkFormal.PQ.StatePort.nearAirV3_buses_below_128
 #print axioms ZkFormal.PQ.StatePort.join_partition
+#print axioms ZkFormal.PQ.StatePort.tapeNet_canon

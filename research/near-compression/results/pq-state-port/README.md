@@ -16,9 +16,9 @@ Labels: **[M]** measured here, **[K]** kernel-checked in Lean, **[E]** estimate.
 | 2 | Lean bridge: generic SWIRL⇒`HoldsP`, `multBoundP < p`, composition with `extractV3` | **done** | §2 |
 | 2b | P3 vk⇔Lean-AIR identity (difftest) | **done** | §2.1 |
 | 3 | D1: all 30 tables, no stand-in, prove + verify + tamper | **done** | §4 |
-| 3b | P4 TAPE commitment binding: Rust/statement side done, Lean `tapeNet_canon` in progress | **partly done** | §2.2 |
+| 3b | P4 TAPE commitment binding: Lean `tapeNet_canon` **proved**; NV cached-root passthrough remains (recursion lane) | **done on this side** | §2.2 |
 | 4 | Ed25519 / hint design options | **written, not implemented** | §5 |
-| 5 | Wasm join: bus partition proved, statement composition designed | **partly done** | §6 |
+| 5 | Wasm join: bus partition proved + interface fixed (`JOIN-INTERFACE.md`); HOST chip and coverage fold remain | **partly done** | §6 |
 
 ## 1. D0a port [M]
 
@@ -174,39 +174,32 @@ constraint-value *sets* (with the Rust count equal to the distinct Lean count), 
 Since the export we ship is the one the prover reads, this is exactly the identity statement P3
 asks for: vk = Lean AIR.
 
-### P4: TAPE commitment binding [M partly / K partly]
+### P4: TAPE commitment binding [K done / R remaining]
 
-The Rust and statement sides are implemented and tested: `TAPE` is a cached table, its
-commitment is recomputed from the public messages in `check_statement`, and the tamper suites
-reject a forged public message (part of 19/19 D0a and 23/23 D1).
+`Tape.lean` defines the canonical TAPE V_d must reconstruct (one row per distinct
+`(off + bus, msg)` of `pubMsgs`, count `pubCount …true − pubCount …false`, selectors marking the
+row's `(off + bus, len)` key).  `TapeCollapse.lean` proves the whole Lean side:
 
-The Lean side, `Tape.lean`, now defines the **canonical TAPE** V_d must reconstruct:
+| step | lemma |
+|---|---|
+| `eraseDups` keeps one copy; nodup key/message lists | `count_eraseDups_le_one`, `canonKeys_nodup`, `canonMsgs_nodup` |
+| a singleton indicator's `fsum` picks that element | `fsum_select` |
+| the canonical selector is one-hot | `zip_sel_one_hot` |
+| a row contributes `cnt` only at its own `(bus, msg)` | `fsum_own_key`, `canonRow_sum_apply` |
+| canonical messages are public messages | `canonMsgs_spec`, `pubCount_eq_zero_of_not_canon` |
+| **`TapeNet off AP pub (tapeCanon off AP pub)`** | **`tapeNet_canon`** |
 
-* `tapeCanon AP pub` — one row per distinct `(bus, msg)` of `pubMsgs AP pub`, count
-  `pubCount …true − pubCount …false`, selectors marking the row's `(bus, len)` key;
-* `count_eraseDups_le_one` — `eraseDups` keeps at most one copy of an element, so
-  `canonKeys_count_le`, `canonMsgs_count_le` give uniqueness of every key and message;
-* `canonKey_mem` — every canonical message's key is in the canonical key list.
+So `VdChecks.tape` is no longer an assumption about TAPE: under commitment binding (P4's
+cryptographic premise, exactly as for the cached `CODE` table in `pq-wasm-base`) the proved table
+is the canonical one, and `tapeNet_canon` says it carries the net public multiplicity.
 
-`TapeCollapse.lean` adds the **selector collapse** (`sel_fsum_eq`): on a nodup key list, summing
-`cnt * sel` over paired keys picks the one matching key and gives `cnt`; every other key
-contributes `cnt * 0 = 0` regardless of the message guard.  Plus `canonKeys_nodup`,
-`canonMsgs_nodup` (from `count_eraseDups_le_one`).
+**A real definition bug this caught.**  `TapeNet` looks up SWIRL bus `off + b`, so TAPE's keys must
+be on the **translated** buses.  The first version of `canonKeys`/`canonMsgs` used the raw
+`pubMsgs` buses and could never have satisfied `TapeNet`.  The definitions and every lemma above
+are now offset-correct.
 
-**Not yet landed**: `tapeNet_canon : TapeNet off AP pub (tapeCanon off AP pub)`, the final
-one-step assembly of the row contributions.  Two things surfaced while proving it, and both are
-worth recording:
-
-* **A definition fix.**  TAPE's keys must be on the **translated** buses (`off + bus`), because
-  `TapeNet` looks up `off + b`.  The first version of `canonKeys`/`canonMsgs` used raw
-  `pubMsgs` buses; that cannot satisfy `TapeNet` and would have been a real bug.  The fix is
-  written and type-checks, but I reverted `Tape.lean` to its committed form rather than land a
-  half-edited module; it belongs in the same commit as `tapeNet_canon`.
-* **One trap**: `m.take n = m` gives `m.length ≤ n`, not `n = m.length`; the message-match
-  guard is a prefix test, not an equality.  The selector collapse sidesteps it entirely (only the
-  row's own key has a nonzero selector), which is why that lemma is the one that closes.
-
-This does not bear on soundness: `TapeNet` is a hypothesis of `VdChecks`.
+**What remains for P4** is not Lean: the cached TAPE root must be carried up through every NV level
+(L1…FINAL) to V_d, which is Rust work in the recursion lane (envelope study M2, 3–5 days).
 
 ## 3. D1 [M]
 
@@ -268,8 +261,10 @@ otherwise **B**, with the same AIRs.  Do not pick C for the succinct target.
 
 ## 5. Wasm join [K partly]
 
-`Join.lean` proves the static half of the join — the bus partition — and records what the
-statement half requires.
+`Join.lean` proves the static half (the bus partition).  `JOIN-INTERFACE.md` fixes the rest of the
+contract between the two lanes: the new bus ids, the `HOSTQ`/`HOSTR`/`HOSTB` message shapes, the
+HOST chip's columns and constraints, the two theorem signatures to compose
+(`pq_d1_rel` and a relative `wasm_base_sound_host`), and the dependency order.
 
 **Bus partition (proved).**  The two families already use disjoint ranges, so the join needs no
 renaming:
@@ -314,6 +309,7 @@ Cost [E] 15–25 agent-days (envelope study §6).  Nothing in either AIR changes
 * `examples/np-udr-stark-v2/source/examples/statedump.rs` — the honest trace dump with the
   natural-height re-cut (a cargo example, so the shipped package is unchanged).
 * `zk-formal/ZkFormal/PQ/StatePort/{Swirl,Bridge,Bounds,D0a,D1,Tape,TapeCollapse,Join,Tool}.lean`,
+  `JOIN-INTERFACE.md` (the Wasm join contract),
   `zk-formal/test/AuditPQStatePort.lean`.
 * `logs/` — the prove and tamper logs and the per-table height maps.
 

@@ -66,45 +66,45 @@ theorem count_eraseDups_le_one {α : Type} [BEq α] [LawfulBEq α] (a : α) (l :
 
 /-! ## The canonical TAPE -/
 
-/-- The distinct `(bus, length)` keys of the public messages. -/
-def canonKeys (AP : AirP) (pub : List Fp) : List (Nat × Nat) :=
-  ((pubMsgs AP pub).map fun x => (x.1, x.2.2.length)).eraseDups
+/-- The distinct `(bus, length)` keys of the public messages, **on the translated buses**
+`off + bus`: `TapeNet` looks up SWIRL bus `off + b`, so TAPE's keys are the translated ids (the
+driver builds TAPE the same way). -/
+def canonKeys (off : Nat) (AP : AirP) (pub : List Fp) : List (Nat × Nat) :=
+  ((pubMsgs AP pub).map fun x => (off + x.1, x.2.2.length)).eraseDups
 
-/-- The distinct `(bus, message)` pairs of the public messages. -/
-def canonMsgs (AP : AirP) (pub : List Fp) : List (Nat × List Fp) :=
-  ((pubMsgs AP pub).map fun x => (x.1, x.2.2)).eraseDups
+/-- The distinct `(bus, message)` pairs of the public messages, on translated buses. -/
+def canonMsgs (off : Nat) (AP : AirP) (pub : List Fp) : List (Nat × List Fp) :=
+  ((pubMsgs AP pub).map fun x => (off + x.1, x.2.2)).eraseDups
 
 /-- One canonical row per distinct message: its net count, and a `1` selector at its own key. -/
-noncomputable def canonRows (AP : AirP) (pub : List Fp) : List TapeRow :=
-  (canonMsgs AP pub).map fun k =>
+noncomputable def canonRows (off : Nat) (AP : AirP) (pub : List Fp) : List TapeRow :=
+  (canonMsgs off AP pub).map fun k =>
     { msg := k.2
-      cnt := ((pubCount AP pub k.1 true k.2 : Nat) : Fp)
-        - ((pubCount AP pub k.1 false k.2 : Nat) : Fp)
-      sel := (canonKeys AP pub).map fun kk => if kk = (k.1, k.2.length) then 1 else 0 }
+      cnt := ((pubCount AP pub (k.1 - off) true k.2 : Nat) : Fp)
+        - ((pubCount AP pub (k.1 - off) false k.2 : Nat) : Fp)
+      sel := (canonKeys off AP pub).map fun kk => if kk = (k.1, k.2.length) then 1 else 0 }
 
 /-- **The canonical TAPE**: what V_d must reconstruct from the public messages. -/
-noncomputable def tapeCanon (AP : AirP) (pub : List Fp) : Tape :=
-  { keys := canonKeys AP pub, rows := canonRows AP pub }
+noncomputable def tapeCanon (off : Nat) (AP : AirP) (pub : List Fp) : Tape :=
+  { keys := canonKeys off AP pub, rows := canonRows off AP pub }
 
 /-- Every canonical key occurs at most once, so a row's selector match is unique. -/
-theorem canonKeys_count_le (AP : AirP) (pub : List Fp) (k : Nat × Nat) :
-    (canonKeys AP pub).count k ≤ 1 :=
+theorem canonKeys_count_le (off : Nat) (AP : AirP) (pub : List Fp) (k : Nat × Nat) :
+    (canonKeys off AP pub).count k ≤ 1 :=
   count_eraseDups_le_one k _
 
 /-- Every canonical message occurs at most once, so a bus/message match identifies one row. -/
-theorem canonMsgs_count_le (AP : AirP) (pub : List Fp) (k : Nat × List Fp) :
-    (canonMsgs AP pub).count k ≤ 1 :=
+theorem canonMsgs_count_le (off : Nat) (AP : AirP) (pub : List Fp) (k : Nat × List Fp) :
+    (canonMsgs off AP pub).count k ≤ 1 :=
   count_eraseDups_le_one k _
 
 /-- Every canonical message's key is among the canonical keys (so its selector is `1`). -/
-theorem canonKey_mem (AP : AirP) (pub : List Fp) (k : Nat × List Fp)
-    (hk : k ∈ canonMsgs AP pub) : (k.1, k.2.length) ∈ canonKeys AP pub := by
+theorem canonKey_mem (off : Nat) (AP : AirP) (pub : List Fp) (k : Nat × List Fp)
+    (hk : k ∈ canonMsgs off AP pub) : (k.1, k.2.length) ∈ canonKeys off AP pub := by
   rw [canonKeys, List.mem_eraseDups]
   rw [canonMsgs, List.mem_eraseDups] at hk
   obtain ⟨x, hx, hkx⟩ := List.mem_map.mp hk
   refine List.mem_map.mpr ⟨x, hx, ?_⟩
-  have h1 : k.fst = x.fst := by rw [← hkx]
-  have h2 : k.snd = x.snd.snd := by rw [← hkx]
-  rw [h1, h2]
+  rw [← hkx]
 
 end ZkFormal.PQ.StatePort
