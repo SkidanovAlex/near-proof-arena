@@ -769,3 +769,14 @@ model 308.5 → 298.9 KB.
 * Model: FINAL b7 h20 k1=1 k4 lf7 293,101 B at L=24 (NvAir 256,031, 2.3 % under 2^18).
 * CPU fast prover (lane/pq-cpu-prover @ 6134476fc) byte-identical on real layers → used for the
   G2 measured chain (stream lane). Auditor §Z on G2.
+
+## 2026-10-19 — G2 GATE (user-defined)
+
+Pass only if all four hold:
+1. real-settings FINAL bytes ≤ ~296 KB (model 293,101 B);
+2. V_d accepts the real FINAL under the pinned program;
+3. forged verify-nothing FINAL rejected by V_d at real settings (and accepted without the program
+   check, showing the test is live);
+4. the chain reproduces from a clean deps setup: identical proof sha256s from a fresh setup in a
+   new directory, by an independent agent, using MANIFEST.json (lane/pq-stream-commit g2-gate/).
+Gate run: lane/pq-stream-commit (G2 9159123be + fast CPU prover 6134476fc + streamed overlays).
