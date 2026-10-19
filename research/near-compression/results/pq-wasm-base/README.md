@@ -598,7 +598,7 @@ Mutability is the spec's business: an immutable `global.set` is rejected by vali
   a loop, an immutable global read on every iteration, and a swap of two globals through the stack.
 * difftest `wasmBaseAir 2 4`: 304 points, 6,160 constraint values and 4,912 interactions agree
   (`logs/difftest-globals.log`).
-* Tamper suite on `globkat8`, including the global cases: `logs/tamper-globkat8.log`. The cases are:
+* Tamper suite on `globkat8`: 52/52 rejected (`logs/tamper-globkat8.log`). The global cases are:
   * LOCAL global.get row: `L0`, `idx`, `inv_sp`, `tL`, and the row relabelled as `local.get`;
   * LOCAL global.set row: `V0`, and the row relabelled as `local.set`;
   * the public initial global's limb and tag;
