@@ -1,20 +1,21 @@
 diff --git a/crates/recursion/src/nv/e2e.rs b/crates/recursion/src/nv/e2e.rs
 new file mode 100644
-index 0000000..4623b8b
+index 0000000..7047006
 --- /dev/null
 +++ b/crates/recursion/src/nv/e2e.rs
-@@ -0,0 +1,630 @@
+@@ -0,0 +1,631 @@
 +//! [e2e] pq-e2e-slice (results/pq-e2e-slice/README.md): the first end-to-end vertical slice of
 +//! the post-quantum chunk proof.
 +//!
 +//! base AIR set (direct-Wasm EXEC/CODE/RANGE + chunk-statement AIR)
 +//!   -> L1 (NV level 1: verifies the base proof, hashes its public values under tag 8)
-+//!   -> NV chain with program binding (L2 checks L1's program against the app table, the fixed
-+//!      point checks its child's program against its own)
-+//!   -> FINAL (`Sha384CpuEngine::new_final`, binding on)
++//!   -> NV chain at fixed heights; program binding (L2 checks L1's program against the app table,
++//!      the fixed point checks its child's program against its own) is attempted and falls back
++//!      to the unbound statement passthrough when the program differs (gap G1)
++//!   -> FINAL (`Sha384CpuEngine::new_final`)
 +//!   -> native V_d (`verify_chunk`): final-domain verification, level, statement digest
-+//!      recomputed from the claim (ctx, enc S_0, enc S_S), and the final proof's program
-+//!      openings against the pinned fixed-point program.
++//!      recomputed from the claim (ctx, enc S_0, enc S_S), and (when a program can be pinned)
++//!      the final proof's program openings against the pinned program (`check_final_program`).
 +//!
 +//! What is proven about the chunk is listed in the README gap list.  In short: the Wasm
 +//! execution of one prepared function call (i32.const/add/drop/end, one function, <= 8 stack
@@ -3335,10 +3336,10 @@ index 0000000..59e760f
 +}}
 diff --git a/crates/recursion/src/nv/e2e_tests.rs b/crates/recursion/src/nv/e2e_tests.rs
 new file mode 100644
-index 0000000..332227a
+index 0000000..3bbfb67
 --- /dev/null
 +++ b/crates/recursion/src/nv/e2e_tests.rs
-@@ -0,0 +1,457 @@
+@@ -0,0 +1,521 @@
 +//! [e2e] pq-e2e-slice tests.  Fast: `cargo test --release --lib e2e_`.  The chain:
 +//! `cargo test --release --lib e2e_slice_chain -- --ignored --nocapture` (env-driven, see README).
 +use openvm_stark_backend::{
@@ -3478,7 +3479,11 @@ index 0000000..332227a
 +}
 +
 +fn l1_program(case: &str) -> (Builder, Proof<Sha384Config>, MultiStarkVerifyingKey<Sha384Config>) {
-+    let engine = Sha384CpuEngine::new(base_params());
++    l1_program_with(case, base_params())
++}
++
++fn l1_program_with(case: &str, params: SystemParams) -> (Builder, Proof<Sha384Config>, MultiStarkVerifyingKey<Sha384Config>) {
++    let engine = Sha384CpuEngine::new(params);
 +    let fx = SliceBase::new(case);
 +    let (vk, proof) = fx.keygen_and_prove(&engine);
 +    let mut b = Builder::new(17, 0);
@@ -3531,6 +3536,17 @@ index 0000000..332227a
 +        ba.instrs[first],
 +        bb.instrs[first]
 +    );
++    // the cause is PoW: with every PoW at zero bits the two programs are identical (squeeze-block
++    // counts still differ, but only PoW-run blocks put the global block count into the program)
++    let mut p = base_params();
++    p.logup.pow_bits = 0;
++    p.whir.mu_pow_bits = 0;
++    p.whir.folding_pow_bits = 0;
++    p.whir.query_phase_pow_bits = 0;
++    let (za, _, _) = l1_program_with("positive", p.clone());
++    let (zb, _, _) = l1_program_with("wrap", p);
++    assert_eq!(za.instrs, zb.instrs, "without PoW the L1 programs of chunks A and B must agree");
++    println!("E2E_G1 without PoW: L1 programs of chunks A and B identical ({} rows)", za.instrs.len());
 +}
 +
 +#[test]
@@ -3795,6 +3811,55 @@ index 0000000..332227a
 +        reject("[pinned] proof of chunk B against claim A", &pinned, &claim_a, &fin_b.proof);
 +    }
 +    println!("E2E_SLICE_DONE");
++}
++
++/// Real-settings probe (ignored): the base proof at the pinned base parameters (env BASE_*), then
++/// L1's verifier program and natural trace heights without proving L1 (L1 proving at these
++/// settings exceeds the lane's memory cap; the main session schedules it).
++#[test]
++#[ignore]
++fn e2e_real_base_probe() {
++    let base_engine = Sha384CpuEngine::new(base_params());
++    describe("E2E_BASE", base_engine.params());
++    let fx = SliceBase::new("positive");
++    let _ = std::fs::write("/proc/self/clear_refs", "5");
++    let t = std::time::Instant::now();
++    let (vk0, p0) = fx.keygen_and_prove(&base_engine);
++    println!("BASE_RESOURCES wall_s={:.1} peak_rss_gb={:.2}", t.elapsed().as_secs_f64(), hwm_gb());
++    let t = std::time::Instant::now();
++    base_engine.verify(&vk0, &p0).unwrap();
++    println!("BASE_VERIFY_S {:.3}", t.elapsed().as_secs_f64());
++    soundness("BASE", &vk0);
++    println!("BASE_PROOF_BYTES {}", proof_sizes(&p0));
++    if let Some(d) = std::env::var("E2E_SAVE_DIR").ok() {
++        save(&Some(d), "REAL_BASE", &p0);
++    }
++    let log_rows = env_usize("NV_LOG_ROWS", 21);
++    let _ = std::fs::write("/proc/self/clear_refs", "5");
++    let t = std::time::Instant::now();
++    let circ = NvCircuit::new(vk0.inner.params.k_whir(), log_rows, 1);
++    if env_usize("E2E_PROBE_TRACES", 1) == 1 {
++        let (mats, b) = circ.generate(&vk0, &p0);
++        assert!(b.failures.is_empty(), "{:?}", b.failures);
++        let h: Vec<usize> = mats.iter().map(p3_matrix::Matrix::height).collect();
++        println!(
++            "L1_PROBE program_rows={} jobs={} merkle_nodes={} heights={h:?} gen_s={:.1} peak_rss_gb={:.2}",
++            b.instrs.len(),
++            b.job_units.len(),
++            b.merkle_nodes,
++            t.elapsed().as_secs_f64(),
++            hwm_gb()
++        );
++        assert!(check_statement(&b.public_values(), &fx.claim().public_values()));
++    } else {
++        let mut b = Builder::new(log_rows, circ.reserved());
++        b.prog_log = circ.prog_log;
++        b.begin();
++        build_verifier(&mut b, &vk0, &p0);
++        b.finish();
++        assert!(b.failures.is_empty(), "{:?}", b.failures);
++        println!("L1_PROBE program_rows={} jobs={} merkle_nodes={} gen_s={:.1}", b.instrs.len(), b.job_units.len(), b.merkle_nodes, t.elapsed().as_secs_f64());
++    }
 +}
 diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
 index 9823e17..c349e84 100644

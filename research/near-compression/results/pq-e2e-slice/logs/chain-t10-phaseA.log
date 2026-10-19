@@ -1,0 +1,36 @@
+
+running 1 test
+test nv::e2e_tests::e2e_slice_chain ... E2E_BASE_PARAMS l_skip=2 n_stack=8 k=3 log_blowup=1 queries=[10, 4, 2] pow(mu,fold,query,logup)=(3,2,1,2)
+BASE_RESOURCES wall_s=0.5 peak_rss_gb=0.01
+BASE_SOUNDNESS total=5.2 logup=334.9 proximity=348.9 query=5.2
+BASE_PROOF_BYTES total=54061 gkr=8456 relations=30720 stacking=1552 whir=12188
+NV_PARENT_PARAMS l_skip=2 n_stack=17 k=3 log_blowup=3 queries=[7, 5, 3, 3, 2, 2] pow(mu,fold,query,logup)=(0,0,0,0)
+NV_PARENT_O2 target=10 margin_milli=50 m=64 rounds(n,k,A,q,first_order)=[(4194304, 524288, 1494496, 7, false), (2097152, 65536, 373624, 5, false), (1048576, 8192, 93406, 3, false), (524288, 1024, 23352, 3, false), (262144, 128, 5838, 2, false), (131072, 16, 1460, 2, false)]
+NV_FINAL_PARAMS l_skip=2 n_stack=17 k=3 log_blowup=3 queries=[7, 5, 3, 3, 2, 2] pow(mu,fold,query,logup)=(0,0,0,0)
+NV_FINAL_O2 target=10 margin_milli=50 m=64 rounds(n,k,A,q,first_order)=[(4194304, 524288, 1494496, 7, false), (2097152, 65536, 373624, 5, false), (1048576, 8192, 93406, 3, false), (524288, 1024, 23352, 3, false), (262144, 128, 5838, 2, false), (131072, 16, 1460, 2, false)]
+A1_RESOURCES wall_s=642.4 peak_rss_gb=8.97 program_rows=22318 merkle_nodes=232 heights=[262144, 131072, 128, 65536] bind=false child_nv=false
+A1_SOUNDNESS total=10.4 logup=327.4 proximity=305.9 query=10.4
+A1_PROOF_BYTES total=115097 gkr=44408 relations=26016 stacking=4816 whir=39672
+A1_LEVEL 1
+A2_RESOURCES wall_s=858.1 peak_rss_gb=18.19 program_rows=45598 merkle_nodes=534 heights=[262144, 524288, 128, 65536] bind=false child_nv=true
+A2_SOUNDNESS total=10.4 logup=327.4 proximity=305.9 query=10.4
+A2_PROOF_BYTES total=136089 gkr=48056 relations=26496 stacking=7792 whir=53560
+A2_LEVEL 1
+A3_GENERATED heights=[262144, 524288, 128, 65536] program_rows=50558
+E2E_FIXED_HEIGHTS [262144, 524288, 128, 65536]
+A_B1_RESOURCES wall_s=964.3 peak_rss_gb=18.40 program_rows=22318 merkle_nodes=232 heights=[262144, 524288, 128, 65536] bind=false child_nv=false
+A_B1_SOUNDNESS total=10.4 logup=327.4 proximity=305.9 query=10.4
+A_B1_PROOF_BYTES total=136089 gkr=48056 relations=26496 stacking=7792 whir=53560
+A_B1_LEVEL 1
+
+thread 'nv::e2e_tests::e2e_slice_chain' (573140) panicked at crates/recursion/src/nv/builder.rs:295:9:
+program exceeds 2^16 rows
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 74 filtered out; finished in 2465.50s
+

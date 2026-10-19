@@ -1,0 +1,34 @@
+test nv::e2e_tests::e2e_base_shape ... E2E_BASE_PARAMS l_skip=2 n_stack=8 k=3 log_blowup=1 queries=[10, 4, 2] pow(mu,fold,query,logup)=(3,2,1,2)
+E2E_BASE_AIR Literal0 w=157 pvs=191 int/row=74 max_msg=27 deg=6 preprocessed=false cached=0
+E2E_BASE_AIR Literal1 w=114 pvs=0 int/row=14 max_msg=25 deg=3 preprocessed=false cached=0
+E2E_BASE_AIR Literal2 w=24 pvs=0 int/row=1 max_msg=1 deg=2 preprocessed=false cached=0
+E2E_BASE_AIR ChunkStmtAir w=1 pvs=68 int/row=0 max_msg=0 deg=1 preprocessed=false cached=0
+E2E_BASE_PROVE_S 0.03
+E2E_BASE_SOUNDNESS total=5.2 logup=334.9 proximity=348.9 query=5.2
+E2E_BASE_PROOF_BYTES total=54061 gkr=8456 relations=30720 stacking=1552 whir=12188
+test nv::e2e_tests::e2e_base_tamper ... Bus 1 failed to balance the multiplicities for fields=[0, 0, 4, 0, 0, 1, 0, 8750, 40826, 36222, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]. The bus connections for this were:
+E2E_TAMPER final gas: rejected
+E2E_TAMPER final done: rejected
+E2E_TAMPER entry gas: rejected
+E2E_TAMPER code immediate: rejected
+E2E_TAMPER code length header: rejected
+test nv::e2e_tests::e2e_claim_encoding ... ok
+test nv::e2e_tests::e2e_finding_program_depends_on_proof ... NV_PHASE before_dag 5637
+E2E_G1 L1 programs differ: rows 21675 vs 21676, first difference at row 13973 (Instr { op: Unit1, a: 13835, b: 0, k1: 33554564, k2: 16 } vs Instr { op: Unit1, a: 13835, b: 0, k1: 33554555, k2: 16 }), 4609 differing rows in the common prefix
+E2E_G1 without PoW: L1 programs of chunks A and B identical (19752 rows)
+test nv::e2e_tests::e2e_l1_circuit_debug ... NV_PHASE before_dag 6215
+E2E_L1_AIR NvAir 131072 x 74
+E2E_L1_AIR Sha512Air4 131072 x 83
+E2E_L1_AIR TableAir4 128 x 9
+E2E_L1_AIR ByteAir 65536 x 5
+test nv::e2e_tests::e2e_l1_program ... NV_PHASE before_dag 5637
+E2E_L1_PROGRAM rows=21675 jobs=361 merkle_nodes=232
+E2E_L1_PROGRAM_DIFF lens=21675 21676 first=13973
+test nv::e2e_tests::e2e_real_base_probe ... ignored
+test nv::e2e_tests::e2e_slice_chain ... ignored
+test result: ok. 6 passed; 0 failed; 2 ignored; 0 measured; 68 filtered out; finished in 26.86s
+E2E_L1_AIR NvAir 131072 x 74
+E2E_L1_AIR Sha512Air4 131072 x 83
+E2E_L1_AIR TableAir4 128 x 9
+E2E_L1_AIR ByteAir 65536 x 5
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 74 filtered out; finished in 44.10s
