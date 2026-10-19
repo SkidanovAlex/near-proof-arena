@@ -110,3 +110,107 @@ top of the updated `stark-backend-unified.patch` and `openvm-recursion-sha384.pa
 measurements above use the 7cdc8c90e circuit and its A3 child. A final under O-2 or SHA v4
 needs that lane's new fixed-point child, which means rerunning the roughly 3 h chain. The
 streamed prover runs it unchanged with `NEARPROOF_STREAM_COMMIT=1`.
+
+## The O-2 chain under 300 KB: A1 → A2 → A3 → FINAL, all streamed [measured, PROVISIONAL]
+
+> **Provisional.** The e2e slice found that the NV program depends on the child proof when
+> the child uses PoW (lane/pq-e2e-slice README G1). The recursion lane will change the circuit to
+> fix it, and this chain will be re-run once that lands. The program-binding settings used here
+> are listed below.
+
+**Tree:** lane/pq-recursion-sha384 @ 819beab10, merged here as 6d7afa907, plus both streamed
+overlays. It includes the program cut, SHA AIR v4, 49 NvAir interactions per row, and
+certificate-gated O-2.
+
+**Certificates.** `NEARPROOF_DKT_CERTS` = lane/pq-dkt-verify `calc/dkt_certs_o2.json` @
+fb0efdb11 (sha256 `67f7c965…`). `NEARPROOF_DKT_EXCLUDE` = `lean/DKTCertsO2_big.keys`
+(sha256 `250ac4bf…`), so only kernel-proved entries count.
+
+**Settings.** 268 bits = 236 query bits + z = 32 wide PoW, 42-B digests, coset leaves, ×15,
+every lever, m = 64. Driver: `native/recursion/run_stream_chain.sh`, with `NV_LOG_ROWS=18` and
+`NV_PROG_LOG=18`.
+
+**Shapes:**
+* **Penultimate:** b = 7, log_h = 20 (n_stack 18), k = 4, k1 = 2, log_final 6. Its queries are
+  [41, 35, 27, 23].
+* **Final:** b = 7, log_h = 20, k = 4, k1 = 1, log_final 7. Its queries are [41, 38, 29, 23].
+
+**Shapes tried first, and why they were dropped:**
+* b8/h20 (the first suggestion) fails at commit: `two_adic_generator(28)`, beyond BabyBear's
+  2-adicity of 27.
+* b8/h19 fails at A2. The v4 SHA trace has 2^20 rows, which exceeds the stacked height 2^19
+  (`LayoutHeightExceeded`). So a penultimate needs log_h ≥ 20, a constraint the model did not
+  have.
+* b7/h20 with k1 = 1 was stopped at A2 for the coordinator's k1 = 2 shape.
+* A run on 3c4324e8c was stopped at A2 for 819beab10.
+
+Their logs are in `logs/o2chain-*`.
+
+**O-2 / J regimes per round, as bound in each vk** (`*_VK_REGIMES`; n = 15·2^27 throughout):
+
+| layer | round: (k, A, q, regime) |
+|---|---|
+| A1, A2, A3 (penultimate vk) | (2^20, 37,140,791, 41, O2) · (2^18, 18,228,420, 35, O2) · (2^14, 4,453,003, 27, O2) · (2^10, 1,447,040, 23, **J**) |
+| FINAL | (2^20, 37,140,791, 41, O2) · (2^19, 26,000,207, 38, O2) · (2^15, 6,325,509, 29, O2) · (2^11, 1,559,051, 23, O2) |
+
+Penultimate round 3 is on Johnson m = 64 because its certificates are not kernel-proved: they
+are in the exclude list. That costs +1 query. Every other round is first-order O-2.
+
+**Chain (A3 = fixed point, heights repeat from A2):**
+
+| level | program rows | NvAir rows committed (h = 2^18) | SHA rows (h = 2^20) | interactions | bytes (gkr / rel / stk / whir) | wall | peak |
+|---|---:|---:|---:|---:|---|---:|---:|
+| A1 | 8,060 | 14,816 | 37,888 (2^16) | 14,024,960 | 243,645 (29,960 / 23,284 / 2,320 / 187,882) | 16 min | 10.9 GB |
+| A2 | 117,170 | 229,736 | 741,632 | 30,736,640 | 298,003 (32,408 / 24,244 / 5,728 / 235,424) | 36 min | 21.6 GB |
+| A3 | 127,486 | **248,964** (2^17.93) | 798,080 | 30,736,640 | 301,177 (32,408 / 24,244 / 6,016 / 238,310) | 31 min | 22.3 GB |
+| **FINAL** | 129,626 | **252,636** (2^17.95) | 805,120 | 30,736,640 (2^24.87) | **287,477** (32,408 / 24,244 / 6,016 / 224,610) | 32 min | 25.6 GB |
+
+The committed rows are each proof's `tight_height`, decoded by `nv::stream_tests::stream_proof_info`.
+
+**NvAir lands under 2^18.** The final circuit uses 252,636 rows, a margin of 9,508 (3.6 %). A3
+uses 248,964, a margin of 13,180 (5.0 %). The model's figure was 255,976: the real program is
+about 1 % below the model's 130,476 rows. Interactions are exactly the model's 2^24.87, so
+L = 24 and GKR is 32,408.
+
+**Final, measured against the model** (`model_chain.py 82`, at the measured W = 82; the model's
+own fixed point has W = 81):
+
+| part | measured | model |
+|---|---:|---:|
+| WHIR | 224,610 | 224,500 (+0.05 %) |
+| → Merkle auth (derived) | 120,818 | 120,708 |
+| → initial opened rows | 26,896 | 26,896 |
+| → codeword values | 69,120 | 69,120 |
+| → final polynomial | 6,144 | 6,144 |
+| GKR (L = 24) | 32,408 | 32,408 |
+| relations | 24,244 | 24,272 |
+| stacking | 6,016 | 6,016 |
+| **total** | **287,477** | 287,037 (fixed-point W = 81, plus 73 misc and a 144 B O-2 reserve) |
+
+The final verifies natively (`prove_level` → `engine.verify`), and `check_statement` passes.
+The final is `o2-FINAL.proof` (sha256 `dbbb5d10…`). The A3 child is `o2-A3-child.proof`
+(sha256 `9ad8ad51…`), also kept at `/data/illia/nearproof-deps/pq-stream/ckpt/c5/`. The whole
+chain plus the final took 1 h 55 min wall, with a 25.6 GB peak. Each ×15 initial commitment
+(about 2 TB virtual codeword at b = 7, W = 76–82) took 490–540 s.
+
+**Soundness print.** The backend's `SoundnessCalculator` prints `FINAL_SOUNDNESS total=255.1`.
+That calculator scores the queries with the Johnson per-query bits and ignores the O-2 table.
+The table's query counts are set for 236 query bits plus z = 32 under the certified thresholds,
+and `check_agreement` re-derives them. The calculator should be taught the table; this is not a
+change in the proof.
+
+**Program-binding settings, per level** (from `nv_chain`; no env flag changes them):
+
+| level | `bind` (in-circuit child-program binding, `bind_child_program`) | `child_nv` | app table (level-1 program as data rows) | level public value |
+|---|---|---|---|---|
+| A1 | off | false | none | constant 1 |
+| A2 | off | true | present (data rows) | constant 1 |
+| A3 | off | true | present | constant 1 |
+| FINAL | off | true | present | constant 1 |
+
+Phase A of `nv_chain` never sets `bind`, and neither does the final. The BIND role rows (prog/2)
+and the app data rows are in the trace and the cost, but the binding check itself (level flag,
+ACC/ACC2 comparison against the child's opening) is not emitted. Only phase B (`L2+`) enables
+it. This is the same setting as the r268 chain. A bound fixed point adds the
+`bind_child_program` rows (a few thousand). The statement passthrough is active at every NV
+level.

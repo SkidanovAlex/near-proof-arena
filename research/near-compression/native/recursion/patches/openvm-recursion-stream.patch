@@ -11,7 +11,7 @@ diff --git a/crates/recursion/src/nv/stream_tests.rs b/crates/recursion/src/nv/s
 new file mode 100644
 --- /dev/null
 +++ b/crates/recursion/src/nv/stream_tests.rs
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,80 @@
 +//! [stream research] SHA-384 / Ext12 configs: streamed commitments (codeword never materialised)
 +//! give byte-identical proofs to the in-memory prover. Process SHA levers (42-B digests, coset
 +//! leaves, T*) come from the env, as for the other NV tests.
@@ -75,6 +75,22 @@ new file mode 100644
 +            }
 +        }
 +    }
++}
++
++/// Prints the committed (tight) heights and component sizes of a saved proof (env PROOF=path).
++#[test]
++#[ignore]
++fn stream_proof_info() {
++    use openvm_stark_backend::{codec::Decode, proof::Proof};
++    let path = std::env::var("PROOF").expect("PROOF=<path>");
++    let bytes = std::fs::read(&path).unwrap();
++    let p = Proof::<Sha384Config>::decode(&mut std::io::Cursor::new(&bytes)).unwrap();
++    for (i, t) in p.trace_vdata.iter().enumerate() {
++        if let Some(t) = t {
++            println!("PROOF_INFO air={i} log_height={} committed_rows={:?}", t.log_height, t.tight_height);
++        }
++    }
++    println!("PROOF_INFO bytes={} {}", bytes.len(), crate::sha384::e2e_tests::proof_sizes(&p));
 +}
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 --- a/crates/recursion/src/nv/tests.rs

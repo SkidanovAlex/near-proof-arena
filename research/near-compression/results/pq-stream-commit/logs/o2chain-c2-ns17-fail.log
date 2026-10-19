@@ -1,0 +1,101 @@
+Sun Oct 18 23:41:59 UTC 2026
+               total        used        free      shared  buff/cache   available
+Mem:             125          38          17           0          71          87
+195a823a0f8f27fffbac258d6bb179e88bbc199be7b9346f49f3b6e0e1c3a8af  /data/illia/nearproof-deps/pq-stream/dkt_certs_o2.json
+
+running 1 test
+STREAM_COMMIT width=1 ext=1 c=1 log_domain=11 k=3 n=10 sub=2^10 subcosets=2 dropped=4 stored_digests=31 secs=0.0
+STREAM_COMMIT width=1 ext=12 c=1 log_domain=10 k=3 n=7 sub=2^7 subcosets=8 dropped=4 stored_digests=15 secs=0.0
+STREAM_COMMIT width=1 ext=12 c=1 log_domain=9 k=3 n=4 sub=2^4 subcosets=32 dropped=4 stored_digests=7 secs=0.0
+NV_PARENT_PARAMS l_skip=2 n_stack=17 k=4 log_blowup=8 queries=[38, 35, 27, 22] pow(mu,fold,query,logup)=(0,0,32,0)
+NV_PARENT_O2 target=236 margin_milli=50 m=64 rounds(n,k,A,q,first_order)=[(2013265920, 524288, 26000207, 38, true), (2013265920, 262144, 18228420, 35, true), (2013265920, 16384, 4453003, 27, true), (2013265920, 1024, 1099669, 22, true)]
+NV_FINAL_PARAMS l_skip=2 n_stack=18 k=4 log_blowup=7 queries=[41, 38, 29, 23] pow(mu,fold,query,logup)=(0,0,32,0)
+NV_FINAL_O2 target=236 margin_milli=50 m=64 rounds(n,k,A,q,first_order)=[(2013265920, 1048576, 37140791, 41, true), (2013265920, 524288, 26000207, 38, true), (2013265920, 32768, 6325509, 29, true), (2013265920, 2048, 1559051, 23, true)]
+NV_PHASE before_dag 1680
+NV_DAG air=0 nodes=21 rows_so_far=1730
+NV_PHASE after_dag 1743
+NV_PHASE after_stacking 2051
+NV_QCOST round=0 queries=10 rows=2160 per_query=216 nbits=8 k=3 merkle_nodes=80
+NV_QCOST round=1 queries=4 rows=864 per_query=216 nbits=7 k=3 merkle_nodes=108
+NV_QCOST round=2 queries=2 rows=418 per_query=209 nbits=6 k=3 merkle_nodes=120
+NV_PHASE end 8060
+MEMPROF commit.stacked_matrix rss_gb=0.15 hwm_gb=0.15
+STREAM_COMMIT width=9 ext=1 c=15 log_domain=27 k=1 n=19 sub=2^19 subcosets=3840 dropped=4 stored_digests=125829121 secs=143.8
+MEMPROF commit.tree rss_gb=6.17 hwm_gb=7.69
+MEMPROF prove.after_commit rss_gb=6.10 hwm_gb=7.69
+MEMPROF zerocheck.gkr_input rss_gb=7.95 hwm_gb=7.95
+MEMPROF zerocheck.after_gkr rss_gb=8.12 hwm_gb=13.73
+MEMPROF prove.after_rap_constraints rss_gb=7.20 hwm_gb=13.73
+MEMPROF openings.after_stacking rss_gb=7.20 hwm_gb=13.73
+MEMPROF whir.f_evals rss_gb=7.20 hwm_gb=13.73
+STREAM_COMMIT width=1 ext=12 c=15 log_domain=27 k=4 n=18 sub=2^18 subcosets=7680 dropped=4 stored_digests=15728641 secs=111.4
+MEMPROF whir.round0.g_tree rss_gb=7.91 hwm_gb=13.73
+MEMPROF whir.round0.queries rss_gb=7.91 hwm_gb=13.73
+STREAM_COMMIT width=1 ext=12 c=15 log_domain=27 k=4 n=14 sub=2^14 subcosets=122880 dropped=4 stored_digests=15728641 secs=128.2
+MEMPROF whir.round1.g_tree rss_gb=8.61 hwm_gb=13.73
+MEMPROF whir.round1.queries rss_gb=7.95 hwm_gb=13.73
+STREAM_COMMIT width=1 ext=12 c=15 log_domain=27 k=4 n=10 sub=2^10 subcosets=1966080 dropped=4 stored_digests=15728641 secs=383.2
+MEMPROF whir.round2.g_tree rss_gb=8.63 hwm_gb=13.73
+MEMPROF whir.round2.queries rss_gb=7.97 hwm_gb=13.73
+MEMPROF whir.round3.queries rss_gb=7.31 hwm_gb=13.73
+MEMPROF prove.after_openings rss_gb=1.61 hwm_gb=13.73
+A1_RESOURCES wall_s=1224.4 peak_rss_gb=13.73 program_rows=8060
+A1_AIR NvAir h=262144 w=74 rot=1 int/row=49 deg=9
+A1_AIR Sha512Air4 h=65536 w=83 rot=1 int/row=17 deg=9
+A1_AIR TableAir4 h=128 w=9 rot=1 int/row=2 deg=8
+A1_AIR ByteAir h=65536 w=5 rot=1 int/row=1 deg=3
+A1_SUMMARY cols=171 opened=290 interactions=14024960 L=24 cells=25166976 sha_cells=5440640 other_cells=19726336 alu_used=7035 merkle_nodes=120 leaf_blocks=35 prove_s=1224.4
+A1_SOUNDNESS total=257.5 logup=322.9 proximity=280.1 query=257.5
+A1_PROOF_BYTES total=241279 gkr=29960 relations=23284 stacking=2416 whir=185420
+A1_VK_REGIMES m=64 margin_milli=50 target=236 rounds(n,k,A,q,regime)=[(2013265920, 524288, 26000207, 38, "O2"), (2013265920, 262144, 18228420, 35, "O2"), (2013265920, 16384, 4453003, 27, "O2"), (2013265920, 1024, 1099669, 22, "O2")]
+A1_HEIGHTS [262144, 65536, 128, 65536]
+NV_PHASE before_dag 32517
+NV_DAG air=0 nodes=4819 rows_so_far=38991
+NV_DAG air=1 nodes=5848 rows_so_far=46455
+NV_DAG air=3 nodes=32 rows_so_far=47000
+NV_DAG air=2 nodes=1234 rows_so_far=48314
+NV_PHASE after_dag 48396
+NV_PHASE after_stacking 57138
+NV_QCOST round=0 queries=38 rows=11893 per_query=313 nbits=26 k=1 merkle_nodes=1140
+NV_QCOST round=1 queries=35 rows=13733 per_query=392 nbits=23 k=4 merkle_nodes=2085
+NV_QCOST round=2 queries=27 rows=10588 per_query=392 nbits=23 k=4 merkle_nodes=2814
+NV_QCOST round=3 queries=22 rows=8628 per_query=392 nbits=23 k=4 merkle_nodes=3408
+NV_PHASE end 114869
+
+thread 'nv::tests::nv_chain' (735772) panicked at crates/recursion/src/nv/circuit.rs:248:10:
+called `Result::unwrap()` on an `Err` value: StackedPcs(LayoutHeightExceeded { log_height: 20, log_stacked_height: 19 })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    nv::tests::nv_chain
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 70 filtered out; finished in 1224.91s
+
+Command exited with non-zero status 101
+	Command being timed: "/data/illia/nearproof-deps/pq-stream/bin/nv-c1 nv::tests::nv_chain --ignored --exact --nocapture --test-threads 1"
+	User time (seconds): 17343.53
+	System time (seconds): 1664.68
+	Percent of CPU this job got: 1551%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 20:25.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 2508612
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 60877924
+	Voluntary context switches: 42803739
+	Involuntary context switches: 1954030124
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 560
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 101
+EXIT 101
