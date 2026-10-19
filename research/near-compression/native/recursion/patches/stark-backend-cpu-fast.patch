@@ -1139,7 +1139,7 @@ diff --git a/crates/cpu-backend/src/fast/zc.rs b/crates/cpu-backend/src/fast/zc.
 new file mode 100644
 --- /dev/null
 +++ b/crates/cpu-backend/src/fast/zc.rs
-@@ -0,0 +1,689 @@
+@@ -0,0 +1,960 @@
 +//! [pq-cpu-prover] Zerocheck + LogUp MLE rounds on struct-of-arrays Ext12 tables.
 +//!
 +//! After the univariate round the trace tables are Ext12. The original code evaluates the
@@ -1309,6 +1309,31 @@ new file mode 100644
 +    pub terms: Vec<(usize, EF)>,
 +    pub konst: EF,
 +    pub raw: bool,
++}
++
++/// Degree-aware instruction: every slot holds its node at x = 1..=m points (m = degree + 1,
++/// capped at the round degree `d`), and is extended to all `d` points by finite differences
++/// only when a consumer needs more points.
++#[derive(Clone, Copy, Debug)]
++enum DIns<F> {
++    Mul { d: u32, a: u32, b: u32, m: u8 },
++    Add { d: u32, a: u32, b: u32, m: u8 },
++    Sub { d: u32, a: u32, b: u32, m: u8 },
++    Neg { d: u32, a: u32, m: u8 },
++    MulC { d: u32, a: u32, c: F, m: u8 },
++    AddC { d: u32, a: u32, c: F, m: u8 },
++    SubC { d: u32, a: u32, c: F, m: u8 },
++    CSub { d: u32, a: u32, c: F, m: u8 },
++    /// extend slot `s` from its first `b` points (a polynomial of degree < b) to all d points
++    Ext { s: u32, b: u8 },
++    /// group[f][m] += coef[k] * slot[a][..m]
++    Acc { f: u32, a: u32, k: u32, m: u8 },
++}
++
++/// Degree-aware program for round degree `d`.
++pub struct DaProgram<F> {
++    d: usize,
++    ins: Vec<DIns<F>>,
 +}
 +
 +#[derive(Clone, Copy, Debug)]
@@ -1755,6 +1780,252 @@ new file mode 100644
 +        }
 +    }
 +
++    /// The degree-aware form of this program for round degree `d` (see [`DIns`]).
++    pub fn degree_aware(&self, d: usize) -> DaProgram<F> {
++        let n_in = self.inputs.len();
++        let mut deg = vec![0usize; self.n_slots];
++        let mut ext = vec![false; self.n_slots];
++        for i in 0..n_in {
++            deg[i] = 1;
++        }
++        let base = |deg: usize| (deg + 1).min(d);
++        let mut out = Vec::with_capacity(self.ins.len() * 2);
++        // make slot `a` available at m points
++        let need = |out: &mut Vec<DIns<F>>, ext: &mut Vec<bool>, deg: &Vec<usize>, a: u32, m: usize| {
++            let a_ = a as usize;
++            if base(deg[a_]) < m && !ext[a_] {
++                out.push(DIns::Ext { s: a, b: base(deg[a_]) as u8 });
++                ext[a_] = true;
++            }
++        };
++        for ins in &self.ins {
++            match *ins {
++                Ins::Mul { d: dd, a, b } => {
++                    let dg = deg[a as usize] + deg[b as usize];
++                    let m = base(dg);
++                    need(&mut out, &mut ext, &deg, a, m);
++                    need(&mut out, &mut ext, &deg, b, m);
++                    out.push(DIns::Mul { d: dd, a, b, m: m as u8 });
++                    deg[dd as usize] = dg;
++                    ext[dd as usize] = m == d;
++                }
++                Ins::Add { d: dd, a, b } | Ins::Sub { d: dd, a, b } => {
++                    let dg = deg[a as usize].max(deg[b as usize]);
++                    let m = base(dg);
++                    need(&mut out, &mut ext, &deg, a, m);
++                    need(&mut out, &mut ext, &deg, b, m);
++                    out.push(if matches!(ins, Ins::Add { .. }) {
++                        DIns::Add { d: dd, a, b, m: m as u8 }
++                    } else {
++                        DIns::Sub { d: dd, a, b, m: m as u8 }
++                    });
++                    deg[dd as usize] = dg;
++                    ext[dd as usize] = m == d;
++                }
++                Ins::Neg { d: dd, a } | Ins::MulC { d: dd, a, .. } | Ins::AddC { d: dd, a, .. } | Ins::SubC { d: dd, a, .. } | Ins::CSub { d: dd, a, .. } => {
++                    let dg = deg[a as usize];
++                    // operate on all valid points of a (extended or not)
++                    let m = if ext[a as usize] { d } else { base(dg) };
++                    let mu = m as u8;
++                    out.push(match *ins {
++                        Ins::Neg { .. } => DIns::Neg { d: dd, a, m: mu },
++                        Ins::MulC { c, .. } => DIns::MulC { d: dd, a, c, m: mu },
++                        Ins::AddC { c, .. } => DIns::AddC { d: dd, a, c, m: mu },
++                        Ins::SubC { c, .. } => DIns::SubC { d: dd, a, c, m: mu },
++                        Ins::CSub { c, .. } => DIns::CSub { d: dd, a, c, m: mu },
++                        _ => unreachable!(),
++                    });
++                    deg[dd as usize] = dg;
++                    ext[dd as usize] = m == d;
++                }
++                Ins::Acc { f, a, k } => {
++                    out.push(DIns::Acc { f, a, k, m: base(deg[a as usize]) as u8 });
++                }
++                Ins::Raw { .. } => unreachable!("raw outputs are base-field only"),
++            }
++        }
++        DaProgram { d, ins: out }
++    }
++
++    /// `round_evals` through the degree-aware program (identical values).
++    pub fn round_evals_da(&self, da: &DaProgram<F>, tables: &[&SoaTable<F>], eq_xi: &[EF]) -> [Vec<EF>; 3] {
++        let d = da.d;
++        let h = tables[0].height;
++        let wl = lanes::<F>();
++        let nb = h / wl;
++        let ny_blk = nb / 2;
++        let n_in = self.inputs.len();
++        let w = self.w;
++        struct St<Q> {
++            slots: Vec<PE<Q>>,
++            groups: Vec<PE<Q>>,
++            acc: Vec<PE<Q>>,
++            eqsum: PE<Q>,
++        }
++        let new_st = || St::<P<F>> {
++            slots: vec![PE::zero(); self.n_slots * d],
++            groups: vec![PE::zero(); 3 * (d + 1) * d],
++            acc: vec![PE::zero(); 3 * d],
++            eqsum: PE::zero(),
++        };
++        // extend v[0..b] (degree < b) to v[0..d] by finite differences (additions only)
++        fn extend<Q: p3_field::PackedField>(v: &mut [PE<Q>], b: usize, d: usize) {
++            if b >= d {
++                return;
++            }
++            if b == 1 {
++                for x in 1..d {
++                    v[x] = v[0];
++                }
++                return;
++            }
++            // difference table at the last base point: dt[j] = Δ^j v(b-1)
++            let mut dt: [PE<Q>; 10] = [PE::zero(); 10];
++            let mut row: [PE<Q>; 10] = [PE::zero(); 10];
++            row[..b].copy_from_slice(&v[..b]);
++            // dt[j] = backward difference of order j at the last point
++            for j in 0..b {
++                dt[j] = row[b - 1];
++                for i in (j + 1..b).rev() {
++                    row[i] = row[i].sub(&row[i - 1]);
++                }
++            }
++            // dt[j] now holds Δ^j at the last point (Δ^0 = v(b-1)); advance
++            for x in b..d {
++                for j in (0..b - 1).rev() {
++                    let t = dt[j].add(&dt[j + 1]);
++                    dt[j] = t;
++                }
++                v[x] = dt[0];
++            }
++        }
++        let fold_blk = |mut st: St<P<F>>, bb: usize| -> St<P<F>> {
++            for (i, &(t, c)) in self.inputs.iter().enumerate() {
++                let lo = tables[t].get(2 * bb, c);
++                let hi = tables[t].get(2 * bb + 1, c);
++                st.slots[i * d] = hi;
++                if d > 1 {
++                    st.slots[i * d + 1] = hi.add(&hi.sub(&lo));
++                }
++            }
++            let eq: PE<P<F>> = PE(core::array::from_fn(|j| {
++                P::<F>::from_fn(|l| coeffs::<F, EF>(&eq_xi[l * ny_blk + bb])[j])
++            }));
++            st.eqsum.add_assign(&eq);
++            for g in st.groups.iter_mut() {
++                *g = PE::zero();
++            }
++            let mut used_m = [[false; 11]; 3];
++            for ins in &da.ins {
++                match *ins {
++                    DIns::Mul { d: dd, a, b, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].mul(&st.slots[b as usize * d + p], w);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::Add { d: dd, a, b, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].add(&st.slots[b as usize * d + p]);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::Sub { d: dd, a, b, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].sub(&st.slots[b as usize * d + p]);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::Neg { d: dd, a, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].neg();
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::MulC { d: dd, a, c, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].mul_scalar(c);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::AddC { d: dd, a, c, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].add_scalar(c);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::SubC { d: dd, a, c, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].add_scalar(-c);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::CSub { d: dd, a, c, m } => {
++                        for p in 0..m as usize {
++                            let v = st.slots[a as usize * d + p].neg().add_scalar(c);
++                            st.slots[dd as usize * d + p] = v;
++                        }
++                    }
++                    DIns::Ext { s, b } => {
++                        let o = s as usize * d;
++                        extend(&mut st.slots[o..o + d], b as usize, d);
++                    }
++                    DIns::Acc { f, a, k, m } => {
++                        let (f, m) = (f as usize, m as usize);
++                        used_m[f][m] = true;
++                        let g0 = (f * (d + 1) + m) * d;
++                        for p in 0..m {
++                            let v = self.coefs[k as usize].mul(&st.slots[a as usize * d + p]);
++                            st.groups[g0 + p].add_assign(&v);
++                        }
++                    }
++                }
++            }
++            for f in 0..3 {
++                if !self.used[f] {
++                    continue;
++                }
++                let mut tot = [PE::<P<F>>::zero(); 10];
++                for m in 1..=d {
++                    if !used_m[f][m] {
++                        continue;
++                    }
++                    let g0 = (f * (d + 1) + m) * d;
++                    extend(&mut st.groups[g0..g0 + d], m, d);
++                    for x in 0..d {
++                        tot[x].add_assign(&st.groups[g0 + x]);
++                    }
++                }
++                for x in 0..d {
++                    let v = eq.mul(&tot[x], w);
++                    st.acc[x * 3 + f].add_assign(&v);
++                }
++            }
++            st
++        };
++        let st = (0..ny_blk)
++            .into_par_iter()
++            .with_min_len(4)
++            .fold(new_st, fold_blk)
++            .reduce(new_st, |mut a, b| {
++                for (x, y) in a.acc.iter_mut().zip(&b.acc) {
++                    x.add_assign(y);
++                }
++                a.eqsum.add_assign(&b.eqsum);
++                a
++            });
++        let eqsum: EF = from_coeffs::<F, EF>(&st.eqsum.hsum());
++        let mut out: [Vec<EF>; 3] = [vec![EF::ZERO; d], vec![EF::ZERO; d], vec![EF::ZERO; d]];
++        for x in 0..d {
++            for f in 0..3 {
++                if self.used[f] {
++                    out[f][x] = from_coeffs::<F, EF>(&st.acc[x * 3 + f].hsum()) + self.konst[f] * eqsum;
++                }
++            }
++        }
++        out
++    }
++
 +    /// Round polynomial evaluations at x = 1..=d: `[Σ_y eq(y) zc(x,y), Σ_y eq(y) numer, Σ_y eq(y) denom]`
 +    /// (the latter two without the lifting normalisation), as `sumcheck_round_poly_evals_rm` with
 +    /// the `acc_constraints` / `acc_interactions` closures.
@@ -1852,7 +2123,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      pub interactions: Vec<SymbolicInteraction<SC::F>>,
      pub public_values: Vec<SC::F>,
      pub preprocessed_trace: Option<&'a RowMajorMatrix<SC::F>>,
-@@ -851,6 +853,11 @@ pub(crate) struct LogupZerocheckRowMajor<'a, SC: StarkProtocolConfig> {
+@@ -851,6 +853,20 @@ pub(crate) struct LogupZerocheckRowMajor<'a, SC: StarkProtocolConfig> {
      pub(crate) prev_s_eval: SC::EF,
      pub(crate) eq_ns: Vec<SC::EF>,
      pub(crate) eq_sharp_ns: Vec<SC::EF>,
@@ -1861,10 +2132,19 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +    fast_w: Option<SC::F>,
 +    soa: Vec<Option<Vec<crate::fast::zc::SoaTable<SC::F>>>>,
 +    progs: Vec<Option<crate::fast::zc::Program<SC::F, SC::EF>>>,
++    da_progs: Vec<std::sync::OnceLock<crate::fast::zc::DaProgram<SC::F>>>,
++}
++
++/// [pq-cpu-prover] `NEARPROOF_CPU_DA=0` evaluates the MLE rounds at every point instead of
++/// degree-aware (both give identical values).
++fn da_enabled() -> bool {
++    use std::sync::OnceLock;
++    static ON: OnceLock<bool> = OnceLock::new();
++    *ON.get_or_init(|| std::env::var("NEARPROOF_CPU_DA").map(|v| v != "0").unwrap_or(true))
  }
  
  impl<'a, SC: StarkProtocolConfig> LogupZerocheckRowMajor<'a, SC>
-@@ -948,6 +955,7 @@ where
+@@ -948,6 +964,7 @@ where
                  let symbolic_constraints = SymbolicConstraints::from(&pk.vk.symbolic_constraints);
                  RowMajorEvalHelper {
                      constraints_dag: &pk.vk.symbolic_constraints.constraints,
@@ -1872,7 +2152,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
                      interactions: symbolic_constraints.interactions,
                      public_values,
                      preprocessed_trace,
-@@ -989,9 +997,17 @@ where
+@@ -989,9 +1006,18 @@ where
              prev_s_eval: SC::EF::ZERO,
              eq_ns: Vec::with_capacity(n_max + 1),
              eq_sharp_ns: Vec::with_capacity(n_max + 1),
@@ -1883,6 +2163,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +            },
 +            soa: vec![],
 +            progs: vec![],
++            da_progs: vec![],
          }
      }
  
@@ -1890,7 +2171,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      pub fn sumcheck_uni_round0_polys(
          &mut self,
          ctx: &ProvingContext<CpuBackend<SC>>,
-@@ -1058,6 +1074,42 @@ where
+@@ -1058,6 +1084,42 @@ where
              })
              .collect_vec();
  
@@ -1933,7 +2214,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
          // Zerocheck round 0 — uses batch DFT from row-major data
          let sp_0_zerochecks = self
              .eval_helpers
-@@ -1075,7 +1127,26 @@ where
+@@ -1075,7 +1137,26 @@ where
                      return UnivariatePoly::new(vec![]);
                  }
                  let num_cosets = constraint_deg - 1;
@@ -1961,7 +2242,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
                      l_skip,
                      n_lift,
                      num_cosets,
-@@ -1084,7 +1155,7 @@ where
+@@ -1084,7 +1165,7 @@ where
                      helper,
                      eq_xi,
                      &self.lambda_pows,
@@ -1970,7 +2251,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
                  let sp_0_deg = sumcheck_round0_deg(l_skip, constraint_deg);
                  let coeffs = (0..=sp_0_deg)
                      .map(|i| {
-@@ -1124,6 +1195,24 @@ where
+@@ -1124,6 +1205,24 @@ where
                  let norm_factor_denom = 1 << l_skip.saturating_sub(log_height);
                  let norm_factor = SC::F::from_usize(norm_factor_denom).inverse();
  
@@ -1995,7 +2276,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
                  let [mut numer, denom] = sumcheck_uni_round0_batch::<SC::F, SC::EF, _, 2>(
                      l_skip,
                      n_lift,
-@@ -1151,6 +1240,9 @@ where
+@@ -1151,6 +1250,9 @@ where
      /// Reads directly from row-major matrices via barycentric interpolation,
      /// avoiding the O(n*m) transpose to col-major (saves ~3s for keccakf).
      pub fn fold_ple_evals(&mut self, ctx: &ProvingContext<CpuBackend<SC>>, r_0: SC::EF) {
@@ -2005,7 +2286,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
          let l_skip = self.l_skip;
          self.mat_evals_per_trace = self
              .eval_helpers
-@@ -1179,9 +1271,116 @@ where
+@@ -1179,9 +1281,122 @@ where
          });
      }
  
@@ -2096,6 +2377,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +                Some(p)
 +            })
 +            .collect();
++        self.da_progs = (0..self.eval_helpers.len()).map(|_| std::sync::OnceLock::new()).collect();
 +    }
 +
 +    /// [pq-cpu-prover] fast round evaluations for traces held in SoA form.
@@ -2110,7 +2392,12 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +                let num_y = 1 << (n_lift - round);
 +                let eq_xi = &self.eq_xi_per_trace[t][num_y - 1..];
 +                let refs: Vec<_> = tabs.iter().collect();
-+                Some(prog.round_evals(&refs, eq_xi, sp_deg))
++                if sp_deg <= 10 && da_enabled() {
++                    let da = self.da_progs[t].get_or_init(|| prog.degree_aware(sp_deg));
++                    Some(prog.round_evals_da(da, &refs, eq_xi))
++                } else {
++                    Some(prog.round_evals(&refs, eq_xi, sp_deg))
++                }
 +            })
 +            .collect()
 +    }
@@ -2122,7 +2409,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
          let sp_zerocheck_evals: Vec<Vec<SC::EF>> = izip!(
              &self.eval_helpers,
              &mut self.zerocheck_tilde_evals,
-@@ -1190,8 +1389,12 @@ where
+@@ -1190,8 +1405,12 @@ where
              &self.sels_per_trace,
              &self.eq_xi_per_trace
          )
@@ -2136,7 +2423,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
              if round > n_lift {
                  if round == n_lift + 1 {
                      // Height is 1 — extract single row as Vec
-@@ -1235,13 +1438,21 @@ where
+@@ -1235,13 +1454,21 @@ where
              &self.eq_xi_per_trace,
              &self.eq_3b_per_trace
          )
@@ -2159,7 +2446,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
              if round > n_lift {
                  if round == n_lift + 1 {
                      // Height is 1 — extract single row as Vec
-@@ -1298,6 +1509,21 @@ where
+@@ -1298,6 +1525,21 @@ where
              .collect_vec();
          self.sels_per_trace =
              crate::row_major_ops::batch_fold_mle_evals_rm(take(&mut self.sels_per_trace), r_round);
@@ -2181,7 +2468,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
          self.eq_xi_per_trace.par_iter_mut().for_each(|eq| {
              if eq.len() > 1 {
                  eq.truncate(eq.len() / 2);
-@@ -1372,8 +1598,8 @@ where
+@@ -1372,8 +1614,8 @@ where
      CpuBackend<SC>: ProverBackend<Val = SC::F, Matrix = RowMajorMatrix<SC::F>>,
  {
      let l_skip = mpk.params.l_skip;
@@ -2192,7 +2479,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
  
      let n_max = log2_strict_usize(MatrixDimensions::height(&ctx.per_trace[0].1.common_main))
          .saturating_sub(l_skip);
-@@ -1411,6 +1637,66 @@ where
+@@ -1411,6 +1653,66 @@ where
  
      // GKR: compute logup input layer using row-major access
      let has_interactions = !prover.interactions_layout.sorted_cols.is_empty();
@@ -2259,7 +2546,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      let gkr_input_evals = if !has_interactions {
          vec![]
      } else {
-@@ -1462,7 +1748,7 @@ where
+@@ -1462,7 +1764,7 @@ where
      };
  
      openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.gkr_input");
@@ -2268,7 +2555,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
          fractional_sumcheck_with::<SC, _>(
              transcript,
              &gkr_input_evals,
-@@ -1471,6 +1757,30 @@ where
+@@ -1471,6 +1773,30 @@ where
          )?;
  
      openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.after_gkr");
@@ -2299,7 +2586,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      let n_global = max(n_max, n_logup);
      debug!(%n_global);
      while xi.len() != l_skip + n_global {
-@@ -1486,6 +1796,7 @@ where
+@@ -1486,6 +1812,7 @@ where
      debug!(%lambda);
  
      let sp_0_polys = prover.sumcheck_uni_round0_polys(ctx, lambda);
@@ -2307,7 +2594,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      let sp_0_deg = sumcheck_round0_deg(l_skip, constraint_degree);
      let s_deg = constraint_degree + 1;
      let s_0_deg = sumcheck_round0_deg(l_skip, s_deg);
-@@ -1584,6 +1895,7 @@ where
+@@ -1584,6 +1911,7 @@ where
      debug!("s_0(r_0) = {}", prover.prev_s_eval);
  
      prover.fold_ple_evals(ctx, r_0);
@@ -2315,7 +2602,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
  
      // MLE rounds
      let _mle_rounds_span =
-@@ -1666,6 +1978,7 @@ where
+@@ -1666,6 +1994,7 @@ where
          prover.fold_mle_evals(round, r_round);
      }
      drop(_mle_rounds_span);
