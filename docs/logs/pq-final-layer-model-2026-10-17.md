@@ -780,3 +780,16 @@ Pass only if all four hold:
 4. the chain reproduces from a clean deps setup: identical proof sha256s from a fresh setup in a
    new directory, by an independent agent, using MANIFEST.json (lane/pq-stream-commit g2-gate/).
 Gate run: lane/pq-stream-commit (G2 9159123be + fast CPU prover 6134476fc + streamed overlays).
+
+## 2026-10-19 — classical NEAR AIRs reusable on PQ stack (lane/pq-d1-envelope @ 7cd1a7135)
+
+* Same base field (BabyBear), same row conventions, 1-bit multiplicities (grand product → LogUp,
+  D1 mult bound 1.196·10^9 < p). 23/30 nearAirV3D1 tables proven unchanged on SWIRL with real
+  D1a fixture traces: 1,261,284 B, 82 s/6 thr, tamper 14/14.
+* Overruns: opened columns 5,612 vs 1,024 (SHA-256 table 1,085); 2^22 fixed tables (99.6 % of
+  2.5 G cells); AIR count 33+1 vs 32; public tape (64 MiB) → cached table; native Ed25519 in
+  verifier (design item); min height 4; per-table height caps to enforce.
+* Lean: extractV3 + table/link/factor proofs transfer verbatim; new: generic SWIRL⇒HoldsP lemma,
+  multBound < p, vk⇔Lean identity, tape binding (≈ 7–11 agent-days est.).
+* Decision (after external advice): port proven state tables (D0a first, then D1), keep
+  direct-Wasm for execution, join later. Lane lane/pq-state-port started.
