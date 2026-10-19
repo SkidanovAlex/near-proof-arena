@@ -214,3 +214,42 @@ ACC/ACC2 comparison against the child's opening) is not emitted. Only phase B (`
 it. This is the same setting as the r268 chain. A bound fixed point adds the
 `bind_child_program` rows (a few thousand). The statement passthrough is active at every NV
 level.
+
+## Bound chain on 717eb518e (binding at every level, FINAL at the fixed point): blocked at L3 [measured]
+
+**What ran.** I merged 717eb518e with both overlays (26cdf5af7) and used the uniform shape
+(b7, h20, k1 = 1, k4, lf7), all rounds O-2. Log: `logs/bound-d1-k1.log`.
+* `NV_LOG_ROWS=19`.
+* `NV_PHASE_A=1`: A1 only, for the level-1 app table.
+* `NV_FIXED_OVERRIDE=524288,1048576,128,65536`: the phase-B heights are given directly. They are
+  the fixed heights for NvAir at 2^19. Phase B asserts that every level's natural heights equal
+  them.
+* `NV_LEVELS=3`, certificates with the exclude list, no `FINAL_*`.
+
+| level | binds | program rows | NvAir committed | SHA committed | bytes (gkr / rel / stk / whir) | peak |
+|---|---|---:|---:|---:|---|---:|
+| L1 | — | 8,010 | 14,740 | 37,888 | 261,843 (34,952 / 24,388 / 2,320 / 199,984) | 37.5 GB |
+| L2 | L1, app table | 133,154 | 257,212 | 790,272 | 289,493 (34,952 / 24,388 / 6,016 / 223,938) | 39.5 GB |
+| L3 | L2, fixed-point BIND | 142,517 | — | — | **fails in the builder: "program binding"** | |
+
+**Why L3 fails.** With tight heights, the NV program depends on the child's committed heights:
+the stacking kernel walks the child's tight chunks, and the round-0 leaf Horner covers the
+child's stacked width. L1 commits only 14,740 NvAir rows. So L2's program, which verifies L1,
+is 9.4k rows shorter than L3's, which verifies L2:
+* stacking: 9,114 rows against 15,130;
+* round 0: 309 rows per query against 385.
+
+L3's BIND check requires the child's program to equal its own, and it does not. The FINAL would
+hit the same equality assert (`words_f == last_words`) against any child whose committed
+heights differ from its own.
+
+A uniform, bound fixed point needs one of:
+* the program made independent of the child's committed heights (they become witnesses);
+* binding enforced only from the first level whose child already runs the converged program;
+* tight heights off in phase B (full-height commitments, a larger proof).
+
+This is a recursion-lane decision; I have not changed the circuit.
+
+**Data point.** L2 (bound, k1 = 1) commits 257,212 NvAir rows, which is under 2^18. L3's
+program is 9.4k rows longer, which puts it at about 271k, over 2^18, consistent with the model's
+270,105.
