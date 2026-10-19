@@ -2131,7 +2131,7 @@ index 59e87a0..b8a662d 100644
                      transcript.observe_commit(*commit);
                  }
 diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backend/src/prover/stacked_pcs.rs
-index 97271aa..da8ba18 100644
+index 97271aa..5880f4e 100644
 --- a/crates/stark-backend/src/prover/stacked_pcs.rs
 +++ b/crates/stark-backend/src/prover/stacked_pcs.rs
 @@ -52,9 +52,58 @@ pub struct StackedSlice {
@@ -2365,11 +2365,10 @@ index 97271aa..da8ba18 100644
      /// Raw unsafe constructor
      pub fn from_raw_parts(
          l_skip: usize,
-@@ -295,20 +479,48 @@ pub fn stacked_matrix<F: Field>(
-     l_skip: usize,
+@@ -296,19 +480,82 @@ pub fn stacked_matrix<F: Field>(
      n_stack: usize,
      traces: &[&ColMajorMatrix<F>],
-+) -> Result<(ColMajorMatrix<F>, StackedLayout), StackedPcsError> {
+ ) -> Result<(ColMajorMatrix<F>, StackedLayout), StackedPcsError> {
 +    stacked_matrix_tight(l_skip, n_stack, traces, false)
 +}
 +
@@ -2389,6 +2388,20 @@ index 97271aa..da8ba18 100644
 +    Some(last.max(1).next_multiple_of(1 << l_skip))
 +}
 +
++/// Tight-heights lever, prover-side floor (research): per trace `(width, log_height, min rows)`.
++/// When the traces of a tight commit match these `(width, log_height)` one to one, a trace commits
++/// `max(tight_height, min_i)` rows (capped at its height; the extra rows are explicit zeros, so
++/// the commitment is the same matrix the verifier assumes: rows past the declared height are
++/// zero).  The verifier accepts any declared height in (0, 2^log_height] that is a multiple of
++/// 2^l_skip, so this changes no verifier rule; it lets a recursive verifier pin its child's
++/// committed heights (NV G2: the program depends on them).
++static TIGHT_FLOOR: std::sync::Mutex<Option<Vec<(usize, usize, usize)>>> = std::sync::Mutex::new(None);
++
++/// Set (or clear with `None`) the prover-side tight-height floor; see [`TIGHT_FLOOR`].
++pub fn set_tight_floor(floor: Option<Vec<(usize, usize, usize)>>) {
++    *TIGHT_FLOOR.lock().unwrap() = floor;
++}
++
 +/// [`stacked_matrix`] with the tight-heights lever: when `tight`, each trace commits only
 +/// [`tight_height`] rows (its tail must be zero, which `tight_height` guarantees).
 +pub fn stacked_matrix_tight<F: Field>(
@@ -2396,14 +2409,36 @@ index 97271aa..da8ba18 100644
 +    n_stack: usize,
 +    traces: &[&ColMajorMatrix<F>],
 +    tight: bool,
- ) -> Result<(ColMajorMatrix<F>, StackedLayout), StackedPcsError> {
++) -> Result<(ColMajorMatrix<F>, StackedLayout), StackedPcsError> {
++    let floor: Option<Vec<usize>> = if tight {
++        // match each trace to an unused floor entry with its (width, log_height), in any order
++        TIGHT_FLOOR.lock().unwrap().as_ref().and_then(|f| {
++            let mut used = vec![false; f.len()];
++            let mut out = Vec::with_capacity(traces.len());
++            for t in traces {
++                let j = (0..f.len()).find(|&j| !used[j] && f[j].0 == t.width() && 1usize << f[j].1 == t.height())?;
++                used[j] = true;
++                out.push(f[j].2);
++            }
++            (f.len() == traces.len()).then_some(out)
++        })
++    } else {
++        None
++    };
      let sorted_meta = traces
          .iter()
-         .map(|trace| {
+-        .map(|trace| {
++        .enumerate()
++        .map(|(i, trace)| {
              // height cannot be zero:
              let log_height = log2_strict_usize(trace.height());
 -            (trace.width(), log_height)
-+            (trace.width(), log_height, if tight { tight_height(trace, l_skip) } else { None })
++            let th = if tight { tight_height(trace, l_skip) } else { None };
++            let th = match (th, &floor) {
++                (Some(h), Some(f)) => Some(h.max(f[i].next_multiple_of(1 << l_skip)).min(trace.height())),
++                (th, _) => th,
++            };
++            (trace.width(), log_height, th)
          })
          .collect_vec();
 -    let mut layout = StackedLayout::new(l_skip, l_skip + n_stack, sorted_meta)?;
@@ -2418,7 +2453,7 @@ index 97271aa..da8ba18 100644
      let height = 1usize << (l_skip + n_stack);
      let width = total_cells.div_ceil(height);
  
-@@ -319,7 +531,8 @@ pub fn stacked_matrix<F: Field>(
+@@ -319,7 +566,8 @@ pub fn stacked_matrix<F: Field>(
      );
      for (mat_idx, j, s) in &mut layout.sorted_cols {
          let start = s.col_idx * height + s.row_idx;
@@ -2428,7 +2463,7 @@ index 97271aa..da8ba18 100644
          debug_assert_eq!(t_col.len(), 1 << s.log_height);
          if s.log_height >= l_skip {
              q_mat[start..start + t_col.len()].copy_from_slice(t_col);
-@@ -347,28 +560,57 @@ pub fn rs_code_matrix<F: TwoAdicField + Ord>(
+@@ -347,28 +595,57 @@ pub fn rs_code_matrix<F: TwoAdicField + Ord>(
      let rs_height = height
          .checked_shl(log_blowup as u32)
          .ok_or(StackedPcsError::RsCodeShiftOverflow { height, log_blowup })?;
@@ -2497,7 +2532,7 @@ index 97271aa..da8ba18 100644
      }
  
      pub fn proof_depth(&self) -> usize {
-@@ -403,6 +645,44 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
+@@ -403,6 +680,44 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
          }
          Ok(proof)
      }
@@ -2542,7 +2577,7 @@ index 97271aa..da8ba18 100644
  }
  
  impl<EF: Field, Digest> MerkleTree<EF, Digest>
-@@ -432,34 +712,23 @@ where
+@@ -432,34 +747,23 @@ where
                  num_leaves,
              });
          }
@@ -2589,7 +2624,7 @@ index 97271aa..da8ba18 100644
          let mut digest_layers = vec![query_digest_layer];
          while digest_layers
              .last()
-@@ -481,6 +750,69 @@ where
+@@ -481,6 +785,69 @@ where
              backing_matrix: matrix,
              digest_layers,
              rows_per_query,
@@ -2659,7 +2694,7 @@ index 97271aa..da8ba18 100644
          })
      }
  
-@@ -508,6 +840,7 @@ where
+@@ -508,6 +875,7 @@ where
              backing_matrix,
              digest_layers,
              rows_per_query,
@@ -2667,7 +2702,7 @@ index 97271aa..da8ba18 100644
          }
      }
  
-@@ -524,9 +857,16 @@ where
+@@ -524,9 +892,16 @@ where
  
          let rows_per_query = self.rows_per_query;
          let width = self.backing_matrix.width();

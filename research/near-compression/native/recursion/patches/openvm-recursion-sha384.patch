@@ -2106,10 +2106,10 @@ index 0000000..4808ad1
 +}
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..6065b0f
+index 0000000..38ea204
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
-@@ -0,0 +1,366 @@
+@@ -0,0 +1,403 @@
 +//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
 +use std::{collections::HashMap, sync::Arc};
 +
@@ -2213,6 +2213,11 @@ index 0000000..6065b0f
 +    /// program depends on the child's committed heights, so M is the last level whose program
 +    /// differs from the converged one (levels <= M each anchor at their own child level).
 +    pub anchor: Option<(u32, crate::sha384::config::Digest)>,
++    /// G2 + tight heights: minimum committed rows per AIR (AIR order) of this level's own traces
++    /// (prover-side floor, `stacked_pcs::set_tight_floor`).  The parent's program depends on its
++    /// child's committed heights; pinning them to setup constants makes the program converge
++    /// (`NvCircuit::select_anchor` then switches to BIND).  None = natural tight heights.
++    pub tight_floor: Option<Vec<usize>>,
 +}
 +
 +impl NvCircuit {
@@ -2238,6 +2243,7 @@ index 0000000..6065b0f
 +            test_no_bind: false,
 +            program_part: false,
 +            anchor: None,
++            tight_floor: None,
 +        }
 +    }
 +
@@ -2389,7 +2395,23 @@ index 0000000..6065b0f
 +        && nv_public_values[13..19] == hi[..6]
 +}
 +
++/// Natural tight heights of a level's traces (AIR order): rows up to the last non-zero row,
++/// rounded up to a multiple of 2^l_skip (as `stacked_pcs::tight_height`).
++pub fn natural_tight_heights(mats: &[RowMajorMatrix<F>], l_skip: usize) -> Vec<usize> {
++    use p3_matrix::Matrix;
++    mats.iter()
++        .map(|m| {
++            let w = m.width();
++            let last = (0..m.height()).rev().find(|&r| m.values[r * w..(r + 1) * w].iter().any(|v| *v != F::ZERO)).map_or(0, |r| r + 1);
++            last.max(1).next_multiple_of(1 << l_skip)
++        })
++        .collect()
++}
++
 +/// The level's program part P0..P3 (G2) committed as a cached main trace under `config`.
++/// Always committed with tight heights OFF (last argument), even when the level's own traces use
++/// the tight lever: a cached trace committed tight is rejected by the native verifier (auditor
++/// R5, `native_r5_cached_tight_commit`).  The program part is a full-height column set anyway.
 +pub fn commit_program_part(
 +    config: &Sha384Config,
 +    prog: openvm_stark_backend::prover::ColMajorMatrix<F>,
@@ -2470,9 +2492,24 @@ index 0000000..6065b0f
 +    let pvs = b.public_values();
 +    let ctxs = nv_contexts(circ, engine.config(), mats, pvs);
 +    let d_pk = engine.device().transport_pk_to_device(&pk);
-+    let proof = engine
-+        .prove(&d_pk, ProvingContext::new(ctxs.into_iter().enumerate().collect()))
-+        .unwrap();
++    if let Some(fl) = &circ.tight_floor {
++        let f: Vec<(usize, usize, usize)> = ctxs
++            .iter()
++            .zip(fl)
++            .map(|(c, &m)| (c.common_main.width(), c.common_main.height().trailing_zeros() as usize, m))
++            .collect();
++        openvm_stark_backend::prover::stacked_pcs::set_tight_floor(Some(f));
++    }
++    let proof = engine.prove(&d_pk, ProvingContext::new(ctxs.into_iter().enumerate().collect()));
++    openvm_stark_backend::prover::stacked_pcs::set_tight_floor(None);
++    let proof = proof.unwrap();
++    if let Some(fl) = &circ.tight_floor {
++        for (i, &m) in fl.iter().enumerate() {
++            if let Some(h) = proof.trace_vdata[i].as_ref().and_then(|v| v.tight_height) {
++                assert!(h >= m.min(1 << proof.trace_vdata[i].as_ref().unwrap().log_height), "AIR {i}: committed {h} below the floor {m}");
++            }
++        }
++    }
 +    engine.verify(&vk, &proof).unwrap();
 +    (vk, proof, b, shapes)
 +}
@@ -7314,10 +7351,10 @@ index 0000000..9373307
 +
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..40205cd
+index 0000000..a19e2c3
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,1354 @@
+@@ -0,0 +1,1382 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -7779,6 +7816,12 @@ index 0000000..40205cd
 +    let max_levels = env_usize("NV_MAX_LEVELS", levels.max(2) + 4);
 +    let mut level = 0usize;
 +    let mut bound_levels = 0usize;
++    // tight heights: levels >= 2 commit at least `floor` rows per AIR (setup constants, natural
++    // height + 1/NV_TIGHT_SLACK_DIV slack, raised only when a level's natural height exceeds it)
++    let tight = openvm_stark_backend::StarkEngine::params(&engine).whir.levers.tight_heights;
++    let l_skip = openvm_stark_backend::StarkEngine::params(&engine).l_skip;
++    let slack_div = env_usize("NV_TIGHT_SLACK_DIV", 64);
++    let mut floor: Option<Vec<usize>> = None;
 +    let mut last_by_bind = false;
 +    loop {
 +        level += 1;
@@ -7791,6 +7834,24 @@ index 0000000..40205cd
 +            bound_levels += by_bind as usize;
 +            last_by_bind = by_bind;
 +            circ.anchor = Some(a);
++            if tight {
++                use p3_matrix::Matrix;
++                let (mats, _) = circ.generate(&vk, &p);
++                let nat = super::circuit::natural_tight_heights(&mats, l_skip);
++                let fits = floor.as_ref().is_some_and(|f| nat.iter().zip(f).all(|(n, f)| n <= f));
++                if !fits {
++                    floor = Some(
++                        nat.iter()
++                            .zip(&mats)
++                            .map(|(&n, m)| (n + n / slack_div).next_multiple_of(1 << l_skip).min(m.height()))
++                            .collect(),
++                    );
++                    println!("NV_G2_FLOOR L{level}: natural committed {nat:?} -> new floor {:?}", floor.as_ref().unwrap());
++                } else {
++                    println!("NV_G2_FLOOR L{level}: natural committed {nat:?} fits floor {:?}", floor.as_ref().unwrap());
++                }
++                circ.tight_floor = floor.clone();
++            }
 +        }
 +        let (v, q, sh, words) = run(&circ, &vk, &p, &format!("L{level}"));
 +        let root = q.trace_vdata[0].as_ref().unwrap().cached_commitments[0];
@@ -7814,6 +7875,7 @@ index 0000000..40205cd
 +    let fe = final_engine.unwrap_or_else(|| Sha384CpuEngine::new_final(openvm_stark_backend::StarkEngine::params(&engine).clone()));
 +    let mut fcirc = circ.clone_shape();
 +    fcirc.program_part = false;
++    fcirc.tight_floor = None; // nobody verifies FINAL in-circuit
 +    let (vkf, pf, _, words_f) = run_with(&fe, &fcirc, &vk, &p, "FINAL");
 +    assert_eq!(words_f, last_words, "FINAL runs the same (fixed-point) program as its child");
 +    let setup = super::vd::VdSetup { vk_final: vkf, program: words_f, level: levels as u32 + 1 };
@@ -8614,10 +8676,13 @@ index 0000000..40205cd
 +    let k = openvm_stark_backend::StarkEngine::params(&engine).k_whir();
 +    let log_rows = 18;
 +    // natural L1 (program part), then L2's natural heights fix every level's heights
++    // program length 2^17 (the default log_rows - 2 = 16 overflows), independent of NV_PROG_LOG
 +    let mut circ1 = super::circuit::NvCircuit::new(k, log_rows, 1);
++    circ1.prog_log = 17;
 +    circ1.program_part = true;
 +    let (vk1n, p1n, _, _) = super::circuit::prove_level(&circ1, &engine, &vk0, &p0);
 +    let mut circ2 = super::circuit::NvCircuit::new(k, log_rows, 1);
++    circ2.prog_log = 17;
 +    circ2.program_part = true;
 +    circ2.child_nv = true;
 +    circ2.anchor = Some((1, p1n.trace_vdata[0].as_ref().unwrap().cached_commitments[0]));
