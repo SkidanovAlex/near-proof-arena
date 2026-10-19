@@ -781,3 +781,131 @@ Written before the implementation, as §10 was, so another agent can continue it
   REJECTED). The first run's log is kept as `logs/tamper-callkat8-run1.log` (90/91; all 38 call,
   return, FUNC and DRAIN cases rejected).
 
+
+## 14. Interface toward the state tables (host calls, storage, gas, receipts): design note
+
+Scope: this lane proves Wasm execution only. Host functions, storage, the trie, receipts and accounts
+are not built here. A separate envelope lane (`lane/pq-d1-envelope`) is evaluating whether the
+already-proven D0a/D1 tables (`nearAirV3` / `nearAirV3D1`) can be reused for them on the PQ stack.
+This section fixes what the direct-Wasm side would send and receive, so that the two can be joined.
+
+### 14.1 What exists on each side today
+
+**Wasm side (this lane).**
+* The statement is: `code_root` / `func_root` / `data_root` (cached tables, bound to the contract
+  code), plus the public values. These are `N`, `S`, the result, `status`, the memory size,
+  `dataEnd`, the local tags, the initial globals and `stackRem`.
+* Gas is `R · S` instruction units, starting from the public `g0`; `regularOpCost` is `R`.
+* Imports are outside the domain. `check` rejects `call` of an imported function, so no host call can
+  occur in a proved run.
+
+**Spec** (`NearSpecV3.Wasm`):
+* `callFunc` sends an import index to `callHost s name`, which runs three steps:
+  * `sync`: burns `remaining − g`, i.e. the instruction gas since the last sync;
+  * `hostCall name` (`Host.lean`, `HM := EStateM String St`): pops its arguments from the operand
+    stack, reads and writes linear memory and the registers, charges ext costs (which can abort with
+    gas exceeded), pushes its result, and touches `St.ctx`, `trie` / `real`, `promises`, `logs`,
+    `ret`, `balance` and `storageUsage`;
+  * `g := remaining`.
+* The result of a call is `Run.done s err`, rendered by `outcome` as burnt, used, ret, balance, or
+  abort.
+
+**State side** (`nearAirV3D1`, per the map of `zk-formal/ZkFormal/NearV3`):
+* trie walk and value buses (`KEYNIB`, `FINAL`, `VBYTES`, `VSLOT`, `ROOT`, …), used today for
+  accounts, access keys and queue values;
+* accounts on `MEM` (balance, locked, storage usage);
+* receipts on `RIDS` / `SRC` / `RCL` / `SREC`;
+* gas price `PH_GP` in the header, and the D1 `TOK0`.
+
+There is no bus yet for contract-data storage, host calls, promises beyond Transfer and refunds, or
+the function-call context. Wasm FunctionCall execution is the D3a classes (`d3-calls`,
+`d3-callbacks`, `d3-maxgas`), which have no AIR.
+
+### 14.2 Proposed interface (to be agreed with the envelope lane)
+
+**One HOST chip on the Wasm side, one ordered host bus between the sides.**
+* The checker treats `call` of an import as a straight-line instruction with the import's signature,
+  as it does for internal calls. The record is `[pc, OP_HOST, h, fee, host_id, np, ar, 0]`;
+  `host_id` is the index in a fixed host-function table, which is bound through the statement like
+  FUNC.
+* A HOST row:
+  * consumes `np` arguments from the operand stack;
+  * sends one request message on a new bus `HOSTQ`:
+    `[ts, host_id, S, a0, a1, a2, a3, a4]`, with the arguments as 32-bit halves (or a second message
+    row for more than five words);
+  * receives the response `[ts, status, r_lo, r_hi, g_after_lo, g_after_hi, 0, 0]` on `HOSTR`;
+  * pushes `ar` results;
+  * continues at `pc + 1` (status ok) or at the trap / abort state (status gas-exceeded, host error).
+* `ts` is the Wasm execution time. It is unique per host call and increasing, so the state side can
+  process requests as a time-ordered stream: its own sequence check is `ts_k < ts_{k+1}`.
+* `S` at the row is the instruction gas so far. The state side reproduces `sync`: burnt
+  `+= R · (S − S_prev)`.
+
+**Byte-string arguments** (keys, values, account ids, logs, return data):
+* The host reads them from linear memory. On the Wasm side these are channel space 3 reads, one
+  message per byte.
+* Proposal: a MEMIO sub-row family that moves `(ptr, len)` ranges between space 3 and a byte bus
+  `HOSTB [ts, pos, byte]`. That bus has the same shape as D1's `VBYTES (vid, pos, byte)` with
+  `vid := ts`, so the state side can consume key and value bytes exactly as it consumes trie value
+  bytes today.
+* Writes into memory (`read_register`, `storage_read` through a register) run the other way:
+  `HOSTB` → space 3 sends.
+
+**Registers.** These live on the Wasm side as a new channel space 6, keyed by `(register_id, pos)`,
+plus a length message per register. A host function that fills a register (context getters,
+`storage_read`, `input`, `promise_result`) receives the bytes on `HOSTB` from the state side.
+`read_register` / `write_register` are then Wasm-side only.
+
+**Storage** (`storage_write` / `storage_read` / `storage_remove` / `storage_has_key`):
+* The request carries the key and value lengths. The bytes go on `HOSTB`.
+* The response carries the found or evicted flag, and the gas charged from `TrieAccounting`
+  (`storageRead` …).
+* On the state side these become contract-data trie reads and writes, keyed by
+  `(account, data key)`. That is the part that could reuse the D1 walk tables (`WalkV3` / `WalkU`,
+  `KEYNIB`, `UvalV3`) for a different key prefix. The spec's `RealStore.writes` log is the order
+  they apply.
+
+**Gas.**
+* The Wasm side exposes `S` at each host call, plus the final `S`.
+* The state side owns:
+  * prepaid gas, limit, promises gas, ext costs, compute;
+  * the `g := remaining` resynchronisation, returned as `g_after` in the response, which becomes the
+    Wasm side's new budget;
+  * the final `gasBurnt` / `gasUsed`.
+* On the Wasm side this needs a budget check against `g_after` instead of the public `g0` alone: a
+  gas-exhaustion trap with the remaining budget as the state value.
+* Gas exhaustion inside a host function is a response status.
+
+**Context getters** (`block_index`, `block_timestamp`, `current_account_id`, `input`, `prepaid_gas`,
+`attached_deposit`, …):
+* responses from the state side that carry the `CallCtx` fields;
+* `CallCtx` is part of the receipt being executed (state side), not of the Wasm statement.
+
+**Receipts and promises** (`promise_create`, `promise_then`, `promise_batch_*`, `promise_return`,
+`value_return`, `log_utf8`):
+* requests whose byte arguments go on `HOSTB`;
+* the state side builds the action receipts, logs and return data into the execution outcome
+  (`D2/Actions.AR`: `gasBurnt`, `gasUsed`, `newReceipts`, `logs`, `ret`, `tokensBurnt`) and the
+  receipt tables (`RIDS` / `SRC` / `RCL`).
+* The Wasm side only reports `status` (returned / trapped / aborted) and the time of the last host
+  call.
+
+**Join.**
+* A function-call receipt's proof is the Wasm proof plus the state proof over the same `HOSTQ` /
+  `HOSTR` / `HOSTB` buses. These are cross-proof buses: their balance is checked when the two are
+  aggregated, like the segment boundary messages.
+* The Wasm side also needs `code_root` / `func_root` / `data_root` to equal the state side's contract
+  code hash. The deploy and global-contract tables provide that hash; the roots are a deterministic
+  function of the code (§9.1).
+
+### 14.3 What this lane would need to add (not started, per the scope note)
+
+* `check` support for import calls (OP_HOST records, a signature table).
+* The HOST chip and the MEMIO byte mover.
+* The register space.
+* The `g_after` budget register.
+* The spec-side simulation of `callHost` given a response oracle. The proof would be relative to an
+  abstract host-response function, discharged by the state proof.
+
+Everything else (the semantics of each host function, storage, gas accounting, receipts) would be on
+the state side.
