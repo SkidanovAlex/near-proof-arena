@@ -1139,7 +1139,7 @@ diff --git a/crates/cpu-backend/src/fast/zc.rs b/crates/cpu-backend/src/fast/zc.
 new file mode 100644
 --- /dev/null
 +++ b/crates/cpu-backend/src/fast/zc.rs
-@@ -0,0 +1,960 @@
+@@ -0,0 +1,1062 @@
 +//! [pq-cpu-prover] Zerocheck + LogUp MLE rounds on struct-of-arrays Ext12 tables.
 +//!
 +//! After the univariate round the trace tables are Ext12. The original code evaluates the
@@ -1244,6 +1244,55 @@ new file mode 100644
 +                            acc += vz[z] * csb[j][z];
 +                        }
 +                        acc
++                    };
++                }
++            }
++        });
++        Self { width, height: new_height, data }
++    }
++
++    /// `out[x] = Σ_k weights[k] * rm[(x << log_step) + k + rot]` (rows mod the height, lifted
++    /// to at least 2^log_step rows): the univariate-skip fold (`log_step = l_skip`) or the skip
++    /// fold followed by the first multilinear fold (`log_step = l_skip + 1`) in one pass.
++    pub fn from_ple_weights<EF: ExtensionField<F>>(
++        log_step: usize,
++        rm: &RowMajorMatrix<F>,
++        is_rot: bool,
++        weights: &[EF],
++    ) -> Self {
++        let width = rm.width;
++        let height = rm.values.len() / width;
++        let step = 1usize << log_step;
++        debug_assert_eq!(weights.len(), step);
++        let new_height = height.max(step) >> log_step;
++        let w = lanes::<F>();
++        let nb = new_height / w;
++        let off = usize::from(is_rot);
++        let wb: Vec<Vec<P<F>>> = (0..D)
++            .map(|j| weights.iter().map(|c| P::<F>::from(coeffs::<F, EF>(c)[j])).collect())
++            .collect();
++        let mut data = vec![P::<F>::ZERO; nb * width * D];
++        data.par_chunks_mut(width * D).enumerate().for_each(|(b, out)| {
++            let mut vz = vec![P::<F>::ZERO; step];
++            for c in 0..width {
++                for z in 0..step {
++                    vz[z] = P::<F>::from_fn(|l| {
++                        let x = l * nb + b;
++                        let row = ((x << log_step) + z + off) % height;
++                        rm.values[row * width + c]
++                    });
++                }
++                for j in 0..D {
++                    out[c * D + j] = match step {
++                        4 => P::<F>::dot_product::<4>(vz[..4].try_into().unwrap(), wb[j][..4].try_into().unwrap()),
++                        8 => P::<F>::dot_product::<8>(vz[..8].try_into().unwrap(), wb[j][..8].try_into().unwrap()),
++                        _ => {
++                            let mut acc = P::<F>::ZERO;
++                            for z in 0..step {
++                                acc += vz[z] * wb[j][z];
++                            }
++                            acc
++                        }
 +                    };
 +                }
 +            }
@@ -1849,12 +1898,66 @@ new file mode 100644
 +
 +    /// `round_evals` through the degree-aware program (identical values).
 +    pub fn round_evals_da(&self, da: &DaProgram<F>, tables: &[&SoaTable<F>], eq_xi: &[EF]) -> [Vec<EF>; 3] {
-+        let d = da.d;
 +        let h = tables[0].height;
++        self.round_evals_da_with(da, h, eq_xi, |t, c, bb| (tables[t].get(2 * bb, c), tables[t].get(2 * bb + 1, c)))
++    }
++
++    /// [`Self::round_evals_da`] for the first multilinear round straight from the base-field
++    /// trace (the univariate-skip fold is applied on the fly, so its Ext12 table is never
++    /// stored). `mats[t]` is input table t (selectors first), `cs` the skip-fold weights.
++    pub fn round_evals_da_ple(
++        &self,
++        da: &DaProgram<F>,
++        l_skip: usize,
++        mats: &[(&RowMajorMatrix<F>, bool)],
++        cs: &[EF],
++        eq_xi: &[EF],
++    ) -> [Vec<EF>; 3] {
++        let sk = 1usize << l_skip;
++        let h0 = {
++            let (m, _) = mats[0];
++            (m.values.len() / m.width).max(sk) >> l_skip
++        };
++        let wl = lanes::<F>();
++        let nb0 = h0 / wl;
++        let csb: Vec<Vec<P<F>>> = (0..D)
++            .map(|j| cs.iter().map(|c| P::<F>::from(coeffs::<F, EF>(c)[j])).collect())
++            .collect();
++        let val = |t: usize, c: usize, x_of: &dyn Fn(usize) -> usize| -> PE<P<F>> {
++            let (m, rot) = mats[t];
++            let height = m.values.len() / m.width;
++            let off = usize::from(rot);
++            let vz: Vec<P<F>> = (0..sk)
++                .map(|z| P::<F>::from_fn(|l| m.values[(((x_of(l) << l_skip) + z + off) % height) * m.width + c]))
++                .collect();
++            PE(core::array::from_fn(|j| {
++                if sk == 4 {
++                    P::<F>::dot_product::<4>(vz[..4].try_into().unwrap(), csb[j][..4].try_into().unwrap())
++                } else {
++                    let mut acc = P::<F>::ZERO;
++                    for z in 0..sk {
++                        acc += vz[z] * csb[j][z];
++                    }
++                    acc
++                }
++            }))
++        };
++        self.round_evals_da_with(da, h0, eq_xi, |t, c, bb| {
++            (val(t, c, &|l| l * nb0 + 2 * bb), val(t, c, &|l| l * nb0 + 2 * bb + 1))
++        })
++    }
++
++    fn round_evals_da_with(
++        &self,
++        da: &DaProgram<F>,
++        h: usize,
++        eq_xi: &[EF],
++        load: impl Fn(usize, usize, usize) -> (PE<P<F>>, PE<P<F>>) + Sync,
++    ) -> [Vec<EF>; 3] {
++        let d = da.d;
 +        let wl = lanes::<F>();
 +        let nb = h / wl;
 +        let ny_blk = nb / 2;
-+        let n_in = self.inputs.len();
 +        let w = self.w;
 +        struct St<Q> {
 +            slots: Vec<PE<Q>>,
@@ -1901,8 +2004,7 @@ new file mode 100644
 +        }
 +        let fold_blk = |mut st: St<P<F>>, bb: usize| -> St<P<F>> {
 +            for (i, &(t, c)) in self.inputs.iter().enumerate() {
-+                let lo = tables[t].get(2 * bb, c);
-+                let hi = tables[t].get(2 * bb + 1, c);
++                let (lo, hi) = load(t, c, bb);
 +                st.slots[i * d] = hi;
 +                if d > 1 {
 +                    st.slots[i * d + 1] = hi.add(&hi.sub(&lo));
@@ -2123,7 +2225,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      pub interactions: Vec<SymbolicInteraction<SC::F>>,
      pub public_values: Vec<SC::F>,
      pub preprocessed_trace: Option<&'a RowMajorMatrix<SC::F>>,
-@@ -851,6 +853,20 @@ pub(crate) struct LogupZerocheckRowMajor<'a, SC: StarkProtocolConfig> {
+@@ -851,6 +853,42 @@ pub(crate) struct LogupZerocheckRowMajor<'a, SC: StarkProtocolConfig> {
      pub(crate) prev_s_eval: SC::EF,
      pub(crate) eq_ns: Vec<SC::EF>,
      pub(crate) eq_sharp_ns: Vec<SC::EF>,
@@ -2133,6 +2235,28 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +    soa: Vec<Option<Vec<crate::fast::zc::SoaTable<SC::F>>>>,
 +    progs: Vec<Option<crate::fast::zc::Program<SC::F, SC::EF>>>,
 +    da_progs: Vec<std::sync::OnceLock<crate::fast::zc::DaProgram<SC::F>>>,
++    /// traces whose skip-folded table is not stored: round 1 reads the base trace
++    ple: Vec<Option<PleSrc<'a, SC::F, SC::EF>>>,
++}
++
++/// [pq-cpu-prover] Base-field source of a trace's first multilinear round.
++struct PleSrc<'a, F, EF> {
++    sels: RowMajorMatrix<F>,
++    mats: Vec<(&'a RowMajorMatrix<F>, bool)>,
++    cs: Vec<EF>,
++}
++
++impl<F, EF> PleSrc<'_, F, EF> {
++    fn tables(&self) -> Vec<(&RowMajorMatrix<F>, bool)> {
++        std::iter::once((&self.sels, false)).chain(self.mats.iter().copied()).collect()
++    }
++}
++
++/// [pq-cpu-prover] `NEARPROOF_CPU_PLE_DEFER=0` stores the skip-folded Ext12 tables (more memory).
++fn ple_defer_enabled() -> bool {
++    use std::sync::OnceLock;
++    static ON: OnceLock<bool> = OnceLock::new();
++    *ON.get_or_init(|| std::env::var("NEARPROOF_CPU_PLE_DEFER").map(|v| v != "0").unwrap_or(true))
 +}
 +
 +/// [pq-cpu-prover] `NEARPROOF_CPU_DA=0` evaluates the MLE rounds at every point instead of
@@ -2144,7 +2268,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
  }
  
  impl<'a, SC: StarkProtocolConfig> LogupZerocheckRowMajor<'a, SC>
-@@ -948,6 +964,7 @@ where
+@@ -948,6 +986,7 @@ where
                  let symbolic_constraints = SymbolicConstraints::from(&pk.vk.symbolic_constraints);
                  RowMajorEvalHelper {
                      constraints_dag: &pk.vk.symbolic_constraints.constraints,
@@ -2152,7 +2276,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
                      interactions: symbolic_constraints.interactions,
                      public_values,
                      preprocessed_trace,
-@@ -989,9 +1006,18 @@ where
+@@ -989,9 +1028,19 @@ where
              prev_s_eval: SC::EF::ZERO,
              eq_ns: Vec::with_capacity(n_max + 1),
              eq_sharp_ns: Vec::with_capacity(n_max + 1),
@@ -2164,6 +2288,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +            soa: vec![],
 +            progs: vec![],
 +            da_progs: vec![],
++            ple: vec![],
          }
      }
  
@@ -2171,7 +2296,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      pub fn sumcheck_uni_round0_polys(
          &mut self,
          ctx: &ProvingContext<CpuBackend<SC>>,
-@@ -1058,6 +1084,42 @@ where
+@@ -1058,6 +1107,42 @@ where
              })
              .collect_vec();
  
@@ -2214,7 +2339,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
          // Zerocheck round 0 — uses batch DFT from row-major data
          let sp_0_zerochecks = self
              .eval_helpers
-@@ -1075,7 +1137,26 @@ where
+@@ -1075,7 +1160,26 @@ where
                      return UnivariatePoly::new(vec![]);
                  }
                  let num_cosets = constraint_deg - 1;
@@ -2242,7 +2367,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
                      l_skip,
                      n_lift,
                      num_cosets,
-@@ -1084,7 +1165,7 @@ where
+@@ -1084,7 +1188,7 @@ where
                      helper,
                      eq_xi,
                      &self.lambda_pows,
@@ -2251,7 +2376,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
                  let sp_0_deg = sumcheck_round0_deg(l_skip, constraint_deg);
                  let coeffs = (0..=sp_0_deg)
                      .map(|i| {
-@@ -1124,6 +1205,24 @@ where
+@@ -1124,6 +1228,24 @@ where
                  let norm_factor_denom = 1 << l_skip.saturating_sub(log_height);
                  let norm_factor = SC::F::from_usize(norm_factor_denom).inverse();
  
@@ -2276,24 +2401,26 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
                  let [mut numer, denom] = sumcheck_uni_round0_batch::<SC::F, SC::EF, _, 2>(
                      l_skip,
                      n_lift,
-@@ -1151,6 +1250,9 @@ where
+@@ -1150,7 +1272,10 @@ where
+     /// Fold PLE evaluations using randomness r_0.
      /// Reads directly from row-major matrices via barycentric interpolation,
      /// avoiding the O(n*m) transpose to col-major (saves ~3s for keccakf).
-     pub fn fold_ple_evals(&mut self, ctx: &ProvingContext<CpuBackend<SC>>, r_0: SC::EF) {
+-    pub fn fold_ple_evals(&mut self, ctx: &ProvingContext<CpuBackend<SC>>, r_0: SC::EF) {
++    pub fn fold_ple_evals(&mut self, ctx: &'a ProvingContext<CpuBackend<SC>>, r_0: SC::EF) {
 +        if let Some(w) = self.fast_w {
 +            return self.fold_ple_evals_fast(ctx, r_0, w);
 +        }
          let l_skip = self.l_skip;
          self.mat_evals_per_trace = self
              .eval_helpers
-@@ -1179,9 +1281,122 @@ where
+@@ -1179,9 +1304,142 @@ where
          });
      }
  
 +    /// [pq-cpu-prover] `fold_ple_evals` writing SoA tables for traces tall enough, and compiling
 +    /// each AIR's MLE-round program.
 +    #[instrument(level = "info", skip_all)]
-+    fn fold_ple_evals_fast(&mut self, ctx: &ProvingContext<CpuBackend<SC>>, r_0: SC::EF, w: SC::F) {
++    fn fold_ple_evals_fast(&mut self, ctx: &'a ProvingContext<CpuBackend<SC>>, r_0: SC::EF, w: SC::F) {
 +        use crate::fast::zc::{min_height, SoaTable};
 +        let l_skip = self.l_skip;
 +        let skip_sz = 1usize << l_skip;
@@ -2309,6 +2436,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +            .collect_vec();
 +        let num = self.eval_helpers.len();
 +        let mut soa = Vec::with_capacity(num);
++        let mut ple = Vec::with_capacity(num);
 +        let mut mats_aos = Vec::with_capacity(num);
 +        let mut sels_aos = Vec::with_capacity(num);
 +        let sels_base = take(&mut self.sels_per_trace_base);
@@ -2316,15 +2444,24 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +            let rm_mats = helper.view_mats_rowmaj(trace_ctx);
 +            let height = trace_ctx.height();
 +            let new_height = height.max(skip_sz) >> l_skip;
-+            if new_height >= min_height::<SC::F>() {
++            if new_height >= min_height::<SC::F>() && ple_defer_enabled() {
++                // [pq-cpu-prover] defer: round 1 reads the base trace; the first stored table is
++                // folded by r_0 and r_1 together (half the size)
++                ple.push(Some(PleSrc { sels: sels_base[t].clone(), mats: rm_mats, cs: cs.clone() }));
++                soa.push(None);
++                mats_aos.push(vec![]);
++                sels_aos.push(RowMajorMatrix::new(vec![SC::EF::ZERO], 1));
++            } else if new_height >= min_height::<SC::F>() {
 +                let mut tables = vec![SoaTable::from_ple(l_skip, &sels_base[t], false, &cs)];
 +                for (rm, is_rot) in rm_mats {
 +                    tables.push(SoaTable::from_ple(l_skip, rm, is_rot, &cs));
 +                }
++                ple.push(None);
 +                soa.push(Some(tables));
 +                mats_aos.push(vec![]);
 +                sels_aos.push(RowMajorMatrix::new(vec![SC::EF::ZERO], 1));
 +            } else {
++                ple.push(None);
 +                soa.push(None);
 +                mats_aos.push(
 +                    rm_mats
@@ -2339,6 +2476,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +            self.compile_programs(w);
 +        }
 +        self.soa = soa;
++        self.ple = ple;
 +        self.mat_evals_per_trace = mats_aos;
 +        self.sels_per_trace = sels_aos;
 +        let eq_r0 = eval_eq_uni(l_skip, self.xi[0], r_0);
@@ -2385,6 +2523,15 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +        let sp_deg = self.constraint_degree;
 +        (0..self.eval_helpers.len())
 +            .map(|t| {
++                if let Some(Some(src)) = self.ple.get(t) {
++                    debug_assert_eq!(round, 1);
++                    let prog = self.progs[t].as_ref().unwrap();
++                    let n_lift = self.n_per_trace[t].max(0) as usize;
++                    let num_y = 1 << (n_lift - round);
++                    let eq_xi = &self.eq_xi_per_trace[t][num_y - 1..];
++                    let da = self.da_progs[t].get_or_init(|| prog.degree_aware(sp_deg));
++                    return Some(prog.round_evals_da_ple(da, self.l_skip, &src.tables(), &src.cs, eq_xi));
++                }
 +                let tabs = self.soa.get(t)?.as_ref()?;
 +                let prog = self.progs[t].as_ref().unwrap();
 +                let n_lift = self.n_per_trace[t].max(0) as usize;
@@ -2409,7 +2556,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
          let sp_zerocheck_evals: Vec<Vec<SC::EF>> = izip!(
              &self.eval_helpers,
              &mut self.zerocheck_tilde_evals,
-@@ -1190,8 +1405,12 @@ where
+@@ -1190,8 +1448,12 @@ where
              &self.sels_per_trace,
              &self.eq_xi_per_trace
          )
@@ -2423,7 +2570,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
              if round > n_lift {
                  if round == n_lift + 1 {
                      // Height is 1 — extract single row as Vec
-@@ -1235,13 +1454,21 @@ where
+@@ -1235,13 +1497,21 @@ where
              &self.eq_xi_per_trace,
              &self.eq_3b_per_trace
          )
@@ -2446,12 +2593,12 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
              if round > n_lift {
                  if round == n_lift + 1 {
                      // Height is 1 — extract single row as Vec
-@@ -1298,6 +1525,21 @@ where
+@@ -1298,6 +1568,39 @@ where
              .collect_vec();
          self.sels_per_trace =
              crate::row_major_ops::batch_fold_mle_evals_rm(take(&mut self.sels_per_trace), r_round);
 +        if let Some(w) = self.fast_w {
-+            use crate::fast::{pext::{coeffs, PreMul}, zc::min_height};
++            use crate::fast::{pext::{coeffs, PreMul}, zc::{min_height, SoaTable}};
 +            let rp = PreMul::new(coeffs::<SC::F, SC::EF>(&r_round), w);
 +            for t in 0..self.soa.len() {
 +                let Some(tabs) = self.soa[t].take() else { continue };
@@ -2464,11 +2611,29 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +                    self.mat_evals_per_trace[t] = folded[1..].iter().map(|tab| tab.to_rowmajor()).collect();
 +                }
 +            }
++            for t in 0..self.ple.len() {
++                let Some(src) = self.ple[t].take() else { continue };
++                // T1[y] = (1 - r1) T0[2y] + r1 T0[2y + 1], T0[x] = Σ_z cs_z row(4x + z)
++                let one_m = SC::EF::ONE - r_round;
++                let wts: Vec<SC::EF> =
++                    src.cs.iter().map(|&c| c * one_m).chain(src.cs.iter().map(|&c| c * r_round)).collect();
++                let tabs: Vec<SoaTable<SC::F>> = src
++                    .tables()
++                    .into_iter()
++                    .map(|(m, rot)| SoaTable::from_ple_weights(self.l_skip + 1, m, rot, &wts))
++                    .collect();
++                if tabs[0].height >= min_height::<SC::F>() {
++                    self.soa[t] = Some(tabs);
++                } else {
++                    self.sels_per_trace[t] = tabs[0].to_rowmajor();
++                    self.mat_evals_per_trace[t] = tabs[1..].iter().map(|tab| tab.to_rowmajor()).collect();
++                }
++            }
 +        }
          self.eq_xi_per_trace.par_iter_mut().for_each(|eq| {
              if eq.len() > 1 {
                  eq.truncate(eq.len() / 2);
-@@ -1372,8 +1614,8 @@ where
+@@ -1372,8 +1675,8 @@ where
      CpuBackend<SC>: ProverBackend<Val = SC::F, Matrix = RowMajorMatrix<SC::F>>,
  {
      let l_skip = mpk.params.l_skip;
@@ -2479,7 +2644,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
  
      let n_max = log2_strict_usize(MatrixDimensions::height(&ctx.per_trace[0].1.common_main))
          .saturating_sub(l_skip);
-@@ -1411,6 +1653,66 @@ where
+@@ -1411,6 +1714,66 @@ where
  
      // GKR: compute logup input layer using row-major access
      let has_interactions = !prover.interactions_layout.sorted_cols.is_empty();
@@ -2546,7 +2711,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      let gkr_input_evals = if !has_interactions {
          vec![]
      } else {
-@@ -1462,7 +1764,7 @@ where
+@@ -1462,7 +1825,7 @@ where
      };
  
      openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.gkr_input");
@@ -2555,7 +2720,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
          fractional_sumcheck_with::<SC, _>(
              transcript,
              &gkr_input_evals,
-@@ -1471,6 +1773,30 @@ where
+@@ -1471,6 +1834,30 @@ where
          )?;
  
      openvm_stark_backend::prover::stream_pcs::memprof("zerocheck.after_gkr");
@@ -2563,11 +2728,11 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
 +}
 +
 +/// The part of `prove_zerocheck_and_logup` after the GKR (split out so the fast GKR can share it).
-+fn finish_zerocheck_and_logup<SC: StarkProtocolConfig, TS>(
++fn finish_zerocheck_and_logup<'a, SC: StarkProtocolConfig, TS>(
 +    transcript: &mut TS,
-+    mpk: &DeviceMultiStarkProvingKey<CpuBackend<SC>>,
-+    ctx: &ProvingContext<CpuBackend<SC>>,
-+    mut prover: LogupZerocheckRowMajor<'_, SC>,
++    mpk: &'a DeviceMultiStarkProvingKey<CpuBackend<SC>>,
++    ctx: &'a ProvingContext<CpuBackend<SC>>,
++    mut prover: LogupZerocheckRowMajor<'a, SC>,
 +    frac_sum_proof: openvm_stark_backend::prover::fractional_sumcheck_gkr::FracSumcheckProof<SC>,
 +    mut xi: Vec<SC::EF>,
 +    logup_pow_witness: SC::F,
@@ -2586,7 +2751,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      let n_global = max(n_max, n_logup);
      debug!(%n_global);
      while xi.len() != l_skip + n_global {
-@@ -1486,6 +1812,7 @@ where
+@@ -1486,6 +1873,7 @@ where
      debug!(%lambda);
  
      let sp_0_polys = prover.sumcheck_uni_round0_polys(ctx, lambda);
@@ -2594,7 +2759,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
      let sp_0_deg = sumcheck_round0_deg(l_skip, constraint_degree);
      let s_deg = constraint_degree + 1;
      let s_0_deg = sumcheck_round0_deg(l_skip, s_deg);
-@@ -1584,6 +1911,7 @@ where
+@@ -1584,6 +1972,7 @@ where
      debug!("s_0(r_0) = {}", prover.prev_s_eval);
  
      prover.fold_ple_evals(ctx, r_0);
@@ -2602,7 +2767,7 @@ diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/
  
      // MLE rounds
      let _mle_rounds_span =
-@@ -1666,6 +1994,7 @@ where
+@@ -1666,6 +2055,7 @@ where
          prover.fold_mle_evals(round, r_round);
      }
      drop(_mle_rounds_span);
