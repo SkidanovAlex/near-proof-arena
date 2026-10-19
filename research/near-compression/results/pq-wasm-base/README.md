@@ -742,7 +742,7 @@ Written before the implementation, as §10 was, so another agent can continue it
   * `calltrap`: a division by zero two frames deep, after a successful call.
 * difftest `wasmBaseAir 2 1`, `0 0` and `4 2`: 176 points each. Constraint values and interactions all
   agree (`logs/difftest-calls.log`).
-* Tamper suites on `callkat8`, `calltrap` and `fib10` (`logs/tamper-<prog>.log`; running at this commit, results in the next commit). The
+* Tamper suites on `callkat8`, `calltrap` and `fib10` (`logs/tamper-<prog>.log`): `callkat8` 91/91, `calltrap` 74/74, `fib10` 73/73 rejected by the native verifier. The
   call cases are:
   * CALL: forged `entry`, `shape`, `charge`, `pro`, mask limb, budget limbs and producer time, the
     `sb + h − np` and `ts` limbs, frame columns, `S` and `fee`, param value, time and tag, a dropped
@@ -751,4 +751,33 @@ Written before the implementation, as §10 was, so another agent can continue it
   * RET: `retpc`, `sbc`, `cidc`, `charge`, `tpr`, budget limbs and time, `invc`, frame columns, a
     deleted row, and the condition of an untaken `br_if`;
   * DRAIN: the budget, the call record after a trap, and a callee-local row's `act` and `tp`.
+
+  **One case was accepted, and it is a free witness rather than a soundness hole.** The first
+  `callkat8` run reported `CMP.inv+1  ACCEPTED! (PRECHECK PASSES)`: the native verifier accepted the
+  tampered proof.
+
+  *What row 0 is.* The harness tampered CMP row 0. In `callkat8` that row is `i64.eqz` on a
+  zero-initialised declared local, so all four difference limbs `d0..d3` are 0. In the earlier
+  programs, row 0 had non-zero limbs.
+
+  *Why `inv` is free there.* `inv` enters the CMP AIR only through `eqf = 1 − zsum·inv`, where
+  `zsum = d0 + d1 + d2 + d3`. It is used in two places:
+  * the constraint `zsum·eqf = 0`;
+  * the result `res`, through `eqf`.
+
+  When `zsum = 0`, `eqf = 1` whatever `inv` is, and `zsum = 0` as an integer: each limb is
+  range-checked below 2^16, so the sum is far below p. Changing `inv` therefore changes no
+  constraint value and no bus message. The tampered trace is another valid witness for the
+  identical statement: same public values, same result.
+
+  *What the Lean proof covers.* `Local/Cmp.eqf_val` proves, for every `inv`, that
+  `zsum·(1 − zsum·inv) = 0` and `zsum < p` imply `eqf = [zsum = 0]`. The CMP row lemma, and through
+  it `wasm_base_sound`, therefore holds for an arbitrary `inv` column. This is the same situation as
+  `STACK.V1` on a `drop` row (§12).
+
+  *What the rebuild changes.* Only the harness, not the AIR and not the prover. `CMP.inv+1` now
+  targets the first CMP row with a non-zero difference limb, where `zsum·inv = 1` pins `inv`; the
+  case is reported as `CMP[row r].inv+1`. That run gives `callkat8` 91/91 (all
+  REJECTED). The first run's log is kept as `logs/tamper-callkat8-run1.log` (90/91; all 38 call,
+  return, FUNC and DRAIN cases rejected).
 

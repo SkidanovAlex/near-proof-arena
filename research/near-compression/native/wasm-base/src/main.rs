@@ -390,6 +390,18 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
             }
             continue;
         }
+        // CMP.inv is only pinned when the difference limbs are non-zero (on an equal / zero operand
+        // it is a free witness, `zsum · inv` with `zsum = 0`), so target such a row
+        if name == "CMP" && c == "inv" {
+            let w = g.mats[t].width;
+            let d0 = col(t, "d0");
+            if let Some(r) = (0..g.rows_per_table[t].1)
+                .find(|&r| (0..4).any(|i| g.mats[t].values[r * w + d0 + i] != F::ZERO))
+            {
+                cases.push((format!("CMP[row {r}].inv+1"), cell(t, r, col(t, c), plus1())));
+            }
+            continue;
+        }
         cases.push((format!("{name}.{c}+1"), cell(t, 0, col(t, c), plus1())));
     }
     // a taken/untaken conditional branch with a forged condition limb
