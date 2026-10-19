@@ -40,6 +40,11 @@ Prior-art verdicts (2026-10-18): `research/novelty/PRIOR-ART.md` (from `lane/nov
 | NF-8 | Narrow verifier circuit + measured final-layer size laws; modelled ≈ 299 KB final layer, conditional on T\* and A-IC | engineering / measurement | searched-new (data point) | unreviewed | none-needed |
 | NF-9 | Ajtai-compressing lattice SNARKs cannot have CMS19-style rbr knowledge soundness | theory (obstruction) | known | unreviewed | none-needed |
 | NF-10 | Capacity-regime proximity gaps cost more bytes per security bit than Johnson at low rate | analysis | known / incremental | unreviewed | none-needed |
+| NF-11 | SHA-512 compression AIR v4 on a 31-bit field: base-4 digits at degree 9, two words per row, single-sender bus-residual additions, round constant folded at zero cost (83 cols / 73 rotated) | engineering | candidate | internal-review | none-needed |
+| NF-12 | Streamed Reed–Solomon/WHIR commitments: codeword never materialised, opened rows recomputed from coefficients; byte-identical proofs | systems | candidate | unreviewed | none-needed |
+| NF-13 | Certificate-gated beyond-Johnson agreement tables bound into the vk (DKT26 O-2, Lean-kernel certificates per round and fold sub-code) + round-0 fallback when commitments square the list | theory application / systems | candidate | internal-review (partial) | none-needed |
+| NF-14 | Recursive final proofs are forgeable unless the verifier pins the final program (a verifier-nothing program exposing a false statement passes the proof check alone) | security analysis | candidate | unreviewed | none-needed |
+| NF-15 | Measured PQ recursive final layer at the size-optimal shape matches the size-law model within 0.2 % | measurement | candidate | unreviewed | none-needed |
 
 ## Entries
 
@@ -147,7 +152,9 @@ Prior-art verdicts (2026-10-18): `research/novelty/PRIOR-ART.md` (from `lane/nov
   soundcalc root configurations (e.g. 200 KiB classical). Catalogue: [ACFY24], [leanVM], [soundcalc],
   [zkDTVM].
 * **Novelty.** Searched-new (data point).
-* **Next.** Needs the measured real-settings number before any claim.
+* **Next.** Needs the measured real-settings number before any claim. Update 2026-10-19: a best-shape
+  final was measured within 0.2 % of the model (NF-15); the current model with SHA AIR v4, program cut
+  and certified O-2 is 287,037 B; the measured run on that chain is in progress (lane/pq-stream-commit).
 
 ### NF-9 — Lattice SNARK QROM obstruction
 * **Claim.** Ajtai commitments compress, so the witness is not determined by the oracle record;
@@ -164,3 +171,64 @@ Prior-art verdicts (2026-10-18): `research/novelty/PRIOR-ART.md` (from `lane/nov
 * **Evidence.** `docs/logs/pq-final-layer-model-2026-10-17.md` (lane/pq-native-hermetic), iteration 7.
 * **Closest prior art.** LXYYZ (ePrint 2026/2133) Tables 3–5. Catalogue: [LXYYZ26].
 * **Novelty.** Known / incremental.
+
+### NF-11 — SHA-512 compression AIR v4 (degree 9, two words per row)
+* **Claim.** Base-4 digits (2 bits per cell) bring the SHA-512 compression AIR on BabyBear from degree
+  21 (base-8) to 9; degree 8 costs more cells than it saves. Every row holds two words of one kind
+  (a-pair, e-pair, schedule pair, output pair) over 64 shared digit columns; each modular addition is
+  a bus residual with exactly one sender, so each field equation is an integer equation (max |E|/p =
+  0.0167); the round constant is folded into a stored value checked by lookup. 83 columns (73 rotated),
+  128 rows and 10,624 cells per compression, 17 interactions per row, 5,848 constraint DAG nodes
+  (v2.1: 171/144 columns, 12,718 nodes). In a recursive final layer: −11.2 KB vs v2.1; CPU proving of
+  1,024 compressions 465 s vs 892 s.
+* **Evidence.** `lane/pq-sha384-air3` @ 34a427692 (`results/pq384-sha-air3/`, crate
+  `native/sha384-air4/`, FAITHFUL-v4.md); independent audit FAITHFUL.md §V on
+  `lane/pq-nv-circuit-soundness` @ 912187d21 (carry bounds re-derived; every-cell sweep 0 undetected).
+* **Closest prior art.** NF-7 (our v2.1); OpenVM sha2-air SHA-512 (18,963 cells); Plonky3 SHA-256 AIR.
+  Catalogue: [OVM-sha2air], [P3-sha256air].
+* **Novelty.** Candidate (extends NF-7). **Next.** Prior-art search on digit-base/degree trade-offs.
+
+### NF-12 — Streamed WHIR commitments
+* **Claim.** For WHIR/RS commitments at large blowup (×15·2^7) the codeword need not exist: evaluate
+  per sub-coset, hash leaves as produced, keep only Merkle levels ≥ 4 above the leaves, and on query
+  recompute opened rows and the dropped subtree from the coefficients. Proofs are byte-identical to the
+  in-memory prover. An 853 GB virtual codeword committed in 480 s at 14.9 GB peak; the full best-shape
+  final layer proved at ≈ 39 GB instead of ≈ 1 TB.
+* **Evidence.** `lane/pq-stream-commit` @ 117d85604 (`results/pq-stream-commit/README.md`,
+  `stark-backend-stream.patch`, tests `stream_commit.rs`, `nv::stream_tests`, full-scale identity
+  sha256 e5e526a2…).
+* **Closest prior art.** Streaming/space-efficient provers (e.g. Gemini, elastic SNARKs; Ligero++ /
+  Brakedown-style streaming); recompute-on-query Merkle trees. Not yet catalogued.
+* **Novelty.** Candidate (likely incremental). **Next.** Prior-art search; catalogue entries.
+
+### NF-13 — Certificate-gated beyond-Johnson agreement tables
+* **Claim.** A WHIR verifier key binds, per round, the agreement threshold A_i and its regime
+  (first-order beyond-Johnson, DKT26 Thm 5.12/O-2, or Johnson J(64)); a round may use O-2 only if every
+  code and fold sub-code (n≫s, k≫s, ⌈A/2^s⌉), s ≤ k_i, has a Lean-kernel-checked certificate, and
+  round 0 must fall back to Johnson when a layer has more than one commitment (the squared list
+  breaks the batching term: 2^41.56 list → 2^−231.8). 164 kernel-proved certificates cover all real
+  final/inner/chain shapes; −12.4 KB on the final layer.
+* **Evidence.** `lane/pq-dkt-verify` @ fb0efdb11 (DKT-VERIFY.md §8, `calc/dkt_certs_o2.json`,
+  `lean/DKTCertsO2_*.lean`); `lane/pq-recursion-sha384` @ 819beab10 (gating, tests
+  `o2_agreement_table`, `o2_round0_multi_commit`, `dkt_cert_loader`).
+* **Closest prior art.** DKT26 (ePrint 2026/2056) and its ArkLib proofs; WHIR [ACFY24]; BCGM.
+* **Novelty.** Candidate (application + systems). **Next.** Check whether DKT26 authors or WHIR
+  implementations already bind per-round tables; S-28 (DKT26→WHIR step) still paper-level.
+
+### NF-14 — Recursive final proofs need a pinned program
+* **Claim.** In program-bound recursion where the final layer's program is a public input of its own
+  proof, a verifier that checks only the final proof and the exposed statement digest accepts a forged
+  final proof whose program verifies nothing and exposes a false statement; the verifier must check
+  the final proof's program openings against a pinned program (and the level).
+* **Evidence.** `lane/pq-e2e-slice` @ bb6691561 and later (`results/pq-e2e-slice/README.md`, e2e
+  tamper tests).
+* **Closest prior art.** Likely folklore in IVC/recursion (vk/program pinning in Plonky2/OpenVM root
+  verifiers). **Novelty.** Candidate, probably known. **Next.** Prior-art check; keep as a design rule.
+
+### NF-15 — Measured final layer matches the size-law model
+* **Claim.** The size laws of NF-8 predict a real SHA-384/Ext12 recursive final layer at the
+  size-optimal shape (b = 7, ×15, log_h 20) within 0.2 %: 339,747 B measured vs 339,370 B (m = 3) and
+  330,149 vs 329,478 B (m = 64), per component (GKR and stacking exact).
+* **Evidence.** `lane/pq-stream-commit` @ ab0f26c91 (`model_vs_measured.py`).
+* **Novelty.** Candidate (data point, supports NF-8).
+
