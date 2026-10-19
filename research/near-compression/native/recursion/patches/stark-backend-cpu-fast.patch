@@ -1,0 +1,1000 @@
+diff --git a/crates/cpu-backend/src/fast/mod.rs b/crates/cpu-backend/src/fast/mod.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/cpu-backend/src/fast/mod.rs
+@@ -0,0 +1,5 @@
++//! [pq-cpu-prover] Fast CPU prover paths (byte-identical to the original code; see each module).
++pub mod pext;
++pub mod zc;
++
++pub use pext::{detect_w, fast_enabled};
+diff --git a/crates/cpu-backend/src/fast/pext.rs b/crates/cpu-backend/src/fast/pext.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/cpu-backend/src/fast/pext.rs
+@@ -0,0 +1,183 @@
++//! [pq-cpu-prover] Packed degree-12 binomial extension arithmetic, struct-of-arrays.
++//!
++//! `PE<P>` holds `P::WIDTH` independent extension elements: coefficient `j` of all lanes lives in
++//! `self.0[j]`. With `-C target-cpu=native` on AVX-512 hosts `P` is `PackedBabyBearAVX512`
++//! (16 lanes); without SIMD it is the scalar field (1 lane), and the same code still runs.
++//!
++//! Multiplication uses the lazy-reduction dot products of `PrimeCharacteristicRing::dot_product`
++//! (products summed in u64 before one Montgomery reduction), which are exact: every function here
++//! returns the field-exact result, so its output is bit-identical to p3's generic arithmetic.
++
++use p3_field::{BasedVectorSpace, ExtensionField, Field, PackedField, PackedValue, PrimeCharacteristicRing};
++
++pub const D: usize = 12;
++
++#[derive(Clone, Copy, Debug)]
++#[repr(transparent)]
++pub struct PE<P>(pub [P; D]);
++
++impl<P: PackedField> Default for PE<P> {
++    fn default() -> Self {
++        Self::zero()
++    }
++}
++
++impl<P: PackedField> PE<P> {
++    #[inline(always)]
++    pub fn zero() -> Self {
++        PE([P::ZERO; D])
++    }
++    #[inline(always)]
++    pub fn add(&self, o: &Self) -> Self {
++        PE(core::array::from_fn(|i| self.0[i] + o.0[i]))
++    }
++    #[inline(always)]
++    pub fn add_assign(&mut self, o: &Self) {
++        for i in 0..D {
++            self.0[i] += o.0[i];
++        }
++    }
++    #[inline(always)]
++    pub fn sub(&self, o: &Self) -> Self {
++        PE(core::array::from_fn(|i| self.0[i] - o.0[i]))
++    }
++    #[inline(always)]
++    pub fn neg(&self) -> Self {
++        PE(core::array::from_fn(|i| -self.0[i]))
++    }
++    /// Multiply every lane by a packed base-field value.
++    #[inline(always)]
++    pub fn mul_base(&self, s: P) -> Self {
++        PE(core::array::from_fn(|i| self.0[i] * s))
++    }
++    /// Multiply every lane by one base-field scalar.
++    #[inline(always)]
++    pub fn mul_scalar(&self, s: P::Scalar) -> Self {
++        PE(core::array::from_fn(|i| self.0[i] * s))
++    }
++    /// Add a base-field scalar (to the constant coefficient).
++    #[inline(always)]
++    pub fn add_scalar(&self, s: P::Scalar) -> Self {
++        let mut r = *self;
++        r.0[0] += s;
++        r
++    }
++    /// `self * o` in F[X]/(X^12 - w).
++    #[inline(always)]
++    pub fn mul(&self, o: &Self, w: P::Scalar) -> Self {
++        // ext[m] = w * o[m + 1] (m < 11), ext[11 + j] = o[j]
++        let mut ext = [P::ZERO; 2 * D - 1];
++        ext[D - 1..].copy_from_slice(&o.0);
++        for m in 0..D - 1 {
++            ext[m] = o.0[m + 1] * w;
++        }
++        self.mul_ext(&ext)
++    }
++    /// `self * b` where `ext` is the precomputed `[w*b_1, .., w*b_11, b_0, .., b_11]`.
++    /// res_k = sum_t a_{11-t} ext_{k+t}.
++    #[inline(always)]
++    pub fn mul_ext(&self, ext: &[P; 2 * D - 1]) -> Self {
++        let mut a_rev = [P::ZERO; D];
++        for t in 0..D {
++            a_rev[t] = self.0[D - 1 - t];
++        }
++        PE(core::array::from_fn(|k| {
++            P::dot_product::<D>(&a_rev, ext[k..k + D].try_into().unwrap())
++        }))
++    }
++    /// Broadcast one extension element (given by its coefficients) to all lanes.
++    #[inline(always)]
++    pub fn broadcast(c: &[P::Scalar]) -> Self {
++        PE(core::array::from_fn(|j| P::from(c[j])))
++    }
++    /// Sum over lanes; coefficients of the resulting extension element.
++    #[inline(always)]
++    pub fn hsum(&self) -> [P::Scalar; D] {
++        core::array::from_fn(|j| self.0[j].as_slice().iter().copied().sum())
++    }
++    #[inline(always)]
++    pub fn lane(&self, l: usize) -> [P::Scalar; D] {
++        core::array::from_fn(|j| self.0[j].as_slice()[l])
++    }
++}
++
++/// A fixed multiplier, precomputed for `PE::mul_ext`.
++#[derive(Clone, Copy, Debug)]
++pub struct PreMul<P>(pub [P; 2 * D - 1]);
++
++impl<P: PackedField> PreMul<P> {
++    pub fn new(b: &[P::Scalar], w: P::Scalar) -> Self {
++        let mut ext = [P::ZERO; 2 * D - 1];
++        for j in 0..D {
++            ext[D - 1 + j] = P::from(b[j]);
++        }
++        for m in 0..D - 1 {
++            ext[m] = P::from(b[m + 1] * w);
++        }
++        PreMul(ext)
++    }
++    #[inline(always)]
++    pub fn mul(&self, a: &PE<P>) -> PE<P> {
++        a.mul_ext(&self.0)
++    }
++}
++
++/// Coefficients of an extension element.
++#[inline(always)]
++pub fn coeffs<F: Field, EF: ExtensionField<F>>(x: &EF) -> &[F] {
++    x.as_basis_coefficients_slice()
++}
++
++#[inline(always)]
++pub fn from_coeffs<F: Field, EF: ExtensionField<F>>(c: &[F]) -> EF {
++    EF::from_basis_coefficients_fn(|i| c[i])
++}
++
++/// `Some(w)` if `EF` is `F[X]/(X^12 - w)` with the power basis (checked on sample products);
++/// the fast paths are used only then.
++pub fn detect_w<F: Field, EF: ExtensionField<F>>() -> Option<F> {
++    if <EF as BasedVectorSpace<F>>::DIMENSION != D {
++        return None;
++    }
++    let x: EF = EF::from_basis_coefficients_fn(|i| if i == 1 { F::ONE } else { F::ZERO });
++    let mut x12 = EF::ONE;
++    for _ in 0..D {
++        x12 *= x;
++    }
++    let c = coeffs::<F, EF>(&x12);
++    if c[1..].iter().any(|v| *v != F::ZERO) {
++        return None;
++    }
++    let w = c[0];
++    // spot-check products against the field's own multiplication (scalar lane path)
++    let mut s = 0x9e3779b9u32;
++    let mut next = || {
++        s ^= s << 13;
++        s ^= s >> 17;
++        s ^= s << 5;
++        F::from_u32(s >> 2)
++    };
++    for _ in 0..8 {
++        let a: EF = EF::from_basis_coefficients_fn(|_| next());
++        let b: EF = EF::from_basis_coefficients_fn(|_| next());
++        let pa: PE<F> = PE::broadcast(coeffs::<F, EF>(&a));
++        let pb: PE<F> = PE::broadcast(coeffs::<F, EF>(&b));
++        let pr = pa.mul(&pb, w);
++        if from_coeffs::<F, EF>(&pr.hsum()) != a * b {
++            return None;
++        }
++        let pm = PreMul::<F::Packing>::new(coeffs::<F, EF>(&b), w);
++        let pa2: PE<F::Packing> = PE::broadcast(coeffs::<F, EF>(&a));
++        if from_coeffs::<F, EF>(&pm.mul(&pa2).lane(0)) != a * b {
++            return None;
++        }
++    }
++    Some(w)
++}
++
++/// Fast path switch: `NEARPROOF_CPU_FAST=0` selects the original code everywhere.
++pub fn fast_enabled() -> bool {
++    use std::sync::OnceLock;
++    static ON: OnceLock<bool> = OnceLock::new();
++    *ON.get_or_init(|| std::env::var("NEARPROOF_CPU_FAST").map(|v| v != "0").unwrap_or(true))
++}
+diff --git a/crates/cpu-backend/src/fast/zc.rs b/crates/cpu-backend/src/fast/zc.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/cpu-backend/src/fast/zc.rs
+@@ -0,0 +1,556 @@
++//! [pq-cpu-prover] Zerocheck + LogUp MLE rounds on struct-of-arrays Ext12 tables.
++//!
++//! After the univariate round the trace tables are Ext12. The original code evaluates the
++//! constraint DAG once per (y, x) on scalar Ext12 values (allocating a node vector each time) and
++//! evaluates every interaction expression a second time as an expression tree. Here:
++//!
++//! * the tables are stored lane-strided (`SoaTable`): lane `l` of block `b` holds row
++//!   `l * B + b` (B = height / WIDTH). Row pairs `(2y, 2y+1)` then sit in blocks `(2b', 2b'+1)` of
++//!   the same lane, so the round evaluation and the fold are pure vector code, and folding keeps
++//!   the layout;
++//! * the DAG (constraints and interaction expressions together) is compiled once per round set
++//!   into a register program with liveness-based slot reuse, constants folded, and Ext×base
++//!   multiplications where one side is constant;
++//! * the three outputs (Σ λ^i C_i, Σ eq3b_i count_i, Σ eq3b_i denom_i) are linear functionals of
++//!   node values; their coefficients are precomputed (duplicates merged, constant terms folded).
++//!
++//! Every quantity is the same field element the original code computes, so round polynomials,
++//! openings and proofs are byte-identical.
++
++use std::collections::HashMap;
++
++use openvm_stark_backend::{
++    air_builders::symbolic::{symbolic_variable::Entry, SymbolicExpressionDag, SymbolicExpressionNode},
++    interaction::Interaction,
++};
++use p3_field::{ExtensionField, Field, PackedValue, PrimeCharacteristicRing};
++use p3_matrix::dense::RowMajorMatrix;
++use p3_maybe_rayon::prelude::*;
++
++use super::pext::{coeffs, from_coeffs, PreMul, D, PE};
++
++type P<F> = <F as Field>::Packing;
++
++/// Lane-strided SoA Ext12 table: element (row `l*B + b`, col `c`) coefficient `j` is lane `l` of
++/// `data[(b * width + c) * D + j]`.
++pub struct SoaTable<F: Field> {
++    pub width: usize,
++    pub height: usize,
++    pub data: Vec<P<F>>,
++}
++
++#[inline(always)]
++pub fn lanes<F: Field>() -> usize {
++    <P<F> as PackedValue>::WIDTH
++}
++
++/// Tables with fewer rows than this use the row-major scalar code.
++#[inline(always)]
++pub fn min_height<F: Field>() -> usize {
++    2 * lanes::<F>()
++}
++
++impl<F: Field> SoaTable<F> {
++    #[inline(always)]
++    pub fn blocks(&self) -> usize {
++        self.height / lanes::<F>()
++    }
++    #[inline(always)]
++    pub fn get(&self, b: usize, c: usize) -> PE<P<F>> {
++        let o = (b * self.width + c) * D;
++        PE(self.data[o..o + D].try_into().unwrap())
++    }
++
++    /// Univariate-skip fold of a base-field row-major matrix (`fold_ple_evals_rowmajor`), written
++    /// directly in SoA layout. `cs[z] = scaling * omega^z / (r - omega^z)`.
++    pub fn from_ple<EF: ExtensionField<F>>(
++        l_skip: usize,
++        rm: &RowMajorMatrix<F>,
++        is_rot: bool,
++        cs: &[EF],
++    ) -> Self {
++        let width = rm.width;
++        let height = rm.values.len() / width;
++        let skip = 1usize << l_skip;
++        let new_height = height.max(skip) >> l_skip;
++        let w = lanes::<F>();
++        let nb = new_height / w;
++        let off = usize::from(is_rot);
++        let csb: Vec<Vec<P<F>>> = (0..D)
++            .map(|j| cs.iter().map(|c| P::<F>::from(coeffs::<F, EF>(c)[j])).collect())
++            .collect();
++        let mut data = vec![P::<F>::ZERO; nb * width * D];
++        data.par_chunks_mut(width * D).enumerate().for_each(|(b, out)| {
++            let mut vz = vec![P::<F>::ZERO; skip];
++            for c in 0..width {
++                for z in 0..skip {
++                    vz[z] = P::<F>::from_fn(|l| {
++                        let x = l * nb + b;
++                        let row = ((x << l_skip) + z + off) % height;
++                        rm.values[row * width + c]
++                    });
++                }
++                for j in 0..D {
++                    out[c * D + j] = if skip == 4 {
++                        P::<F>::dot_product::<4>(
++                            vz[..4].try_into().unwrap(),
++                            csb[j][..4].try_into().unwrap(),
++                        )
++                    } else {
++                        let mut acc = P::<F>::ZERO;
++                        for z in 0..skip {
++                            acc += vz[z] * csb[j][z];
++                        }
++                        acc
++                    };
++                }
++            }
++        });
++        Self { width, height: new_height, data }
++    }
++
++    /// Multilinear fold of row pairs at `r`: row' y = row 2y + r (row 2y+1 - row 2y).
++    pub fn fold(&self, r: &PreMul<P<F>>) -> Self {
++        let nb = self.blocks() / 2;
++        let width = self.width;
++        let mut data = vec![P::<F>::ZERO; nb * width * D];
++        data.par_chunks_mut(width * D).enumerate().for_each(|(b, out)| {
++            for c in 0..width {
++                let lo = self.get(2 * b, c);
++                let hi = self.get(2 * b + 1, c);
++                let v = lo.add(&r.mul(&hi.sub(&lo)));
++                out[c * D..c * D + D].copy_from_slice(&v.0);
++            }
++        });
++        Self { width, height: self.height / 2, data }
++    }
++
++    pub fn to_rowmajor<EF: ExtensionField<F>>(&self) -> RowMajorMatrix<EF> {
++        let w = lanes::<F>();
++        let nb = self.blocks();
++        let mut values = vec![EF::ZERO; self.height * self.width];
++        for b in 0..nb {
++            for c in 0..self.width {
++                let v = self.get(b, c);
++                for l in 0..w {
++                    values[(l * nb + b) * self.width + c] = from_coeffs::<F, EF>(&v.lane(l));
++                }
++            }
++        }
++        RowMajorMatrix::new(values, self.width)
++    }
++}
++
++#[derive(Clone, Copy, Debug)]
++enum Ins<F> {
++    Mul { d: u32, a: u32, b: u32 },
++    Add { d: u32, a: u32, b: u32 },
++    Sub { d: u32, a: u32, b: u32 },
++    Neg { d: u32, a: u32 },
++    MulC { d: u32, a: u32, c: F },
++    AddC { d: u32, a: u32, c: F },
++    /// a - c
++    SubC { d: u32, a: u32, c: F },
++    /// c - a
++    CSub { d: u32, a: u32, c: F },
++    /// F[f] += coef[k] * slot[a]
++    Acc { f: u8, a: u32, k: u32 },
++}
++
++#[derive(Clone, Copy, Debug)]
++enum Val<F> {
++    C(F),
++    S(u32),
++}
++
++/// One AIR's compiled evaluation program for the MLE rounds.
++pub struct Program<F: Field, EF> {
++    /// (table index into [sels, mats..], column) of each input slot
++    inputs: Vec<(usize, usize)>,
++    n_slots: usize,
++    ins: Vec<Ins<F>>,
++    coefs: Vec<PreMul<P<F>>>,
++    /// constant term of each functional
++    konst: [EF; 3],
++    used: [bool; 3],
++    w: F,
++    pub stats: String,
++}
++
++pub struct Layout {
++    pub has_pre: bool,
++    pub needs_next: bool,
++}
++
++impl Layout {
++    fn table(&self, entry: Entry, index: usize) -> (usize, usize) {
++        let (mat, off) = match entry {
++            Entry::Preprocessed { offset } => (0, offset),
++            Entry::Main { part_index, offset } => (usize::from(self.has_pre) + part_index, offset),
++            _ => unreachable!(),
++        };
++        let t = if self.needs_next { 1 + 2 * mat + off } else {
++            debug_assert_eq!(off, 0);
++            1 + mat
++        };
++        (t, index)
++    }
++}
++
++impl<F: Field, EF: ExtensionField<F>> Program<F, EF> {
++    /// `lambda_pows[i]` weights constraint `constraint_idx[i]`; `eq3b[i]` weights interaction i;
++    /// `beta_pows` as in `eval_interactions`.
++    pub fn compile(
++        dag: &SymbolicExpressionDag<F>,
++        interactions: &[Interaction<usize>],
++        public_values: &[F],
++        layout: &Layout,
++        lambda_pows: &[EF],
++        eq3b: &[EF],
++        beta_pows: &[EF],
++        w: F,
++    ) -> Self {
++        let nodes = &dag.nodes;
++        let n = nodes.len();
++        // output coefficients per node per functional
++        let mut outc: Vec<[Option<EF>; 3]> = vec![[None, None, None]; n];
++        let mut konst = [EF::ZERO; 3];
++        let mut add_out = |outc: &mut Vec<[Option<EF>; 3]>, node: usize, f: usize, c: EF| {
++            let e = &mut outc[node][f];
++            *e = Some(e.unwrap_or(EF::ZERO) + c);
++        };
++        for (i, &node) in dag.constraint_idx.iter().enumerate() {
++            add_out(&mut outc, node, 0, lambda_pows[i]);
++        }
++        if !eq3b.is_empty() {
++            for (i, int) in interactions.iter().enumerate() {
++                add_out(&mut outc, int.count, 1, eq3b[i]);
++                let b = F::from_u32(int.bus_index as u32 + 1);
++                konst[2] += eq3b[i] * beta_pows[int.message.len()] * b;
++                for (j, &m) in int.message.iter().enumerate() {
++                    add_out(&mut outc, m, 2, eq3b[i] * beta_pows[j]);
++                }
++            }
++        }
++        let used = [!dag.constraint_idx.is_empty(), !eq3b.is_empty(), !eq3b.is_empty()];
++        // reachability
++        let mut need = vec![false; n];
++        for i in 0..n {
++            if outc[i].iter().any(|c| c.is_some()) {
++                need[i] = true;
++            }
++        }
++        for i in (0..n).rev() {
++            if !need[i] {
++                continue;
++            }
++            match nodes[i] {
++                SymbolicExpressionNode::Add { left_idx, right_idx, .. }
++                | SymbolicExpressionNode::Sub { left_idx, right_idx, .. }
++                | SymbolicExpressionNode::Mul { left_idx, right_idx, .. } => {
++                    need[left_idx] = true;
++                    need[right_idx] = true;
++                }
++                SymbolicExpressionNode::Neg { idx, .. } => need[idx] = true,
++                _ => {}
++            }
++        }
++        // inputs
++        let mut input_map: HashMap<(usize, usize), u32> = HashMap::new();
++        let mut inputs = vec![];
++        let mut input_of = |key: (usize, usize), inputs: &mut Vec<(usize, usize)>| -> u32 {
++            *input_map.entry(key).or_insert_with(|| {
++                inputs.push(key);
++                (inputs.len() - 1) as u32
++            })
++        };
++        // first pass: values and last use
++        let mut val: Vec<Option<Val<F>>> = vec![None; n];
++        let mut last_use = vec![0usize; n];
++        for i in 0..n {
++            if !need[i] {
++                continue;
++            }
++            match nodes[i] {
++                SymbolicExpressionNode::Add { left_idx, right_idx, .. }
++                | SymbolicExpressionNode::Sub { left_idx, right_idx, .. }
++                | SymbolicExpressionNode::Mul { left_idx, right_idx, .. } => {
++                    last_use[left_idx] = i;
++                    last_use[right_idx] = i;
++                }
++                SymbolicExpressionNode::Neg { idx, .. } => last_use[idx] = i,
++                _ => {}
++            }
++        }
++        for i in 0..n {
++            if !need[i] {
++                continue;
++            }
++            match nodes[i] {
++                SymbolicExpressionNode::Variable(v) => match v.entry {
++                    Entry::Public => val[i] = Some(Val::C(public_values[v.index])),
++                    Entry::Challenge => unreachable!(),
++                    e => {
++                        let k = layout.table(e, v.index);
++                        val[i] = Some(Val::S(input_of(k, &mut inputs)));
++                    }
++                },
++                SymbolicExpressionNode::IsFirstRow => val[i] = Some(Val::S(input_of((0, 0), &mut inputs))),
++                SymbolicExpressionNode::IsTransition => val[i] = Some(Val::S(input_of((0, 1), &mut inputs))),
++                SymbolicExpressionNode::IsLastRow => val[i] = Some(Val::S(input_of((0, 2), &mut inputs))),
++                SymbolicExpressionNode::Constant(c) => val[i] = Some(Val::C(c)),
++                _ => {}
++            }
++        }
++        let n_in = inputs.len();
++        // second pass: instructions with slot allocation
++        let mut free: Vec<u32> = vec![];
++        let mut n_slots = n_in;
++        let mut ins = vec![];
++        let mut coefs = vec![];
++        let (mut n_mul, mut n_mulc, mut n_lin) = (0usize, 0usize, 0usize);
++        let mut alloc = |free: &mut Vec<u32>, n_slots: &mut usize| -> u32 {
++            free.pop().unwrap_or_else(|| {
++                *n_slots += 1;
++                (*n_slots - 1) as u32
++            })
++        };
++        let is_tmp = |s: u32| (s as usize) >= n_in;
++        for i in 0..n {
++            if !need[i] {
++                continue;
++            }
++            let bin = |l: usize, r: usize| (val[l].unwrap(), val[r].unwrap());
++            let new_val: Option<Val<F>> = match nodes[i] {
++                SymbolicExpressionNode::Add { left_idx, right_idx, .. } => Some(match bin(left_idx, right_idx) {
++                    (Val::C(a), Val::C(b)) => Val::C(a + b),
++                    (Val::S(a), Val::C(c)) | (Val::C(c), Val::S(a)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::AddC { d, a, c });
++                        n_lin += 1;
++                        Val::S(d)
++                    }
++                    (Val::S(a), Val::S(b)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::Add { d, a, b });
++                        n_lin += 1;
++                        Val::S(d)
++                    }
++                }),
++                SymbolicExpressionNode::Sub { left_idx, right_idx, .. } => Some(match bin(left_idx, right_idx) {
++                    (Val::C(a), Val::C(b)) => Val::C(a - b),
++                    (Val::S(a), Val::C(c)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::SubC { d, a, c });
++                        n_lin += 1;
++                        Val::S(d)
++                    }
++                    (Val::C(c), Val::S(a)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::CSub { d, a, c });
++                        n_lin += 1;
++                        Val::S(d)
++                    }
++                    (Val::S(a), Val::S(b)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::Sub { d, a, b });
++                        n_lin += 1;
++                        Val::S(d)
++                    }
++                }),
++                SymbolicExpressionNode::Mul { left_idx, right_idx, .. } => Some(match bin(left_idx, right_idx) {
++                    (Val::C(a), Val::C(b)) => Val::C(a * b),
++                    (Val::S(a), Val::C(c)) | (Val::C(c), Val::S(a)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::MulC { d, a, c });
++                        n_mulc += 1;
++                        Val::S(d)
++                    }
++                    (Val::S(a), Val::S(b)) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::Mul { d, a, b });
++                        n_mul += 1;
++                        Val::S(d)
++                    }
++                }),
++                SymbolicExpressionNode::Neg { idx, .. } => Some(match val[idx].unwrap() {
++                    Val::C(a) => Val::C(-a),
++                    Val::S(a) => {
++                        let d = alloc(&mut free, &mut n_slots);
++                        ins.push(Ins::Neg { d, a });
++                        n_lin += 1;
++                        Val::S(d)
++                    }
++                }),
++                _ => None,
++            };
++            if let Some(v) = new_val {
++                val[i] = Some(v);
++            }
++            // free operands whose last use is this node (after allocating the destination, so the
++            // destination never aliases an operand; harmless either way)
++            let ops: &[usize] = &match nodes[i] {
++                SymbolicExpressionNode::Add { left_idx, right_idx, .. }
++                | SymbolicExpressionNode::Sub { left_idx, right_idx, .. }
++                | SymbolicExpressionNode::Mul { left_idx, right_idx, .. } => [left_idx, right_idx],
++                SymbolicExpressionNode::Neg { idx, .. } => [idx, idx],
++                _ => [usize::MAX, usize::MAX],
++            };
++            // outputs of this node
++            for f in 0..3 {
++                if let Some(c) = outc[i][f] {
++                    match val[i].unwrap() {
++                        Val::C(v) => konst[f] += c * v,
++                        Val::S(a) => {
++                            coefs.push(PreMul::new(coeffs::<F, EF>(&c), w));
++                            ins.push(Ins::Acc { f: f as u8, a, k: (coefs.len() - 1) as u32 });
++                        }
++                    }
++                }
++            }
++            let mut freed = [u32::MAX; 2];
++            for (q, &o) in ops.iter().enumerate() {
++                if o != usize::MAX && last_use[o] == i {
++                    if let Some(Val::S(s)) = val[o] {
++                        if is_tmp(s) && !freed.contains(&s) {
++                            free.push(s);
++                            freed[q] = s;
++                        }
++                    }
++                }
++            }
++            // a computed node nobody reads (pure output) dies here
++            if let Some(Val::S(s)) = val[i] {
++                if is_tmp(s) && last_use[i] <= i && !matches!(nodes[i], SymbolicExpressionNode::Variable(_)) {
++                    if !free.contains(&s) {
++                        free.push(s);
++                    }
++                }
++            }
++        }
++        let stats = format!(
++            "nodes={n} inputs={n_in} slots={n_slots} mulEE={n_mul} mulEC={n_mulc} lin={n_lin} outputs={}",
++            coefs.len()
++        );
++        Self { inputs, n_slots, ins, coefs, konst, used, w, stats }
++    }
++
++    #[inline(always)]
++    fn run(&self, slots: &mut [PE<P<F>>], fsum: &mut [PE<P<F>>; 3]) {
++        let w = self.w;
++        for ins in &self.ins {
++            match *ins {
++                Ins::Mul { d, a, b } => {
++                    let v = slots[a as usize].mul(&slots[b as usize], w);
++                    slots[d as usize] = v;
++                }
++                Ins::Add { d, a, b } => {
++                    let v = slots[a as usize].add(&slots[b as usize]);
++                    slots[d as usize] = v;
++                }
++                Ins::Sub { d, a, b } => {
++                    let v = slots[a as usize].sub(&slots[b as usize]);
++                    slots[d as usize] = v;
++                }
++                Ins::Neg { d, a } => {
++                    let v = slots[a as usize].neg();
++                    slots[d as usize] = v;
++                }
++                Ins::MulC { d, a, c } => {
++                    let v = slots[a as usize].mul_scalar(c);
++                    slots[d as usize] = v;
++                }
++                Ins::AddC { d, a, c } => {
++                    let v = slots[a as usize].add_scalar(c);
++                    slots[d as usize] = v;
++                }
++                Ins::SubC { d, a, c } => {
++                    let v = slots[a as usize].add_scalar(-c);
++                    slots[d as usize] = v;
++                }
++                Ins::CSub { d, a, c } => {
++                    let v = slots[a as usize].neg().add_scalar(c);
++                    slots[d as usize] = v;
++                }
++                Ins::Acc { f, a, k } => {
++                    let v = self.coefs[k as usize].mul(&slots[a as usize]);
++                    fsum[f as usize].add_assign(&v);
++                }
++            }
++        }
++    }
++
++    /// Round polynomial evaluations at x = 1..=d: `[Σ_y eq(y) zc(x,y), Σ_y eq(y) numer, Σ_y eq(y) denom]`
++    /// (the latter two without the lifting normalisation), as `sumcheck_round_poly_evals_rm` with
++    /// the `acc_constraints` / `acc_interactions` closures.
++    pub fn round_evals(&self, tables: &[&SoaTable<F>], eq_xi: &[EF], d: usize) -> [Vec<EF>; 3] {
++        let h = tables[0].height;
++        debug_assert!(tables.iter().all(|t| t.height == h));
++        let wl = lanes::<F>();
++        let nb = h / wl;
++        let ny_blk = nb / 2;
++        let n_in = self.inputs.len();
++        struct St<Q> {
++            slots: Vec<PE<Q>>,
++            diff: Vec<PE<Q>>,
++            acc: Vec<PE<Q>>,
++            eqsum: PE<Q>,
++        }
++        let new_st = || St::<P<F>> {
++            slots: vec![PE::zero(); self.n_slots],
++            diff: vec![PE::zero(); n_in],
++            acc: vec![PE::zero(); 3 * d],
++            eqsum: PE::zero(),
++        };
++        let fold_blk = |mut st: St<P<F>>, bb: usize| -> St<P<F>> {
++            for (i, &(t, c)) in self.inputs.iter().enumerate() {
++                let lo = tables[t].get(2 * bb, c);
++                let hi = tables[t].get(2 * bb + 1, c);
++                st.diff[i] = hi.sub(&lo);
++                st.slots[i] = hi;
++            }
++            let eq: PE<P<F>> = PE(core::array::from_fn(|j| {
++                P::<F>::from_fn(|l| coeffs::<F, EF>(&eq_xi[l * ny_blk + bb])[j])
++            }));
++            st.eqsum.add_assign(&eq);
++            for x in 1..=d {
++                if x > 1 {
++                    for i in 0..n_in {
++                        let v = st.slots[i].add(&st.diff[i]);
++                        st.slots[i] = v;
++                    }
++                }
++                let mut fsum = [PE::zero(); 3];
++                self.run(&mut st.slots, &mut fsum);
++                for f in 0..3 {
++                    if self.used[f] {
++                        let v = eq.mul(&fsum[f], self.w);
++                        st.acc[(x - 1) * 3 + f].add_assign(&v);
++                    }
++                }
++            }
++            st
++        };
++        let st = (0..ny_blk)
++            .into_par_iter()
++            .with_min_len(4)
++            .fold(new_st, fold_blk)
++            .reduce(new_st, |mut a, b| {
++                for (x, y) in a.acc.iter_mut().zip(&b.acc) {
++                    x.add_assign(y);
++                }
++                a.eqsum.add_assign(&b.eqsum);
++                a
++            });
++        let eqsum: EF = from_coeffs::<F, EF>(&st.eqsum.hsum());
++        let mut out: [Vec<EF>; 3] = [vec![EF::ZERO; d], vec![EF::ZERO; d], vec![EF::ZERO; d]];
++        for x in 0..d {
++            for f in 0..3 {
++                if self.used[f] {
++                    out[f][x] = from_coeffs::<F, EF>(&st.acc[x * 3 + f].hsum()) + self.konst[f] * eqsum;
++                }
++            }
++        }
++        out
++    }
++}
+diff --git a/crates/cpu-backend/src/lib.rs b/crates/cpu-backend/src/lib.rs
+--- a/crates/cpu-backend/src/lib.rs
++++ b/crates/cpu-backend/src/lib.rs
+@@ -19,6 +19,7 @@
+ mod backend;
+ mod device;
+ pub mod error;
++pub mod fast;
+ pub mod logup_zerocheck;
+ pub mod merkle;
+ mod pcs_data;
+diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/src/logup_zerocheck/mod.rs
+--- a/crates/cpu-backend/src/logup_zerocheck/mod.rs
++++ b/crates/cpu-backend/src/logup_zerocheck/mod.rs
+@@ -619,6 +619,8 @@ fn eval_nodes_into<F, E>(
+ /// Evaluation helper for a single AIR, storing preprocessed trace as row-major.
+ pub(crate) struct RowMajorEvalHelper<'a, SC: StarkProtocolConfig> {
+     pub constraints_dag: &'a SymbolicExpressionDag<SC::F>,
++    /// [pq-cpu-prover] interactions as DAG node indices (same order as `interactions`)
++    pub dag_interactions: &'a [openvm_stark_backend::interaction::Interaction<usize>],
+     pub interactions: Vec<SymbolicInteraction<SC::F>>,
+     pub public_values: Vec<SC::F>,
+     pub preprocessed_trace: Option<&'a RowMajorMatrix<SC::F>>,
+@@ -851,6 +853,11 @@ pub(crate) struct LogupZerocheckRowMajor<'a, SC: StarkProtocolConfig> {
+     pub(crate) prev_s_eval: SC::EF,
+     pub(crate) eq_ns: Vec<SC::EF>,
+     pub(crate) eq_sharp_ns: Vec<SC::EF>,
++
++    // [pq-cpu-prover] fast MLE rounds: per trace SoA tables [sels, mats..] and compiled program
++    fast_w: Option<SC::F>,
++    soa: Vec<Option<Vec<crate::fast::zc::SoaTable<SC::F>>>>,
++    progs: Vec<Option<crate::fast::zc::Program<SC::F, SC::EF>>>,
+ }
+ 
+ impl<'a, SC: StarkProtocolConfig> LogupZerocheckRowMajor<'a, SC>
+@@ -948,6 +955,7 @@ where
+                 let symbolic_constraints = SymbolicConstraints::from(&pk.vk.symbolic_constraints);
+                 RowMajorEvalHelper {
+                     constraints_dag: &pk.vk.symbolic_constraints.constraints,
++                    dag_interactions: &pk.vk.symbolic_constraints.interactions,
+                     interactions: symbolic_constraints.interactions,
+                     public_values,
+                     preprocessed_trace,
+@@ -989,6 +997,13 @@ where
+             prev_s_eval: SC::EF::ZERO,
+             eq_ns: Vec::with_capacity(n_max + 1),
+             eq_sharp_ns: Vec::with_capacity(n_max + 1),
++            fast_w: if crate::fast::fast_enabled() {
++                crate::fast::detect_w::<SC::F, SC::EF>()
++            } else {
++                None
++            },
++            soa: vec![],
++            progs: vec![],
+         }
+     }
+ 
+@@ -1151,6 +1166,9 @@ where
+     /// Reads directly from row-major matrices via barycentric interpolation,
+     /// avoiding the O(n*m) transpose to col-major (saves ~3s for keccakf).
+     pub fn fold_ple_evals(&mut self, ctx: &ProvingContext<CpuBackend<SC>>, r_0: SC::EF) {
++        if let Some(w) = self.fast_w {
++            return self.fold_ple_evals_fast(ctx, r_0, w);
++        }
+         let l_skip = self.l_skip;
+         self.mat_evals_per_trace = self
+             .eval_helpers
+@@ -1179,9 +1197,114 @@ where
+         });
+     }
+ 
++    /// [pq-cpu-prover] `fold_ple_evals` writing SoA tables for traces tall enough, and compiling
++    /// each AIR's MLE-round program.
++    fn fold_ple_evals_fast(&mut self, ctx: &ProvingContext<CpuBackend<SC>>, r_0: SC::EF, w: SC::F) {
++        use crate::fast::zc::{min_height, Layout, Program, SoaTable};
++        let l_skip = self.l_skip;
++        let skip_sz = 1usize << l_skip;
++        let omega = SC::F::two_adic_generator(l_skip);
++        let omega_pows: Vec<SC::F> = omega.powers().take(skip_sz).collect_vec();
++        let denoms: Vec<SC::EF> = omega_pows.iter().map(|&x| r_0 - SC::EF::from(x)).collect_vec();
++        let inv_denoms = batch_multiplicative_inverse(&denoms);
++        let scaling = (r_0.exp_power_of_2(l_skip) - SC::EF::ONE) * SC::EF::from_usize(skip_sz).inverse();
++        let cs: Vec<SC::EF> = omega_pows
++            .iter()
++            .zip(&inv_denoms)
++            .map(|(&sg, &inv)| inv * sg * scaling)
++            .collect_vec();
++        let num = self.eval_helpers.len();
++        let mut soa = Vec::with_capacity(num);
++        let mut mats_aos = Vec::with_capacity(num);
++        let mut sels_aos = Vec::with_capacity(num);
++        let sels_base = take(&mut self.sels_per_trace_base);
++        for (t, (helper, (_, trace_ctx))) in self.eval_helpers.iter().zip(ctx.per_trace.iter()).enumerate() {
++            let rm_mats = helper.view_mats_rowmaj(trace_ctx);
++            let height = trace_ctx.height();
++            let new_height = height.max(skip_sz) >> l_skip;
++            if new_height >= min_height::<SC::F>() {
++                let mut tables = vec![SoaTable::from_ple(l_skip, &sels_base[t], false, &cs)];
++                for (rm, is_rot) in rm_mats {
++                    tables.push(SoaTable::from_ple(l_skip, rm, is_rot, &cs));
++                }
++                soa.push(Some(tables));
++                mats_aos.push(vec![]);
++                sels_aos.push(RowMajorMatrix::new(vec![SC::EF::ZERO], 1));
++            } else {
++                soa.push(None);
++                mats_aos.push(
++                    rm_mats
++                        .into_iter()
++                        .map(|(rm, is_rot)| fold_ple_evals_rowmajor(l_skip, rm, is_rot, r_0))
++                        .collect::<Vec<_>>(),
++                );
++                sels_aos.push(fold_ple_evals_rowmajor(l_skip, &sels_base[t], false, r_0));
++            }
++        }
++        self.progs = self
++            .eval_helpers
++            .par_iter()
++            .zip(&soa)
++            .enumerate()
++            .map(|(t, (helper, tabs))| {
++                tabs.as_ref().map(|_| {
++                    let layout = Layout {
++                        has_pre: helper.has_preprocessed(),
++                        needs_next: helper.needs_next,
++                    };
++                    let p = Program::compile(
++                        helper.constraints_dag,
++                        helper.dag_interactions,
++                        &helper.public_values,
++                        &layout,
++                        &self.lambda_pows,
++                        &self.eq_3b_per_trace[t],
++                        &self.beta_pows,
++                        w,
++                    );
++                    debug!(trace = t, program = %p.stats);
++                    if std::env::var("NEARPROOF_CPU_FAST_STATS").is_ok() {
++                        println!("CPU_FAST_PROGRAM trace={t} {}", p.stats);
++                    }
++                    p
++                })
++            })
++            .collect();
++        self.soa = soa;
++        self.mat_evals_per_trace = mats_aos;
++        self.sels_per_trace = sels_aos;
++        let eq_r0 = eval_eq_uni(l_skip, self.xi[0], r_0);
++        let eq_sharp_r0 = eval_eq_sharp_uni(&self.omega_skip_pows, &self.xi[..l_skip], r_0);
++        self.eq_ns.push(eq_r0);
++        self.eq_sharp_ns.push(eq_sharp_r0);
++        self.eq_xi_per_trace.iter_mut().for_each(|eq| {
++            if eq.len() > 1 {
++                eq.truncate(eq.len() / 2);
++            }
++        });
++    }
++
++    /// [pq-cpu-prover] fast round evaluations for traces held in SoA form.
++    fn fast_round_evals(&self, round: usize) -> Vec<Option<[Vec<SC::EF>; 3]>> {
++        let sp_deg = self.constraint_degree;
++        (0..self.eval_helpers.len())
++            .map(|t| {
++                let tabs = self.soa.get(t)?.as_ref()?;
++                let prog = self.progs[t].as_ref().unwrap();
++                let n_lift = self.n_per_trace[t].max(0) as usize;
++                debug_assert!(round <= n_lift);
++                let num_y = 1 << (n_lift - round);
++                let eq_xi = &self.eq_xi_per_trace[t][num_y - 1..];
++                let refs: Vec<_> = tabs.iter().collect();
++                Some(prog.round_evals(&refs, eq_xi, sp_deg))
++            })
++            .collect()
++    }
++
+     /// After PLE folding, operates on small RowMajorMatrix<EF> via RM sumcheck.
+     pub fn sumcheck_polys_eval(&mut self, round: usize, r_prev: SC::EF) -> Vec<Vec<SC::EF>> {
+         let sp_deg = self.constraint_degree;
++        let fast = self.fast_round_evals(round);
+         let sp_zerocheck_evals: Vec<Vec<SC::EF>> = izip!(
+             &self.eval_helpers,
+             &mut self.zerocheck_tilde_evals,
+@@ -1190,8 +1313,12 @@ where
+             &self.sels_per_trace,
+             &self.eq_xi_per_trace
+         )
+-        .map(|(helper, tilde_eval, &n, mats, sels, eq_xi_tree)| {
++        .enumerate()
++        .map(|(t, (helper, tilde_eval, &n, mats, sels, eq_xi_tree))| {
+             let n_lift = n.max(0) as usize;
++            if let Some(r) = &fast[t] {
++                return r[0].clone();
++            }
+             if round > n_lift {
+                 if round == n_lift + 1 {
+                     // Height is 1 — extract single row as Vec
+@@ -1235,13 +1362,21 @@ where
+             &self.eq_xi_per_trace,
+             &self.eq_3b_per_trace
+         )
+-        .flat_map(|(helper, tilde_eval, &n, mats, sels, eq_xi_tree, eq_3bs)| {
++        .enumerate()
++        .flat_map(|(t, (helper, tilde_eval, &n, mats, sels, eq_xi_tree, eq_3bs))| {
+             if helper.interactions.is_empty() {
+                 return [vec![SC::EF::ZERO; sp_deg], vec![SC::EF::ZERO; sp_deg]];
+             }
+             let n_lift = n.max(0) as usize;
+             let norm_factor_denom = 1 << (-n).max(0);
+             let norm_factor = SC::F::from_usize(norm_factor_denom).inverse();
++            if let Some(r) = &fast[t] {
++                let mut numer = r[1].clone();
++                for p in &mut numer {
++                    *p *= norm_factor;
++                }
++                return [numer, r[2].clone()];
++            }
+             if round > n_lift {
+                 if round == n_lift + 1 {
+                     // Height is 1 — extract single row as Vec
+@@ -1298,6 +1433,21 @@ where
+             .collect_vec();
+         self.sels_per_trace =
+             crate::row_major_ops::batch_fold_mle_evals_rm(take(&mut self.sels_per_trace), r_round);
++        if let Some(w) = self.fast_w {
++            use crate::fast::{pext::{coeffs, PreMul}, zc::min_height};
++            let rp = PreMul::new(coeffs::<SC::F, SC::EF>(&r_round), w);
++            for t in 0..self.soa.len() {
++                let Some(tabs) = self.soa[t].take() else { continue };
++                let folded: Vec<_> = tabs.iter().map(|tab| tab.fold(&rp)).collect();
++                drop(tabs);
++                if folded[0].height >= min_height::<SC::F>() {
++                    self.soa[t] = Some(folded);
++                } else {
++                    self.sels_per_trace[t] = folded[0].to_rowmajor();
++                    self.mat_evals_per_trace[t] = folded[1..].iter().map(|tab| tab.to_rowmajor()).collect();
++                }
++            }
++        }
+         self.eq_xi_per_trace.par_iter_mut().for_each(|eq| {
+             if eq.len() > 1 {
+                 eq.truncate(eq.len() / 2);
