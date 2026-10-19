@@ -1,0 +1,59 @@
+# gdb poor-man's profile of the BASELINE prover, s42-like NV layer (NvAir 2^16, SHA v4 2^16), 8 threads
+# prof/pmp.sh (gdb attach every ~1 s, all threads), prof/analyze.py; 87 samples x 8 threads
+busy thread-samples 2761
+ 42.4% eval_interactions
+ 14.2% sumcheck_polys_eval / acc_constraints / eval_nodes / sumcheck_round_poly_evals
+ 11.1% other:overflowing_sub
+  4.6% fractional_sumcheck_with / sumcheck_round_poly_evals
+  2.9% sumcheck_polys_eval / eval_interactions
+  2.6% other:mul
+  2.4% other:spec_next
+  2.2% other:wrapping_add
+  1.9% sumcheck_polys_eval / sumcheck_round_poly_evals
+  1.7% other:wrapping_mul
+  1.5% other:eval_expr
+  1.5% other:add_assign
+  1.3% sumcheck_polys_eval / acc_constraints / sumcheck_round_poly_evals
+  1.1% sumcheck_uni_round0_polys / eval_interactions
+  0.9% other:monty_reduce
+  0.8% sumcheck_uni_round0_polys
+  0.8% other:binomial_mul
+  0.7% eval_nodes
+  0.7% other:add
+  0.6% fold_mle_evals / fold_mle
+  0.5% evals_eq_hypercube
+  0.4% sumcheck_round_poly_evals
+  0.3% fractional_sumcheck_with
+  0.2% other:lt
+  0.2% other:rotate_right
+  0.2% other:deref
+  0.1% other:eval_var
+  0.1% fold_ple_evals
+  0.1% realloc
+  0.1% prove_zerocheck_and_logup::{closure / eval_interactions
+--- innermost
+ 37.5% overflowing_sub
+  9.8% mul
+  8.8% spec_next
+  8.1% eval_expr
+  7.5% wrapping_mul
+  6.5% wrapping_add
+  6.4% add_assign
+  4.2% binomial_mul
+  3.8% monty_reduce
+  2.4% add
+  0.5% eval_var
+  0.5% deref
+  0.4% lt
+  0.4% index
+  0.3% {closure#0}
+  0.3% as_ref
+  0.2% get
+  0.2% rotate_right
+  0.1% __memcpy_avx512_unaligned_erms
+  0.1% __GI___libc_malloc
+  0.1% eval_nodes_into
+  0.1% write
+  0.1% clone
+  0.1% eval_nodes
+  0.1% binomial_sub
