@@ -3124,7 +3124,7 @@ diff --git a/crates/stark-backend/src/prover/fast_dft.rs b/crates/stark-backend/
 new file mode 100644
 --- /dev/null
 +++ b/crates/stark-backend/src/prover/fast_dft.rs
-@@ -0,0 +1,163 @@
+@@ -0,0 +1,186 @@
 +//! [pq-cpu-prover] Cache-blocked ("four-step") coset DFT of a wide row-major matrix.
 +//!
 +//! For n = n1 * n2 rows, j = j1 + n1 j2 and k = k2 + n2 k1:
@@ -3219,11 +3219,32 @@ new file mode 100644
 +/// Coset DFT (evaluations at `shift * w_n^k`, natural order) of each column of the row-major
 +/// `n x width` matrix `coeffs`.
 +pub fn coset_dft_rows<F: TwoAdicField>(coeffs: &[F], width: usize, shift: F) -> Vec<F> {
-+    let n = coeffs.len() / width;
++    coset_dft_rows_multi(coeffs, width, &[shift])
++}
++
++/// Coset DFTs of the same `n x width` coefficient matrix for several shifts at once: output row
++/// u is `[evals at shifts[0] w^u | evals at shifts[1] w^u | ..]` (width `shifts.len() * width`).
++/// Narrow matrices get full SIMD rows this way.
++pub fn coset_dft_rows_multi<F: TwoAdicField>(coeffs: &[F], bw: usize, shifts: &[F]) -> Vec<F> {
++    let g = shifts.len();
++    let width = g * bw;
++    let n = coeffs.len() / bw;
 +    let log_n = log2_strict_usize(n);
 +    if log_n < 12 {
-+        let m = RowMajorMatrix::new(coeffs.to_vec(), width);
-+        return Radix2Dit::<F>::default().coset_dft_batch(m, shift).values;
++        let outs: Vec<Vec<F>> = shifts
++            .iter()
++            .map(|&sh| Radix2Dit::<F>::default().coset_dft_batch(RowMajorMatrix::new(coeffs.to_vec(), bw), sh).values)
++            .collect();
++        if g == 1 {
++            return outs.into_iter().next().unwrap();
++        }
++        let mut v = F::zero_vec(n * width);
++        for u in 0..n {
++            for k in 0..g {
++                v[u * width + k * bw..u * width + (k + 1) * bw].copy_from_slice(&outs[k][u * bw..(u + 1) * bw]);
++            }
++        }
++        return v;
 +    }
 +    let l1 = log_n / 2;
 +    let l2 = log_n - l1;
@@ -3231,21 +3252,23 @@ new file mode 100644
 +    let tw1 = twiddles::<F>(l1);
 +    let tw2 = twiddles::<F>(l2);
 +    let w_n = F::two_adic_generator(log_n);
-+    let s_n1 = shift.exp_u64(n1 as u64);
++    let s_n1: Vec<F> = shifts.iter().map(|s| s.exp_u64(n1 as u64)).collect();
 +    // y[k2 * n1 + j1] (rows), the transposed intermediate
 +    let mut y = F::zero_vec(n * width);
 +    let yp = SyncPtr(y.as_mut_ptr());
 +    (0..n1).into_par_iter().for_each_init(
 +        || F::zero_vec(n2 * width),
 +        |buf, j1| {
-+            // gather rows j1 + n1 j2, twisted by s^(j1 + n1 j2) = s^j1 (s^n1)^j2
-+            let mut tw = shift.exp_u64(j1 as u64);
++            // gather rows j1 + n1 j2, twisted per shift group by s^(j1 + n1 j2) = s^j1 (s^n1)^j2
++            let mut tw: Vec<F> = shifts.iter().map(|s| s.exp_u64(j1 as u64)).collect();
 +            for j2 in 0..n2 {
-+                let src = &coeffs[(j1 + n1 * j2) * width..(j1 + n1 * j2 + 1) * width];
-+                let dst = &mut buf[j2 * width..(j2 + 1) * width];
-+                dst.copy_from_slice(src);
-+                scale_row(dst, tw);
-+                tw *= s_n1;
++                let src = &coeffs[(j1 + n1 * j2) * bw..(j1 + n1 * j2 + 1) * bw];
++                for k in 0..g {
++                    let dst = &mut buf[j2 * width + k * bw..j2 * width + (k + 1) * bw];
++                    dst.copy_from_slice(src);
++                    scale_row(dst, tw[k]);
++                    tw[k] *= s_n1[k];
++                }
 +            }
 +            dif_rows(buf, width, l2, &tw2);
 +            // position p holds k2 = bitrev(p): twiddle w^(j1 k2), store transposed
@@ -3853,7 +3876,7 @@ diff --git a/crates/stark-backend/src/prover/stream_pcs.rs b/crates/stark-backen
      let log_sub = log_domain - s;
      let sub = 1usize << log_sub;
      let log_qs = log_domain - k;
-@@ -233,35 +475,128 @@ where
+@@ -233,35 +475,151 @@ where
      });
  
      let dft = Radix2DitParallel::<F>::default();
@@ -3932,7 +3955,16 @@ diff --git a/crates/stark-backend/src/prover/stream_pcs.rs b/crates/stark-backen
 +                }
 +            }
 +        }
-+        for r in 0..(if outer { 0 } else { 1usize << s }) {
++        // [pq-cpu-prover] inner path: G sub-cosets per four-step DFT when the rows are narrow
++        let nsub_in = if outer { 0 } else { 1usize << s };
++        let gi = if fast_paths() {
++            let g = 16usize.div_ceil(bw).clamp(1, nsub_in.max(1));
++            if nsub_in % g == 0 { g } else { 1 }
++        } else {
++            1
++        };
++        let mut grouped: Vec<Vec<F>> = vec![];
++        for r in 0..nsub_in {
              let shift = za * omega.exp_u64(r as u64);
 -            let evals = dft
 -                .coset_dft_batch(RowMajorMatrix::new(base.clone(), bw), shift)
@@ -3944,16 +3976,28 @@ diff --git a/crates/stark-backend/src/prover/stream_pcs.rs b/crates/stark-backen
 -                        .map(|t| {
 -                            let i = reverse_bits_len(v + t * nv, log_sub);
 -                            evals.values[i * bw..(i + 1) * bw].to_vec()
--                        })
--                        .collect();
++            let td = std::time::Instant::now();
++            // four-step DFT (natural order); `nat` maps a natural index to the storage index
++            let (evals_vals, nat): (Vec<F>, bool) = if fast_paths() {
++                if r % gi == 0 {
++                    let shifts: Vec<F> = (0..gi).map(|k| za * omega.exp_u64((r + k) as u64)).collect();
++                    let wide = crate::prover::fast_dft::coset_dft_rows_multi(&base, bw, &shifts);
++                    // split into per-sub-coset matrices (gi of them)
++                    grouped = (0..gi)
++                        .map(|k| {
++                            let mut v = F::zero_vec(sub * bw);
++                            v.par_chunks_mut(bw).enumerate().for_each(|(u, row)| {
++                                row.copy_from_slice(&wide[u * gi * bw + k * bw..u * gi * bw + (k + 1) * bw]);
++                            });
++                            v
+                         })
++                        .rev()
+                         .collect();
 -                    hasher.hash_coset(&rows)
 -                })
 -                .collect();
-+            let td = std::time::Instant::now();
-+            // [pq-cpu-prover] four-step DFT (natural order); `nat` maps a natural index to the
-+            // storage index of `evals`
-+            let (evals_vals, nat): (Vec<F>, bool) = if fast_paths() {
-+                (crate::prover::fast_dft::coset_dft_rows(&base, bw, shift), true)
++                }
++                (grouped.pop().expect("grouped DFT output"), true)
 +            } else {
 +                (dft.coset_dft_batch(RowMajorMatrix::new(base.clone(), bw), shift).bit_reverse_rows().values, false)
 +            };
@@ -3999,7 +4043,7 @@ diff --git a/crates/stark-backend/src/prover/stream_pcs.rs b/crates/stark-backen
          }
          joined.extend_from_slice(&buf);
      }
-@@ -272,12 +607,12 @@ where
+@@ -272,12 +630,12 @@ where
          if prev.len() % 2 == 1 {
              prev.push(filler);
          }
@@ -4014,7 +4058,7 @@ diff --git a/crates/stark-backend/src/prover/stream_pcs.rs b/crates/stark-backen
              c << s,
              digest_layers.iter().map(|l| l.len()).sum::<usize>(),
              t0.elapsed().as_secs_f64()
-@@ -331,7 +666,11 @@ impl<V: Clone + Send + Sync, Digest: Copy + Send + Sync> MerkleTree<V, Digest> {
+@@ -331,7 +689,11 @@ impl<V: Clone + Send + Sync, Digest: Copy + Send + Sync> MerkleTree<V, Digest> {
          }
          let leaf_ids: Vec<usize> = blocks.iter().flat_map(|&b| (b << d)..((b + 1) << d)).collect();
          let row_ids: Vec<usize> = leaf_ids.iter().flat_map(|&i| self.leaf_row_indices(i)).collect();
