@@ -387,7 +387,7 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                     .collect();
                 let rcalc: u64 = rbytes.iter().enumerate().map(|(j, &x)| x << (8 * j)).sum();
                 assert_eq!(rcalc, rv, "shift construction op {op:#x} a {:#x} b {:#x}", a.val, b.val);
-                st.r16(w * q);
+                st.r16(q);
                 st.byte(0, 2 * rest, 0);
                 for i in 0..4 {
                     st.byte(0, ab[2 * i], ab[2 * i + 1]);

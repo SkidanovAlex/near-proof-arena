@@ -44,7 +44,7 @@ structure RowFacts (X : Ctx) (inS outS : List F) (cons prod : List Msg) : Prop w
   halt0 : inS.getD 3 0 = 0
   tsOut : lvl outS = lvl inS + 1
   gasOut : ∃ fee, fee ≤ X.ck.maxFee ∧ gasF outS = gasF inS + (fee : F)
-  consT : ∀ x ∈ cons, ∃ n, n < 2 ^ 30 ∧ ((x.tp + 1 + n : Nat) : F) = lvl inS
+  consT : ∀ x ∈ cons, ∃ n, n < 2 ^ 30 + 2 ^ 16 ∧ ((x.tp + 1 + n : Nat) : F) = lvl inS
   prodT : ∀ x ∈ prod, x.tp < ZkFormal.Algebra.P ∧ ((x.tp : Nat) : F) = lvl inS
   prodNd : prod.Nodup
 

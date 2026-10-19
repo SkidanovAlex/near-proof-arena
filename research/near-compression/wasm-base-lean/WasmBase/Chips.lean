@@ -271,7 +271,9 @@ def inters : List Inter :=
    stkRecv (v cH - 1) (v is64) (limbsOf b) (v tb) act] ++
   timeChk (v cTs) (v ta) (v ha) act ++ timeChk (v cTs) (v tb) (v hb) act ++
   [stkSend (v cH - 2) (v is64) ((List.range 4).map rlimb) (v cTs) act,
-   r16 (w * v q) act,
+   -- `q < 2^16` itself (v1 range-checked `w·q`, which is unsound: `q` is free, so `w·q` can be any
+   -- small residue and the shift count `k` was unconstrained; found by the Lean proof)
+   r16 (v q) act,
    byteQ 0 (2 * v rest) 0 0 act] ++
   (List.range 4).map (fun i => byteQ 0 (v (ab + 2 * i)) (v (ab + 2 * i + 1)) 0 act) ++
   (List.range 8).map (fun i => byteQ 0 (v (P + 2 * i)) (v (P + 2 * i + 1)) 0 act) ++
