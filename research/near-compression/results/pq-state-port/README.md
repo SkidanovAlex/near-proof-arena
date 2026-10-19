@@ -176,6 +176,15 @@ The 30 tables here are at natural heights, so the six fixed-2^22 renders (codec,
 mem, cmp, rcpt) collapse to their used rows — the same mechanism as D0a.  On this fixture that is
 4.5 M cells rather than the 2.5 G the fixed renders would need.
 
+### The D1 Lean composition [K]
+
+`D1.lean` does for D1 what `D0a.lean` does for D0a: `pq_d1_rel` takes
+`ExtractD1Stmt` (the phase-2 D1 soundness obligation, stated in
+`NearV3/D1/PrepD1Lemmas.lean` against `HoldsP nearAirV3D1`) and replaces its `HoldsP` premise by
+the SWIRL bridge, giving `∃ w, RelD1a B0 cb w`.  So **whatever the D1 phase-2 work proves carries
+over to the PQ backend unchanged** — the bridge only ever produced the premise it consumes.
+`multBoundP nearAirV3D1 < p` is the kernel fact from `Bounds.lean`.
+
 **One honest note on `rid`.**  `rid`'s interactions (`PRID` on bus 69, `RIDS` on bus 8) carry
 multiplicity `c0`, and on a fixture with no local receipt ids every `c0` is `0`.  A mutation of
 the payload column `c8` on such a row is then *legitimately* accepted: the interaction sends
@@ -212,7 +221,7 @@ reserved split.  The Lean side needs the D3α-style `runCall` fold over the D1 e
   `src/config.rs`), `setup.sh`, `run_demo.sh`.
 * `examples/np-udr-stark-v2/source/examples/statedump.rs` — the honest trace dump with the
   natural-height re-cut (a cargo example, so the shipped package is unchanged).
-* `zk-formal/ZkFormal/PQ/StatePort/{Swirl,Bridge,Bounds,D0a}.lean`,
+* `zk-formal/ZkFormal/PQ/StatePort/{Swirl,Bridge,Bounds,D0a,D1}.lean`,
   `zk-formal/test/AuditPQStatePort.lean`.
 * `logs/` — the prove and tamper logs and the per-table height maps.
 
