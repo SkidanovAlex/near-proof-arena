@@ -109,7 +109,7 @@ diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384
  }
  
  #[derive(Clone, Debug)]
-@@ -378,6 +479,56 @@ pub fn pow_step(state: &[u8; 48], witness: &[u32], bits: usize) -> ([u8; 48], bo
+@@ -378,6 +479,57 @@ pub fn pow_step(state: &[u8; 48], witness: &[u32], bits: usize) -> ([u8; 48], bo
      };
      (s, leading_zero_bits(&s) >= bits)
  }
@@ -140,19 +140,20 @@ diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384
 +        for chunk in 0..limit.div_ceil(CH) {
 +            let lo = chunk * CH;
 +            let ngroups = (CH.min(limit - lo)) / 8;
-+            let hit = (0..ngroups).into_par_iter().find_map_first(|g| {
-+                let mut msgs = [[0u8; 128]; 8];
++            // groups of 16 candidates (two interleaved 8-lane SHA-384 compressions)
++            let hit = (0..ngroups / 2).into_par_iter().find_map_first(|g| {
++                let mut msgs = [[0u8; 128]; 16];
 +                let n = tmpl.len();
 +                for (l, m) in msgs.iter_mut().enumerate() {
 +                    m[..n].copy_from_slice(&tmpl);
-+                    m[off..off + 4].copy_from_slice(&(lo + 8 * g + l as u32).to_le_bytes());
++                    m[off..off + 4].copy_from_slice(&(lo + 16 * g + l as u32).to_le_bytes());
 +                }
-+                let refs: [&[u8]; 8] = core::array::from_fn(|l| &msgs[l][..n]);
++                let refs: [&[u8]; 16] = core::array::from_fn(|l| &msgs[l][..n]);
 +                #[cfg(all(target_arch = "x86_64", target_feature = "avx512f"))]
-+                let hs = crate::sha384::mb::sha384_x8(refs);
++                let hs = crate::sha384::mb::sha384_x16(refs);
 +                #[cfg(not(all(target_arch = "x86_64", target_feature = "avx512f")))]
-+                let hs: [[u8; 48]; 8] = core::array::from_fn(|l| Sha384::digest(refs[l]).into());
-+                (0..8).find(|&l| leading_zero_bits(&hs[l]) >= bits).map(|l| lo + 8 * g + l as u32)
++                let hs: [[u8; 48]; 16] = core::array::from_fn(|l| Sha384::digest(refs[l]).into());
++                (0..16).find(|&l| leading_zero_bits(&hs[l]) >= bits).map(|l| lo + 16 * g + l as u32)
 +            });
 +            if let Some(w) = hit {
 +                return wit(w0, w);
@@ -166,7 +167,7 @@ diff --git a/crates/recursion/src/sha384/config.rs b/crates/recursion/src/sha384
  impl ShaTranscript {
      /// Fresh transcript of the inner or the final layer (U-12).
      pub fn new_layer(final_layer: bool) -> Self {
-@@ -389,6 +540,9 @@ impl ShaTranscript {
+@@ -389,6 +541,9 @@ impl ShaTranscript {
          use p3_maybe_rayon::prelude::*;
          self.flush();
          let base = self.state;
@@ -180,7 +181,7 @@ diff --git a/crates/recursion/src/sha384/mb.rs b/crates/recursion/src/sha384/mb.
 new file mode 100644
 --- /dev/null
 +++ b/crates/recursion/src/sha384/mb.rs
-@@ -0,0 +1,271 @@
+@@ -0,0 +1,390 @@
 +//! [pq-cpu-prover] Multi-buffer SHA-384: 8 independent messages per AVX-512 register lane
 +//! (one 64-bit word of each message per zmm lane), in the style of isa-l_crypto's mb_sha512.
 +//! Zen 5 has no SHA-512 instructions; one 8-lane compression costs about as much as two scalar
@@ -289,6 +290,115 @@ new file mode 100644
 +    }
 +}
 +
++#[cfg(all(target_arch = "x86_64", target_feature = "avx512f"))]
++mod x16 {
++    use core::arch::x86_64::*;
++
++    use super::K;
++
++    #[inline(always)]
++    unsafe fn xor3(a: __m512i, b: __m512i, c: __m512i) -> __m512i {
++        _mm512_ternarylogic_epi64::<0x96>(a, b, c)
++    }
++
++    /// Two independent 8-lane compressions interleaved (the round function is latency-bound).
++    #[inline(always)]
++    pub unsafe fn compress2(st: &mut [[__m512i; 8]; 2], w16: &[[[u64; 8]; 16]; 2]) {
++        let mut w = [[_mm512_setzero_si512(); 16]; 2];
++        for g in 0..2 {
++            for t in 0..16 {
++                w[g][t] = _mm512_loadu_si512(w16[g][t].as_ptr() as *const _);
++            }
++        }
++        let mut v = *st;
++        for t in 0..80 {
++            let kt = _mm512_set1_epi64(K[t] as i64);
++            for g in 0..2 {
++                let wt = if t < 16 {
++                    w[g][t]
++                } else {
++                    let w15 = w[g][(t + 1) & 15];
++                    let w2 = w[g][(t + 14) & 15];
++                    let s0 = xor3(_mm512_ror_epi64::<1>(w15), _mm512_ror_epi64::<8>(w15), _mm512_srli_epi64::<7>(w15));
++                    let s1 = xor3(_mm512_ror_epi64::<19>(w2), _mm512_ror_epi64::<61>(w2), _mm512_srli_epi64::<6>(w2));
++                    let x = _mm512_add_epi64(_mm512_add_epi64(w[g][t & 15], s0), _mm512_add_epi64(w[g][(t + 9) & 15], s1));
++                    w[g][t & 15] = x;
++                    x
++                };
++                let [a, b, c, d, e, f, gg, h] = v[g];
++                let hkw = _mm512_add_epi64(h, _mm512_add_epi64(kt, wt));
++                let s1 = xor3(_mm512_ror_epi64::<14>(e), _mm512_ror_epi64::<18>(e), _mm512_ror_epi64::<41>(e));
++                let ch = _mm512_ternarylogic_epi64::<0xCA>(e, f, gg);
++                let t1 = _mm512_add_epi64(_mm512_add_epi64(hkw, ch), s1);
++                let s0 = xor3(_mm512_ror_epi64::<28>(a), _mm512_ror_epi64::<34>(a), _mm512_ror_epi64::<39>(a));
++                let maj = _mm512_ternarylogic_epi64::<0xE8>(a, b, c);
++                let t2 = _mm512_add_epi64(s0, maj);
++                v[g] = [_mm512_add_epi64(t1, t2), a, b, c, _mm512_add_epi64(d, t1), e, f, gg];
++            }
++        }
++        for g in 0..2 {
++            for i in 0..8 {
++                st[g][i] = _mm512_add_epi64(st[g][i], v[g][i]);
++            }
++        }
++    }
++}
++
++/// SHA-384 of 16 single-block-or-longer messages of equal length (two interleaved 8-lane
++/// groups).
++#[cfg(all(target_arch = "x86_64", target_feature = "avx512f"))]
++pub fn sha384_x16(msgs: [&[u8]; 16]) -> [[u8; 48]; 16] {
++    use core::arch::x86_64::*;
++    let len = msgs[0].len();
++    debug_assert!(msgs.iter().all(|m| m.len() == len));
++    let nblocks = (len + 17).div_ceil(128);
++    unsafe {
++        let mut st: [[__m512i; 8]; 2] = [core::array::from_fn(|i| _mm512_set1_epi64(IV384[i] as i64)); 2];
++        let mut w16 = [[[0u64; 8]; 16]; 2];
++        let mut blk = [0u8; 128];
++        for bi in 0..nblocks {
++            for (li, m) in msgs.iter().enumerate() {
++                let (g, l) = (li / 8, li % 8);
++                let off = bi * 128;
++                if off + 128 <= len {
++                    for t in 0..16 {
++                        w16[g][t][l] = u64::from_be_bytes(m[off + 8 * t..off + 8 * t + 8].try_into().unwrap());
++                    }
++                } else {
++                    blk.fill(0);
++                    if off < len {
++                        blk[..len - off].copy_from_slice(&m[off..]);
++                    }
++                    if off <= len && len < off + 128 {
++                        blk[len - off] = 0x80;
++                    }
++                    if bi == nblocks - 1 {
++                        blk[112..128].copy_from_slice(&((len as u128) * 8).to_be_bytes());
++                    }
++                    for t in 0..16 {
++                        w16[g][t][l] = u64::from_be_bytes(blk[8 * t..8 * t + 8].try_into().unwrap());
++                    }
++                }
++            }
++            x16::compress2(&mut st, &w16);
++        }
++        let mut words = [[[0u64; 8]; 8]; 2];
++        for g in 0..2 {
++            for i in 0..8 {
++                _mm512_storeu_si512(words[g][i].as_mut_ptr() as *mut _, st[g][i]);
++            }
++        }
++        core::array::from_fn(|li| {
++            let (g, l) = (li / 8, li % 8);
++            let mut out = [0u8; 48];
++            for i in 0..6 {
++                out[8 * i..8 * i + 8].copy_from_slice(&words[g][i][l].to_be_bytes());
++            }
++            out
++        })
++    }
++}
++
 +/// SHA-384 of 8 messages of equal length.
 +#[cfg(all(target_arch = "x86_64", target_feature = "avx512f"))]
 +pub fn sha384_x8(msgs: [&[u8]; 8]) -> [[u8; 48]; 8] {
@@ -346,6 +456,16 @@ new file mode 100644
 +    #[cfg(all(target_arch = "x86_64", target_feature = "avx512f"))]
 +    if mb_enabled() {
 +        let mut i = 0;
++        while i + 16 <= msgs.len() {
++            let len = msgs[i].len();
++            if msgs[i..i + 16].iter().all(|m| m.len() == len) {
++                let r = sha384_x16(core::array::from_fn(|l| msgs[i + l]));
++                out[i..i + 16].copy_from_slice(&r);
++                i += 16;
++            } else {
++                break;
++            }
++        }
 +        while i + 8 <= msgs.len() {
 +            let len = msgs[i].len();
 +            if msgs[i..i + 8].iter().all(|m| m.len() == len) {
