@@ -1,7 +1,7 @@
 diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
 --- a/crates/recursion/src/nv/mod.rs
 +++ b/crates/recursion/src/nv/mod.rs
-@@ -20,3 +20,5 @@ mod tests;
+@@ -21,3 +21,5 @@ mod tests;
  mod faithful_dof;
  #[cfg(test)]
  mod faithful_tests;
@@ -95,7 +95,7 @@ new file mode 100644
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 --- a/crates/recursion/src/nv/tests.rs
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -293,6 +293,21 @@ fn nv_opening_formula() {
+@@ -299,6 +299,21 @@ fn nv_opening_formula() {
      assert_eq!(ok, 4);
  }
  
@@ -117,32 +117,48 @@ diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
  /// NV-verifies-NV chain (ignored; env-driven).
  ///   NV_LEVELS=4 NV_LOG_ROWS=17 PARENT_N_STACK=16 PARENT_BITS=20 PARENT_LIST_M=3 ...
  #[test]
-@@ -403,6 +418,7 @@ fn nv_chain() {
-     for i in 1..=phase_a {
-         circ.child_nv = i >= 2;
-         let (v, q, sh, app) = run(&circ, &vka, &pa, &format!("A{i}"));
-+        print_vk_regimes(&format!("A{i}"), &v);
-         assert!(super::circuit::check_statement(&q.public_values[0], &p0.public_values), "A{i} statement");
-         if let Some(d) = &save_dir {
-             use openvm_stark_backend::codec::Encode;
-@@ -432,7 +448,19 @@ fn nv_chain() {
-         fc.app = circ.app.clone();
-         fc.child_nv = true;
-         fc.prog_log = circ.prog_log;
--        let (_, fq, _, _) = run_with(fe, &fc, &vka, &pa, "FINAL");
-+        let (fvk, fq, _, _) = run_with(fe, &fc, &vka, &pa, "FINAL");
-+        print_vk_regimes("FINAL", &fvk);
-+        {
-+            // [stream research] final proof digest (and the proof, with NV_SAVE_DIR)
+@@ -438,6 +453,11 @@ fn nv_chain() {
+         fixed = if prev.is_empty() { hs.clone() } else { hs.iter().zip(&prev).map(|(a, b)| *a.max(b)).collect() };
+         prev = hs;
+     }
++    // [stream research] NV_FIXED_OVERRIDE: phase B heights given directly (phase A then only needs
++    // A1, for the level-1 app table; phase B asserts every level's natural heights equal these)
++    if let Ok(o) = std::env::var("NV_FIXED_OVERRIDE") {
++        fixed = o.split(',').map(|x| x.trim().parse().unwrap()).collect();
++    }
+     println!("NV_FIXED_HEIGHTS {fixed:?}");
+     if let Some(fe) = final_engine.as_ref().filter(|_| unbound_final) {
+         // UNBOUND measurement-only final layer: verifies the last phase-A proof without binding
+@@ -462,6 +482,13 @@ fn nv_chain() {
+         circ.child_nv = level >= 2;
+         circ.app = if level >= 2 { app_a.clone() } else { None };
+         let (v, q, _, app) = run(&circ, &vk, &p, &format!("L{level}"));
++        print_vk_regimes(&format!("L{level}"), &v);
++        if let Some(d) = &save_dir {
 +            use openvm_stark_backend::codec::Encode;
-+            use sha2::Digest as _;
 +            let mut bytes = vec![];
-+            fq.encode(&mut bytes).unwrap();
-+            println!("FINAL_PROOF_SHA256 {:x} bytes={}", sha2::Sha256::digest(&bytes), bytes.len());
-+            if let Some(d) = &save_dir {
-+                std::fs::write(format!("{d}/FINAL.proof"), &bytes).unwrap();
-+            }
++            q.encode(&mut bytes).unwrap();
++            std::fs::write(format!("{d}/L{level}.proof"), &bytes).unwrap();
 +        }
-         assert!(super::circuit::check_statement(&fq.public_values[0], &p0.public_values), "final statement");
-         println!("NV_STATEMENT final proof binds the app statement");
-         if levels == 0 {
+         if level == 1 {
+             assert_eq!(Some(app.clone()), app_a, "level-1 program differs from the phase-A table");
+         }
+@@ -474,6 +501,18 @@ fn nv_chain() {
+     assert!(levels >= 2, "FINAL needs an NV child (NV_LEVELS >= 2)");
+     let fe = Sha384CpuEngine::new_final(openvm_stark_backend::StarkEngine::params(&engine).clone());
+     let (vkf, pf, _, words_f) = run_with(&fe, &circ, &vk, &p, "FINAL");
++    print_vk_regimes("FINAL", &vkf);
++    {
++        // [stream research] final proof digest (and the proof, with NV_SAVE_DIR)
++        use openvm_stark_backend::codec::Encode;
++        use sha2::Digest as _;
++        let mut bytes = vec![];
++        pf.encode(&mut bytes).unwrap();
++        println!("FINAL_PROOF_SHA256 {:x} bytes={}", sha2::Sha256::digest(&bytes), bytes.len());
++        if let Some(d) = &save_dir {
++            std::fs::write(format!("{d}/FINAL.proof"), &bytes).unwrap();
++        }
++    }
+     assert_eq!(words_f, last_words, "FINAL runs the same (fixed-point) program as its child");
+     let setup = super::vd::VdSetup { vk_final: vkf, program: words_f, level: levels as u32 + 1 };
+     super::vd::verify_final(&setup, &fe, &p0.public_values, &pf, false).expect("V_d (pinned program) accepts the final proof");
