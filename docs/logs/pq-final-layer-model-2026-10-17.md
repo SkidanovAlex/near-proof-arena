@@ -744,3 +744,8 @@ model 308.5 → 298.9 KB.
   Test nv_vd_pinned_program missed it (debug children with equal heights).
 * Assigned to recursion lane with G2 (options: heights as witnesses; per-level pinned program
   constants until convergence; tight heights off). Converged program ≈ 271k NvAir rows (> 2^18).
+* Audit §X/§Y (lane/pq-nv-circuit-soundness @ 9eab7f2d2): G1 fix, bound FINAL + V_d, and NV
+  preprocessed/cached children — no soundness bug. Top-level: V_d accept under pinned program ⇒
+  chain to app proof under app vk with statement digest passthrough; ε_LogUp ≈ 2^-316.6 per level.
+  Native R5 (cached trace + tight heights, device path) is a completeness bug → commit cached
+  traces non-tight. Note: real-height chains are not buildable yet (L3 heights issue above).
