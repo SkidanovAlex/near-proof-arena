@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..abb7cac
+index 0000000..4808ad1
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,862 @@
+@@ -0,0 +1,866 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1379,8 +1379,12 @@ index 0000000..abb7cac
 +    pub statement: Option<Digest>,
 +    /// the child is an NV proof (statement passthrough even without program binding)
 +    pub child_nv: bool,
-+    /// G2: C_L1, the commitment of the level-1 program (a program constant at levels >= 2)
-+    pub l1_commit: Option<Digest>,
++    /// G2 anchor (M, C_M): a child at level M is bound by its cached program root = C_M, the
++    /// setup commitment of the level-M program; a child at any other level by BIND (child
++    /// program = own).  M = 1 while the program has converged by level 2; with tight heights the
++    /// program depends on the child's committed heights, so M is the last level whose program
++    /// differs from the converged one (levels <= M each anchor at their own child level).
++    pub anchor: Option<(u32, Digest)>,
 +    /// open flush job (job id, t_start, observed felts)
 +    tr_pending: Option<(u32, u32, u32)>,
 +    /// static transcript jobs allocated so far
@@ -1420,7 +1424,7 @@ index 0000000..abb7cac
 +            level: 0,
 +            statement: None,
 +            child_nv: false,
-+            l1_commit: None,
++            anchor: None,
 +            tr_pending: None,
 +            tr_static: 0,
 +            tr_started: false,
@@ -2102,10 +2106,10 @@ index 0000000..abb7cac
 +}
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..d704e41
+index 0000000..6065b0f
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
-@@ -0,0 +1,316 @@
+@@ -0,0 +1,366 @@
 +//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
 +use std::{collections::HashMap, sync::Arc};
 +
@@ -2203,8 +2207,12 @@ index 0000000..d704e41
 +    pub test_no_bind: bool,
 +    /// G2: P0..P3 as a cached main part (NV levels); false = in common main (FINAL)
 +    pub program_part: bool,
-+    /// G2: C_L1, the level-1 program's commitment (a constant of every level >= 2)
-+    pub l1_commit: Option<crate::sha384::config::Digest>,
++    /// G2 anchor (M, C_M): a child at level M is bound by its cached program root = C_M, the
++    /// setup commitment of the level-M program; a child at any other level by BIND (child
++    /// program = own).  M = 1 while the program has converged by level 2; with tight heights the
++    /// program depends on the child's committed heights, so M is the last level whose program
++    /// differs from the converged one (levels <= M each anchor at their own child level).
++    pub anchor: Option<(u32, crate::sha384::config::Digest)>,
 +}
 +
 +impl NvCircuit {
@@ -2229,7 +2237,7 @@ index 0000000..d704e41
 +            #[cfg(test)]
 +            test_no_bind: false,
 +            program_part: false,
-+            l1_commit: None,
++            anchor: None,
 +        }
 +    }
 +
@@ -2282,12 +2290,58 @@ index 0000000..d704e41
 +        })
 +    }
 +
++    /// The verifier program's words for this child (no trace generation).
++    pub fn program_words(&self, vk: &MultiStarkVerifyingKey<Sha384Config>, proof: &Proof<Sha384Config>) -> Vec<[u32; 4]> {
++        #[allow(unused_mut)]
++        let mut bind = self.bind || self.child_nv;
++        #[cfg(test)]
++        {
++            bind &= !self.test_no_bind;
++        }
++        let mut b = Builder::new(self.log_rows, self.reserved());
++        b.prog_log = self.prog_log;
++        b.begin();
++        b.anchor = self.anchor;
++        b.bind = bind;
++        b.child_nv = self.child_nv;
++        build_verifier(&mut b, vk, proof);
++        b.finish();
++        b.instrs.iter().map(|i| i.words()).collect()
++    }
++
++    /// G2 anchor rule (setup, deterministic) for the level verifying `child` at level
++    /// `child_level` >= 1, whose program words are `child_words` and cached program root
++    /// `child_root`:
++    /// * keep the current anchor (M, C_M) if, with it, this level's program equals the child's
++    ///   (the program has converged: the child is then bound by BIND, child level != M);
++    /// * otherwise anchor at the child: (child_level, child_root), bound by the root check.
++    /// With tight heights the program depends on the child's committed heights, so the first
++    /// levels each anchor at their child until the heights (and so the program) stop changing;
++    /// V_d pins the converged program, which embeds the final (M, C_M).
++    pub fn select_anchor(
++        &self,
++        vk: &MultiStarkVerifyingKey<Sha384Config>,
++        proof: &Proof<Sha384Config>,
++        child_level: u32,
++        child_words: &[[u32; 4]],
++        child_root: crate::sha384::config::Digest,
++    ) -> (u32, crate::sha384::config::Digest) {
++        if let Some(a) = self.anchor.filter(|&(m, _)| m < child_level) {
++            let mut c = self.clone();
++            c.anchor = Some(a);
++            if c.program_words(vk, proof) == child_words {
++                return a;
++            }
++        }
++        (child_level, child_root)
++    }
++
 +    /// Run an arbitrary program body (the verifier, or a test forgery) and generate every trace.
 +    pub fn generate_program(&self, body: impl FnOnce(&mut Builder)) -> (Vec<RowMajorMatrix<F>>, Builder) {
 +        let mut b = Builder::new(self.log_rows, self.reserved());
 +        b.prog_log = self.prog_log;
 +        b.begin();
-+        b.l1_commit = self.l1_commit;
++        b.anchor = self.anchor;
 +        body(&mut b);
 +        b.finish();
 +        let _ = self.k; // per-round folding factors come from the child vk
@@ -7260,10 +7314,10 @@ index 0000000..9373307
 +
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..9e09dbb
+index 0000000..40205cd
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,1330 @@
+@@ -0,0 +1,1354 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -7708,27 +7762,51 @@ index 0000000..9e09dbb
 +            return;
 +        }
 +    }
-+    // phase B: fixed heights; binding from level 3
++    // phase B: fixed heights (if phase A ran); binding at every level >= 2
 +    let mut circ = super::circuit::NvCircuit::new(k, log_rows, 1);
-+    circ.heights = Some(fixed);
++    if !fixed.is_empty() {
++        circ.heights = Some(fixed);
++    }
 +    let (mut vk, mut p) = (vk0, p0.clone());
 +    let mut last_words: Vec<[u32; 4]> = vec![];
-+    // G2: every NV level carries its program as a cached part; levels >= 2 hold C_L1
++    let mut last_root = None;
++    // G2: every NV level carries its program as a cached part.  Anchor rule
++    // (`NvCircuit::select_anchor`): a level anchors at its child (C_child) until its program
++    // equals its child's, then keeps that anchor and binds by BIND.  Run at least `levels` levels
++    // and until the last level binds its child by BIND (the program has converged), at most
++    // NV_MAX_LEVELS.
 +    circ.program_part = true;
-+    for level in 1..=levels {
++    let max_levels = env_usize("NV_MAX_LEVELS", levels.max(2) + 4);
++    let mut level = 0usize;
++    let mut bound_levels = 0usize;
++    let mut last_by_bind = false;
++    loop {
++        level += 1;
 +        circ.bind = level >= 2;
 +        circ.child_nv = level >= 2;
-+        let (v, q, _, app) = run(&circ, &vk, &p, &format!("L{level}"));
-+        if level == 1 {
-+            let c_l1 = q.trace_vdata[0].as_ref().unwrap().cached_commitments[0];
-+            println!("NV_G2 C_L1 = {c_l1:?}");
-+            circ.l1_commit = Some(c_l1);
++        if level >= 2 {
++            let a = circ.select_anchor(&vk, &p, level as u32 - 1, &last_words, last_root.unwrap());
++            let by_bind = a.0 != level as u32 - 1;
++            println!("NV_G2_ANCHOR L{level}: anchor level M = {} ({})", a.0, if by_bind { "child bound by BIND" } else { "child bound by its root = C_M" });
++            bound_levels += by_bind as usize;
++            last_by_bind = by_bind;
++            circ.anchor = Some(a);
 +        }
++        let (v, q, sh, words) = run(&circ, &vk, &p, &format!("L{level}"));
++        let root = q.trace_vdata[0].as_ref().unwrap().cached_commitments[0];
++        println!("NV_G2 L{level} program rows {} committed heights {:?} cached root {root:?}", words.len(), sh.iter().map(|s| s.0).collect::<Vec<_>>());
 +        assert!(super::circuit::check_statement(&q.public_values[0], &p0.public_values), "L{level} statement");
-+        last_words = app;
++        last_words = words;
++        last_root = Some(root);
 +        vk = v;
 +        p = q;
++        if level >= levels && last_by_bind {
++            break;
++        }
++        assert!(level < max_levels, "program did not converge within {max_levels} levels");
 +    }
++    let levels = level;
++    println!("NV_G2 converged: {levels} levels, {bound_levels} bound by BIND, anchor M = {}", circ.anchor.unwrap().0);
 +    // FINAL: the fixed-point program under the final domain, child program bound; V_d checks it
 +    assert!(levels >= 2, "FINAL needs an NV child (NV_LEVELS >= 2)");
 +    // FINAL: its own WHIR shape (FINAL_* params, default the NV params) and a single commitment
@@ -7995,7 +8073,7 @@ index 0000000..9e09dbb
 +    let run = |c: crate::sha384::config::Digest, pv_tamper: bool| -> Vec<String> {
 +        let mut circ2 = super::circuit::NvCircuit::new(3, 19, 1);
 +        circ2.child_nv = true;
-+        circ2.l1_commit = Some(c);
++        circ2.anchor = Some((1, c));
 +        let airs = circ2.airs::<Sha384Config>();
 +        let (mats, b2) = circ2.generate(&vk1, &p1);
 +        let mut pv2 = b2.public_values();
@@ -8017,7 +8095,7 @@ index 0000000..9e09dbb
 +    {
 +        let mut circ2 = super::circuit::NvCircuit::new(3, 19, 1);
 +        circ2.child_nv = true;
-+        circ2.l1_commit = Some(c_l1);
++        circ2.anchor = Some((1, c_l1));
 +        let (_, b2) = circ2.generate(&vk1, &p1);
 +        assert!(super::circuit::check_statement(&b2.public_values(), &p0.public_values), "L2 passthrough");
 +        let mut other = p0.public_values.clone();
@@ -8542,7 +8620,7 @@ index 0000000..9e09dbb
 +    let mut circ2 = super::circuit::NvCircuit::new(k, log_rows, 1);
 +    circ2.program_part = true;
 +    circ2.child_nv = true;
-+    circ2.l1_commit = Some(p1n.trace_vdata[0].as_ref().unwrap().cached_commitments[0]);
++    circ2.anchor = Some((1, p1n.trace_vdata[0].as_ref().unwrap().cached_commitments[0]));
 +    let (m2n, _) = circ2.generate(&vk1n, &p1n);
 +    use p3_matrix::Matrix;
 +    let fixed: Vec<usize> = m2n.iter().map(|m| m.height()).collect();
@@ -8556,15 +8634,15 @@ index 0000000..9e09dbb
 +    assert_eq!(p1.trace_vdata[0].as_ref().unwrap().cached_commitments[0], c_l1, "L1's program commitment = the setup C_L1");
 +    println!("NV_VD C_L1 = setup commitment of the L1 program part");
 +    circ2.heights = Some(fixed.clone());
-+    circ2.l1_commit = Some(c_l1);
++    circ2.anchor = Some((1, c_l1));
 +    // a wrong C_L1 constant: the level-2 program rejects the honest L1
 +    {
 +        let mut bad = circ2.clone_shape();
 +        let mut d = c_l1;
 +        d[0] ^= 1;
-+        bad.l1_commit = Some(d);
++        bad.anchor = Some((1, d));
 +        let (_, bb) = bad.generate(&vk1, &p1);
-+        assert!(bb.failures.iter().any(|f| f.contains("C_L1")), "wrong C_L1 accepted: {:?}", bb.failures);
++        assert!(bb.failures.iter().any(|f| f.contains("C_M")), "wrong C_L1 accepted: {:?}", bb.failures);
 +        println!("NV_VD wrong C_L1 rejected: {:?}", bb.failures);
 +    }
 +    let (vk2, p2, b2, _) = super::circuit::prove_level(&circ2, &engine, &vk1, &p1);
@@ -10445,10 +10523,10 @@ index 0000000..bb0d7ab
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..e818e0a
+index 0000000..ad74497
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1748 @@
+@@ -0,0 +1,1751 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -11302,12 +11380,15 @@ index 0000000..e818e0a
 +        .map(|cs| cs.iter().map(|(c, _)| c.val).collect())
 +        .collect();
 +    if b.bind {
-+        // child is NV: level = child level + 1; binding enforced iff child level != 1
++        // child is NV: level = child level + 1; BIND enforced iff child level != M (the anchor
++        // level; M = 1 unless the program converges later, see `NvCircuit::anchor`)
 +        let cl = pv_cells[0][0];
 +        let one = b.c(F::ONE);
 +        let own = b.add(cl, one);
 +        b.pv_level(own);
-+        let clm1 = b.sub(cl, one);
++        let m_level = b.anchor.map_or(1, |(m, _)| m);
++        let mc = b.c(F::from_u32(m_level));
++        let clm1 = b.sub(cl, mc);
 +        let cv = coeffs(clm1.val)[0];
 +        let inv = b.load_f(if cv == F::ZERO { F::ZERO } else { cv.inverse() });
 +        let flag = b.mul(clm1, inv);
@@ -11324,27 +11405,27 @@ index 0000000..e818e0a
 +        } else {
 +            (0..4).map(|j| open_cells[tc][super::uair::U_P + j].0).collect()
 +        };
-+        // level-1 child (flag = 0): its program commitment is the constant C_L1, the commitment of
-+        // the level-1 program at these parameters (setup); (root - C_L1) (1 - flag) = 0
++        // anchor-level child (flag = 0): its program commitment is the constant C_M, the
++        // commitment of the level-M program at these parameters (setup); (root - C_M) (1 - flag) = 0
 +        if child_prog_part {
-+            match b.l1_commit {
-+                Some(c_l1) => {
++            match b.anchor {
++                Some((_, c_m)) => {
 +                    let root = extra_commits[0][0];
 +                    let nf = b.one_minus(flag);
-+                    let cl1 = b.const_digest(c_l1);
-+                    for (x, y) in [(root.lo, cl1.lo), (root.hi, cl1.hi)] {
++                    let cm = b.const_digest(c_m);
++                    for (x, y) in [(root.lo, cm.lo), (root.hi, cm.hi)] {
 +                        let d = b.sub(x, y);
 +                        let t = b.mul(d, nf);
-+                        b.zero(t, "level-1 child program commitment = C_L1");
++                        b.zero(t, "anchor child program commitment = C_M");
 +                    }
-+                    if flag.val == EF::ZERO && root.digest != c_l1 {
-+                        b.failures.push("level-1 child program commitment != C_L1".into());
++                    if flag.val == EF::ZERO && root.digest != c_m {
++                        b.failures.push("anchor child program commitment != C_M".into());
 +                    }
 +                }
-+                None => b.failures.push("no C_L1 constant for a level-1 child".into()),
++                None => b.failures.push("no anchor constant C_M for an anchor-level child".into()),
 +            }
 +        } else if flag.val == EF::ZERO {
-+            b.failures.push("level-1 child without a program commitment cannot be bound".into());
++            b.failures.push("anchor-level child without a program commitment cannot be bound".into());
 +        }
 +        bind_child_program(b, &tid, &n_per_trace, &rs, &prog_open, l_skip, flag);
 +    } else {
@@ -11806,8 +11887,8 @@ index 0000000..e818e0a
 +        let term = b.mul(tj, o);
 +        phat = b.add(phat, term);
 +    }
-+    // child level >= 2 (flag = 1): BIND, flag (ACC - phat) = 0; a level-1 child is bound by
-+    // C_L1 above (G2: no app table)
++    // child level != M (flag = 1): BIND, flag (ACC - phat) = 0; an anchor-level child is bound by
++    // C_M above (G2: no app table)
 +    b.defer_acc_check(phat, flag);
 +}
 +
