@@ -3337,7 +3337,7 @@ diff --git a/crates/stark-backend/src/prover/mod.rs b/crates/stark-backend/src/p
 diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backend/src/prover/stacked_pcs.rs
 --- a/crates/stark-backend/src/prover/stacked_pcs.rs
 +++ b/crates/stark-backend/src/prover/stacked_pcs.rs
-@@ -619,6 +619,41 @@ pub fn rs_code_matrix_odd<F: TwoAdicField + Ord + p3_field::PrimeField64>(
+@@ -654,6 +654,41 @@ pub fn rs_code_matrix_odd<F: TwoAdicField + Ord + p3_field::PrimeField64>(
  ) -> Result<ColMajorMatrix<F>, StackedPcsError> {
      let height = eval_matrix.height();
      let log_rs = log2_strict_usize(height) + log_blowup;
@@ -3379,7 +3379,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
      let codewords: Vec<_> = eval_matrix
          .values
          .par_chunks_exact(height)
-@@ -780,19 +815,36 @@ where
+@@ -815,19 +850,36 @@ where
          let query_stride = num_leaves / rows_per_query;
          // One Merkle leaf per query index `y`: the coset rows { y + t * query_stride }. The
          // default `MerkleHasher::hash_coset` reproduces upstream (row hashes + binary subtree).
@@ -3429,7 +3429,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
  
          let mut digest_layers = vec![query_digest_layer];
          while digest_layers
-@@ -804,10 +856,7 @@ where
+@@ -839,10 +891,7 @@ where
              let prev_layer = digest_layers
                  .last()
                  .ok_or(StackedPcsError::MerkleTreeNoRoot)?;
@@ -3441,7 +3441,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
              digest_layers.push(layer);
          }
  
-@@ -847,20 +896,35 @@ where
+@@ -882,20 +931,35 @@ where
          // One leaf per fold coset of each block: rows { a * block + t * qs + y }, hashed with
          // `MerkleHasher::hash_coset` (the default reproduces row hashes + a binary subtree, the
          // levers' coset-leaf hook hashes the coset as one message).
@@ -3491,7 +3491,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
          let pad = hasher.hash_slice(&[]);
          let mut digest_layers = vec![joined];
          while digest_layers.last().unwrap().len() > 1 {
-@@ -868,10 +932,7 @@ where
+@@ -903,10 +967,7 @@ where
              if prev.len() % 2 == 1 {
                  prev.push(pad);
              }
@@ -3503,7 +3503,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
              digest_layers.push(layer);
          }
          Ok(Self {
-@@ -924,7 +985,7 @@ where
+@@ -959,7 +1020,7 @@ where
          }
  
          if let Some(src) = &self.stream {
@@ -3512,7 +3512,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
          }
          let rows_per_query = self.rows_per_query;
          let width = self.backing_matrix.width();
-@@ -1029,3 +1090,70 @@ mod tests {
+@@ -1064,3 +1125,70 @@ mod tests {
          );
      }
  }

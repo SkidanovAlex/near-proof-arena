@@ -129,7 +129,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
      let root = tree.root()?;
      let data = StackedPcsData::new(layout, q_trace, tree);
      Ok((root, data))
-@@ -605,6 +633,9 @@ pub fn rs_code_matrix_odd<F: TwoAdicField + Ord + p3_field::PrimeField64>(
+@@ -640,6 +668,9 @@ pub fn rs_code_matrix_odd<F: TwoAdicField + Ord + p3_field::PrimeField64>(
  
  impl<F, Digest> MerkleTree<F, Digest> {
      pub fn query_stride(&self) -> usize {
@@ -139,7 +139,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
          if self.num_cosets == 1 {
              self.digest_layers[0].len()
          } else {
-@@ -614,17 +645,51 @@ impl<F, Digest> MerkleTree<F, Digest> {
+@@ -649,17 +680,51 @@ impl<F, Digest> MerkleTree<F, Digest> {
      }
  
      pub fn proof_depth(&self) -> usize {
@@ -196,7 +196,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
      }
  
      pub fn query_merkle_proof(&self, query_idx: usize) -> Result<Vec<Digest>, StackedPcsError> {
-@@ -635,12 +700,11 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
+@@ -670,12 +735,11 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
                  query_stride: stride,
              });
          }
@@ -212,7 +212,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
              idx >>= 1;
          }
          Ok(proof)
-@@ -663,8 +727,9 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
+@@ -698,8 +762,9 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
                  });
              }
          }
@@ -223,7 +223,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
              let mut next = Vec::with_capacity(known.len());
              let mut i = 0;
              while i < known.len() {
-@@ -673,7 +738,7 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
+@@ -708,7 +773,7 @@ impl<F, Digest: Clone> MerkleTree<F, Digest> {
                  if i + 1 < known.len() && known[i + 1] == pair {
                      i += 2;
                  } else {
@@ -232,7 +232,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
                      i += 1;
                  }
                  next.push(idx >> 1);
-@@ -751,6 +816,7 @@ where
+@@ -786,6 +851,7 @@ where
              digest_layers,
              rows_per_query,
              num_cosets: 1,
@@ -240,7 +240,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
          })
      }
  
-@@ -813,6 +879,7 @@ where
+@@ -848,6 +914,7 @@ where
              digest_layers,
              rows_per_query,
              num_cosets,
@@ -248,7 +248,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
          })
      }
  
-@@ -841,6 +908,7 @@ where
+@@ -876,6 +943,7 @@ where
              digest_layers,
              rows_per_query,
              num_cosets: 1,
@@ -256,7 +256,7 @@ diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backe
          }
      }
  
-@@ -855,6 +923,9 @@ where
+@@ -890,6 +958,9 @@ where
              });
          }
  
