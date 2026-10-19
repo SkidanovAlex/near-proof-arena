@@ -52,7 +52,8 @@ pub fn seg_v1_params(n_stack: usize, w_stack: usize, max_degree: usize) -> Syste
         WhirParams {
             k,
             log_final_poly_len: lf,
-            query_phase_pow_bits: 24,
+            // z = 24 (pinned); WASMBASE_POW overrides it only for prover-work measurements
+            query_phase_pow_bits: std::env::var("WASMBASE_POW").ok().and_then(|v| v.parse().ok()).unwrap_or(24),
             proximity: WhirProximityStrategy::ListDecoding { m: 16 },
             folding_pow_bits: 0,
             mu_pow_bits: 0,
