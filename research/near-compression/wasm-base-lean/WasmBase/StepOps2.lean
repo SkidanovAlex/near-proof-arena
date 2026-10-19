@@ -57,7 +57,7 @@ theorem step_straight (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
   refine ⟨_, by rw [step_eq_exec X R hins hfee hg hg64, hexec], ?_⟩
   have SR := straight_rel X R hk stk' locs' J keep hsz hnum lsz lkeep hJ lnum hnext hL1 hsb hH1 hg
     { s with gas := { s.gas with g := s.gas.g - X.R * fee }, stack := stk',
-             frames := { f with pc := pc + 1, locals := locs' } :: E.rest } rfl rfl rfl rfl rfl
+             frames := { f with pc := pc + 1, locals := locs' } :: E.rest } rfl rfl rfl rfl rfl rfl
   exact Rel_of_RelW_congr SR (stepLive_congr hc hp)
 
 /-- `setFrame` replaces the top frame. -/

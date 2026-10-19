@@ -34,7 +34,7 @@ def rowAct (T : Table) (tr : Trace) (pub : List F) (t r : Nat) : Prop :=
 /-- The public inputs are the ones the verifier derives from the checker output. -/
 structure PubOK (X : Ctx) (nloc ncode : Nat) (pub : List F) : Prop where
   hnloc : nloc = X.pf.locals.size
-  len : pub.length = Boundary.pubLoc + nloc + 5 * ncode
+  len : pub.length = Boundary.pubLoc + nloc + 5 * ncode + 2
   locTags : ∀ j, j < nloc → pub.getD (Boundary.pubLoc + j) 0 = ((X.ck.localTags.getD j 0 : Nat) : F)
   nres : pub.getD Boundary.pubNres 0 = ((X.ck.arity : Nat) : F)
   status : pub.getD Boundary.pubStatus 0 = ((1 : Nat) : F) ∨ pub.getD Boundary.pubStatus 0 = ((2 : Nat) : F)

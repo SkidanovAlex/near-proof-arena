@@ -125,7 +125,7 @@ theorem straight_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat →
     (hgs : X.R * (S + fee) ≤ X.g0)
     (s' : St) (hs'stk : s'.stack = stk') (hs'fr : s'.frames = { f with pc := pc + 1, locals := locs' } :: E.rest)
     (hs'g : s'.gas.g = s.gas.g - X.R * fee) (hs'pg : s'.pages = s.pages)
-    (hs'gl : s'.globals = s.globals) :
+    (hs'gl : s'.globals = s.globals) (hs'rem : s'.stackRem = s.stackRem) :
     RelW X E s' { f with pc := pc + 1, locals := locs' }
       (fun i => if i < s.stack.size - k then tps i else t) (fun j => if some j = J then t else tpl j)
       (t + 1) (pc + 1) (S + fee)
@@ -169,6 +169,7 @@ theorem straight_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat →
   sbLt := R.sbLt
   cidLt := R.cidLt
   heap := R.heap.mono hs'pg hs'gl (by omega)
+  calls := R.calls.mono (by omega) rfl rfl rfl rfl (fun _ _ => Iff.rfl) hs'rem
   live := by
     intro x
     rw [hs'stk]

@@ -247,6 +247,104 @@ theorem HeapOK.mono {E : Env} {s s' : St} {t t' : Nat} (H : HeapOK E s t) (hpg :
   · rw [hgl] at h ⊢; have := hg g h; exact ⟨by omega, this.2⟩
   · rw [hgv x hx, hgl]
 
+/-! ## Calls: the caller chain and the stack budget -/
+
+/-- A saved caller context: its checked function, frame base, activation id, locals producer
+times, and the producer time of the call record. -/
+structure Saved where
+  k : Nat
+  sb : Nat
+  cid : Nat
+  tpl : Nat → Nat
+  tpc : Nat
+
+/-- Call record of activation `c` (space 4): return pc (global), the caller's `sb` and `cid`, and
+the callee's stack charge. -/
+def callMsg (c retpc sb cid charge tp : Nat) : Msg := ⟨4, c, 0, retpc, sb, cid, charge, tp⟩
+
+/-- The stack-budget register (space 5, slot 0): the spec's `stackRem` as two 16-bit limbs. -/
+def budMsg (rem tp : Nat) : Msg := ⟨5, 0, 0, rem % 65536, rem / 65536, 0, 0, tp⟩
+
+/-- The caller frames below the current frame (activation `cid`, base `sb`, function `k`). -/
+def Chain (X : Ctx) (t : Nat) : Nat → Nat → Nat → List Frame → List Saved → Prop
+  | cid, sb, _, [], [] => cid = 0 ∧ sb = 0
+  | cid, sb, k, fc :: rest, c :: sv =>
+      c.k < X.nf ∧ fc.fn = X.fnOf c.k ∧ fc.base = c.sb ∧ c.sb ≤ sb ∧ c.cid < cid ∧ c.tpc < t ∧
+      fc.pc < (X.pfOf c.k).code.size ∧
+      (∃ ls, (X.ckOf c.k).labels[fc.pc]? = some ls ∧ fc.labels = shiftLabels c.sb ls) ∧
+      (X.ckOf c.k).heights[fc.pc]? = some (sb - c.sb + (X.pfOf k).type.results.size) ∧
+      fc.locals.size = (X.pfOf c.k).type.params.size + (X.pfOf c.k).locals.size ∧
+      (∀ j, j < fc.locals.size → isNum (fc.locals[j]?.getD default) ∧ c.tpl j < t) ∧
+      c.sb < 2 ^ 28 ∧
+      Chain X t c.cid c.sb c.k rest sv
+  | _, _, _, _, _ => False
+
+/-- The live messages of the caller chain: one call record and the locals of each caller. -/
+def chainMsgs (X : Ctx) : Nat → Nat → List Frame → List Saved → Msg → Prop
+  | cid, k, fc :: rest, c :: sv, x =>
+      x = callMsg cid (X.offOf c.k + fc.pc) c.sb c.cid (X.pfOf k).stackCharge c.tpc ∨
+      x ∈ localView (16 + c.cid) fc.locals c.tpl ∨ chainMsgs X c.cid c.k rest sv x
+  | _, _, _, _, _ => False
+
+/-- A locals space of a returned activation (`16 + c`, `c < t`, not an active activation). -/
+def deadSp (t cid : Nat) (sv : List Saved) (x : Msg) : Prop :=
+  16 ≤ x.space ∧ x.space < 16 + t ∧ x.space ≠ 16 + cid ∧ ∀ c ∈ sv, x.space ≠ 16 + c.cid
+
+/-- The call part of the outer live set: the caller chain's messages are live, every live
+message in space 4 or `≥ 16` is a chain message or in a dead locals space, and the stack budget is
+exactly one live register message. -/
+structure CallsOK (X : Ctx) (E : Env) (s : St) (t : Nat) : Prop where
+  cidLtT : E.cid < t
+  chain : ∃ sv, Chain X t E.cid E.sb E.k E.rest sv ∧
+    (∀ x, chainMsgs X E.cid E.k E.rest sv x → E.live x) ∧
+    (∀ x, E.live x → (x.space = 4 ∨ 16 ≤ x.space) → chainMsgs X E.cid E.k E.rest sv x ∨ deadSp t E.cid sv x)
+  remLt : s.stackRem < 2 ^ 30
+  budget : ∃ tpb, tpb < t ∧ ∀ x, x.space = 5 → (E.live x ↔ x = budMsg s.stackRem tpb)
+
+theorem Chain.mono {X : Ctx} {t t' : Nat} (ht : t ≤ t') :
+    ∀ {cid sb k : Nat} {rest : List Frame} {sv : List Saved}, Chain X t cid sb k rest sv → Chain X t' cid sb k rest sv
+  | _, _, _, [], [], h => h
+  | _, _, _, _ :: _, _ :: _, h => by
+    obtain ⟨a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13⟩ := h
+    exact ⟨a1, a2, a3, a4, a5, by omega, a7, a8, a9, a10, fun j hj => ⟨(a11 j hj).1, by have := (a11 j hj).2; omega⟩,
+      a12, Chain.mono ht a13⟩
+  | _, _, _, [], _ :: _, h => h.elim
+  | _, _, _, _ :: _, [], h => h.elim
+
+/-- `CallsOK` survives a step that keeps the frame environment's call part, the stack budget and
+the activation (only later times). -/
+theorem CallsOK.mono {X : Ctx} {E E' : Env} {s s' : St} {t t' : Nat} (C : CallsOK X E s t) (ht : t ≤ t')
+    (hsb : E'.sb = E.sb) (hcid : E'.cid = E.cid) (hk : E'.k = E.k) (hrest : E'.rest = E.rest)
+    (hlive : ∀ x, (x.space = 4 ∨ x.space = 5 ∨ 16 ≤ x.space) → (E'.live x ↔ E.live x))
+    (hrem : s'.stackRem = s.stackRem) : CallsOK X E' s' t' := by
+  obtain ⟨sv, hc, hin, hout⟩ := C.chain
+  obtain ⟨tpb, htpb, hb⟩ := C.budget
+  have chainSp : ∀ {cid k : Nat} {rest : List Frame} {sv : List Saved} {x : Msg}, chainMsgs X cid k rest sv x →
+      x.space = 4 ∨ 16 ≤ x.space := by
+    intro cid k rest sv x h
+    induction rest generalizing cid k sv with
+    | nil => cases sv <;> simp [chainMsgs] at h
+    | cons fc rest ih =>
+      cases sv with
+      | nil => simp [chainMsgs] at h
+      | cons c sv =>
+        rcases h with rfl | h | h
+        · exact Or.inl rfl
+        · obtain ⟨j, -, rfl⟩ := mem_localView.mp h; right; simp [enc]
+        · exact ih h
+  refine ⟨by rw [hcid]; have := C.cidLtT; omega, ⟨sv, ?_, fun x h => ?_, fun x h hs => ?_⟩, by rw [hrem]; exact C.remLt,
+    ⟨tpb, by omega, fun x hx => by rw [hlive x (Or.inr (Or.inl hx)), hrem]; exact hb x hx⟩⟩
+  · rw [hcid, hsb, hk, hrest]; exact Chain.mono ht hc
+  · rw [hcid, hk, hrest] at h
+    have hs := chainSp h
+    rw [hlive x (hs.elim Or.inl (fun h => Or.inr (Or.inr h)))]
+    exact hin x h
+  · rw [hlive x (hs.elim Or.inl (fun h => Or.inr (Or.inr h)))] at h
+    rw [hcid, hk, hrest]
+    rcases hout x h hs with h1 | ⟨d1, d2, d3, d4⟩
+    · exact Or.inl h1
+    · exact Or.inr ⟨d1, by omega, d3, d4⟩
+
 /-- **The simulation relation** between a spec state and the AIR view at time `t` (design note:
 results/pq-wasm-base/README.md §10). -/
 structure RelW (X : Ctx) (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat)
@@ -274,6 +372,8 @@ structure RelW (X : Ctx) (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) 
   cidLt : E.cid < 2 ^ 28
   /-- The memory (space 3) part of the outer live set matches the spec memory. -/
   heap : HeapOK E s t
+  /-- The caller chain and the stack budget. -/
+  calls : CallsOK X E s t
   live : ∀ x, live x ↔ x ∈ stackView s.stack tps ∨ x ∈ localView E.lsp f.locals tpl ∨ E.live x
 
 /-- The relation with the frame data existential; `sb`/`cid` are the AIR state's, `k` the checked

@@ -545,7 +545,8 @@ def cidf : Nat := 3
 /-- per local `j`: final tag, value limbs, producer time (6 columns from `4 + 6 j`) -/
 def fin (j : Nat) : Nat := 4 + 6 * j
 /-- Public values: `[N, S_final, nres, rtag, r0, r1, r2, r3, status, mem, dataEnd]`, then one tag per local,
-then per global `[tag, v0, v1, v2, v3]` (its initial value; globals are channel space 2)
+then per global `[tag, v0, v1, v2, v3]` (its initial value; globals are channel space 2), then the
+initial stack budget `stackRem` as two 16-bit limbs (channel space 5)
 (`status` = 1: the function returned; 2: it trapped).  The code is not public: it is the cached CODE
 table, whose commitment is a statement component (`code_root`).  The first instruction row has
 `ts = 1`; initial locals are produced at time 0. -/
@@ -574,7 +575,9 @@ def inters (nloc ngl : Nat) : List Inter :=
      chRecv 16 (Expr.c j) (v (fin j)) ((List.range 4).map fun i => v (fin j + 1 + i)) (v (fin j + 5)) .first]) ++
   ((List.range ngl).map fun g =>
     chSend 2 (Expr.c g) (pv (pubLoc + nloc + 5 * g)) ((List.range 4).map fun i => pv (pubLoc + nloc + 5 * g + 1 + i))
-      0 .first)
+      0 .first) ++
+  -- the initial stack-budget register (space 5): `stackRem` as two limbs from the public values
+  [chSend 5 0 0 [pv (pubLoc + nloc + 5 * ngl), pv (pubLoc + nloc + 5 * ngl + 1), 0, 0] 0 .first]
 def table (nloc ngl : Nat) : Table := ⟨"BOUNDARY", cols nloc, [], inters nloc ngl⟩
 end Boundary
 
@@ -944,6 +947,6 @@ def wasmBaseAir (nloc ngl : Nat) : Air where
   tables := [Boundary.table nloc ngl, Add.table, Bit.table, Mul.table, Shift.table, Cmp.table,
     Const.table, Stack.table, Ctrl.table, Local.table, Div.table, Load.table, Store.table, Range16.table,
     Byte.table, Code.table, Drain.table, MemInit.table, Data.table]
-  numPub := Boundary.pubLoc + nloc + 5 * ngl
+  numPub := Boundary.pubLoc + nloc + 5 * ngl + 2
 
 end WasmBase

@@ -39,7 +39,9 @@ theorem straight_rel_env (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat
     (hgs : X.R * (S + fee) ≤ X.g0)
     (s' : St) (hs'stk : s'.stack = stk') (hs'fr : s'.frames = { f with pc := pc + 1, locals := locs' } :: E.rest)
     (hs'g : s'.gas.g = s.gas.g - X.R * fee)
+    (hs'rem : s'.stackRem = s.stackRem)
     (ce pe : List Msg) (hce : ∀ x ∈ ce, E.live x) (hpe : ∀ x ∈ pe, x.space ≠ 0 ∧ x.space ≠ E.lsp)
+    (hce4 : ∀ x ∈ ce, x.space < 4) (hpe4 : ∀ x ∈ pe, x.space < 4)
     (hheap : HeapOK { E with live := stepLive E.live ce pe } s' (t + 1)) :
     RelW X { E with live := stepLive E.live ce pe } s' { f with pc := pc + 1, locals := locs' }
       (fun i => if i < s.stack.size - k then tps i else t) (fun j => if some j = J then t else tpl j)
@@ -88,6 +90,14 @@ theorem straight_rel_env (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat
   sbLt := R.sbLt
   cidLt := R.cidLt
   heap := hheap
+  calls := R.calls.mono (by omega) rfl rfl rfl rfl (fun x hx => by
+      have h4 : ¬ x.space < 4 := by omega
+      simp only [stepLive]
+      constructor
+      · rintro (⟨h, _⟩ | h)
+        · exact h
+        · exact absurd (hpe4 x h) h4
+      · intro h; exact Or.inl ⟨h, fun hc => h4 (hce4 x hc)⟩) hs'rem
   live := by
     intro x
     have SL := straight_live X R hk stk' locs' J keep hsz lsz lkeep hJ x
@@ -342,7 +352,7 @@ theorem step_load (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Na
           · rw [if_neg hi', if_pos (by omega)]; exact R.numS i (by omega))
       rfl (fun _ _ => rfl) (by simp) R.numL hnext ⟨ls0, hL1, hfl⟩ (by rw [hsz']; omega)
       (by rw [hsz', hH1]; congr 1; omega) hg
-      s2 rfl rfl rfl
+      s2 rfl rfl rfl rfl
       ((List.range w).map fun i => encB (ea + i) (bv i) (tb i))
       ((List.range w).map fun i => encB (ea + i) (bv i) t)
       (fun x hx => by
@@ -351,6 +361,8 @@ theorem step_load (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Na
       (fun x hx => by
         obtain ⟨i, hi, rfl⟩ := List.mem_map.mp hx
         exact ⟨by simp, by simp [Env.lsp]; omega⟩)
+      (fun x hx => by obtain ⟨i, hi, rfl⟩ := List.mem_map.mp hx; simp [encB])
+      (fun x hx => by obtain ⟨i, hi, rfl⟩ := List.mem_map.mp hx; simp [encB])
       (heap_update (s' := s2) R.heap R.heap.pages rfl rfl (fun a _ => rfl) bv tb bv
         (fun i hi => R.env_msg (hmb i hi) (by simp) (by simp [Env.lsp]; omega))
         (fun i hi => (hbyte i hi).1))
@@ -452,7 +464,7 @@ theorem step_store (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
           rw [if_pos (by omega), if_pos (by omega)]; exact R.numS i (by omega))
       rfl (fun _ _ => rfl) (by simp) R.numL hnext ⟨ls0, hL1, hfl⟩ (by rw [hsz']; omega)
       (by rw [hsz', hH1]; congr 1; omega) hg
-      s2 rfl rfl rfl
+      s2 rfl rfl rfl rfl
       ((List.range w).map fun i => encB (ea + i) (bv i) (tb i))
       ((List.range w).map fun i => encB (ea + i) (nb i) t)
       (fun x hx => by
@@ -461,6 +473,8 @@ theorem step_store (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
       (fun x hx => by
         obtain ⟨i, hi, rfl⟩ := List.mem_map.mp hx
         exact ⟨by simp, by simp [Env.lsp]; omega⟩)
+      (fun x hx => by obtain ⟨i, hi, rfl⟩ := List.mem_map.mp hx; simp [encB])
+      (fun x hx => by obtain ⟨i, hi, rfl⟩ := List.mem_map.mp hx; simp [encB])
       (heap_update (s' := s2) R.heap
         (fun i h => by have := hok i (by rw [← hpg2]; exact h); simpa only [hpg2] using this) rfl
         (by rw [memBytes_congr hpg2, ← hm1]; unfold memBytes; rw [hsz])
@@ -591,9 +605,11 @@ theorem step_globalGet (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
           · rw [if_neg hi']; exact R.numS i (by omega))
       rfl (fun _ _ => rfl) (by simp) R.numL hnext ⟨ls0, hL1, hfl⟩ (by rw [hsz']; omega)
       (by rw [hsz', hH1]; congr 1; omega) hg
-      s2 rfl rfl rfl [mg] [mo]
+      s2 rfl rfl rfl rfl [mg] [mo]
       (fun y hy => by simp only [List.mem_singleton] at hy; subst hy; exact hE)
       (fun y hy => by simp only [List.mem_singleton] at hy; subst hy; rw [hmo']; exact ⟨by simp, by simp only [enc_space, Env.lsp]; omega⟩)
+      (fun y hy => by simp only [List.mem_singleton] at hy; subst hy; rw [sg.1]; decide)
+      (fun y hy => by simp only [List.mem_singleton] at hy; subst hy; rw [hmo']; simp [enc])
       (by
         rw [hmo']
         exact heap_glob (s' := s2) R.heap rfl rfl val hnum
@@ -654,9 +670,11 @@ theorem step_globalSet (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
           rw [if_pos (by omega)]; exact R.numS i (by omega))
       rfl (fun _ _ => rfl) (by simp) R.numL hnext ⟨ls0, hL1, hfl⟩ (by rw [hsz']; omega)
       (by rw [hsz', hH1]; congr 1; omega) hg
-      s2 rfl rfl rfl [mg] [mo]
+      s2 rfl rfl rfl rfl [mg] [mo]
       (fun y hy => by simp only [List.mem_singleton] at hy; subst hy; exact hE)
       (fun y hy => by simp only [List.mem_singleton] at hy; subst hy; rw [hmo']; exact ⟨by simp, by simp only [enc_space, Env.lsp]; omega⟩)
+      (fun y hy => by simp only [List.mem_singleton] at hy; subst hy; rw [sg.1]; decide)
+      (fun y hy => by simp only [List.mem_singleton] at hy; subst hy; rw [hmo']; simp [enc])
       (by
         rw [hmo']
         exact heap_glob (s' := s2) R.heap rfl (by simp [s2, Array.set!_eq_setIfInBounds]) top hnum

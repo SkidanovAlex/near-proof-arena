@@ -34,6 +34,8 @@ pub struct Prep {
     pub data: Vec<u64>,
     /// initial globals `(tag, limbs)` (numeric only: tag 0 = i32, 1 = i64); globals are channel space 2
     pub globals: Vec<(u64, [u64; 4])>,
+    /// the spec's stack budget `stackRem` after `enter` (channel space 5; `< 2^30`)
+    pub stack_rem: u64,
 }
 
 impl Prep {
@@ -79,6 +81,7 @@ impl Prep {
                         .collect()
                 })
                 .unwrap_or_default(),
+            stack_rem: v.get("stackRem").and_then(|x| x.as_u64()).unwrap_or(0),
         }
     }
 }
@@ -876,6 +879,10 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
             drn.row().u("act", 1).u("space", 0).u("slot", i as u64).u("tag", e.tag).limbs("v", limbs(e.val)).u("tp", e.tp);
         }
     }
+    // the stack-budget register is left over at the end (space 5; no calls yet: produced at time 0)
+    assert!(prep.stack_rem < 1 << 30, "stackRem >= 2^30 is outside the domain (BudOK)");
+    drn.row().u("act", 1).u("space", 5).u("slot", 0).u("tag", 0)
+        .limbs("v", [prep.stack_rem & 0xffff, prep.stack_rem >> 16, 0, 0]).u("tp", 0).s("inv", fe(5).inverse());
     // every global is left over at the end (space 2)
     for (g, e) in globals.iter().enumerate() {
         drn.row().u("act", 1).u("space", 2).u("slot", g as u64).u("tag", e.tag).limbs("v", limbs(e.val)).u("tp", e.tp)
@@ -938,6 +945,8 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
         pubs.push(fe(tag));
         pubs.extend(l.map(fe));
     }
+    pubs.push(fe(prep.stack_rem & 0xffff));
+    pubs.push(fe(prep.stack_rem >> 16));
     assert_eq!(pubs.len(), air.num_pub);
 
     // RANGE16 / BYTE

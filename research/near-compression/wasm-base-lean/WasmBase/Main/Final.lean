@@ -73,7 +73,8 @@ from function entry (empty operand stack, zero-initialised locals, gas `g0`) the
 `NearSpecV3.Wasm.run` ends after exactly `N − 1` steps, having charged `R · S` gas: with status 1 it
 returns with the operand stack equal to the public result; with status 2 it traps (`.abort`).
 The memory conditions (`PagesOK`, `DataOK`, `pubMem`, `pubDataEnd`) bind the initial linear memory;
-`GlobOK` binds the initial globals (`ncode` = the number of globals) to their public values. -/
+`GlobOK` binds the initial globals (`ncode` = the number of globals) to their public values, `BudOK`
+the initial stack budget (`stackRem`). -/
 theorem wasm_base_sound (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseAir nloc ncode) pub tr) (hpub : PubOK X nloc ncode pub) (hcode : CodeOK X tr)
     (hfeeN : (pub.getD Boundary.pubN 0).toNat * (X.maxFee + 1) < P)
@@ -84,7 +85,7 @@ theorem wasm_base_sound (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (hdata : DataOK s0 tr) (hM : pub.getD Boundary.pubMem 0 = ((memBytes s0 : Nat) : F))
     (hMle : memBytes s0 ≤ 2 ^ 27) (hDE : (pub.getD Boundary.pubDataEnd 0).toNat ≤ 2 ^ 27)
     (hzero : ∀ a, (pub.getD Boundary.pubDataEnd 0).toNat ≤ a → readByte s0 a = 0)
-    (hglob : GlobOK nloc ncode pub s0) :
+    (hglob : GlobOK nloc ncode pub s0) (hbudg : BudOK nloc ncode pub s0) :
     (pub.getD Boundary.pubStatus 0 = ((1 : Nat) : F) →
       ∃ sN, run X.cfg X.p ((pub.getD Boundary.pubN 0).toNat - 1) s0 = .fin sN ∧ sN.frames = [] ∧
         X.R * (pub.getD Boundary.pubS 0).toNat + sN.gas.g = X.g0 ∧
@@ -95,6 +96,6 @@ theorem wasm_base_sound (X : Ctx) {nloc ncode : Nat} {pub : List F} {tr : Trace}
     (pub.getD Boundary.pubStatus 0 = ((2 : Nat) : F) →
       ∃ sN e, run X.cfg X.p ((pub.getD Boundary.pubN 0).toNat - 1) s0 = .abort sN e ∧
         X.R * (pub.getD Boundary.pubS 0).toNat + sN.gas.g = X.g0) :=
-  wasm_base_exec X H hpub (chipFacts X H) hcode hfeeN hgas hg64 hfr hfn hpc hlab hbase hloc hstk hg hpok hdata hM hMle hDE hzero hglob
+  wasm_base_exec X H hpub (chipFacts X H) hcode hfeeN hgas hg64 hfr hfn hpc hlab hbase hloc hstk hg hpok hdata hM hMle hDE hzero hglob hbudg
 
 end WasmBase

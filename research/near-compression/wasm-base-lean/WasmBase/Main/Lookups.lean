@@ -89,7 +89,7 @@ theorem boundary_lookups (nloc ncode : Nat) :
   intro i hi
   simp only [Boundary.inters, List.mem_append, List.mem_cons, List.mem_nil_iff, or_false, List.mem_flatMap,
     List.mem_map, List.mem_range] at hi
-  rcases hi with ((rfl | rfl | rfl) | ⟨j, _, rfl | rfl⟩) | ⟨g, _, rfl⟩ <;>
+  rcases hi with (((rfl | rfl | rfl) | ⟨j, _, rfl | rfl⟩) | ⟨g, _, rfl⟩) | rfl <;>
     simp [stateOut, chSend, chRecv, stkRecv, busState, busStk, busR16, busByte, busFetch, busData]
 
 /-! ## Lookup consequences -/
