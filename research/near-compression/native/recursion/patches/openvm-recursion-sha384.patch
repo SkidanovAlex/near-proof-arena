@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..97a491e
+index 0000000..3ca4ed5
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,883 @@
+@@ -0,0 +1,893 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -1381,6 +1381,8 @@ index 0000000..97a491e
 +    pub statement: Option<Digest>,
 +    /// the child is an NV proof (statement passthrough even without program binding)
 +    pub child_nv: bool,
++    /// G2: C_L1, the commitment of the level-1 program (a program constant at levels >= 2)
++    pub l1_commit: Option<Digest>,
 +    /// open flush job (job id, t_start, observed felts)
 +    tr_pending: Option<(u32, u32, u32)>,
 +    /// static transcript jobs allocated so far
@@ -1421,6 +1423,7 @@ index 0000000..97a491e
 +            level: 0,
 +            statement: None,
 +            child_nv: false,
++            l1_commit: None,
 +            tr_pending: None,
 +            tr_static: 0,
 +            tr_started: false,
@@ -1828,6 +1831,13 @@ index 0000000..97a491e
 +        let hi = self.load(ef_from(hi));
 +        self.observe_commit_cells(lo, hi, d)
 +    }
++    /// Constant digest as cells (not observed).
++    pub fn const_digest(&mut self, d: Digest) -> DigestCells {
++        let (lo, hi) = digest_cells(d);
++        let lo = self.ce(ef_from(lo));
++        let hi = self.ce(ef_from(hi));
++        DigestCells { lo, hi, digest: d }
++    }
 +    /// Constant digest (e.g. the vk pre-hash) as cells, observed as a commitment.
 +    pub fn const_commit(&mut self, d: Digest) -> DigestCells {
 +        let (lo, hi) = digest_cells(d);
@@ -2123,10 +2133,10 @@ index 0000000..97a491e
 +}
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
-index 0000000..f4ac463
+index 0000000..16c1940
 --- /dev/null
 +++ b/crates/recursion/src/nv/circuit.rs
-@@ -0,0 +1,272 @@
+@@ -0,0 +1,331 @@
 +//! NV v0 circuit: ALU + transcript engine + Merkle AIR + SHA subsystem.
 +use std::{collections::HashMap, sync::Arc};
 +
@@ -2205,6 +2215,7 @@ index 0000000..f4ac463
 +    }
 +}
 +
++#[derive(Clone)]
 +pub struct NvCircuit {
 +    pub buses: NvBuses,
 +    /// WHIR folding factor of the child (coset tree height)
@@ -2225,9 +2236,18 @@ index 0000000..f4ac463
 +    /// TEST ONLY: passthrough without program binding (child of a different size)
 +    #[cfg(test)]
 +    pub test_no_bind: bool,
++    /// G2: P0..P3 as a cached main part (NV levels); false = in common main (FINAL)
++    pub program_part: bool,
++    /// G2: C_L1, the level-1 program's commitment (a constant of every level >= 2)
++    pub l1_commit: Option<crate::sha384::config::Digest>,
 +}
 +
 +impl NvCircuit {
++    /// A copy of this circuit (same shape, constants and flags).
++    pub fn clone_shape(&self) -> Self {
++        self.clone()
++    }
++
 +    pub fn new(k: usize, log_rows: usize, sha_instances: usize) -> Self {
 +        Self {
 +            buses: NvBuses::new(),
@@ -2244,6 +2264,8 @@ index 0000000..f4ac463
 +            child_nv: false,
 +            #[cfg(test)]
 +            test_no_bind: false,
++            program_part: false,
++            l1_commit: None,
 +        }
 +    }
 +
@@ -2256,7 +2278,7 @@ index 0000000..f4ac463
 +        let lay = self.layout();
 +        assert_eq!(self.sha_instances, 1, "NV v1 uses one compression AIR");
 +        vec![
-+            Arc::new(NvAir { buses: b.alu, app_base: self.reserved(), h: b.h, t: b.tr }) as AirRef<SC>,
++            Arc::new(NvAir { buses: b.alu, app_base: self.reserved(), h: b.h, t: b.tr, program_part: self.program_part }) as AirRef<SC>,
 +            Arc::new(Sha512Air4 {
 +                lay,
 +                buses: b.h.sha(),
@@ -2311,6 +2333,7 @@ index 0000000..f4ac463
 +            b.emit_app(app.clone());
 +        }
 +        b.begin();
++        b.l1_commit = self.l1_commit;
 +        body(&mut b);
 +        b.finish();
 +        let _ = self.k; // per-round folding factors come from the child vk
@@ -2358,6 +2381,62 @@ index 0000000..f4ac463
 +        && nv_public_values[13..19] == hi[..6]
 +}
 +
++/// The level's program part P0..P3 (G2) committed as a cached main trace under `config`.
++pub fn commit_program_part(
++    config: &Sha384Config,
++    prog: openvm_stark_backend::prover::ColMajorMatrix<F>,
++) -> (crate::sha384::config::Digest, openvm_stark_backend::prover::stacked_pcs::StackedPcsData<F, crate::sha384::config::Digest>) {
++    use openvm_stark_backend::StarkProtocolConfig;
++    let p = config.params();
++    openvm_stark_backend::prover::stacked_pcs::stacked_commit_odd(
++        config.hasher(),
++        p.l_skip,
++        p.n_stack,
++        p.log_blowup,
++        p.whir.k_first(),
++        p.whir.domain_odd_factor,
++        &[&prog],
++        false,
++    )
++    .expect("program part commitment")
++}
++
++/// C_L1 (G2): the commitment of a level's program part, from its NvAir trace (setup, native).
++pub fn program_commitment(config: &Sha384Config, nv_trace: &RowMajorMatrix<F>) -> crate::sha384::config::Digest {
++    let (_, prog) = super::uair::split_program_part(nv_trace);
++    commit_program_part(config, openvm_stark_backend::prover::ColMajorMatrix::from_row_major(&prog)).0
++}
++
++/// Proving contexts of an NV level: AIR 0 with the builder's public values (and, with the
++/// program part, the common main without P0..P3 plus the committed cached part).
++pub fn nv_contexts(
++    circ: &NvCircuit,
++    config: &Sha384Config,
++    mats: Vec<RowMajorMatrix<F>>,
++    pvs: Vec<F>,
++) -> Vec<openvm_stark_backend::prover::AirProvingContext<openvm_cpu_backend::CpuBackend<Sha384Config>>> {
++    use openvm_stark_backend::prover::{AirProvingContext, CommittedTraceData};
++    mats.into_iter()
++        .enumerate()
++        .map(|(i, m)| {
++            if i == 0 && circ.program_part {
++                let (common, prog) = super::uair::split_program_part(&m);
++                let (commitment, data) =
++                    commit_program_part(config, openvm_stark_backend::prover::ColMajorMatrix::from_row_major(&prog));
++                AirProvingContext {
++                    cached_mains: vec![CommittedTraceData { commitment, trace: prog, data: std::sync::Arc::new(data) }],
++                    common_main: common,
++                    public_values: pvs.clone(),
++                }
++            } else if i == 0 {
++                AirProvingContext::simple(m, pvs.clone())
++            } else {
++                AirProvingContext::simple_no_pis(m)
++            }
++        })
++        .collect()
++}
++
 +/// Prove one NV level; returns (vk, proof, executed builder, trace matrices' shapes).
 +pub fn prove_level(
 +    circ: &NvCircuit,
@@ -2381,17 +2460,7 @@ index 0000000..f4ac463
 +    assert!(b.failures.is_empty(), "verifier program failures: {:?}", b.failures);
 +    let shapes = mats.iter().map(|m| (m.height(), m.width())).collect();
 +    let pvs = b.public_values();
-+    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
-+        .into_iter()
-+        .enumerate()
-+        .map(|(i, m)| {
-+            if i == 0 {
-+                AirProvingContext::simple(m, pvs.clone())
-+            } else {
-+                AirProvingContext::simple_no_pis(m)
-+            }
-+        })
-+        .collect();
++    let ctxs = nv_contexts(circ, engine.config(), mats, pvs);
 +    let d_pk = engine.device().transport_pk_to_device(&pk);
 +    let proof = engine
 +        .prove(&d_pk, ProvingContext::new(ctxs.into_iter().enumerate().collect()))
@@ -2401,10 +2470,10 @@ index 0000000..f4ac463
 +}
 diff --git a/crates/recursion/src/nv/faithful_dof.rs b/crates/recursion/src/nv/faithful_dof.rs
 new file mode 100644
-index 0000000..1f26c7e
+index 0000000..124d800
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_dof.rs
-@@ -0,0 +1,527 @@
+@@ -0,0 +1,536 @@
 +//! NV-faithful degree-of-freedom check (results/pq-recursion-nv/FAITHFUL.md §4).
 +//!
 +//! For an honest NV trace set, every cell of every AIR is perturbed one at a time
@@ -2477,6 +2546,15 @@ index 0000000..1f26c7e
 +        if x.into() != F::ZERO {
 +            self.bad += 1;
 +        }
++    }
++}
++// the DOF harness evaluates the unpartitioned NvAir (program in common main)
++impl<'a> openvm_stark_backend::air_builders::PartitionedAirBuilder for WinEval<'a> {
++    fn cached_mains(&self) -> &[Self::M] {
++        &[]
++    }
++    fn common_main(&self) -> &Self::M {
++        &self.main
 +    }
 +}
 +impl<'a> InteractionBuilder for WinEval<'a> {
@@ -3419,10 +3497,10 @@ index 0000000..e1db382
 +}
 diff --git a/crates/recursion/src/nv/faithful_tests.rs b/crates/recursion/src/nv/faithful_tests.rs
 new file mode 100644
-index 0000000..ca8bb26
+index 0000000..d458a38
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_tests.rs
-@@ -0,0 +1,769 @@
+@@ -0,0 +1,771 @@
 +//! NV-faithful: degree-of-freedom (single-cell perturbation) runs and tamper tests for the ALU,
 +//! BIND and app-binding roles (results/pq-recursion-nv/FAITHFUL.md).
 +//!
@@ -3782,7 +3860,7 @@ index 0000000..ca8bb26
 +    for k in 0..OP_LO {
 +        mats[0].values[r * w + x.ab.h[k]] = F::from_bool(k == op % OP_LO);
 +    }
-+    for k in 0..4 {
++    for k in 0..crate::nv::isa::OP_HI {
 +        mats[0].values[r * w + x.ab.g[k]] = F::from_bool(k == op / OP_LO);
 +    }
 +    mats[0].values[r * w + x.ab.rx] = rxyz.0;
@@ -3802,20 +3880,23 @@ index 0000000..ca8bb26
 +        *c = if d > 0 { *c + F::ONE } else { *c - F::ONE };
 +    };
 +    bump(old.0, old.1, -1);
-+    bump(old.2, old.2 * F::from_u32(16), -1);
++    bump(old.2, F::ZERO, -1);
 +    bump(rxyz.0, rxyz.1, 1);
-+    bump(rxyz.2, rxyz.2 * F::from_u32(16), 1);
++    bump(rxyz.2, F::ZERO, 1);
 +}
 +
-+/// B-field bytes forging B' = B + 2^20 (B <= 61439) with rz = t / 16, t = 255 (not a multiple
-+/// of 16): 65536 rz = 4096 * 255 (mod p).
-+fn forge_b_plus_2_20(b: u32) -> (F, F, F) {
-+    let target = b + (1 << ADDR_BITS) - 4096 * 255;
-+    assert!(target < 65536, "B too large for the forged decomposition");
-+    (F::from_u32(target & 255), F::from_u32(target >> 8), F::from_u32(255) * F::from_u32(16).inverse())
++/// B-field bytes forging B' = B + 2^ADDR_BITS (the relabel op -> op - 1).  With ADDR_BITS = 24
++/// the B field is rx + 2^8 ry + 2^16 rz with rz looked up as a full byte (pair (rz, 0)), so the
++/// only decompositions of B' need rz >= 256 (here rz = (B >> 16) + 2^(ADDR_BITS-16)), which is
++/// outside the byte table.  The old 20-bit attack (rz = t/16, 65536 rz = 4096 t) cannot reach
++/// B + 2^24 either: 4096 * 255 + 65535 < 2^24.
++fn forge_b_plus_2_addr(b: u32) -> (F, F, F) {
++    let t = b as u64 + (1u64 << ADDR_BITS);
++    assert!(4096 * 255 + 65535 < (1u64 << ADDR_BITS));
++    (F::from_u32((t & 255) as u32), F::from_u32(((t >> 8) & 255) as u32), F::from_u32((t >> 16) as u32))
 +}
 +
-+/// Bug (fixed on this branch): the B-field range check `lookup_byte(16 rz)` accepts any
++/// Bug (fixed on this branch; regression kept for ADDR_BITS = 24): the 20-bit B-field range check `lookup_byte(16 rz)` accepts any
 +/// rz = t/16 (t a byte), so B ranges over [0, 1110015] instead of [0, 2^20) and an op can be
 +/// relabelled to op - 1 with B' = B + 2^20.  Zero -> Bit turns the equality assertion a == 0 into
 +/// a0 in {0, 1}: a child proof whose Gruen GKR s(3) = 1 (must be 0) is accepted.
@@ -3847,7 +3928,7 @@ index 0000000..ca8bb26
 +        let a: Vec<F> = (0..12).map(|k| mats[0].values[r * w + x.ab.a[k]]).collect();
 +        assert!(a[0] == F::ONE && a[1..].iter().all(|v| *v == F::ZERO), "Zero row {r} a = {a:?} is not the unit");
 +        let bf = mats[0].values[r * w + x.cm.p[1]].as_canonical_u32() - ((zero as u32) << ADDR_BITS);
-+        relabel(&mut mats, r, Op::Bit as usize, forge_b_plus_2_20(bf), &x);
++        relabel(&mut mats, r, Op::Bit as usize, forge_b_plus_2_addr(bf), &x);
 +        for k in 0..12 {
 +            mats[0].values[r * w + x.ab.c[k]] = a[k]; // Bit: c = a
 +        }
@@ -3873,12 +3954,11 @@ index 0000000..ca8bb26
 +            .find(|&r| {
 +                op_of(&mats[0], r, &x) == Some(mul)
 +                    && (0..12).all(|k| mats[0].values[r * w + x.ab.c[k]] == F::ZERO)
-+                    && mats[0].values[r * w + x.cm.p[1]].as_canonical_u32() - (1 << ADDR_BITS) <= 61439
 +            })
 +            .expect("a Mul row with zero product");
 +        let a_addr = mats[0].values[r * w + x.cm.p[0]].as_canonical_u32() as usize;
 +        let b_addr = (mats[0].values[r * w + x.cm.p[1]].as_canonical_u32() - (1 << ADDR_BITS)) as usize;
-+        relabel(&mut mats, r, target, forge_b_plus_2_20(b_addr as u32), &x);
++        relabel(&mut mats, r, target, forge_b_plus_2_addr(b_addr as u32), &x);
 +        mats[0].values[a_addr * w + x.ab.mult] -= F::ONE;
 +        mats[0].values[b_addr * w + x.ab.mult] -= F::ONE;
 +        must_fail(&format!("alu relabel Mul->op{target} (forged B field)"), || debug_check(&airs, mats, &pvs));
@@ -6145,10 +6225,10 @@ index 0000000..ddcb0ca
 +}
 diff --git a/crates/recursion/src/nv/isa.rs b/crates/recursion/src/nv/isa.rs
 new file mode 100644
-index 0000000..7c70b86
+index 0000000..3969400
 --- /dev/null
 +++ b/crates/recursion/src/nv/isa.rs
-@@ -0,0 +1,164 @@
+@@ -0,0 +1,166 @@
 +//! NV ALU instruction set.  One instruction per ALU row; every row writes its result
 +//! `c` (an Ext12 value) to memory address = its row index.  Program words:
 +//!   P0 = A  (operand address, or base-field immediate)
@@ -6159,7 +6239,9 @@ index 0000000..7c70b86
 +//! in-circuit multilinear evaluation (see DESIGN.md §2.1).
 +
 +/// Address bits available for operand `B` in `P1`.
-+pub const ADDR_BITS: u32 = 20;
++/// Address / B-field width: 24 bits (NvAir up to 2^24 rows; L1 over a real base needs > 2^20).
++/// P1 = B + op * 2^24 < 40 * 2^24 < p, so the decomposition stays unique.
++pub const ADDR_BITS: u32 = 24;
 +pub const MAX_ROWS: usize = 1 << ADDR_BITS;
 +
 +#[repr(u32)]
@@ -7277,10 +7359,10 @@ index 0000000..9373307
 +
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..2d4e4f8
+index 0000000..94622c6
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,1306 @@
+@@ -0,0 +1,1333 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -7606,7 +7688,6 @@ index 0000000..2d4e4f8
 +    let k = openvm_stark_backend::StarkEngine::params(&engine).k_whir();
 +    let _ = k;
 +    // optional final layer with its own parameters (env FINAL_*), proving the last phase-A proof
-+    assert!(unbound_final || std::env::var("FINAL_LOG_BLOWUP").is_err(), "FINAL must run the NV program (bound): FINAL_* params need NV_UNBOUND_FINAL=1 (measurement only)");
 +    let final_engine = std::env::var("FINAL_LOG_BLOWUP").ok().map(|_| {
 +        let mut fp = params_from_env("FINAL", [16, 3, 20, 64]);
 +        fp.max_constraint_degree = nv_debug_params().max_constraint_degree;
@@ -7740,13 +7821,18 @@ index 0000000..2d4e4f8
 +    circ.heights = Some(fixed);
 +    let (mut vk, mut p) = (vk0, p0.clone());
 +    let mut last_words: Vec<[u32; 4]> = vec![];
++    let _ = app_a;
++    // G2: every NV level carries its program as a cached part; levels >= 2 hold C_L1
++    circ.program_part = true;
 +    for level in 1..=levels {
 +        circ.bind = level >= 2;
 +        circ.child_nv = level >= 2;
-+        circ.app = if level >= 2 { app_a.clone() } else { None };
++        circ.app = None;
 +        let (v, q, _, app) = run(&circ, &vk, &p, &format!("L{level}"));
 +        if level == 1 {
-+            assert_eq!(Some(app.clone()), app_a, "level-1 program differs from the phase-A table");
++            let c_l1 = q.trace_vdata[0].as_ref().unwrap().cached_commitments[0];
++            println!("NV_G2 C_L1 = {c_l1:?}");
++            circ.l1_commit = Some(c_l1);
 +        }
 +        assert!(super::circuit::check_statement(&q.public_values[0], &p0.public_values), "L{level} statement");
 +        last_words = app;
@@ -7755,8 +7841,12 @@ index 0000000..2d4e4f8
 +    }
 +    // FINAL: the fixed-point program under the final domain, child program bound; V_d checks it
 +    assert!(levels >= 2, "FINAL needs an NV child (NV_LEVELS >= 2)");
-+    let fe = Sha384CpuEngine::new_final(openvm_stark_backend::StarkEngine::params(&engine).clone());
-+    let (vkf, pf, _, words_f) = run_with(&fe, &circ, &vk, &p, "FINAL");
++    // FINAL: its own WHIR shape (FINAL_* params, default the NV params) and a single commitment
++    // (program in common main); the program is the same (it depends on the child vk only)
++    let fe = final_engine.unwrap_or_else(|| Sha384CpuEngine::new_final(openvm_stark_backend::StarkEngine::params(&engine).clone()));
++    let mut fcirc = circ.clone_shape();
++    fcirc.program_part = false;
++    let (vkf, pf, _, words_f) = run_with(&fe, &fcirc, &vk, &p, "FINAL");
 +    assert_eq!(words_f, last_words, "FINAL runs the same (fixed-point) program as its child");
 +    let setup = super::vd::VdSetup { vk_final: vkf, program: words_f, level: levels as u32 + 1 };
 +    super::vd::verify_final(&setup, &fe, &p0.public_values, &pf, false).expect("V_d (pinned program) accepts the final proof");
@@ -8526,7 +8616,8 @@ index 0000000..2d4e4f8
 +    println!("NV_POW_IDENTITY {} programs byte-identical ({} rows)", progs.len(), progs[0].len());
 +}
 +
-+/// V_d end to end (test size): base (Fib) -> L1 -> L2 (bound to L1 via the app table) -> FINAL
++/// V_d end to end (test size, G2): base (Fib) -> L1 (cached program part, commitment C_L1) -> L2
++/// (checks its child's program commitment = C_L1) -> FINAL
 +/// (`new_final`, the same program as L2, bound to L2 at the fixed point) -> V_d. V_d pins the final
 +/// vk, level 3 and the NV program; it accepts the honest chain; a forged FINAL (a verify-nothing
 +/// program exposing the honest statement) passes every AIR and the final vk, and is accepted by
@@ -8546,42 +8637,60 @@ index 0000000..2d4e4f8
 +    let engine_final = Sha384CpuEngine::new_final(pp);
 +    let k = openvm_stark_backend::StarkEngine::params(&engine).k_whir();
 +    let log_rows = 18;
-+    // natural L1, then L2's natural heights fix every level's heights
-+    let circ1 = super::circuit::NvCircuit::new(k, log_rows, 1);
-+    let (vk1n, p1n, b1n, _) = super::circuit::prove_level(&circ1, &engine, &vk0, &p0);
-+    let app = super::circuit::NvCircuit::app_table(&b1n.instrs);
++    // natural L1 (program part), then L2's natural heights fix every level's heights
++    let mut circ1 = super::circuit::NvCircuit::new(k, log_rows, 1);
++    circ1.program_part = true;
++    let (vk1n, p1n, _, _) = super::circuit::prove_level(&circ1, &engine, &vk0, &p0);
 +    let mut circ2 = super::circuit::NvCircuit::new(k, log_rows, 1);
-+    circ2.app = Some(app.clone());
++    circ2.program_part = true;
 +    circ2.child_nv = true;
++    circ2.l1_commit = Some(p1n.trace_vdata[0].as_ref().unwrap().cached_commitments[0]);
 +    let (m2n, _) = circ2.generate(&vk1n, &p1n);
 +    use p3_matrix::Matrix;
 +    let fixed: Vec<usize> = m2n.iter().map(|m| m.height()).collect();
 +    println!("NV_VD fixed heights {fixed:?}");
-+    let mut circ1f = circ1;
-+    circ1f.heights = Some(fixed.clone());
-+    let (vk1, p1, b1, _) = super::circuit::prove_level(&circ1f, &engine, &vk0, &p0);
-+    assert_eq!(super::circuit::NvCircuit::app_table(&b1.instrs), app, "L1 program independent of its heights");
++    circ1.heights = Some(fixed.clone());
++    // C_L1 at setup: the level-1 program part committed natively (no proof needed)
++    let (m1, b1g) = circ1.generate(&vk0, &p0);
++    assert!(b1g.failures.is_empty());
++    let c_l1 = super::circuit::program_commitment(openvm_stark_backend::StarkEngine::config(&engine), &m1[0]);
++    let (vk1, p1, _, _) = super::circuit::prove_level(&circ1, &engine, &vk0, &p0);
++    assert_eq!(p1.trace_vdata[0].as_ref().unwrap().cached_commitments[0], c_l1, "L1's program commitment = the setup C_L1");
++    println!("NV_VD C_L1 = setup commitment of the L1 program part");
 +    circ2.heights = Some(fixed.clone());
++    circ2.l1_commit = Some(c_l1);
++    // a wrong C_L1 constant: the level-2 program rejects the honest L1
++    {
++        let mut bad = circ2.clone_shape();
++        let mut d = c_l1;
++        d[0] ^= 1;
++        bad.l1_commit = Some(d);
++        let (_, bb) = bad.generate(&vk1, &p1);
++        assert!(bb.failures.iter().any(|f| f.contains("C_L1")), "wrong C_L1 accepted: {:?}", bb.failures);
++        println!("NV_VD wrong C_L1 rejected: {:?}", bb.failures);
++    }
 +    let (vk2, p2, b2, _) = super::circuit::prove_level(&circ2, &engine, &vk1, &p1);
 +    assert_eq!(b2.level, 2);
-+    let (vkf, pf, bf, _) = super::circuit::prove_level(&circ2, &engine_final, &vk2, &p2);
++    // FINAL: the same program, one commitment (program in common main), final domain
++    let mut circf = circ2.clone_shape();
++    circf.program_part = false;
++    let (vkf, pf, bf, _) = super::circuit::prove_level(&circf, &engine_final, &vk2, &p2);
 +    assert_eq!(bf.level, 3);
 +    assert_eq!(bf.instrs, b2.instrs, "FINAL runs the uniform NV program (bound to L2's)");
++    assert!(pf.trace_vdata[0].as_ref().unwrap().cached_commitments.is_empty(), "FINAL has one commitment");
 +    let program: Vec<[u32; 4]> = bf.instrs.iter().map(|i| i.words()).collect();
 +    let setup = VdSetup { vk_final: vkf.clone(), program, level: 3 };
 +    verify_final(&setup, &engine_final, &p0.public_values, &pf, false).expect("V_d accepts the honest chain");
 +    println!("NV_VD honest final accepted ({} program rows)", setup.program.len());
-+    // wrong claim / wrong pinned level
 +    let mut other = p0.public_values.clone();
 +    let a = other.iter().position(|v| !v.is_empty()).unwrap();
 +    other[a][0] += F::ONE;
 +    assert!(verify_final(&setup, &engine_final, &other, &pf, false).is_err(), "wrong claim accepted");
 +    let wrong_level = VdSetup { level: 2, ..setup.clone() };
 +    assert!(verify_final(&wrong_level, &engine_final, &p0.public_values, &pf, false).is_err(), "wrong level accepted");
-+    // the forgery: a verify-nothing program exposing level 3 and the honest statement digest
 +    let d = crate::sha384::config::statement_digest(&p0.public_values);
-+    let (mats, bforge) = circ2.generate_program(forge_statement_program(3, d));
-+    let (vk_forge, p_forge) = prove_traces(&circ2, &engine_final, mats, bforge.public_values());
++    let (mats, bforge) = circf.generate_program(forge_statement_program(3, d));
++    let (vk_forge, p_forge) = prove_traces(&circf, &engine_final, mats, bforge.public_values());
 +    assert_eq!(vk_forge.pre_hash, vkf.pre_hash, "the forgery uses the pinned final vk");
 +    verify_final(&setup, &engine_final, &p0.public_values, &p_forge, true).expect("without the program check V_d is fooled");
 +    let err = verify_final(&setup, &engine_final, &p0.public_values, &p_forge, false).expect_err("forged final accepted with the program check");
@@ -9391,10 +9500,10 @@ index 0000000..36b0e7c
 +}
 diff --git a/crates/recursion/src/nv/uair.rs b/crates/recursion/src/nv/uair.rs
 new file mode 100644
-index 0000000..2ee07dd
+index 0000000..08ba06c
 --- /dev/null
 +++ b/crates/recursion/src/nv/uair.rs
-@@ -0,0 +1,852 @@
+@@ -0,0 +1,905 @@
 +//! NV merged non-SHA AIR ("NvAir", U2): one AIR, row roles sharing a column pool.
 +//!
 +//! Common columns: role flags ka (ALU), kb (BIND), kg (GLUE), kh (transcript hash chain),
@@ -9422,6 +9531,7 @@ index 0000000..2ee07dd
 +
 +use openvm_recursion_circuit_derive::AlignedBorrow;
 +use openvm_stark_backend::{
++    air_builders::PartitionedAirBuilder,
 +    interaction::{BusIndex, Interaction, InteractionBuilder, LookupBus, PermutationCheckBus},
 +    BaseAirWithPublicValues, PartitionedBaseAir,
 +};
@@ -9492,7 +9602,7 @@ index 0000000..2ee07dd
 +    pub h: [T; OP_LO],
 +    pub wit: T,
 +    pub mult: T,
-+    /// bytes of the B field: B = rx + 256 ry + 65536 rz, rz < 16 (binds the op to P1)
++    /// bytes of the B field: B = rx + 256 ry + 65536 rz, three bytes (binds the op to P1)
 +    pub rx: T,
 +    pub ry: T,
 +    /// the result: pool 36..48, the positions of BIND's accumulator, which are already opened at
@@ -9547,7 +9657,13 @@ index 0000000..2ee07dd
 +    pub app_base: usize,
 +    pub h: HashBuses,
 +    pub t: TrBuses,
++    /// G2: the program columns P0..P3 form a separate CACHED main part (one commitment per
++    /// level, the program's; its root is a proof value bound by the parent: C_L1 for a level-1
++    /// child, BIND otherwise).  FINAL keeps them in common main (one commitment).
++    pub program_part: bool,
 +}
++/// Number of program columns (the cached part when `program_part`).
++pub const N_PROG: usize = 4;
 +impl<T> BaseAir<T> for NvAir {
 +    fn width(&self) -> usize {
 +        NV_WIDTH
@@ -9558,7 +9674,38 @@ index 0000000..2ee07dd
 +        NV_NUM_PVS
 +    }
 +}
-+impl<T> PartitionedBaseAir<T> for NvAir {}
++impl<T> PartitionedBaseAir<T> for NvAir {
++    fn cached_main_widths(&self) -> Vec<usize> {
++        if self.program_part {
++            vec![N_PROG]
++        } else {
++            vec![]
++        }
++    }
++    fn common_main_width(&self) -> usize {
++        if self.program_part {
++            NV_WIDTH - N_PROG
++        } else {
++            NV_WIDTH
++        }
++    }
++}
++
++/// Split an NvAir trace into (common main without P0..P3, the program part P0..P3).
++pub fn split_program_part(m: &RowMajorMatrix<F>) -> (RowMajorMatrix<F>, RowMajorMatrix<F>) {
++    let w = m.width;
++    assert_eq!(w, NV_WIDTH);
++    let h = m.values.len() / w;
++    let mut common = Vec::with_capacity(h * (w - N_PROG));
++    let mut prog = Vec::with_capacity(h * N_PROG);
++    for r in 0..h {
++        let row = &m.values[r * w..(r + 1) * w];
++        common.extend_from_slice(&row[..U_P]);
++        common.extend_from_slice(&row[U_P + N_PROG..]);
++        prog.extend_from_slice(&row[U_P..U_P + N_PROG]);
++    }
++    (RowMajorMatrix::new(common, w - N_PROG), RowMajorMatrix::new(prog, N_PROG))
++}
 +
 +/// Builder adapter: constraints go to the inner builder, interactions are collected.
 +pub struct Collect<'a, AB: InteractionBuilder> {
@@ -9671,14 +9818,28 @@ index 0000000..2ee07dd
 +    }
 +}
 +
-+impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for NvAir
++impl<AB: AirBuilderWithPublicValues + InteractionBuilder + PartitionedAirBuilder> Air<AB> for NvAir
 +where
 +    <AB::Expr as PrimeCharacteristicRing>::PrimeSubfield:
 +        p3_field::extension::BinomiallyExtendable<12>,
 +{
 +    fn eval(&self, builder: &mut AB) {
-+        let main = builder.main();
-+        let (local, next) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++        // the full row view [common 0..7, P0..P3, common 7..]: P0..P3 come from the cached
++        // program part when `program_part`
++        let (local, next): (Vec<AB::Var>, Vec<AB::Var>) = if self.program_part {
++            let cm = builder.common_main();
++            let pm = &builder.cached_mains()[0];
++            let row = |i: usize| -> Vec<AB::Var> {
++                let c = cm.row_slice(i).unwrap();
++                let p = pm.row_slice(i).unwrap();
++                c[..U_P].iter().chain(p.iter()).chain(c[U_P..].iter()).copied().collect()
++            };
++            (row(0), row(1))
++        } else {
++            let main = builder.main();
++            let (l, n) = (main.row_slice(0).unwrap(), main.row_slice(1).unwrap());
++            (l.to_vec(), n.to_vec())
++        };
 +        let cl: &NvCommon<AB::Var> = local[..N_COMMON].borrow();
 +        let cn: &NvCommon<AB::Var> = next[..N_COMMON].borrow();
 +        let pl = &local[N_COMMON..];
@@ -9992,15 +10153,16 @@ index 0000000..2ee07dd
 +        builder.assert_zero(s(Op::Dig) * (cst(2) - bfield.clone()) * l.c[k]);
 +    }
 +
-+    // B field range: B = rx + 256 ry + 65536 rz in [0, 2^20) binds the op to P1 (every ALU row
++    // B field range: B = rx + 256 ry + 65536 rz in [0, 2^24) binds the op to P1 (every ALU row
 +    // except the app data rows, whose P1 is a table word)
 +    let nd = ka.clone() - s(Op::Data);
 +    builder.assert_zero(nd.clone() * (bfield.clone() - l.rx - l.ry * cst(256) - l.rz * cst(65536)));
 +    super::hash::lookup_pair(builder, byte_bus, l.rx, l.ry, nd.clone());
-+    // rz < 16: the pair (rz, 16 rz) must be two bytes.  (A lone lookup of 16 rz only gives
-+    // rz = t / 16 mod p for a byte t, i.e. B in [0, 1110015], which allowed op -> op - 1
++    // rz a byte (24-bit B field): the pair (rz, 0) is in the byte-pair table.  (With the old
++    // 20-bit field rz < 16 was the pair (rz, 16 rz); a lone lookup of 16 rz only gave
++    // rz = t / 16 mod p for a byte t, which allowed op -> op - 1.)
 +    // relabels such as Zero -> Bit; see FAITHFUL.md, bug B1.)
-+    super::hash::lookup_pair(builder, byte_bus, l.rz, l.rz * cst(16), nd);
++    super::hash::lookup_pair(builder, byte_bus, l.rz, AB::Expr::ZERO, nd);
 +    // app data rows -> app-binding rows; app-binding total (and its pinned length) -> `Acc2`
 +    let mut dmsg: Vec<AB::Expr> = vec![cl.y - cst(app_base as u64)];
 +    dmsg.extend(p.iter().map(|&x| x.into()));
@@ -10158,12 +10320,12 @@ index 0000000..2ee07dd
 +        r.mult = F::from_u32(reads[y]);
 +        if ins.op != Op::Data {
 +            let bf = ins.b as usize;
-+            assert!(bf < 1 << 20);
++            assert!(bf < 1 << super::isa::ADDR_BITS);
 +            r.rx = F::from_usize(bf & 255);
 +            r.ry = F::from_usize((bf >> 8) & 255);
 +            r.rz = F::from_usize(bf >> 16);
 +            super::hash::cnt2(counts, bf & 255, (bf >> 8) & 255);
-+            super::hash::cnt2(counts, bf >> 16, (bf >> 16) * 16);
++            super::hash::cnt2(counts, bf >> 16, 0);
 +        }
 +    }
 +    let tp = tau_pows();
@@ -10437,10 +10599,10 @@ index 0000000..bb0d7ab
 +}
 diff --git a/crates/recursion/src/nv/verifier.rs b/crates/recursion/src/nv/verifier.rs
 new file mode 100644
-index 0000000..a5dacb6
+index 0000000..2ee8bfd
 --- /dev/null
 +++ b/crates/recursion/src/nv/verifier.rs
-@@ -0,0 +1,1717 @@
+@@ -0,0 +1,1748 @@
 +//! The SWIRL verifier (stark-backend `verifier/*`) as an NV program.  Mirrors the native
 +//! code step by step; every data-dependent choice (query indices, Merkle directions) goes
 +//! through BIT rows, so the instruction stream depends only on the child vk, the params
@@ -11306,7 +11468,39 @@ index 0000000..a5dacb6
 +        let nf = b.one_minus(flag);
 +        let t = b.mul(clm1, nf);
 +        b.zero(t, "level flag");
-+        bind_child_program(b, &tid, &n_per_trace, &rs, &open_cells, l_skip, flag);
++        // G2: the child's program columns: its cached program part (NV levels) or, for a child
++        // without one, its common main P0..P3
++        let tc = tid.iter().position(|&a| a == 0).expect("child ALU");
++        let child_prog_part = !mvk.per_air[0].params.width.cached_mains.is_empty();
++        let prog_open: Vec<V> = if child_prog_part {
++            let has_prep = mvk.per_air[0].preprocessed_data.is_some() as usize;
++            (0..4).map(|j| part_cells[tc][has_prep][j].0).collect()
++        } else {
++            (0..4).map(|j| open_cells[tc][super::uair::U_P + j].0).collect()
++        };
++        // level-1 child (flag = 0): its program commitment is the constant C_L1, the commitment of
++        // the level-1 program at these parameters (setup); (root - C_L1) (1 - flag) = 0
++        if child_prog_part {
++            match b.l1_commit {
++                Some(c_l1) => {
++                    let root = extra_commits[0][0];
++                    let nf = b.one_minus(flag);
++                    let cl1 = b.const_digest(c_l1);
++                    for (x, y) in [(root.lo, cl1.lo), (root.hi, cl1.hi)] {
++                        let d = b.sub(x, y);
++                        let t = b.mul(d, nf);
++                        b.zero(t, "level-1 child program commitment = C_L1");
++                    }
++                    if flag.val == EF::ZERO && root.digest != c_l1 {
++                        b.failures.push("level-1 child program commitment != C_L1".into());
++                    }
++                }
++                None => b.failures.push("no C_L1 constant for a level-1 child".into()),
++            }
++        } else if flag.val == EF::ZERO {
++            b.failures.push("level-1 child without a program commitment cannot be bound".into());
++        }
++        bind_child_program(b, &tid, &n_per_trace, &rs, &prog_open, l_skip, flag);
 +    } else {
 +        let one = b.c(F::ONE);
 +        b.pv_level(one);
@@ -11705,7 +11899,7 @@ index 0000000..a5dacb6
 +    tid: &[usize],
 +    n_per_trace: &[usize],
 +    rs: &[V],
-+    open_cells: &[Vec<(V, V)>],
++    prog_open: &[V],
 +    l_skip: usize,
 +    flag: V,
 +) {
@@ -11762,14 +11956,13 @@ index 0000000..a5dacb6
 +    let mut phat = b.c(F::ZERO);
 +    for j in 0..4 {
 +        let tj = b.ce(tp[j]);
-+        let o = open_cells[t][super::uair::U_P + j].0;
++        let o = prog_open[j];
 +        let term = b.mul(tj, o);
 +        phat = b.add(phat, term);
 +    }
-+    // app-verifier table (L2 checks L1): ACC2 is the multilinear evaluation of the whole
-+    // level-1 program (its ACC row included)
-+    let app_extra = if b.app.is_empty() { None } else { Some(b.c(F::ZERO)) };
-+    b.defer_acc_check(phat, flag, app_extra);
++    // child level >= 2 (flag = 1): BIND, flag (ACC - phat) = 0; a level-1 child is bound by
++    // C_L1 above (G2: no app table)
++    b.defer_acc_check(phat, flag, None);
 +}
 +
 +fn whir(
@@ -17281,7 +17474,7 @@ index 0000000..f589e8d
 +}
 diff --git a/crates/recursion/src/sha384/e2e_tests.rs b/crates/recursion/src/sha384/e2e_tests.rs
 new file mode 100644
-index 0000000..cd2d220
+index 0000000..69d4a88
 --- /dev/null
 +++ b/crates/recursion/src/sha384/e2e_tests.rs
 @@ -0,0 +1,545 @@
@@ -17597,7 +17790,7 @@ index 0000000..cd2d220
 +        // entries without a kernel proof (e.g. lean/DKTCertsO2_big.keys) are excluded
 +        let excl = std::env::var(format!("{prefix}_DKT_EXCLUDE")).or_else(|_| std::env::var("NEARPROOF_DKT_EXCLUDE")).ok();
 +        let certs = path.map(|p| load_dkt_certs_excluding(&p, excl.as_deref()));
-+        p.whir = p.whir.clone().with_first_order(log_blowup, l_skip + n_stack, bits, e("O2_MARGIN_MILLI", 50) as u32, list_m as u32, certs.as_ref(), e("COMMITS", 1));
++        p.whir = p.whir.clone().with_first_order(log_blowup, l_skip + n_stack, bits, e("O2_MARGIN_MILLI", 50) as u32, list_m as u32, certs.as_ref(), e("COMMITS", if prefix == "PARENT" { 2 } else { 1 }));
 +    }
 +    p
 +}
