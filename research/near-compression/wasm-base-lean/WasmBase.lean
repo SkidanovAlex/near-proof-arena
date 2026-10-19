@@ -20,3 +20,4 @@ import WasmBase.Extract.Row
 import WasmBase.Extract.Bits
 import WasmBase.Extract.Byte
 import WasmBase.Extract.Occ
+import WasmBase.Main.Abstract
