@@ -1694,3 +1694,359 @@ cell and every HornR/HornE `c` cell is detected: on single cells, by the previou
 transition or the memory key.
 
 **LogUp:** unchanged from §V.7 (49 NvAir interactions per row, Sha512Air4 17; ε ≈ 2^−316.8).
+
+## X. Re-audit: the program-identity fix (a3a520a72, "G1" of lane/pq-e2e-slice), uniform bound FINAL and V_d (07822685a, head 717eb518e)
+
+Merged into this branch from origin as a fast-forward merge. **Verdict: no soundness bug.** The
+fix is sound; the witness reuse cannot be abused; the top-level binding statement X.3 holds;
+`test_no_bind` does not exist in library builds.
+
+(Naming: this "G1" is lane/pq-e2e-slice's program-dependence gap. It is unrelated to this
+document's G1, the statement passthrough of §R.4.)
+
+### X.1 The program is a function of (child vk, child shape) only
+
+**What was wrong.** T\* PoW-run blocks appeared in the program: one `Unit1` row per witness felt
+and block, with job ids `TJOB_SQUEEZE_BASE + n`. The number of blocks depends on sampling
+rejections, so different proofs gave different programs. NV-verifies-NV with a bound program
+(§2(b)) needs P to be a constant. The same issue also made the earlier claim "the program
+depends only on the vk, the params and the heights" false for PoW children.
+
+**Invariant (proved for 717eb518e).** `build_verifier(vk, proof)` emits an instruction sequence
+that depends only on vk_{i−1} (pre-hash, params including the O-2 table and the odd factor, the
+constraint DAGs) and on the shape the program asserts (trace heights, tight heights, and the
+observed count of public values per AIR). The argument:
+1. *Control flow.* Every branch or loop bound in `verifier.rs` / `builder.rs` that affects
+   `push` is a vk or shape quantity. The list:
+   * num_airs, is_required, log and tight heights, l_skip, n_logup, n_global;
+   * the lever flags (gruen, derive, next_mask, coset, whir_y, multiproof);
+   * k_r, the query counts (O-2 table), depths, widths, `bind` / `child_nv`, and the app table.
+
+   Value-dependent conditions occur only in witness choices that emit the same rows either way:
+   * the `cv == 0` inverse of the level flag;
+   * the `1 − α_m = 0` eq-factor inverse;
+   * x15 x ≥ p − 1;
+   * the multiproof decompression, which is witness generation and emits no rows;
+   * failure records;
+   * test-only `Tamper` hooks.
+2. *Constant deduplication.* `Builder::c` / `cu` / `ce` dedup by value, so a proof-dependent
+   argument would change the program. Every call site passes a vk or shape constant (grep: no
+   `.val`, proof field or claim is ever passed).
+3. *Transcript bookkeeping.* Static job ids (`TJOB_STATIC_BASE + tr_static`) count flush,
+   commit and PoW events, which are fixed by the verifier's call sequence. tidx counts
+   **accepted** samples, which are fixed per draw. Rejected candidates and the number of squeeze
+   or PoW-run blocks live only in the HASH/SAMP rows, never in P. After a3a520a72 the program
+   contains no squeeze or PoW-run job id and no witness unit of a PoW-run block.
+4. *Merkle / multiproof.* Every query hashes its full path (depth = a shape constant), with no
+   dedup across queries.
+
+Tests:
+* `nv_program_pow_identity` (main): 4 PoW children with 31/25/25/27 squeeze blocks give
+  byte-identical programs.
+* `nv_program_fib`: Fib(0,1) vs Fib(2,3).
+* `nv_program_identity_levers` (new, this branch): 3 statements × 4 lever sets give identical
+  programs, in 48 B and 42 B + coset. The lever sets are small with logup PoW;
+  Gruen + derive + next-mask + WHIR-Y; k1 + keep-domain + multiproof + wide PoW + WHIR-Y on ×15;
+  tight + next-mask + multiproof on ×15.
+
+### X.2 PoW witness in the hash rows: no abuse
+
+Constraints on HASH rows (pw = op_p + op_q):
+* `nwit ∈ {1, 2}` on PoW rows, `w[1] = 0` if nwit = 1, and `w = 0` off PoW rows.
+* Felt units 16 (`w0`) and 17 (`w1`, only when nwit = 2) of the row's job, then the counter at
+  `16 + nwit`. The length unit is `4(nwit + 1)`, so GLUE consumes exactly these units and
+  range-checks each as a canonical felt.
+* `op_p`: ctr = 1, nwit = cnt, and an ALU anchor `(job, t_start, cnt, TAG_POW)`. The PoW job id,
+  its transcript position and its witness count are therefore program constants.
+* `op_q`: it must follow a fully read op_p or op_q of the same run (`n.op_q·(1 − full) = 0`,
+  `n.op_q·(op_f + op_c + op_s) = 0`); ctr + 1; nwit inherited; key σ forwarded (keep).
+* `nq` = next row's op_q (`l.nq − n.op_q = 0`, `nq·(1 − hn) = 0`). The chain bus carries
+  `(nq·w0, nq·w1)` on the sender and `(op_q·w0, op_q·w1)` on the receiver. Every other receiver
+  has op_q = 0 and its sender nq = 0, so both sides are 0.
+
+Consequences:
+* **A wrong witness in a later block.** An op_q row's w equals its predecessor's w (chain-bus
+  balance, the message keyed by the unique job id, R.3.1). By induction it equals B_1's w. A
+  different w changes the message and leaves the bus unbalanced (`nv_tstar_tamper`:
+  "PoW-run witness ≠ B_1's").
+* **A forged run start.** An op_q needs a fully read PoW predecessor. A PoW row needs an anchor,
+  and anchors are emitted only by the program's PoW events. The tag (7 versus 5) and the length
+  unit are fixed by the op flags, so a squeeze cannot be relabelled as a PoW-run block or the
+  other way round without changing the hashed message.
+* **B_1's witness is free.** That is correct: any w whose B_1 has z leading zero bits is a valid
+  PoW, PowChk checks B_1's word 0 (§2(d)(ii).7, with B3's LoadF), and the extracted π_{i−1}
+  takes its PoW witness from these cells. dec_i now reads PoW witnesses from the op_p rows'
+  `w` columns instead of ALU load rows.
+* **A witness count mismatch.** nwit = the anchored cnt on op_p, and is inherited on op_q.
+  `w[1] = 0` for nwit = 1 keeps the unit set exact.
+
+### X.3 Top-level binding: an accepted final under the pinned program implies the chain
+
+Setting: V_d pins (vk_final, P_NV, d). FINAL runs P_NV (`bf.instrs == b2.instrs`,
+`nv_vd_pinned_program`) under the final domain; `bind = bind || child_nv` holds in every library
+build.
+
+**Statement.** Suppose V_d accepts π_d: native verification under vk_final, level(x_d) = d,
+`check_final_program`, and `check_statement(pv, claim)`. Then, outside the protocol-proof error
+(Theorem 7.4 with A-IC, Lemma 3.1/3.6 terms per layer) and Σ_layers ε_LogUp, there are
+T_d, …, T_1 and an app proof π_0 such that all of the following hold:
+* T_i satisfies NV's relation with program columns P_i, where P_i = P_NV for i ≥ 2 and
+  P_1 = T_app;
+* π_{i−1} = dec_i(T_i) is accepted by V′_{i−1};
+* π_0 is accepted by the app verifier under vk_app, the vk constant of P_1;
+* its public values have digest = claim.
+
+Proof:
+1. **V_d.** `check_final_program` re-derives r and the NvAir openings natively under the final
+   domain. It then compares p̂ = Σ τ^j open(P_j)(r) with the multilinear evaluation of the
+   zero-extended pinned table at r (`program_eval`). If they are equal, then up to
+   (2^{l_skip} − 1 + n)/|Ext12| (SZ, Lemma 3.6) and the PCS opening error, the committed program
+   columns are P_NV. The extracted T_d therefore has P = P_NV, and NV-faithful(d) applies with
+   pv0 = d.
+2. **Levels i ≥ 3.** P_NV has `bind` on. NV-faithful(i) (F2, B-4/R.2) gives `flag = [level(x_{i−1})
+   ≠ 1]` with level(x_{i−1}) = i − 1 ≥ 2, so flag = 1. The child's program columns are bound to
+   P_NV (V′'s opening check), so T_{i−1} has P = P_NV. The statement digest passes through (F3,
+   R.4).
+3. **Level 2.** level(x_1) = 1, so flag = 0, and the child's program is bound to the app table:
+   the whole level-1 program, carried as P_NV's Data rows. So T_1 has P = P_1.
+4. **Level 1.** P_1 has `bind` off and child = the app. Its vk constants are vk_app's.
+   NV-faithful(1) gives π_0 accepted under vk_app, and pv1..18 = the tag-8 digest of π_0's public
+   values (R.4).
+5. **Linkage.** Levels decrease by exactly 1 per step from the pinned d, so the chain reaches level
+   1 after d − 1 steps. The digest is equal at every level, and V_d compared it with the claim.
+
+The fixed point needs equal heights: `bind_child_program` asserts that the child's ALU height
+equals its own, which is why phase B fixes heights and L1 runs at them.
+
+**Forgery check.** `nv_vd_pinned_program` (main; 1 h, 17.9 GB): a 9,684-row "verify-nothing"
+FINAL exposing level 3 and the claimed digest is accepted with `skip_program`, which is exactly
+the gap, and rejected with `check_final_program`. A wrong claim and a wrong level are both
+rejected.
+
+### X.4 `test_no_bind`
+
+The field `NvCircuit::test_no_bind` and its use (`bind &= !self.test_no_bind`) are both
+`#[cfg(test)]`. `cfg(test)` is set only when this crate itself is compiled for its unit tests,
+never for dependents, so in library builds the field does not exist. `bind = self.bind ||
+self.child_nv` holds unconditionally. `NV_UNBOUND_FINAL` is read only in `nv_chain`, a test.
+Only `nv_statement_passthrough` uses `test_no_bind`. Its L1 is smaller than L2, so it checks the
+digest passthrough without binding. Binding at equal heights is covered by
+`nv_vd_pinned_program` and `nv_app_binding`.
+
+### X.5 Tests and sweep on 717eb518e (8 threads, 24 GB cap)
+
+**Tests.** Every `nv_` and `o2_` test except `nv_chain`, `nv_app_binding` and
+`nv_vd_pinned_program` (run separately, X.6) passes:
+* 52 / 52 in 48 B (`nv_program_probe` is ignored by design);
+* 49 / 49 in 42 B + coset leaves.
+
+These include `nv_program_pow_identity`, `nv_tstar_tamper` (PoW-run witness), the new
+`nv_program_identity_levers`, B1–B6, `nv_bind_tamper` and `nv_horner_chain_shape`.
+
+**Perturbation sweep, every cell.** NvAir is now 77 columns, and the new HASH columns `w0`, `w1`
+and `nq` are named in the harness.
+
+| fixture | digests | cells | constraint | bus | undetected Sha512Air4 / TableAir4 | undetected total (all don't-care) | unexpected | mem-coupled accepted |
+|---|---|---:|---:|---:|---|---:|---:|---:|
+| Fib | 48 B | 10,814,592 | 9,623,864 | 933,269 | 0 / 0 | 257,459 | 0 | 0 / 20,016 |
+| interactions + levers | 48 B | 16,254,080 | 14,994,938 | 989,467 | 0 / 0 | 269,675 | 0 | 0 / 20,652 |
+| ×15 + WHIR levers | 48 B | 10,814,592 | 10,035,548 | 609,380 | 0 / 0 | 169,664 | 0 | 0 / 15,840 |
+| app table | 48 B | 10,814,592 | 9,617,708 | 936,417 | 0 / 0 | 260,467 | 0 | 0 / 20,124 |
+| Fib, n_stack 3 (Horn2) | 48 B | 10,814,592 | 10,141,695 | 524,538 | 0 / 0 | 148,359 | 0 | 0 / 13,440 |
+| Fib | 42 B + coset leaf | 10,814,592 | 9,960,072 | 646,584 | 0 / 0 | 207,936 | 0 | 0 / 15,816 |
+| interactions + levers | 42 B + coset leaf | 10,814,592 | 9,892,367 | 701,925 | 0 / 0 | 220,300 | 0 | 0 / 16,452 |
+| ×15 + WHIR levers | 42 B + coset leaf | 10,814,592 | 10,109,323 | 547,076 | 0 / 0 | 158,193 | 0 | 0 / 14,400 |
+| app table | 42 B + coset leaf | 10,814,592 | 9,953,916 | 649,732 | 0 / 0 | 210,944 | 0 | 0 / 15,924 |
+| Fib, n_stack 3 (Horn2) | 42 B + coset leaf | 6,734,976 | 6,281,220 | 336,750 | 0 / 0 | 117,006 | 0 | 0 / 9,840 |
+
+* The swept traces contain PoW (op_p) and PoW-run (op_q) hash rows.
+* Every `w`/`nq` cell is detected, except the pool columns beyond the HASH view on op_q rows.
+* NvAir has 51 interactions per row, and the longest message has 22 fields (chain bus with the
+  witness).
+
+**LogUp:** N = 51·2^18 + 17·2^20 + … ≈ 2^24.90 (2^25.42 with NvAir at 2^19), so
+ε_LogUp ≤ 22·N²/(2|F|) + 2N/|F| ≈ **2^−316.6**.
+
+### X.6 `nv_vd_pinned_program`
+
+* The lane's run (`logs/g1/nv-vd.summary.log`, 717eb518e, 1 h 03, 17.9 GB):
+  * honest final accepted (76,014 program rows);
+  * forged 9,684-row FINAL accepted without the program check and rejected with it;
+  * wrong claim and wrong level rejected.
+* It needs `NV_PROG_LOG=17` at `log_rows` 18. With the default prog_log = 16 the program
+  overflows (`program exceeds 2^16 rows`). That is a test-setup requirement, not a soundness
+  issue.
+* My re-run on this branch (`NV_PROG_LOG=17`, 4 threads under the shared 24 GB cap) is still
+  running at the time of writing. This section will be updated when it finishes.
+
+## Y. Audit: NV verifying preprocessed and cached children (lane/pq-nv-preprocessed @ 9761585a5)
+
+Scope: the overlay `openvm-recursion-prep.patch` (generator sites P1–P8 in `nv/verifier.rs`,
+tests `nv/prep_tests.rs`, `nv/prep_demo.rs`) and `stark-backend-prep.patch` (test-utils
+cached commits with k1). These were applied on this branch's tree at 717eb518e, in a separate
+tree. **Verdict: no soundness bug.** There is no AIR, role or ISA change, so §1–§2(c) and §2(f)
+are untouched. The native risk R5 is a **completeness** defect only (Y.5, test).
+
+### Y.1 Observe order (P2, P3) = native
+
+* *Preamble* (`verifier/mod.rs` 140–171), per AIR in AIR order:
+  1. `observe(is_present)` for optional AIRs;
+  2. `observe_commit(pd.commit)` **instead of** `observe(log_height)` for preprocessed AIRs (after
+     the height check);
+  3. the tight height;
+  4. `observe_commit` of every cached commitment;
+  5. the public values.
+
+  P2 emits exactly this: `const_commit(pd.commit)`, `cu(lh)` + `obs1` otherwise, the tight
+  height, `load_commit(c)` per cached commitment, then the `load_obs_f` public values.
+  - The preprocessed root is a constant of the program, digest cells via `ce`. It is observed
+    through the same `observe_commit_cells` as the pre-hash: commit job, word units, anchor with
+    TAG_COMMIT (B6).
+  - The cached root is a loaded, observed commit: the same code as the common-main root, whose
+    word units GLUE range-checks.
+* *Column openings* (`batch_constraints.rs` 96–121):
+  1. every trace's common-main openings first (with the masked rotated claims, zero where
+     masked);
+  2. then, per trace in sorted order, its parts 1..: preprocessed, then cached.
+
+  Native observes parts 1.. inside its per-trace evaluation loop, but nothing is sampled there,
+  so the transcript sequence is the same. P3 loads and observes in the same order.
+* *DAG variables* (P4) follow `eval_var`:
+  - `Entry::Preprocessed` reads part 1;
+  - `Entry::Main{part_index}` reads the partitioned main, i.e. the cached parts, then common main
+    last (`part_index == n_cached`);
+  - every other entry still panics.
+* Checked mechanically by transcript end-state equality with native in every `nv_prep*` test,
+  and by `nv_prep_every_proof_element`: 19,365 single-element mutations, native-accepts ⇔
+  program-accepts.
+
+### Y.2 Stacking index offsets (P5, P6)
+
+Native `verify_stacked_reduction` builds the claims and their λ² positions as follows:
+* t_claims = commit 0 (every trace's common main, masked), then commits 1.. in the order "per
+  trace in sorted order, parts 1..";
+* λ² index of (commit k, matrix, column) = Σ_{k' < k} cols(k') + col_base_k[matrix] + column
+  (`lambda_indices_per_layout`);
+* `need_rot_per_commit` = [all common-main masks], then one mask per extra part, in the same
+  order.
+
+P5 matches this exactly:
+* `t_claims` concatenates in that order;
+* `commit_masks` = [masks] followed by `all_masks[t][1..]` per trace;
+* `col_base` starts at `lambda_base`, the running Σ cols;
+* `assert_eq!(lambda_base, t_claims.len())`;
+* `assert_eq!(commit_masks.len(), layouts.len())`.
+
+**Kernel sharing between commitments is sound.** Native computes each column's term from:
+* (n, need_rot, u, r, λ);
+* the slice's chunk factors `s.chunk_factors(l_skip, r)`, a function of (src_row, col_log_height,
+  log_height) only;
+* `eq_mle` over the slice's `row_idx` bits.
+
+NV's `kern` key is (n, need_rot, src_row, col_log_height), which also fixes log_height = n +
+l_skip, and `whole = src_row = 0 ∧ col_log_height = log_height` selects (1, 0) exactly as
+native. The `em_memo` key (bit, row_idx ≫ bit) fixes the eq_mle factors. Neither depends on the
+commitment, so a shared entry has the value native computes for that column.
+
+Extra parts are laid out non-tight (`StackedLayout::new`), so all their slices are whole.
+
+P6: the stacking openings of every commitment are loaded and observed in commit order, and the
+final sum is Σ over the flattened (q_coeffs × openings), as native.
+
+### Y.3 Per-tree Merkle claim (P7, P8): Claim E per commitment
+
+Roots, in order:
+* [main (loaded, observed)], then per trace in sorted order its preprocessed root (program
+  constant, observed) and its cached roots (loaded, observed).
+* This is native's `commits` list (`verifier/mod.rs` 231–237).
+* `initial_round_opened_rows[t]` and `initial_round_merkle_proofs[t]` are indexed by the same
+  t.
+
+For each round-0 query:
+1. The index bits are the canonical decomposition of the native sample (§2(d)(iv), W.3) and are
+   shared by every tree, as natively.
+2. For each tree t, leaf job(s) at `job_bases[t]` receive tree t's opened cells as felt units:
+   `Horn`/`Horn2` witnesses, one coset job or 2^k row jobs. The leaf digest is received by `Dig`,
+   and `merkle_path` hashes it with the free siblings along the shared bits to the root, which is
+   compared with `roots[t]`. So tree t's opened rows are exactly the leaves under `roots[t]` at
+   the queried coset. This is Claim E (§2(e)) applied to each tree, with no cross-tree reuse:
+   the job ids are distinct program constants, and the digests are keyed by job.
+3. Folding: one Horner chain per coset row j runs from the last column of the last tree down to
+   column 0 of tree 0. It uses the **same** witness cells that were pushed as units, so
+   value_j = Σ_t Σ_c μ^{off_t + c}·row_t[j][c] with off_t = Σ_{t' < t} width_{t'}. Native
+   `codeword_vals[j] += μ^{offset_t + c}·row_t[j][c]` uses μ powers over the concatenated
+   stacking openings in commit order (P8: `total_width = Σ widths`, asserted), so this is the
+   same value.
+
+Nothing can be opened in one tree that is not under that tree's root at the shared index.
+
+**Trust chain for a preprocessed root.**
+* V_d, or BIND at the fixed point, pins the program.
+* The program holds (pre-hash, preprocessed roots, DAG) as constants.
+* The pre-hash commits the child vk bytes, including `pd.commit`. NV observes the pre-hash and
+  takes the root from the same vk.
+* Tests: `nv_prep_wrong_vk_constant` and `nv_prep_other_table` (a proof for table B under table
+  A's program is rejected by the root check).
+
+### Y.4 Multi-commitment O-2 rule
+
+`build_verifier` calls the native `verify_proof_shape` with `expect`. Native rejects a
+first-order round 0 when there is more than one layout (`FirstOrderRound0MultiCommit`), so the
+generator refuses such a child. Test `nv_prep_o2_round0`: a Johnson round 0 verifies; a
+first-order round 0 makes the generator refuse the child.
+
+The regime is a vk constant (F2). NV and FINAL proofs stay single-commitment, so their own O-2
+round 0 is unaffected. Under the lane's scenario B1 (a program part per level), FINAL would need
+the "no program part" AIR partition (their D3) to stay single-commitment.
+
+### Y.5 Native risk R5: cached traces through the device commit with tight heights
+
+* `CpuDevice::commit` (`cpu-backend/src/device.rs` 68–90) and the reference
+  `TraceCommitter::commit` pass `params.whir.levers.tight_heights` to `stacked_commit_odd` for
+  every committed matrix.
+* So a cached matrix with a zero tail is committed with a **tight** (chunked) layout.
+* The verifier's proof shape builds every extra part with `StackedLayout::new`, which is never
+  tight (`proof_shape.rs` 591–605). Keygen (preprocessed) and the test utilities (cached) pass
+  `tight = false`, so they agree with the verifier.
+
+**Demonstrated** (`native_r5_cached_tight_commit`, new, this branch):
+* The CachedFixture11 AIRs, with the sender's cached column zero in rows 4..8 (tight height 4 of
+  8), under the tight lever.
+* Committed non-tight, the proof verifies.
+* Committed tight, as the device path would do, the native verifier rejects with
+  `StackedReductionError::FinalSumMismatch`.
+
+**Classification: completeness, not soundness.** The verifier always evaluates its own
+(non-tight) layout. A prover who commits a different layout only produces a proof that fails.
+Nothing in NV-faithful changes: NV mirrors native's proof shape, so it would reject the same
+proofs.
+
+**Recommended fix (native, not applied here):** commit cached mains with `tight = false` (a
+`commit_untight` entry point, or a flag on `TraceCommitter::commit`). The alternative is to make
+the verifier lay out cached parts tight, from an observed per-part tight height; that is a
+protocol change. The fix matters for scenario B1 if the program part is committed through the
+device with the tight lever on.
+
+### Y.6 Tests and sweep (overlay on this branch's 717eb518e tree; 4 threads)
+
+**Tests.** 11 / 11 pass in 48 B and 10 / 10 in 42 B + coset leaves:
+* the lane's `nv_prep_honest`, `_tampered_commitment`, `_wrong_vk_constant`, `_other_table`,
+  `_cached`, `_o2_round0`, `_every_proof_element`, `nv_prep_demo_toy_base` and
+  `_demo_wrong_program`;
+* `native_r5_cached_tight_commit` (48 B; it is in this branch's `faithful_tests.rs` and needs no
+  overlay);
+* `nv_dof_prep_children` (overlay test: `scripts/prep_dof_test.rs`).
+
+**Perturbation sweep, every cell, of NV traces verifying 2-, 3- and 4-commitment children:**
+
+| child (commitments) | digests | cells | constraint | bus | undetected Sha512Air4 / TableAir4 | undetected total (all don't-care) | unexpected | mem-coupled accepted |
+|---|---|---:|---:|---:|---|---:|---:|---:|
+| preprocessed Fib (2) | 48 B | 16,254,080 | 14,689,272 | 1,254,249 | 0 / 0 | 310,559 | 0 | 0 / 23,652 |
+| CachedFixture11 (3) | 48 B | 16,254,080 | 14,258,928 | 1,628,228 | 0 / 0 | 366,924 | 0 | 0 / 27,624 |
+| preprocessed + 2 cached (4) | 48 B | 27,133,056 | 24,823,399 | 1,896,877 | 0 / 0 | 412,780 | 0 | 0 / 30,852 |
+| preprocessed Fib (2) | 42 B + coset leaf | 10,814,592 | 9,804,182 | 780,681 | 0 / 0 | 229,729 | 0 | 0 / 19,956 |
+| CachedFixture11 (3) | 42 B + coset leaf | 16,254,080 | 15,031,909 | 967,353 | 0 / 0 | 254,818 | 0 | 0 / 24,432 |
+| preprocessed + 2 cached (4) | 42 B + coset leaf | 16,254,080 | 14,937,918 | 1,047,000 | 0 / 0 | 269,162 | 0 | 0 / 28,164 |
+
+**§Y verdict: P1–P8 arithmetise native multi-commitment verification faithfully. R5 is a native
+completeness defect with a test and a recommended fix.**
