@@ -1,0 +1,18 @@
+
+running 1 test
+test nv::e2e_tests::e2e_real_base_probe ... E2E_BASE_PARAMS l_skip=2 n_stack=22 k=4 log_blowup=1 queries=[536, 256, 83, 50, 36] pow(mu,fold,query,logup)=(0,0,24,0)
+E2E_BASE_O2 target=244 margin_milli=50 m=16 rounds(n,k,A,q,first_order)=[(33554432, 16777216, 24468022, 536, false), (33554432, 8388608, 17301504, 256, false), (33554432, 524288, 4325376, 83, false), (33554432, 32768, 1081344, 50, false), (33554432, 2048, 270336, 36, false)]
+BASE_RESOURCES wall_s=253.8 peak_rss_gb=9.34
+BASE_VERIFY_S 0.023
+BASE_SOUNDNESS total=268.2 logup=330.3 proximity=306.2 query=268.2
+BASE_PROOF_BYTES total=921857 gkr=5768 relations=23284 stacking=2512 whir=889134
+NV_QCOST round=0 queries=536 rows=152832 per_query=285 nbits=24 k=1 merkle_nodes=12864
+NV_QCOST round=1 queries=256 rows=95516 per_query=373 nbits=21 k=4 merkle_nodes=18240
+NV_QCOST round=2 queries=83 rows=30966 per_query=373 nbits=21 k=4 merkle_nodes=19983
+NV_QCOST round=3 queries=50 rows=18654 per_query=373 nbits=21 k=4 merkle_nodes=21033
+NV_QCOST round=4 queries=36 rows=13431 per_query=373 nbits=21 k=4 merkle_nodes=21789
+L1_PROBE program_rows=623802 jobs=22751 merkle_nodes=21789 heights=[2097152, 4194304, 128, 65536] gen_s=1.6 peak_rss_gb=3.77
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 75 filtered out; finished in 255.56s
+
