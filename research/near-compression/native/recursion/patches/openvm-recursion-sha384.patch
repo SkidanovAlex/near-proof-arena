@@ -1234,10 +1234,10 @@ index 1c28aa8..e9147a4 100644
  }
 diff --git a/crates/recursion/src/nv/builder.rs b/crates/recursion/src/nv/builder.rs
 new file mode 100644
-index 0000000..fd3c096
+index 0000000..b25408a
 --- /dev/null
 +++ b/crates/recursion/src/nv/builder.rs
-@@ -0,0 +1,879 @@
+@@ -0,0 +1,896 @@
 +//! Program builder + executor.  Verifier code calls the builder with concrete values; each
 +//! call appends a fixed instruction (independent of the values, by construction) and
 +//! computes its result, so one pass yields the program and the full ALU witness.
@@ -2060,6 +2060,7 @@ index 0000000..fd3c096
 +        }
 +        let n = self.instrs.len();
 +        assert!(n <= self.prog_len());
++        assert_horner_chains(&self.instrs);
 +        let tp = super::uair::tau_pows();
 +        let e1n = super::uair::E1_SIZE;
 +        let pw = |w: [u32; 4]| -> EF { (0..4).map(|j| tp[j] * F::from_u32(w[j])).sum() };
@@ -2117,6 +2118,22 @@ index 0000000..fd3c096
 +}
 +
 +
++
++/// Horner chains must be complete (FAITHFUL.md §W): a HornR / HornE row's own c is pinned only by
++/// the previous row's transition constraint, so it must follow HornS or HornR; a HornS / HornR
++/// row constrains the next row's c, so it must be followed by HornR or HornE (never the last
++/// program row, whose next row is BIND's first row).
++pub fn assert_horner_chains(instrs: &[Instr]) {
++    use Op::*;
++    for (i, ins) in instrs.iter().enumerate() {
++        if matches!(ins.op, HornR | HornE) {
++            assert!(i > 0 && matches!(instrs[i - 1].op, HornS | HornR), "row {i}: {:?} not preceded by HornS / HornR", ins.op);
++        }
++        if matches!(ins.op, HornS | HornR) {
++            assert!(i + 1 < instrs.len() && matches!(instrs[i + 1].op, HornR | HornE), "row {i}: {:?} not followed by HornR / HornE", ins.op);
++        }
++    }
++}
 diff --git a/crates/recursion/src/nv/circuit.rs b/crates/recursion/src/nv/circuit.rs
 new file mode 100644
 index 0000000..3a6e942
@@ -2376,10 +2393,10 @@ index 0000000..3a6e942
 +}
 diff --git a/crates/recursion/src/nv/faithful_dof.rs b/crates/recursion/src/nv/faithful_dof.rs
 new file mode 100644
-index 0000000..9389bca
+index 0000000..1f26c7e
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_dof.rs
-@@ -0,0 +1,506 @@
+@@ -0,0 +1,527 @@
 +//! NV-faithful degree-of-freedom check (results/pq-recursion-nv/FAITHFUL.md §4).
 +//!
 +//! For an honest NV trace set, every cell of every AIR is perturbed one at a time
@@ -2613,6 +2630,19 @@ index 0000000..9389bca
 +    for j in 0..4 {
 +        n[cm.p[j]] = format!("P{j}");
 +    }
++    // columns inside the role's view are "v<i>" until named below; only columns beyond the view
++    // are "pool<i>" (the don't-care class "beyond the role view" must not hide unnamed columns)
++    let view = match role {
++        r if r.starts_with("ALU") => AB_W,
++        "BIND" | "APPB" => BIND_W,
++        r if r.starts_with("GLUE") => super::glue::GLUE_W,
++        r if r.starts_with("HASH") => super::transcript2::HASH2_WIDTH,
++        r if r.starts_with("SAMP") => super::transcript2::SAMP2_WIDTH,
++        _ => 0,
++    };
++    for i in 0..view {
++        n[N_COMMON + i] = format!("v{i}");
++    }
 +    let pool = &idx[N_COMMON..];
 +    let mut set = |i: usize, s: String| n[i] = s;
 +    match role {
@@ -2630,6 +2660,7 @@ index 0000000..9389bca
 +                set(c.g[k], format!("g{k}"));
 +            }
 +            set(c.wit, "wit".into());
++            set(c.wit2, "wit2".into());
 +            set(c.mult, "mult".into());
 +            set(c.rx, "rx".into());
 +            set(c.ry, "ry".into());
@@ -2677,11 +2708,14 @@ index 0000000..9389bca
 +        }
 +        r if r.starts_with("HASH") => {
 +            let c: &Hash2Cols<usize> = pool[..super::transcript2::HASH2_WIDTH].borrow();
-+            for (s, v) in [("is_first", c.is_first), ("op_f", c.op_f), ("op_c", c.op_c), ("op_s", c.op_s), ("op_p", c.op_p), ("job", c.job), ("nxt", c.nxt), ("hn", c.hn), ("t_start", c.t_start), ("cnt", c.cnt), ("last_word", c.last_word), ("last_half", c.last_half), ("last_acc", c.last_acc), ("full", c.full), ("ns", c.ns)] {
++            for (s, v) in [("is_first", c.is_first), ("op_f", c.op_f), ("op_c", c.op_c), ("op_s", c.op_s), ("op_p", c.op_p), ("job", c.job), ("nxt", c.nxt), ("hn", c.hn), ("t_start", c.t_start), ("cnt", c.cnt), ("last_word", c.last_word), ("last_half", c.last_half), ("last_acc", c.last_acc), ("full", c.full), ("ns", c.ns), ("op_q", c.op_q), ("scnt", c.scnt), ("ctr", c.ctr), ("nwit", c.nwit), ("rd", c.rd), ("nsq", c.nsq)] {
 +                set(v, s.into());
 +            }
 +            for (k, &v) in c.state_out.iter().enumerate() {
 +                set(v, format!("state_out{k}"));
++            }
++            for (k, &v) in c.state_in.iter().enumerate() {
++                set(v, format!("state_in{k}"));
 +            }
 +            for k in 0..6 {
 +                set(c.rdw[k], format!("rdw{k}"));
@@ -2736,7 +2770,11 @@ index 0000000..9389bca
 +    }
 +    if row[cm.kh] == F::ONE {
 +        let c: &Hash2Cols<usize> = idx[N_COMMON..N_COMMON + super::transcript2::HASH2_WIDTH].borrow();
-+        return if row[c.hn] == F::ONE { "HASH".into() } else { "HASH:hn0".into() };
++        let op = [(c.op_f, "f"), (c.op_c, "c"), (c.op_s, "s"), (c.op_p, "p"), (c.op_q, "q")]
++            .iter()
++            .find(|(i, _)| row[*i] == F::ONE)
++            .map_or("?", |x| x.1);
++        return if row[c.hn] == F::ONE { format!("HASH:{op}") } else { format!("HASH:{op}:hn0") };
 +    }
 +    if row[cm.ks] == F::ONE {
 +        return "SAMP".into();
@@ -3373,10 +3411,10 @@ index 0000000..e1db382
 +}
 diff --git a/crates/recursion/src/nv/faithful_tests.rs b/crates/recursion/src/nv/faithful_tests.rs
 new file mode 100644
-index 0000000..a736e09
+index 0000000..09423b9
 --- /dev/null
 +++ b/crates/recursion/src/nv/faithful_tests.rs
-@@ -0,0 +1,680 @@
+@@ -0,0 +1,768 @@
 +//! NV-faithful: degree-of-freedom (single-cell perturbation) runs and tamper tests for the ALU,
 +//! BIND and app-binding roles (results/pq-recursion-nv/FAITHFUL.md).
 +//!
@@ -3441,8 +3479,11 @@ index 0000000..a736e09
 +            if is(col, "b") && !o.reads_b() {
 +                return Some("operand b not read by this op");
 +            }
-+            if col == "wit" && o != Op::Horn {
-+                return Some("wit only used by Horn");
++            if col == "wit" && !matches!(o, Op::Horn | Op::Horn2) {
++                return Some("wit only used by Horn / Horn2");
++            }
++            if col == "wit2" && o != Op::Horn2 {
++                return Some("wit2 only used by Horn2");
 +            }
 +            if matches!(col, "rx" | "ry" | "rz") && o == Op::Data {
 +                return Some("B-field bytes unused on Data rows");
@@ -3467,7 +3508,16 @@ index 0000000..a736e09
 +    if role == "SAMP:inv-operand-0" {
 +        return Some("SAMP is-zero gadget: the inverse column is free when its operand is 0");
 +    }
-+    if role == "HASH:hn0" && col == "nxt" {
++    if role.starts_with("HASH:") {
++        let op = role.split(':').nth(1).unwrap_or("?");
++        if col == "nwit" && matches!(op, "f" | "c" | "s") {
++            return Some("T* HASH: nwit is read only on PoW rows (len, counter index, op_q inheritance)");
++        }
++        if col == "ctr" && matches!(op, "f" | "c") {
++            return Some("T* HASH: ctr is read only on squeeze / PoW rows (counter unit, run counters)");
++        }
++    }
++    if role.starts_with("HASH:") && role.ends_with(":hn0") && col == "nxt" {
 +        return Some("last hash-chain row: nxt is gated by hn = 0");
 +    }
 +    None
@@ -4056,6 +4106,82 @@ index 0000000..a736e09
 +            assert!(sum < c.threshold as u64);
 +        }
 +    }
++}
++
++/// (F3) statement passthrough at level >= 2: an NV level verifying an NV child re-exposes the
++/// child's public values 1..19 (the base statement digest) unchanged; any other value is
++/// rejected.  With NV_DOF_L2=1 also runs the single-cell perturbation over the level-2 trace
++/// (pack + PvD rows, NV-child DAG).
++#[test]
++fn nv_statement_passthrough() {
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk0, p0) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let mut pp = openvm_stark_backend::test_utils::test_system_params_small(2, 16, 3);
++    pp.max_constraint_degree = debug_params().max_constraint_degree;
++    let parent = Sha384CpuEngine::new(pp);
++    let circ1 = NvCircuit::new(3, 16, 1);
++    let (vk1, p1, _b1, _) = super::circuit::prove_level(&circ1, &parent, &vk0, &p0);
++    let child_pv = p1.public_values[0].clone();
++    assert!(super::circuit::check_statement(&child_pv, &p0.public_values));
++    let mut circ2 = NvCircuit::new(3, 19, 1);
++    circ2.child_nv = true;
++    let airs = circ2.airs::<Sha384Config>();
++    let (mats, b2) = circ2.generate(&vk1, &p1);
++    assert!(b2.failures.is_empty(), "{:?}", b2.failures);
++    let pv2 = b2.public_values();
++    assert_eq!(pv2[1..], child_pv[1..], "statement digest passed through");
++    assert!(super::circuit::check_statement(&pv2, &p0.public_values));
++    let pvs = vec![pv2.clone(), vec![], vec![], vec![]];
++    debug_check(&airs, mats.clone(), &pvs);
++    println!("NV_PASSTHROUGH honest level 2 ok");
++    for k in [1usize, 7, 12, 13, 18] {
++        let mut bad = pvs.clone();
++        bad[0][k] += F::ONE;
++        must_fail(&format!("level-2 exposed statement limb {k}"), || debug_check(&airs, mats.clone(), &bad));
++    }
++    if std::env::var("NV_DOF_L2").is_ok() {
++        let (bad_c, unb) = global_check(&airs, &mats, &pvs);
++        assert_eq!((bad_c, unb), (0, 0));
++        let t = run_dof(&airs, &mats, &pvs, cap(), 0xBEEF);
++        let bad = report("level2-passthrough", &t);
++        assert!(bad.is_empty(), "{bad:#?}");
++    }
++}
++
++/// §W: every generated program has complete Horner chains (HornS HornR* HornE, contiguous), and
++/// the assertion in `Builder::finish` rejects a broken one.
++#[test]
++fn nv_horner_chain_shape() {
++    use super::isa::Instr;
++    let engine = Sha384CpuEngine::new(child_params_small());
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let circ = NvCircuit::new(vk.inner.params.k_whir(), 16, 1);
++    let (_, b) = circ.generate(&vk, &proof);
++    let chains = b.instrs.iter().filter(|i| i.op == Op::HornS).count();
++    let rs = b.instrs.iter().filter(|i| i.op == Op::HornR).count();
++    println!("NV_HORNER chains={chains} HornR rows={rs} program={}", b.instrs.len());
++    assert!(chains > 0);
++    super::builder::assert_horner_chains(&b.instrs);
++    // a HornR whose predecessor is not a chain op, and a dangling HornS, are rejected
++    let r = b.instrs.iter().position(|i| i.op == Op::HornR).unwrap();
++    let mut bad = b.instrs.clone();
++    bad[r - 1] = Instr::NOP;
++    must_fail("HornR without predecessor", || super::builder::assert_horner_chains(&bad));
++    let mut bad = b.instrs.clone();
++    let e = bad.iter().position(|i| i.op == Op::HornE).unwrap();
++    bad[e] = Instr::NOP;
++    must_fail("chain without HornE", || super::builder::assert_horner_chains(&bad));
++}
++
++/// §W: DOF on a child with stacked width >= 2 (n_stack 3), whose program has Horn2 rows.
++#[test]
++fn nv_dof_horn2() {
++    let mut p = openvm_stark_backend::test_utils::test_system_params_small(2, 3, 3);
++    p.max_constraint_degree = 4;
++    let engine = Sha384CpuEngine::new(p);
++    let (vk, proof) = FibFixture::new(0, 1, 1 << 5).keygen_and_prove(&engine);
++    let bad = dof_case("horn2", &vk, &proof, None);
++    assert!(bad.is_empty(), "unexpected degrees of freedom: {bad:#?}");
 +}
 diff --git a/crates/recursion/src/nv/faithful_tr_tests.rs b/crates/recursion/src/nv/faithful_tr_tests.rs
 new file mode 100644
@@ -6208,10 +6334,10 @@ index 0000000..9823e17
 +mod faithful_tests;
 diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
 new file mode 100644
-index 0000000..b4483bd
+index 0000000..1d520bb
 --- /dev/null
 +++ b/crates/recursion/src/nv/tests.rs
-@@ -0,0 +1,1170 @@
+@@ -0,0 +1,1180 @@
 +use openvm_stark_backend::{
 +    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
 +    StarkEngine,
@@ -7240,7 +7366,8 @@ index 0000000..b4483bd
 +    }
 +}
 +
-+/// The DKT certificate loader reads every "n,k,A,1" key (top level and `_grid.certs`).
++/// The DKT certificate loader reads the top-level "n,k,A,1" keys only and drops excluded
++/// (not kernel-proved) entries.
 +#[test]
 +fn dkt_cert_loader() {
 +    let dir = std::env::temp_dir().join(format!("nv-dkt-{}", std::process::id()));
@@ -7249,12 +7376,21 @@ index 0000000..b4483bd
 +    std::fs::write(
 +        &path,
 +        r#"{"2013265920,1048576,37140791,1": {"E": "1/2", "list": "3"}, "x,1,2,1": {}, "5,6,7,2": {},
-+            "_grid": {"margin": 0.05, "n": 2013265920, "certs": {"251658240,4096,790689,1": {"m": 16}}}}"#,
++            "251658240,4096,790689,1": {"m": 16},
++            "_no_certificate": {"4026531840,1024,1552217,1": "no certificate"},
++            "_shapes": {"s": [{"n": 1, "A": 2}]}}"#,
 +    )
 +    .unwrap();
 +    let c = crate::sha384::e2e_tests::load_dkt_certs(path.to_str().unwrap());
-+    assert_eq!(c.len(), 2);
++    assert_eq!(c.len(), 2, "top-level certificate keys only (not _no_certificate's)");
 +    assert!(c.contains(&(2013265920, 1048576, 37140791)) && c.contains(&(251658240, 4096, 790689)));
++    assert!(!c.contains(&(4026531840, 1024, 1552217)));
++    // kernel-proof rule: excluded (engine / #eval!-only) entries are dropped
++    let ex = dir.join("big.keys");
++    std::fs::write(&ex, "251658240,4096,790689,1\n").unwrap();
++    let c = crate::sha384::e2e_tests::load_dkt_certs_excluding(path.to_str().unwrap(), Some(ex.to_str().unwrap()));
++    assert_eq!(c.len(), 1);
++    assert!(!c.contains(&(251658240, 4096, 790689)));
 +    std::fs::remove_dir_all(&dir).unwrap();
 +}
 +
@@ -15763,10 +15899,10 @@ index 0000000..f589e8d
 +}
 diff --git a/crates/recursion/src/sha384/e2e_tests.rs b/crates/recursion/src/sha384/e2e_tests.rs
 new file mode 100644
-index 0000000..3028606
+index 0000000..cd2d220
 --- /dev/null
 +++ b/crates/recursion/src/sha384/e2e_tests.rs
-@@ -0,0 +1,495 @@
+@@ -0,0 +1,545 @@
 +//! End-to-end: the ported verifier sub-circuit verifies real SHA-384/Ext12 child proofs.
 +//!
 +//!   cargo test --release -p openvm-recursion-circuit --lib e2e_ -- --nocapture
@@ -15971,15 +16107,63 @@ index 0000000..3028606
 +}
 +
 +/// SWIRL params from `{PREFIX}_*` env vars (defaults: native PQ profile shape).
-+/// Load a DKT certificate set (lane/pq-dkt-verify calc/dkt_certs.json): every key "n,k,A,1"
-+/// anywhere in the file (top level and `_grid.certs`).
++/// Load a DKT certificate set (lane/pq-dkt-verify calc/dkt_certs_o2.json): the TOP-LEVEL keys
++/// "n,k,A,1" only (metadata objects such as `_no_certificate` / `_shapes` hold code keys that are
++/// NOT certificates).  Soundness rule: only kernel-proved entries count, so `exclude` (a file of
++/// "n,k,A,ell" lines, e.g. lean/DKTCertsO2_big.keys: engine / #eval!-checked only) is removed.
 +pub fn load_dkt_certs(path: &str) -> openvm_stark_backend::CertSet {
++    load_dkt_certs_excluding(path, None)
++}
++
++pub fn load_dkt_certs_excluding(path: &str, exclude: Option<&str>) -> openvm_stark_backend::CertSet {
 +    let text = std::fs::read_to_string(path).unwrap_or_else(|e| panic!("DKT certificates {path}: {e}"));
-+    let mut out = openvm_stark_backend::CertSet::new();
-+    for key in text.split('"').skip(1).step_by(2) {
-+        let f: Vec<&str> = key.split(',').collect();
++    let parse = |key: &str| -> Option<(u64, u64, u64)> {
++        let f: Vec<&str> = key.trim().split(',').collect();
 +        if f.len() == 4 && f.iter().all(|x| !x.is_empty() && x.bytes().all(|c| c.is_ascii_digit())) && f[3] == "1" {
-+            out.insert((f[0].parse().unwrap(), f[1].parse().unwrap(), f[2].parse().unwrap()));
++            Some((f[0].parse().ok()?, f[1].parse().ok()?, f[2].parse().ok()?))
++        } else {
++            None
++        }
++    };
++    // top-level object keys: strings at brace depth 1 followed by ':'
++    let mut out = openvm_stark_backend::CertSet::new();
++    let b = text.as_bytes();
++    let (mut depth, mut i) = (0i32, 0usize);
++    while i < b.len() {
++        match b[i] {
++            b'{' | b'[' => depth += 1,
++            b'}' | b']' => depth -= 1,
++            b'"' => {
++                let start = i + 1;
++                let mut j = start;
++                while j < b.len() && b[j] != b'"' {
++                    if b[j] == b'\\' {
++                        j += 1;
++                    }
++                    j += 1;
++                }
++                let key = &text[start..j];
++                let mut k = j + 1;
++                while k < b.len() && (b[k] as char).is_whitespace() {
++                    k += 1;
++                }
++                if depth == 1 && k < b.len() && b[k] == b':' {
++                    if let Some(c) = parse(key) {
++                        out.insert(c);
++                    }
++                }
++                i = j;
++            }
++            _ => {}
++        }
++        i += 1;
++    }
++    if let Some(ex) = exclude {
++        let t = std::fs::read_to_string(ex).unwrap_or_else(|e| panic!("DKT exclusion list {ex}: {e}"));
++        for line in t.lines() {
++            if let Some(c) = parse(line) {
++                out.remove(&c);
++            }
 +        }
 +    }
 +    out
@@ -16028,7 +16212,9 @@ index 0000000..3028606
 +        // DKT certificate set (env `{prefix}_DKT_CERTS` or `NEARPROOF_DKT_CERTS`, a dkt_certs.json
 +        // path); every other round falls back to Johnson m = 64 (O-1)
 +        let path = std::env::var(format!("{prefix}_DKT_CERTS")).or_else(|_| std::env::var("NEARPROOF_DKT_CERTS")).ok();
-+        let certs = path.map(|p| load_dkt_certs(&p));
++        // entries without a kernel proof (e.g. lean/DKTCertsO2_big.keys) are excluded
++        let excl = std::env::var(format!("{prefix}_DKT_EXCLUDE")).or_else(|_| std::env::var("NEARPROOF_DKT_EXCLUDE")).ok();
++        let certs = path.map(|p| load_dkt_certs_excluding(&p, excl.as_deref()));
 +        p.whir = p.whir.clone().with_first_order(log_blowup, l_skip + n_stack, bits, e("O2_MARGIN_MILLI", 50) as u32, list_m as u32, certs.as_ref(), e("COMMITS", 1));
 +    }
 +    p

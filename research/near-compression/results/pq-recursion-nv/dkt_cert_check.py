@@ -1,14 +1,18 @@
 # Check the O-2 agreement thresholds A_i (AgreementTable::canonical rule) of real shapes against
 # lane/pq-dkt-verify calc/dkt_certs.json (round codes and fold sub-codes s = 0..k_i).
-# Usage: python3 dkt_cert_check.py <dkt_certs.json>
+# Usage: python3 dkt_cert_check.py <dkt_certs.json> [<exclusion keys file>]
 import sys
 import json, math
 from decimal import Decimal, getcontext
 from fractions import Fraction as Fr
 getcontext().prec = 60
 d = json.load(open(sys.argv[1]))
-certs = {k: v for k, v in d.items() if k != '_grid'}
-certs.update(d.get('_grid', {}).get('certs', {}))
+# top-level certificate keys only; entries listed in the optional exclusion file (no kernel
+# proof, e.g. lean/DKTCertsO2_big.keys) do not count
+certs = {k: v for k, v in d.items() if isinstance(v, dict) and 'B_jet' in v}
+if len(sys.argv) > 2:
+    for line in open(sys.argv[2]):
+        certs.pop(line.strip(), None)
 def a1(r):
     rc = 11 - 3 * math.sqrt(13)
     if r < rc:
@@ -32,6 +36,8 @@ SH = {
   'base app stress b6 h21 k1=1 k4 lf8':             dict(log_h=21, b=6, k1=1, k=4, lf=8),
   'measured chain inner b2 h20 k1=1 k4 lf3':        dict(log_h=20, b=2, k1=1, k=4, lf=3),
   'measured chain final b2 h21 k1=1 k3 lf8':        dict(log_h=21, b=2, k1=1, k=3, lf=8),
+  'penultimate b7 h20 k1=2 k4 lf6':                 dict(log_h=20, b=7, k1=2, k=4, lf=6),
+  'penultimate b8 h19 k1=2 k4 lf9':                 dict(log_h=19, b=8, k1=2, k=4, lf=9),
 }
 for name, s in SH.items():
     nr = 1 + math.ceil((s['log_h'] - s['k1'] - s['lf']) / s['k'])

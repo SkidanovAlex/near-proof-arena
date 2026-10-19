@@ -12,6 +12,8 @@ def best():
         for ns in (15, 16, 17, 18):
             for k in (3, 4):
                 for k1 in (1, 2):
+                    if ns + 2 + b > e.MAX_DOM:
+                        continue
                     c, pb, q = e.fixed_point(236, 236, 42, b, ns, k1=k1, k=k)
                     if out is None or pb['total'] < out[1]['total']:
                         out = (c, pb, (b, ns, k, k1, c['pen_lf']), q)
