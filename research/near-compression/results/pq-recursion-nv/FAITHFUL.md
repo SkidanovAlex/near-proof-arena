@@ -1876,8 +1876,11 @@ and `nq` are named in the harness.
 * It needs `NV_PROG_LOG=17` at `log_rows` 18. With the default prog_log = 16 the program
   overflows (`program exceeds 2^16 rows`). That is a test-setup requirement, not a soundness
   issue.
-* My re-run on this branch (`NV_PROG_LOG=17`, 4 threads under the shared 24 GB cap) is still
-  running at the time of writing. This section will be updated when it finishes.
+* My re-run on this branch (`NV_PROG_LOG=17`, 4 threads, 4 h 41, 17.8 GB peak) passes:
+  * honest final accepted (76,014 program rows);
+  * forged 9,684-row FINAL accepted without the program check and rejected with it ("final
+    program openings differ from the pinned program");
+  * wrong claim and wrong level rejected.
 
 ## Y. Audit: NV verifying preprocessed and cached children (lane/pq-nv-preprocessed @ 9761585a5)
 
