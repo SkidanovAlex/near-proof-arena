@@ -14,7 +14,9 @@ Labels: **[M]** measured here, **[K]** kernel-checked in Lean, **[E]** estimate.
 |---|---|---|---|
 | 1 | D0a: all 25 `nearAirV3` tables, no stand-in, honest fixtures, prove + verify + tamper | **done** | §1 |
 | 2 | Lean bridge: generic SWIRL⇒`HoldsP`, `multBoundP < p`, composition with `extractV3` | **done** | §2 |
+| 2b | P3 vk⇔Lean-AIR identity (difftest) | **done** | §2.1 |
 | 3 | D1: all 30 tables, no stand-in, prove + verify + tamper | **done** | §4 |
+| 3b | P4 TAPE commitment binding: Rust/statement side done, Lean `tapeNet_canon` in progress | **partly done** | §2.2 |
 | 4 | Ed25519 / hint design options | **written, not implemented** | §5 |
 | 5 | Wasm join | **not started** (out of scope here) | §6 |
 
@@ -145,9 +147,51 @@ The remaining hypotheses are exactly the documented ones:
 * `mult.length ≤ 25` and `width ≥ 1` — the exported AIR's static `Table.wf`, which the verifier
   checks.
 
-Still engineering, not proof: the vk ⇔ Lean-AIR identity (P3) and the TAPE commitment binding
-(P4).  The Rust demo already interprets the Lean export, which is the P3 content at the value
-level.
+P3 (the vk ⇔ Lean-AIR identity) is now done (§2.1).  P4's Rust/statement side is done and its
+Lean canonical-TAPE layer is partly landed (§2.2).
+
+### P3: the Rust vk is the Lean AIR [M]
+
+`difftest_p3.py` (with `nearproof-pq-state-port difftest` and the `pq-state-port-eval` Lean
+executable) evaluates, at random cur/next/public/selector points far outside the trace domain:
+
+* **Rust**: the keygen's symbolic constraint DAG in the verifying key;
+* **Lean**: the `AirP` value via `Expr.evalWith`, for the *translated* AIR (every interaction
+  offset by `busOffset = 128`).
+
+Results, 64 points per table:
+
+| AIR | points | constraint values | interactions |
+|---|---:|---:|---:|
+| `nearAirV3` (D0a) | 400 | 103,072 | 3,520 |
+| `nearAirV3D1` (D1) | 480 | 109,616 | 3,888 |
+
+All agree, including bus ids, signed counts and messages.  One real difference the test caught and
+now accounts for: the keygen sorts and **dedups** `constraint_idx`
+(`stark-backend/src/air_builders/symbolic/dag.rs:99-100`), so the 16 identical booleanity
+constraints of SHA-256's one-bit interactions collapse to one.  The comparison is therefore over
+constraint-value *sets* (with the Rust count equal to the distinct Lean count), not positions.
+Since the export we ship is the one the prover reads, this is exactly the identity statement P3
+asks for: vk = Lean AIR.
+
+### P4: TAPE commitment binding [M partly / K partly]
+
+The Rust and statement sides are implemented and tested: `TAPE` is a cached table, its
+commitment is recomputed from the public messages in `check_statement`, and the tamper suites
+reject a forged public message (part of 19/19 D0a and 23/23 D1).
+
+The Lean side, `Tape.lean`, now defines the **canonical TAPE** V_d must reconstruct:
+
+* `tapeCanon AP pub` — one row per distinct `(bus, msg)` of `pubMsgs AP pub`, count
+  `pubCount …true − pubCount …false`, selectors marking the row's `(bus, len)` key;
+* `count_eraseDups_le_one` — `eraseDups` keeps at most one copy of an element, so
+  `canonKeys_count_le`, `canonMsgs_count_le` give uniqueness of every key and message;
+* `canonKey_mem` — every canonical message's key is in the canonical key list.
+
+**Not yet landed**: `tapeNet_canon : TapeNet off AP pub (tapeCanon AP pub)`, i.e. that the field
+sum of those rows on `off + b` and `m` is `netF AP pub b m`.  With the uniqueness lemmas above it
+is mechanical list work (`List.zip` + "the one matching key"); it is the remaining piece of P4's
+Lean side and does not bear on soundness, since `TapeNet` is already a hypothesis of `VdChecks`.
 
 ## 3. D1 [M]
 

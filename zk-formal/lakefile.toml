@@ -67,3 +67,8 @@ root = "ZkFormal.V3.Tools.TestEncodeWitness"
 [[lean_exe]]
 name = "nearspec-v3-test-words"
 root = "ZkFormal.V3.Tools.TestWords"
+
+# lane pq-state-port: the Lean side of the P3 difftest (Rust vk DAG vs the Lean AirP value).
+[[lean_exe]]
+name = "pq-state-port-eval"
+root = "ZkFormal.PQ.StatePort.Tool"

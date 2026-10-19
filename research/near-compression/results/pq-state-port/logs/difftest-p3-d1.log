@@ -1,0 +1,2 @@
+DIFFTEST points written: 31 tables x 16 (incl. TAPE as a harness spec)
+DIFFTEST P3 OK: 480 points, 109616 constraint values and 3888 interactions agree (Lean nearAirV3D1 AirP = Rust vk DAG)

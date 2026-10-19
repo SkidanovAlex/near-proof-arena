@@ -30,6 +30,7 @@ use air::{ClassicalAir, E, JsonAir, TableSpec};
 use config::{F, Sha384Config, Sha384RefEngine};
 use openvm_stark_backend::{
     AirRef, StarkEngine, SystemParams, WhirConfig, WhirLevers, WhirParams, WhirProximityStrategy,
+    air_builders::symbolic::{SymbolicExpressionNode, symbolic_variable::Entry},
     codec::Encode,
     interaction::LogUpSecurityParameters,
     prover::{
@@ -354,6 +355,29 @@ fn load(air_path: &str, dir: &str, v: Variant) -> Inst {
     }
 }
 
+/// Parse only the AIR (no dump): every classical table plus the synthetic TAPE entry, which the
+/// difftest covers as an ordinary table spec.  Used by the `difftest` mode, where the point is to
+/// compare the Lean AIR value against the Rust keygen's symbolic DAG, not to prove a trace.
+fn specs_for_difftest(air_path: &str, v: Variant) -> Vec<TableSpec> {
+    let mut cl = ClassicalAir::parse(&std::fs::read_to_string(air_path).unwrap(), v.order());
+    assert_eq!(cl.tables.len(), v.len(), "not {}", v.name());
+    offset_buses(&mut cl);
+    let mut out = cl.tables;
+    // TAPE: a harness spec with the maximum message width and both possible bus keys, so the
+    // difftest exercises a harness table's interaction shape too.
+    out.push(TableSpec {
+        name: "TAPE".into(),
+        width: 8,
+        max_log: 22,
+        constraints: vec![],
+        inters: vec![],
+        harness: Some((5, vec![(BUS_OFFSET, 4), (BUS_OFFSET + 1, 2)])),
+        cached: true,
+        num_pub: 0,
+    });
+    out
+}
+
 fn report(inst: &Inst) {
     let mut cells = 0;
     for (t, m) in inst.spec.iter().zip(&inst.mats) {
@@ -557,6 +581,172 @@ fn precheck(inst: &Inst) {
     );
 }
 
+/// Evaluate the keygen's symbolic constraint DAG at one point.
+fn dag_eval(
+    vk: &openvm_stark_backend::keygen::types::MultiStarkVerifyingKey<Sha384Config>,
+    ai: usize,
+    cached: usize,
+    cur: &[F],
+    nxt: &[F],
+    pubs: &[F],
+    sel: [F; 3],
+) -> (Vec<F>, Vec<(u16, F, Vec<F>)>) {
+    let dag = &vk.inner.per_air[ai].symbolic_constraints;
+    let mut val: Vec<F> = Vec::with_capacity(dag.constraints.nodes.len());
+    for n in &dag.constraints.nodes {
+        let v = match n {
+            SymbolicExpressionNode::Variable(var) => match var.entry {
+                Entry::Main {
+                    offset: 0,
+                    part_index,
+                } => {
+                    cur[if cached > 0 && part_index > 0 {
+                        cached + var.index
+                    } else {
+                        var.index
+                    }]
+                }
+                Entry::Main {
+                    offset: 1,
+                    part_index,
+                } => {
+                    nxt[if cached > 0 && part_index > 0 {
+                        cached + var.index
+                    } else {
+                        var.index
+                    }]
+                }
+                Entry::Public => pubs[var.index],
+                e => panic!("unexpected entry {e:?}"),
+            },
+            SymbolicExpressionNode::IsFirstRow => sel[0],
+            SymbolicExpressionNode::IsLastRow => sel[1],
+            SymbolicExpressionNode::IsTransition => sel[2],
+            SymbolicExpressionNode::Constant(c) => *c,
+            SymbolicExpressionNode::Add {
+                left_idx,
+                right_idx,
+                ..
+            } => val[*left_idx] + val[*right_idx],
+            SymbolicExpressionNode::Sub {
+                left_idx,
+                right_idx,
+                ..
+            } => val[*left_idx] - val[*right_idx],
+            SymbolicExpressionNode::Neg { idx, .. } => -val[*idx],
+            SymbolicExpressionNode::Mul {
+                left_idx,
+                right_idx,
+                ..
+            } => val[*left_idx] * val[*right_idx],
+        };
+        val.push(v);
+    }
+    let cons = dag
+        .constraints
+        .constraint_idx
+        .iter()
+        .map(|&i| val[i])
+        .collect();
+    let ints = dag
+        .interactions
+        .iter()
+        .map(|it| {
+            (
+                it.bus_index,
+                val[it.count],
+                it.message.iter().map(|&i| val[i]).collect(),
+            )
+        })
+        .collect();
+    (cons, ints)
+}
+
+/// **P3: the Rust vk is the Lean AIR.**  Emit random points and the keygen DAG's values there;
+/// `difftest_p3.py` evaluates the same points against the Lean export and compares.
+fn cmd_difftest(air_path: &str, points_out: &str, rust_out: &str, n: usize, v: Variant) {
+    set_levers();
+    let spec = specs_for_difftest(air_path, v);
+    let eng = Sha384RefEngine::new(seg_v1_params(14, 32, 8));
+    let airs: Vec<AirRef<Sha384Config>> = spec
+        .iter()
+        .map(|t| Arc::new(JsonAir { spec: t.clone() }) as AirRef<Sha384Config>)
+        .collect();
+    let (_pk, vk) = eng.keygen(&airs);
+    let mut rng: u64 = 0x2026_1019_dead_beef;
+    let mut next = || {
+        rng ^= rng << 13;
+        rng ^= rng >> 7;
+        rng ^= rng << 17;
+        F::from_u32((rng % 2013265921) as u32)
+    };
+    let mut pts = String::new();
+    let mut out = String::new();
+    for (ti, t) in spec.iter().enumerate() {
+        let w = t.width;
+        let np = t.num_pub;
+        for _ in 0..n {
+            let sel = [next(), next(), next()];
+            let cur: Vec<F> = (0..w).map(|_| next()).collect();
+            let nxt: Vec<F> = (0..w).map(|_| next()).collect();
+            let pubs: Vec<F> = (0..np).map(|_| next()).collect();
+            let j = |v: &[F]| {
+                v.iter()
+                    .map(|x| x.as_canonical_u32().to_string())
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            };
+            pts.push_str(&format!(
+                "{} {} | {} | {} | {}
+",
+                ti,
+                j(&sel),
+                j(&cur),
+                j(&nxt),
+                j(&pubs)
+            ));
+            let (cons, ints) = dag_eval(
+                &vk,
+                ti,
+                if t.cached { w } else { 0 },
+                &cur,
+                &nxt,
+                &pubs,
+                sel,
+            );
+            let cj: Vec<String> = cons
+                .iter()
+                .map(|x| x.as_canonical_u32().to_string())
+                .collect();
+            let ij: Vec<String> = ints
+                .iter()
+                .map(|(b, c, m)| {
+                    format!(
+                        "[{},{},[{}]]",
+                        b,
+                        c.as_canonical_u32(),
+                        m.iter()
+                            .map(|x| x.as_canonical_u32().to_string())
+                            .collect::<Vec<_>>()
+                            .join(",")
+                    )
+                })
+                .collect();
+            out.push_str(&format!(
+                "{{\"t\":{ti},\"constraints\":[{}],\"inters\":[{}]}}\n",
+                cj.join(","),
+                ij.join(",")
+            ));
+        }
+    }
+    std::fs::write(points_out, pts).unwrap();
+    std::fs::write(rust_out, out).unwrap();
+    println!(
+        "DIFFTEST points written: {} tables x {n} (incl. TAPE as a harness spec)",
+        spec.len()
+    );
+}
+
 fn cmd(air_path: &str, dir: &str, mode: &str, which: &str, v: Variant) {
     set_levers();
     let t0 = Instant::now();
@@ -737,26 +927,41 @@ fn cmd(air_path: &str, dir: &str, mode: &str, which: &str, v: Variant) {
 
 fn main() {
     let a: Vec<String> = std::env::args().collect();
-    if a.len() < 5 {
-        eprintln!(
-            "usage: {} <air.json> <dump_dir> check|prove|tamper <d0a|d1> [small|pinned]",
-            a[0]
-        );
-        std::process::exit(2);
+    if a.len() >= 7 && a[1] == "difftest" {
+        // difftest <air.json> <points_out> <rust_out> <n> <d0a|d1>
+        let v = match a[6].as_str() {
+            "d0a" => Variant::D0a,
+            "d1" => Variant::D1,
+            m => {
+                eprintln!("variant {m}: expected d0a or d1");
+                std::process::exit(2);
+            }
+        };
+        let n: usize = a[4].parse().unwrap_or(16);
+        cmd_difftest(&a[2], &a[3], &a[4], n, v);
+        return;
     }
-    let v = match a[4].as_str() {
-        "d0a" => Variant::D0a,
-        "d1" => Variant::D1,
-        m => {
-            eprintln!("variant {m}: expected d0a or d1");
-            std::process::exit(2);
-        }
-    };
-    cmd(
-        &a[1],
-        &a[2],
-        &a[3],
-        a.get(5).map(|s| s.as_str()).unwrap_or("small"),
-        v,
+    if a.len() >= 5 && a[1] != "difftest" {
+        // <air.json> <dump> check|prove|tamper <d0a|d1> [small|pinned]
+        let v = match a[4].as_str() {
+            "d0a" => Variant::D0a,
+            "d1" => Variant::D1,
+            m => {
+                eprintln!("variant {m}: expected d0a or d1");
+                std::process::exit(2);
+            }
+        };
+        cmd(
+            &a[1],
+            &a[2],
+            &a[3],
+            a.get(5).map(|s| s.as_str()).unwrap_or("small"),
+            v,
+        );
+        return;
+    }
+    eprintln!(
+        "usage:\n  {0} <air.json> <dump_dir> check|prove|tamper <d0a|d1> [small|pinned]\n  {0} difftest <air.json> <points_out> <rust_out> <n> <d0a|d1>",
+        a[0]
     );
 }
