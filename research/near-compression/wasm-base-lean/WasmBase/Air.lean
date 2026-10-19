@@ -109,13 +109,23 @@ def Trace.row (tr : Trace) (pub : List F) (t r : Nat) : Row where
   isFirst := r == 0
   isLast := r + 1 == tr.height t
 
+/-- One interaction occurrence: bus, direction, evaluated message, count as a natural. -/
+abbrev Occ := Nat × Bool × List F × Nat
+
+/-- Every interaction occurrence of the trace (all tables, all rows). -/
+def occs (A : Air) (tr : Trace) (pub : List F) : List Occ :=
+  (A.tables.zipIdx).flatMap fun (T, t) =>
+    (List.range (tr.height t)).flatMap fun r =>
+      T.inters.map fun i => (i.bus, i.send, i.msg.map (·.eval (tr.row pub t r)), (i.count.eval (tr.row pub t r)).toNat)
+
 /-- Natural sum of the counts with which bus `b` carries message `m` in direction `send`. -/
 def busNat (A : Air) (tr : Trace) (pub : List F) (b : Nat) (send : Bool) (m : List F) : Nat :=
-  ((A.tables.zipIdx).map fun (T, t) =>
-    ((List.range (tr.height t)).map fun r =>
-      (T.inters.map fun i =>
-        if i.bus = b ∧ i.send = send ∧ i.msg.map (·.eval (tr.row pub t r)) = m
-        then (i.count.eval (tr.row pub t r)).toNat else 0).sum).sum).sum
+  (((occs A tr pub).filter fun o => o.1 = b ∧ o.2.1 = send ∧ o.2.2.1 = m).map (·.2.2.2)).sum
+
+/-- The verifier's per-bus trace-height constraint (openvm keygen: every interaction has weight 1):
+`Σ_t height_t · #(interactions of table t on bus b) < p`. -/
+def busLoad (A : Air) (tr : Trace) (b : Nat) : Nat :=
+  ((A.tables.zipIdx).map fun (T, t) => tr.height t * (T.inters.filter (·.bus = b)).length).sum
 
 /-- Maximal log-height of any table (pinned base shape: stacked height `2^24`). -/
 def maxLogHeight : Nat := 24
@@ -128,6 +138,7 @@ structure Holds (A : Air) (pub : List F) (tr : Trace) : Prop where
   constr : ∀ t (ht : t < A.tables.length), ∀ r, r < tr.height t →
     ∀ e ∈ (A.tables[t]'ht).constraints, e.eval (tr.row pub t r) = 0
   balance : ∀ b m, busNat A tr pub b true m % P = busNat A tr pub b false m % P
+  busBound : ∀ b, busLoad A tr b < P
 
 end WasmBase
 

@@ -5,4 +5,12 @@ import WasmBase.Event
 import WasmBase.SpecLemmas
 import WasmBase.Step
 import WasmBase.StepOps
+import WasmBase.StepOps2
+import WasmBase.Bus
+import WasmBase.Chain
+import WasmBase.Channel
 import WasmBase.Local.Add
+import WasmBase.Local.Bit
+import WasmBase.Local.Mul
+import WasmBase.Local.Cmp
+import WasmBase.Local.Simple
