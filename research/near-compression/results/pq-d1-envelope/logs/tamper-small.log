@@ -1,0 +1,75 @@
+TABLE sha_t    width 544 height 2^13 cells   4456448 constraints 1028 interactions  17 deg 4 pubs 0
+TABLE sha_r    width 544 height 2^13 cells   4456448 constraints 1028 interactions  17 deg 4 pubs 0
+TABLE node     width 188 height 2^13 cells   1540096 constraints  480 interactions  23 deg 4 pubs 0
+TABLE head     width  73 height 2^7  cells      9344 constraints   88 interactions   8 deg 3 pubs 0
+TABLE val      width  17 height 2^10 cells     17408 constraints   56 interactions   9 deg 4 pubs 0
+TABLE walk     width  56 height 2^10 cells     57344 constraints   82 interactions   6 deg 4 pubs 0
+TABLE uniq     width  53 height 2^10 cells     54272 constraints   78 interactions   2 deg 4 pubs 0
+TABLE ups      width 202 height 2^10 cells    206848 constraints  638 interactions  19 deg 4 pubs 0
+TABLE chacha   width 272 height 2^1  cells       544 constraints  381 interactions   4 deg 4 pubs 0
+TABLE rng      width 158 height 2^1  cells       316 constraints  200 interactions   2 deg 3 pubs 0
+TABLE shuf     width  77 height 2^1  cells       154 constraints   93 interactions   8 deg 3 pubs 0
+TABLE acct     width  16 height 2^7  cells      2048 constraints   40 interactions  13 deg 4 pubs 0
+TABLE akey     width   7 height 2^1  cells        14 constraints   19 interactions   3 deg 3 pubs 0
+TABLE bnd      width   6 height 2^7  cells       768 constraints    5 interactions   3 deg 3 pubs 0
+TABLE srcp     width  63 height 2^10 cells     64512 constraints  134 interactions   5 deg 4 pubs 0
+TABLE size     width  57 height 2^4  cells       912 constraints   74 interactions   2 deg 4 pubs 202
+TABLE qv       width  52 height 2^4  cells       832 constraints  195 interactions  13 deg 6 pubs 30
+TABLE sort     width  49 height 2^7  cells      6272 constraints   66 interactions   1 deg 4 pubs 0
+TABLE tx       width 147 height 2^10 cells    150528 constraints  212 interactions   8 deg 4 pubs 0
+TABLE akm      width  70 height 2^7  cells      8960 constraints  181 interactions   8 deg 4 pubs 0
+TABLE kib      width   7 height 2^10 cells      7168 constraints    3 interactions   2 deg 2 pubs 0
+TABLE plf      width  34 height 2^4  cells       544 constraints    4 interactions   3 deg 2 pubs 0
+TABLE rid      width   9 height 2^1  cells        18 constraints    9 interactions   2 deg 2 pubs 0
+TABLE TAPE     width  47 height 2^11 cells     96256 constraints    0 interactions  11 deg 0 pubs 0 (cached)
+TABLE EXT      width  52 height 2^12 cells    212992 constraints    0 interactions  17 deg 0 pubs 0
+CELLS 11351046; excluded classical tables ["codec", "scandist", "proc", "mem", "cmp", "rcpt", "mrk"] (their traffic = EXT on buses {0, 1, 5, 6, 7, 8, 9, 15, 16, 21, 26, 27, 40, 41, 42, 43, 44, 45, 46, 49, 51, 52, 56, 57, 58, 59, 60, 61, 62}); tape keys 2407
+PRECHECK OK: every constraint on every row; every bus balances (16802 distinct messages)
+TIME load+precheck 3.88s
+PARAMS n_stack 18 log_h 20 w_stack 15 degree 6 queries [536, 256, 83, 50] pow 24 log_max_msg 6
+TIME keygen 0.03s
+VK sha_t    degree 4 constraints 1012 interactions 17 dag_nodes 13847
+VK sha_r    degree 4 constraints 1012 interactions 17 dag_nodes 13847
+VK node     degree 4 constraints 460 interactions 23 dag_nodes 1833
+VK head     degree 3 constraints 80 interactions 8 dag_nodes 389
+VK val      degree 4 constraints 48 interactions 9 dag_nodes 163
+VK walk     degree 4 constraints 77 interactions 6 dag_nodes 390
+VK uniq     degree 4 constraints 77 interactions 2 dag_nodes 335
+VK ups      degree 4 constraints 624 interactions 19 dag_nodes 2734
+VK chacha   degree 4 constraints 377 interactions 4 dag_nodes 3409
+VK rng      degree 3 constraints 198 interactions 2 dag_nodes 1006
+VK shuf     degree 3 constraints 86 interactions 8 dag_nodes 418
+VK acct     degree 4 constraints 27 interactions 13 dag_nodes 121
+VK akey     degree 3 constraints 16 interactions 3 dag_nodes 58
+VK bnd      degree 3 constraints 2 interactions 3 dag_nodes 17
+VK srcp     degree 4 constraints 129 interactions 5 dag_nodes 500
+VK size     degree 4 constraints 72 interactions 2 dag_nodes 373
+VK qv       degree 6 constraints 184 interactions 13 dag_nodes 664
+VK sort     degree 4 constraints 65 interactions 1 dag_nodes 296
+VK tx       degree 4 constraints 207 interactions 8 dag_nodes 1190
+VK akm      degree 4 constraints 176 interactions 8 dag_nodes 686
+VK kib      degree 2 constraints 1 interactions 2 dag_nodes 19
+VK plf      degree 2 constraints 1 interactions 3 dag_nodes 45
+VK rid      degree 2 constraints 7 interactions 2 dag_nodes 45
+VK TAPE     degree 2 constraints 0 interactions 11 dag_nodes 58
+VK EXT      degree 2 constraints 0 interactions 17 dag_nodes 69
+VK dag_nodes total 42512
+SOUNDNESS total=268.2 logup=331.3 proximity=316.2 query=268.2
+PROOF total=1261284 gkr=31256 relations=269072 stacking=2660 whir=956964
+VERIFY OK (native SWIRL verifier); V_d statement check (TAPE root + header PVs): OK
+TIME prove 91.33s verify 0.1440s threads 6 peak_rss_kib 1656880
+TAMPER node[0][0]+1: rejected (prove/verify)
+TAMPER node[5][40]+1: rejected (prove/verify)
+TAMPER head[1][3]+1: rejected (prove/verify)
+TAMPER val[2][1]+1: rejected (prove/verify)
+TAMPER walk[3][7]+1: rejected (prove/verify)
+TAMPER uniq[1][2]+1: rejected (prove/verify)
+TAMPER ups[4][10]+1: rejected (prove/verify)
+TAMPER tx[0][5]+1: rejected (prove/verify)
+TAMPER akm[1][4]+1: rejected (prove/verify)
+TAMPER sha_t[7][100]+1: rejected (prove/verify)
+TAMPER size[0][0]+1: rejected (prove/verify)
+TAMPER srcp[1][1]+1: rejected (prove/verify)
+TAMPER TAPE[0][0]+1 (forged public message): rejected (prove/verify)
+TAMPER pub[201]+1 (header byte): rejected (prove/verify)
+TAMPER 14/14 rejected
