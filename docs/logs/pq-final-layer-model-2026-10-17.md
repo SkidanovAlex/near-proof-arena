@@ -709,3 +709,17 @@ model 308.5 → 298.9 KB.
   (7,20,2,4,6) 300,191 B (L=24); ~8k NvAir rows of cuts → ≈ 287.9 KB. Real base app table
   (400–624k rows) → 315.7–321.4 KB → G2 (preprocessed program commitment) required.
 * Stream lane re-running non-provisional; auditor §X; preprocessed lane implements G2.
+
+## 2026-10-19 — NV verifies preprocessed/cached children (lane/pq-nv-preprocessed @ 9761585a5)
+
+* No AIR/role change; 8 generator sites (P1–P8); one-commitment programs byte-identical.
+  Tests: honest/tampered root/opening/vk/table-swap; cached 3 and 5 commitments; O-2 round-0
+  rule; 19,365 single-element mutations 0 mismatches; fast suite 67/67 both modes.
+* Cost per extra commitment per round-0 query: 7 + 2^k1·⌈w/2⌉ + 5·depth rows + depth+1 SHA
+  compressions (independent of table size → merge fixed tables). L1 over pinned base: +80k rows
+  (b=1) per extra commitment.
+* G2 via CACHED program commitment (preprocessed would be circular): final ≈ 295.7–296.1 KB
+  (293.2 with ~1k row cut); app-table binding with real L1 would be 315.7–321.4 KB.
+* Decisions: CODE cached + bound through statement; BYTE/RANGE committed; base stays SWIRL;
+  WASM base fan-out approved (div/rem, memory, locals/globals, calls). L1 ISA ceiling fix
+  assigned to recursion lane. CPU prover lane started (byte-identical rule).
