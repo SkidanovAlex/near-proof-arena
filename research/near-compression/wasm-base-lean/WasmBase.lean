@@ -21,3 +21,5 @@ import WasmBase.Extract.Bits
 import WasmBase.Extract.Byte
 import WasmBase.Extract.Occ
 import WasmBase.Main.Abstract
+import WasmBase.Local.ShiftBytes
+import WasmBase.Local.Shift

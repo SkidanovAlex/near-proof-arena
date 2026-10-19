@@ -343,3 +343,257 @@ theorem shift_facts (c : Nat → Nat) (rw : Row) (hP : ∀ i, c i < P)
         Shift.P, Shift.cy, Nat.reduceAdd] at hE ⊢
       rw [show 64 + j - 1 = 64 + (j - 1) by omega] at hE
       exact natEq (by fp_ring) (by omega) (by omega)
+
+/-! ## From the product to the spec result -/
+
+theorem val8_bsum (f : Nat → Nat) : val8 f = bsum f 8 := by
+  simp only [val8, bsum, Nat.reducePow]; omega
+
+theorem bsum_byte (f : Nat → Nat) (n j : Nat) (hj : j < n) (hf : ∀ i, i < n → f i < 256) :
+    bsum f n / 256 ^ j % 256 = f j := by
+  obtain ⟨m, rfl⟩ : ∃ m, n = j + (m + 1) := ⟨n - j - 1, by omega⟩
+  rw [bsum_split, Nat.add_mul_div_left _ _ (Nat.pow_pos (by decide)),
+    Nat.div_eq_of_lt (bsum_lt f j (fun i hi => hf i (by omega))), Nat.zero_add,
+    show m + 1 = 1 + m by omega, bsum_split]
+  simp only [bsum, Nat.pow_zero, Nat.mul_one, Nat.zero_add, Nat.pow_one, Nat.add_zero]
+  rw [Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt (hf j (by omega))]
+
+theorem bsum_const (x : Nat) : ∀ h, 255 * bsum (fun _ => x) h + x = x * 256 ^ h := by
+  intro h
+  induction h with
+  | zero => simp [bsum]
+  | succ h ih => simp only [bsum]; rw [Nat.pow_succ]; grind
+
+theorem rot_halves (W a e lo hi : Nat) (he : e ≤ W) (ha : a < 2 ^ W) (hlo : lo < 2 ^ W)
+    (h : lo + 2 ^ W * hi = (a * 2 ^ e) % 2 ^ (2 * W)) : lo % 2 ^ e = 0 ∧ hi < 2 ^ e := by
+  have h1 := lo_of W _ lo hi hlo h
+  have h2 := hi_of W _ lo hi hlo (mul_pow_lt he ha) h
+  constructor
+  · rw [h1, Nat.mod_mod_of_dvd _ (Nat.pow_dvd_pow 2 he), Nat.mul_mod_left]
+  · rw [h2, Nat.div_lt_iff_lt_mul (two_pow_pos' W), Nat.mul_comm (2 ^ e)]
+    exact Nat.mul_lt_mul_of_lt_of_le ha (Nat.le_refl _) (two_pow_pos' e)
+
+theorem count_mod (W b0 b1 b2 b3 : Nat) (hW : W = 32 ∨ W = 64) :
+    val4 b0 b1 b2 b3 % W = b0 % W := by
+  unfold val4
+  rcases hW with rfl | rfl
+  · rw [show b0 + 65536 * b1 + 2 ^ 32 * b2 + 2 ^ 48 * b3 = b0 + 32 * (2048 * b1 + 2 ^ 27 * b2 + 2 ^ 43 * b3) by
+      simp only [Nat.reducePow]; omega, Nat.add_mul_mod_self_left]
+  · rw [show b0 + 65536 * b1 + 2 ^ 32 * b2 + 2 ^ 48 * b3 = b0 + 64 * (1024 * b1 + 2 ^ 26 * b2 + 2 ^ 42 * b3) by
+      simp only [Nat.reducePow]; omega, Nat.add_mul_mod_self_left]
+
+theorem binop_shift_mod (W k a b : Nat) (op : Nat) (hop : 10 ≤ op ∧ op ≤ 14) (hk : b % W = k) :
+    Num.binop W op a b = Num.binop W op a k ∧ k < W ∨ W = 0 := by
+  by_cases hW : W = 0
+  · exact Or.inr hW
+  left
+  have hkw : k < W := by rw [← hk]; exact Nat.mod_lt _ (by omega)
+  refine ⟨?_, hkw⟩
+  have hkk : k % W = k := Nat.mod_eq_of_lt hkw
+  rcases (show op = 10 ∨ op = 11 ∨ op = 12 ∨ op = 13 ∨ op = 14 by omega) with rfl | rfl | rfl | rfl | rfl <;>
+  simp only [Num.binop, Num.shl, Num.shrS, Num.shrU, Num.rotl, Num.rotr, hk, hkk]
+
+theorem bsum_add (f g : Nat → Nat) (n : Nat) : bsum (fun j => f j + g j) n = bsum f n + bsum g n := by
+  induction n with
+  | zero => rfl
+  | succ n ih => simp only [bsum]; rw [ih]; grind
+
+theorem bsum_split_zero (f : Nat → Nat) (k m : Nat) (h : ∀ j, j < m → f (k + j) = 0) :
+    bsum f (k + m) = bsum f k := by
+  rw [bsum_split, bsum_zero_of (f := fun j => f (k + j)) h, Nat.mul_zero, Nat.add_zero]
+
+/-- Width-generic shapes: `h` = bytes per word (4 or 8). -/
+theorem shift_shapes (c : Nat → Nat) (w1 : c 10 ≤ 1) (h : Nat) (hh : h = 4 + 4 * c 10)
+    (upper : c 10 = 0 → (∀ k, 4 ≤ k → k < 8 → c (11 + k) = 0) ∧ c 23 = 0 ∧ c 24 = 0 ∧ c 32 = 0 ∧
+      ∀ k, k < 8 → c (56 + k) = 0 ∧ c (72 + k) = 0) :
+    (∀ i, i < h → shA c i = c (11 + i)) ∧ (∀ j, j < h → shA c (h + j) = 255 * c 46 * c 6) ∧
+    (val8 fun k => c (11 + k)) = bsum (fun i => c (11 + i)) h ∧
+    (∀ j, j < 8 → shiftR c j =
+      if j < h then (c 5 + c 8 + c 9) * c (48 + j) + (c 6 + c 7 + c 8 + c 9) * c (48 + (h + j)) else 0) := by
+  rcases (show c 10 = 0 ∨ c 10 = 1 by omega) with g | g
+  · have hh4 : h = 4 := by omega
+    subst hh4
+    obtain ⟨hz, -, -, -, -⟩ := upper g
+    refine ⟨fun i hi => ?_, fun j hj => ?_, ?_, fun j hj => ?_⟩
+    · simp [shA, hi]
+    · simp only [shA, show ¬ (4 + j < 4) by omega, show 4 + j < 8 by omega, ite_false, ite_true, g]; omega
+    · rw [val8_bsum, show (8 : Nat) = 4 + 4 from rfl]
+      exact bsum_split_zero _ 4 4 (fun j hj => hz (4 + j) (by omega) (by omega))
+    · unfold shiftR
+      by_cases hj4 : j < 4
+      · simp only [hj4, ite_true, g, Nat.zero_mul, Nat.zero_add, Nat.sub_zero, Nat.one_mul]
+        rw [show 48 + j + 4 = 48 + (4 + j) by omega]
+      · simp only [hj4, ite_false, g, Nat.zero_mul]
+  · have hh8 : h = 8 := by omega
+    subst hh8
+    refine ⟨fun i hi => ?_, fun j hj => ?_, by rw [val8_bsum], fun j hj => ?_⟩
+    · by_cases hi4 : i < 4
+      · simp [shA, hi4]
+      · simp only [shA, hi4, hi, ite_false, ite_true, g]; omega
+    · simp only [shA, show ¬ (8 + j < 4) by omega, show ¬ (8 + j < 8) by omega, show 8 + j < 16 by omega,
+        ite_false, ite_true, g]; omega
+    · unfold shiftR
+      by_cases hj4 : j < 4
+      · simp only [hj4, hj, ite_true, g, Nat.one_mul, Nat.sub_self, Nat.zero_mul, Nat.add_zero]
+        rw [show 48 + j + 8 = 48 + (8 + j) by omega]
+      · simp only [hj4, hj, ite_false, ite_true, g, Nat.one_mul]
+        rw [show 48 + j + 8 = 48 + (8 + j) by omega]
+
+/-- **Local soundness of SHIFT.**  An active row computes the spec's `shl` / `shr_s` / `shr_u` /
+`rotl` / `rotr` of its operands (count taken mod `w` from the low limb), and its result bytes are
+bytes.  Hypotheses: the row's constraints, booleanity of the operation (count `= 1`), and the range
+facts its lookups give (operand / product / carry bytes, `q < 2^16`, `2·rest mod p < 256`). -/
+theorem shift_sound (c : Nat → Nat) (rw : Row) (hP : ∀ i, c i < P)
+    (hc : ∀ e ∈ Shift.constraints, e.eval (natRow c rw) = 0)
+    (hact : c 5 + c 6 + c 7 + c 8 + c 9 = 1)
+    (hab : ∀ k, k < 8 → c (11 + k) < 256) (hb0 : c 21 < 65536) (hq : c 33 < 65536)
+    (hrest : (2 * c 47) % P < 256)
+    (hPb : ∀ j, j < 16 → c (48 + j) < 256) (hcy : ∀ j, j < 16 → c (64 + j) < 256) :
+    (c 10 = 0 ∨ c 10 = 1) ∧
+    (c 10 = 0 → (∀ k, 4 ≤ k → k < 8 → c (11 + k) = 0) ∧ c 23 = 0 ∧ c 24 = 0) ∧
+    (∀ j, j < 8 → shiftR c j < 256) ∧
+    (c 10 = 0 → ∀ j, 4 ≤ j → j < 8 → shiftR c j = 0) ∧
+    Num.binop (32 + 32 * c 10) (10 + c 6 + 2 * c 7 + 3 * c 8 + 4 * c 9)
+      (val8 fun k => c (11 + k)) (val4 (c 21) (c 22) (c 23) (c 24)) = some (val8 (shiftR c)) := by
+  obtain ⟨f0, f1, f2, f3, f4, w1, sg, upper, hK, hKw, htop, h47, t0, ht0, eb, heb, hLe, hRe, hlimb⟩ :=
+    shift_facts c rw hP hc hact hab hb0 hq hrest hPb hcy
+  obtain ⟨h, hh⟩ : ∃ h, h = 4 + 4 * c 10 := ⟨_, rfl⟩
+  obtain ⟨hAlo, hAhi, ha8, hR⟩ := shift_shapes c w1 h hh upper
+  have hW : 32 + 32 * c 10 = 8 * h := by omega
+  have hWc : 8 * h = 32 ∨ 8 * h = 64 := by omega
+  have hzero : c 10 = 0 → ∀ j, 4 ≤ j → j < 8 → shiftR c j = 0 := by
+    intro h0 j hj1 hj2; rw [hR j hj2]; simp only [show ¬ (j < h) by omega, ite_false]
+  refine ⟨by omega, fun h0 => ⟨(upper h0).1, (upper h0).2.1, (upper h0).2.2.1⟩, ?_⟩
+  suffices H : (∀ j, j < 8 → shiftR c j < 256) ∧
+      Num.binop (8 * h) (10 + c 6 + 2 * c 7 + 3 * c 8 + 4 * c 9)
+        (val8 fun k => c (11 + k)) (val4 (c 21) (c 22) (c 23) (c 24)) = some (val8 (shiftR c)) by
+    rw [hW]; exact ⟨H.1, hzero, H.2⟩
+  generalize hKd : c 27 + 2 * c 28 + 4 * c 29 + 8 * c 30 + 16 * c 31 + 32 * c 32 = K at hK hKw hLe hRe
+  rw [hW] at hK hKw hRe
+  generalize ha : bsum (fun i => c (11 + i)) h = a at ha8
+  have haW : a < 2 ^ (8 * h) := by
+    rw [← ha, ← pow256]; exact bsum_lt _ h (fun i hi => hab i (by omega))
+  obtain ⟨z, hz⟩ : ∃ z, z = c 46 * c 6 := ⟨_, rfl⟩
+  -- the product
+  have hprod : bsum (fun j => c (48 + j)) (h + h) =
+      ((a + z * (2 ^ (2 * (8 * h)) - 2 ^ (8 * h))) * 2 ^ (eb + 8 * t0)) % 2 ^ (2 * (8 * h)) := by
+    have := chain_prod (2 ^ eb) t0 (h + h) (shA c) (fun j => c (48 + j)) (fun j => c (64 + j)) (by omega)
+      (fun j hj => hPb j (by omega)) (fun j _ => shA_lt c w1 hab f1 sg j) (fun j hj => hlimb j (by omega))
+    rw [this, pow256 t0, ← Nat.pow_add, pow256, show 8 * (h + h) = 2 * (8 * h) by omega]
+    congr 2
+    rw [bsum_split, bsum_congr (fun i hi => hAlo i hi), ha, bsum_congr (fun j hj => hAhi j hj)]
+    have hcst := bsum_const (255 * c 46 * c 6) h
+    rw [show 255 * c 46 * c 6 = 255 * z by rw [hz, Nat.mul_assoc]] at hcst ⊢
+    rw [pow256] at hcst ⊢
+    rw [show 2 * (8 * h) = 8 * h + 8 * h by omega, Nat.pow_add]
+    obtain ⟨X, hX⟩ : ∃ X, X = 2 ^ (8 * h) := ⟨_, rfl⟩
+    rw [← hX] at hcst ⊢
+    generalize bsum (fun _ => 255 * z) h = B at hcst ⊢
+    rw [Nat.mul_assoc] at hcst
+    have hB : B = z * X - z := by omega
+    rw [hB, Nat.mul_sub, Nat.mul_sub, Nat.mul_left_comm X z X, Nat.mul_comm X z]
+  -- halves
+  generalize hlo : bsum (fun j => c (48 + j)) h = lo
+  generalize hhi : bsum (fun j => c (48 + (h + j))) h = hi
+  have hsplit : bsum (fun j => c (48 + j)) (h + h) = lo + 2 ^ (8 * h) * hi := by
+    rw [bsum_split, hlo, ← pow256, ← hhi]
+  have hloW : lo < 2 ^ (8 * h) := by
+    rw [← hlo, ← pow256]; exact bsum_lt _ h (fun j hj => hPb j (by omega))
+  rw [hsplit] at hprod
+  -- the result value
+  have hval : val8 (shiftR c) =
+      bsum (fun j => (c 5 + c 8 + c 9) * c (48 + j) + (c 6 + c 7 + c 8 + c 9) * c (48 + (h + j))) h := by
+    rw [val8_bsum, show bsum (shiftR c) 8 = bsum (shiftR c) (h + (8 - h)) by congr 1; omega,
+      bsum_split_zero _ h (8 - h) (fun j hj => by
+        rw [hR (h + j) (by omega)]; simp only [show ¬ (h + j < h) by omega, ite_false])]
+    exact bsum_congr (fun j hj => by rw [hR j (by omega)]; simp only [hj, ite_true])
+  -- the count
+  have hcount : val4 (c 21) (c 22) (c 23) (c 24) % (8 * h) = K := by
+    rw [count_mod _ _ _ _ _ hWc, hK, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt hKw]
+  have hbin := fun op hop => ((binop_shift_mod (8 * h) K a (val4 (c 21) (c 22) (c 23) (c 24)) op hop hcount).resolve_right
+    (by omega)).1
+  rw [ha8, hval]
+  have hp8 : ∀ j, j < h → c (48 + j) < 256 := fun j hj => hPb j (by omega)
+  have hph : ∀ j, j < h → c (48 + (h + j)) < 256 := fun j hj => hPb (h + j) (by omega)
+  have hbL : ∀ j, j < h → lo / 2 ^ (8 * j) % 256 = c (48 + j) := fun j hj => by
+    rw [← pow256, ← hlo]; exact bsum_byte _ h j hj hp8
+  have hbH : ∀ j, j < h → hi / 2 ^ (8 * j) % 256 = c (48 + (h + j)) := fun j hj => by
+    rw [← pow256, ← hhi]; exact bsum_byte _ h j hj hph
+  have hrot : ∀ e, e ≤ 8 * h → lo + 2 ^ (8 * h) * hi = (a * 2 ^ e) % 2 ^ (2 * (8 * h)) →
+      ∀ j, j < 8 → (if j < h then 1 * c (48 + j) + 1 * c (48 + (h + j)) else 0) < 256 := by
+    intro e he hpr j hj
+    obtain ⟨hl0, hh0⟩ := rot_halves (8 * h) a e lo hi he haW hloW hpr
+    split
+    · rw [Nat.one_mul, Nat.one_mul, ← hbL j ‹_›, ← hbH j ‹_›]
+      exact byte_disjoint lo hi e (8 * j) hl0 hh0
+    · omega
+  rcases (show (c 5 = 1 ∧ c 6 = 0 ∧ c 7 = 0 ∧ c 8 = 0 ∧ c 9 = 0) ∨ (c 5 = 0 ∧ c 6 = 1 ∧ c 7 = 0 ∧ c 8 = 0 ∧ c 9 = 0) ∨
+      (c 5 = 0 ∧ c 6 = 0 ∧ c 7 = 1 ∧ c 8 = 0 ∧ c 9 = 0) ∨ (c 5 = 0 ∧ c 6 = 0 ∧ c 7 = 0 ∧ c 8 = 1 ∧ c 9 = 0) ∨
+      (c 5 = 0 ∧ c 6 = 0 ∧ c 7 = 0 ∧ c 8 = 0 ∧ c 9 = 1) by omega) with
+    ⟨g5, g6, g7, g8, g9⟩ | ⟨g5, g6, g7, g8, g9⟩ | ⟨g5, g6, g7, g8, g9⟩ | ⟨g5, g6, g7, g8, g9⟩ | ⟨g5, g6, g7, g8, g9⟩
+  · -- shl: e = k, result = low half
+    have he : K = eb + 8 * t0 := hLe (by omega)
+    rw [← he, hz, g6, Nat.mul_zero, Nat.zero_mul, Nat.add_zero] at hprod
+    have r := sem_shl (8 * h) a K lo hi hKw hloW hprod
+    simp only [g5, g6, g7, g8, g9, Nat.reduceAdd, Nat.mul_zero, Nat.add_zero, Nat.one_mul, Nat.zero_mul]
+    refine ⟨?_, ?_⟩
+    · intro j hj; rw [hR j hj]; split
+      · simp only [g5, g6, g7, g8, g9, Nat.reduceAdd, Nat.one_mul, Nat.zero_mul, Nat.add_zero]; exact hp8 j ‹_›
+      · omega
+    · rw [hbin 10 (by omega)]; simp only [Num.binop, Option.some.injEq]; rw [hlo, r]
+  · -- shr_s: e = w - k, sign-extended operand, result = high half
+    have he : eb + 8 * t0 = 8 * h - K := by have := hRe (by omega); omega
+    rw [he, hz, g6, Nat.mul_one] at hprod
+    -- the operand's sign: the top byte is `128 sgn + rest`
+    have htopb : c (11 + (h - 1)) = 128 * c 46 + c 47 := by
+      rcases (show c 10 = 0 ∨ c 10 = 1 by omega) with g | g
+      · rw [show 11 + (h - 1) = 14 by omega]; simp only [g] at htop; omega
+      · rw [show 11 + (h - 1) = 18 by omega]; simp only [g] at htop; omega
+    have hsplit' : a = bsum (fun i => c (11 + i)) (h - 1) + c (11 + (h - 1)) * 256 ^ (h - 1) := by
+      rw [← ha, show h = (h - 1) + 1 by omega]; simp only [bsum]; rw [show h - 1 + 1 - 1 = h - 1 by omega]
+    have hlow := bsum_lt (fun i => c (11 + i)) (h - 1) (fun i hi => hab i (by omega))
+    have h128 : 128 * 256 ^ (h - 1) = 2 ^ (8 * h - 1) := by
+      rw [pow256, show (128 : Nat) = 2 ^ 7 from rfl, ← Nat.pow_add]; congr 1; omega
+    have hdec : a = 2 ^ (8 * h - 1) * c 46 + (bsum (fun i => c (11 + i)) (h - 1) + c 47 * 256 ^ (h - 1)) := by
+      rw [hsplit', htopb, ← h128]; grind
+    have hrest' : bsum (fun i => c (11 + i)) (h - 1) + c 47 * 256 ^ (h - 1) < 2 ^ (8 * h - 1) := by
+      rw [← h128]
+      have : c 47 * 256 ^ (h - 1) ≤ 127 * 256 ^ (h - 1) := Nat.mul_le_mul_right _ (by omega)
+      omega
+    have r := sem_shrs (8 * h) a K lo hi (c 46) _ hKw hdec sg hrest' hloW hprod
+    simp only [g5, g6, g7, g8, g9, Nat.reduceAdd, Nat.mul_zero, Nat.add_zero, Nat.one_mul, Nat.zero_mul,
+      Nat.zero_add, Nat.mul_one]
+    refine ⟨?_, ?_⟩
+    · intro j hj; rw [hR j hj]; split
+      · simp only [g5, g6, g7, g8, g9, Nat.reduceAdd, Nat.one_mul, Nat.zero_mul, Nat.zero_add]; exact hph j ‹_›
+      · omega
+    · rw [hbin 11 (by omega)]; simp only [Num.binop, Option.some.injEq]; rw [hhi, r]
+  · -- shr_u: e = w - k, result = high half
+    have he : eb + 8 * t0 = 8 * h - K := by have := hRe (by omega); omega
+    rw [he, hz, g6, Nat.mul_zero, Nat.zero_mul, Nat.add_zero] at hprod
+    have r := sem_shru (8 * h) a K lo hi hKw haW hloW hprod
+    simp only [g5, g6, g7, g8, g9, Nat.reduceAdd, Nat.mul_zero, Nat.add_zero, Nat.one_mul, Nat.zero_mul,
+      Nat.zero_add]
+    refine ⟨?_, ?_⟩
+    · intro j hj; rw [hR j hj]; split
+      · simp only [g5, g6, g7, g8, g9, Nat.reduceAdd, Nat.one_mul, Nat.zero_mul, Nat.zero_add]; exact hph j ‹_›
+      · omega
+    · rw [hbin 12 (by omega)]; simp only [Num.binop, Option.some.injEq]; rw [hhi, r]
+  · -- rotl: e = k, result = low + high half
+    have he : K = eb + 8 * t0 := hLe (by omega)
+    rw [← he, hz, g6, Nat.mul_zero, Nat.zero_mul, Nat.add_zero] at hprod
+    have r := sem_rotl (8 * h) a K lo hi hKw haW hloW hprod
+    have hb := hrot K (by omega) hprod
+    simp only [g5, g6, g7, g8, g9, Nat.reduceAdd, Nat.mul_zero, Nat.add_zero, Nat.zero_add]
+    refine ⟨fun j hj => by rw [hR j hj]; simpa only [g5, g6, g7, g8, g9, Nat.reduceAdd, Nat.zero_add] using hb j hj, ?_⟩
+    rw [hbin 13 (by omega)]; simp only [Num.binop, Option.some.injEq, Nat.one_mul]
+    rw [bsum_add, hlo, hhi, r]
+  · -- rotr: e = w - k, result = low + high half
+    have he : eb + 8 * t0 = 8 * h - K := by have := hRe (by omega); omega
+    rw [he, hz, g6, Nat.mul_zero, Nat.zero_mul, Nat.add_zero] at hprod
+    have r := sem_rotr (8 * h) a K lo hi (by omega) hKw haW hloW hprod
+    have hb := hrot (8 * h - K) (by omega) hprod
+    simp only [g5, g6, g7, g8, g9, Nat.reduceAdd, Nat.mul_zero, Nat.add_zero, Nat.zero_add]
+    refine ⟨fun j hj => by rw [hR j hj]; simpa only [g5, g6, g7, g8, g9, Nat.reduceAdd, Nat.zero_add] using hb j hj, ?_⟩
+    rw [hbin 14 (by omega)]; simp only [Num.binop, Option.some.injEq, Nat.one_mul]
+    rw [bsum_add, hlo, hhi, r]
