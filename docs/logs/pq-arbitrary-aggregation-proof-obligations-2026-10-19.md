@@ -333,3 +333,54 @@ aggregation). P4 is on a parallel path and is the only proximity item.
 4. **Re-run the bound chain with `bind = true` (M1)**.
 5. **Write P4** (DKT26 → WHIR) or explicitly mark it as the one cited composition in the paper.
 6. Kernel-check the 9 blocked certificates at ≥32 GB, or record the J64 fallback as permanent.
+
+---
+
+## 11. Wrap-up (2026-10-20): paper paused
+
+The draft is paused at `docs/research/pq-proven-soundness-paper-draft.md`
+(`5db19647f`). It is scoped to the **recursive tail**, not to a NEAR chunk end to end, and its
+header states the scope, the number provenance and the formal boundary explicitly.
+
+### What is proved, and where it lives
+
+| area | status | location | gated? |
+|---|---|---|---|
+| x15 domain: P1, P2, sampler exactness, BabyBear facts | proved | `zk-formal/ZkFormal/Udr/CosetDomain.lean` | **yes** |
+| DKT26 → `LineGap` → containment, fold additivity (S-28 lift) | proved, parametric in the DKT26 count | `zk-formal/ZkFormal/Udr/McaToGap.lean` | **yes** |
+| arbitrary-tree aggregation: semantics, statements, shape independence (N3/N4, Z4 statement half) | proved | `zk-formal/ZkFormal/PQ/Aggregation/{Tree,Statement,Shape,Compose}.lean` | **yes** |
+| no-union-over-`d` family step | proved | `zk-formal/ZkFormal/Bcs/Family.lean` | **yes** |
+| ANALYSIS Lemma 1 (three cases), Lemma 2, counting half of Fact A, operator bridge, `qrom_bound` | proved | `research/qrom/Qrom/*.lean` | **no** (Mathlib) |
+
+### The deliberate decision: do not re-prove Section 7 Mathlib-free
+
+Section 7's QROM core is machine-checked in `research/qrom`, which uses Mathlib and is therefore
+outside the admitted `zk-formal` package (challenge `allowed_packages`, `DESIGN.md` F4). It was
+decided **not** to port it:
+
+* the admitted certificate does not depend on those lemmas; they are supporting analysis;
+* the two remaining QROM inputs are cited regardless (CFHL21 Lemma 4.3 and Cor 4.2), so a port
+  would not remove the real gap;
+* the Mathlib-free environment lacks the `List`-sum lemma lattice and `nlinarith`, so each lemma
+  needs hand-rolled induction. A partial port attempt was abandoned after producing no committed
+  lemmas; the `ℕ`-scaled statement is sound (all three case bounds are integers after `× M²`), but
+  the plumbing cost is high.
+
+Precedent: Section 6 already cites DKT26's external Lean development the same way.
+
+### What remains, in dependency order
+
+1. **B3 gas invariant → B2 `wasm_base_sound_host`** — in progress on `lane/pq-host-gas` /
+   `lane/pq-exec-host`; `wasm_base_exec_host` is stated but not proved, and `HOSTO` multiplicity is
+   currently unconstrained (a real gap, see `043101140`).
+2. **J5 contract-data storage** — `RealStoreMatchesTables` still stated.
+3. **J3 `Joint → RelD3` composition** — the coverage theorem; `JoinStmt` shape fixed.
+4. **B4/B11 Base-faithful** for a real `seg-v1` set and arbitrary splits.
+5. **WHIR Thm 5.2 (Puš26)** — the one proximity step still paper-level.
+6. Z4's byte-level half; M1 (`bind = true` re-run); the 9 kernel-blocked certificates.
+
+### Do not let these regress
+
+* `293,077 B` is the sound measured final; `287,477 B` ran with `bind = false`.
+* NvAir `2^18` headroom is ~2.5 %, not 0.2 %; a paired run failed at +428 rows.
+* The paper's title must not revert to "chunk validation" until the join lands.
