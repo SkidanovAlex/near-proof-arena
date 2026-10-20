@@ -48,3 +48,4 @@ import WasmBase.Main.ExecHost
 import WasmBase.Main.SegExec
 import WasmBase.Main.HostRel
 import WasmBase.Main.SegHarness
+import WasmBase.Main.HostChipBits

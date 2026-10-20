@@ -112,6 +112,28 @@ direction: `act·(1 − pf j)` is **wrong** (it would force active rows to have 
 argument may be absent and an aborting call has `nres = 0`); that form failed the KAT on 4 host
 programs before being corrected.
 
+### 3.5 A second, separate gap: `HOSTO`'s multiplicity is unconstrained
+
+Found while doing the `wasm_base_exec_host` instantiation.  `HostO.table.constraints = []` and both
+of its interactions are counted with the free column `mult`
+(`Main/HostChipBits.lean:hosto_constraints_nil`, `hosto_counts_are_mult`,
+`hosto_no_count_bound`).  Nothing forces `mult ≤ 1`, so on an admissible trace a `HOSTO` row may
+carry multiplicity 2, 5, … (`wasm-base` KAT traces have exactly one HOSTO row with 0 constraints).
+
+`ChipFacts.counts` — "every chip-table interaction count is a bit" — is the premise `exec_of_rows`
+uses for (i) turning bus balance into a message permutation via `msgs_perm`, and (ii) deciding which
+rows are active (`rowAct` = count 1).  It therefore does **not** follow from `Holds` for table 23.
+
+Two honest resolutions, both decisions rather than proofs:
+
+1. restrict `wasm_base_exec_host` to traces whose `HOSTO` rows have `mult ≤ 1` — which is exactly
+   the witness oracle's meaning ("one row per call", `pq-host-chip/RESULTS.md`), stated as a
+   trace-level side condition; or
+2. add `bool (v mult)` to `HOSTO`'s constraints — an AIR change, which perturbs the pinned shape.
+
+Recorded here so the choice is explicit.  Note this is independent of `edae7a53d` (§3.3): that fixed
+the HOST row's `act` gating, this is the oracle table.
+
 `wasm_base_sound` is unaffected by this (it uses `wasmBaseAir`, whose tables are untouched).
 
 ### 3.4 The consequence of the gating is now proved
