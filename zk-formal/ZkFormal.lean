@@ -56,6 +56,8 @@ import ZkFormal.Udr.Statements
 import ZkFormal.Udr.Fri
 import ZkFormal.Udr.GrandProduct
 import ZkFormal.Udr.Compose
+import ZkFormal.Udr.CosetDomain
+import ZkFormal.Udr.McaToGap
 -- Lane L4: AIR DSL and protocol/verifier model.
 import ZkFormal.Stark.NpBounds
 import ZkFormal.Stark.QueryBound

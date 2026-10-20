@@ -7,15 +7,16 @@
 > **Read `docs/logs/pq-paper-audit-2026-10-19.md` first.** This draft is the first
 > pass and contains known factual mismatches and status overclaims; the audit note
 > lists every correction (scope, query schedules, certificate coverage, `T*` cost,
-> the provisional 287,477 B run, and the model-only 99 KB figure). Do not cite this
-> text until the audit's pick-up checklist is complete.
+> the provisional 287,477 B run, and the model-only 99 KB figure). Items 1-12 of
+> the audit have since been corrected in this text; the remaining gaps are the
+> proof-system obligations listed in §10.
 
 ---
 
 ## Abstract
 
-We describe a succinct, transparent-setup, hash-only proof system for NEAR chunk
-validation, aimed at 128-bit security against quantum adversaries making up to
+We describe a succinct, transparent-setup, hash-only proof system for the
+**recursive final layer** of a NEAR chunk-validation stack, aimed at 128-bit security against quantum adversaries making up to
 `2^64` oracle queries. The design is unusual in that every parameter is derived
 from *proven* proximity and soundness bounds: we never invoke the
 "proximity conjecture", the list-decoding-capacity regime, or the ethSTARK
@@ -25,7 +26,7 @@ from *proven* proximity and soundness bounds: we never invoke the
    evaluation domains that are multiplicative cosets of order `c·2^K` with `c`
    odd, not only power-of-two domains. On BabyBear (`p − 1 = 15·2^27`), a `×15`
    domain buys `≈ 1.95` bits per query at no symbolic cost and reduces the
-   final proof by `≈ 99 KB`. This is a rate lever, not a radius lever.
+   final proof by `≈ 99 KB` in the T/12k model. This is a rate lever, not a radius lever.
 2. **Transcript binding (`T*`).** Binding proof-of-work bits and query indices to
    the *same* oracle call restores the grinding credit that a sequential hash
    chain loses under standard QROM Fiat–Shamir compilations, at zero proof
@@ -98,7 +99,7 @@ yields a sub-300 KB recursive final layer.
 and that the proximity-gap inputs hold verbatim because they are stated for
 arbitrary evaluation sets. We give an exact rejection sampler that the
 non-power-of-two index set requires. On BabyBear the `×15` domain gives
-`≈ 1.95` bits/query; in the prototype it saves `≈ 99 KB`. Section 3.
+`≈ 1.95` bits/query; the T/12k model puts the saving at `≈ 99 KB`. Section 3.
 
 **C2 (Transcript).** We identify two ways in which deployed transcripts fall
 outside standard QROM Fiat–Shamir theorems: multi-call challenge squeezing, and
@@ -283,6 +284,13 @@ lemmas are domain-free. The proximity-gap inputs are stated for arbitrary `D`:
 * BCHKS25 Thm 1.5: correlated agreement for **any** `D`;
 * DKT26 Thm 5.12 and Prop 5.10: any `n` distinct evaluation points.
 
+**Lean status.** `ZkFormal/Udr/CosetDomain.lean` proves P1 as an exact index identity
+(`neg_mem_coset_index`), P2 as the squaring period (`sq_periodic`), the arithmetic
+behind P2/P3 (`halve_card`, `higher_split`), the exact sampler
+(`sampler_uniform`), and the BabyBear facts (`p − 1 = 15·2^27`,
+`fifteen_dvd`). The observation that `Udr.Setup` never asks for a power of two is a
+reading of the structure's `hnn` field, not a new theorem.
+
 **Lemma 3.1 (WHIR on `c·2^K` domains).** Let `c` be odd and let `L_0, …, L_{M−1}`
 be multiplicative cosets of orders `c·2^(K_i)` with `2^(k_i) | c·2^(K_i)` and
 `K_i ≥ k_i + i`. Then WHIR Construction 5.1 and Theorem 5.2 hold verbatim with
@@ -421,8 +429,10 @@ B_j = H(tag, κ || le32(j)),      j = 0, 1, 2, ...
 The PoW bits are the leading `z` bits of `B_0`; the query indices come from the
 remaining bits of `B_0` and from `B_1, B_2, …`. The next chain state is the last
 block consumed. This is one long-output oracle call, which standard QROM
-theorems model. It costs zero proof bytes and zero extra compressions (inputs
-grow by 4 bytes).
+theorems model. It costs zero base-proof bytes and zero extra compressions (inputs
+grow by 4 bytes). In the recursive verifier it adds three columns and three
+interactions per row (70→73 columns, 52→55 interactions), i.e. `≈144 B` of extra
+openings in the ring proof.
 
 **Lemma 4.1 (grinding credit).** Under `T*`, the query move's rbr error is at
 most `2^-z · (1−δ)^t` plus negligible terms, and a single layer meets U-2/U-6
@@ -494,8 +504,10 @@ are written out in the companion note and reviewed once.
 
 ### 5.4 Digest widths
 
-Under WHIR-Y and Theorem 5.2, the digest width `n` is set by the narrow
-collision chain, not by collision resistance. For the final-12k shape:
+Under WHIR-Y and Theorem 5.2, the digest width `n` could be set by the narrow
+collision chain rather than collision resistance. **This is not adopted:** the
+deployment uses 42-byte digests. The narrower setting additionally needs position
+tags and deduplicated openings in the circuit. For the final-12k shape:
 
 | block level `c` | `K*` | queries | `n_min` | digest | net saving |
 |---|---:|---|---:|---:|---:|
@@ -517,6 +529,13 @@ and the Fiat–Shamir chain stay at 384 bits.
 
 ### 6.1 Two proven proximity inputs
 
+**The lift (S-28).** `ZkFormal/Udr/McaToGap.lean` formalizes the step from an
+RS-level MCA count `E` to the `LineGap` that WHIR consumes (`mca_count_to_gap`),
+composes it with `Udr.strong_of_gap` to get the containment conclusion
+(`strong_from_mca`), and proves that the fold structure makes the error additive
+in the number of folds (`fold_union`). The DKT26 integer count is a *parameter*
+of these theorems, not re-derived: the lift is a composition, not a new bound.
+
 **O-1 (Johnson).** DKT26 Thm 5.12 gives line MCA at `a = √ρ_(−) + η_0` with
 error `E/|F|` for arbitrary evaluation sets, plus Cor 7.7 (interleaving is
 width-free) and Cor 7.8 (folds cost `h·E/q`). The Lean development proves the
@@ -537,8 +556,12 @@ The DKT26 authors' Lean development (ArkLib fork at the paper's pin) is built
 without `sorry` in the cited cone; the axiom set is exactly
 `{propext, Classical.choice, Quot.sound}`, with no `native_decide`, no
 `skipKernelTC`, and no custom axioms. Their decidable checker re-verifies every
-certificate: **129 certificates** — 93 round/fold sub-codes and 36 round-0
-batching curves — all match the JSON rationals exactly. The Thm 5.12 → Cor
+certificate: **129 certificates for the six bound shapes** — 93 round/fold
+sub-codes and 36 round-0 batching curves — all match the JSON rationals exactly
+and all pass the Lean kernel. Nine further penultimate-shape certificates are
+checked by the authors' engine and by `#eval!` but are **kernel-blocked by a
+24 GB memory cap**; the measured chain excludes them and runs penultimate round 3
+on Johnson `m=64` (+1 query). The Thm 5.12 → Cor
 7.7/7.8 composition is itself proved in Lean.
 
 The table is **bound into the verifier key**: for each round `i` the key stores
@@ -560,8 +583,8 @@ With 236 query bits and `z = 32`, the resulting schedules are:
 
 | layer | BCGM `m=3` | O-1 (`m=64`) | O-1 + O-2 |
 |---|---|---|---|
-| final | 42/38/31/26 = 137 | 40/37/30/25 = 132 | **38/35/29/24 = 126** |
-| inner | 50/46/33/26 = 155 | 48/44/32/25 = 149 | **45/41/31/24 = 141** |
+| final | 42/38/31/26 = 137 | 40/37/30/25 = 132 | **38/35/29/25 = 127** |
+| inner | 50/46/33/26 = 155 | 48/44/32/25 = 149 | **46/41/31/25 = 143** |
 
 The worst per-move rbr error is `2^-268.01`; the final-layer byte count drops by
 `≈ 12 KB` relative to BCGM `m=3`, and the whole schedule remains inside the
@@ -638,7 +661,7 @@ accepted without the check and rejected with it.
 ### 8.1 Streamed commitments
 
 At the size-optimal shape the `×15` codeword is `≈ 10^12` base elements
-(`≈ 1 TB`); it cannot be materialised. We never do:
+(853 GB at the b=7, W=106 shape); it cannot be materialised. We never do:
 
 * choose `s = L − max(n, k)`; each residue `r mod 2^s` is a sub-coset
   `ζ^a·ω_L^r·⟨ω_(L−s)⟩`, obtained by one batched coset DFT of size
@@ -654,7 +677,7 @@ identity at `b = 2` for `×1`, `×3`, `×15`, base and extension field, drop
 full scale a streamed b=2 final reproduces the same 416,171 B and SHA-256 as the
 in-memory prover, with peak RSS `64.4 → 35.5 GB` and wall time 50.7 min vs
 100 min. An 853 GB virtual codeword was committed in 480 s at a 14.9 GB peak;
-the real b=7/W=106 final proved at `≈ 39 GB` instead of `≈ 1 TB`.
+the real b=7/W=106 final proved at `≈ 39 GB` instead of materialising 853 GB.
 
 Measured vs analytic size law:
 
@@ -662,11 +685,11 @@ Measured vs analytic size law:
 |---|---|---:|---:|---:|
 | b=7, `m=3` | [46,42,31,25] | 339,747 | 339,370 | +0.11 % |
 | b=7, `m=64` | [44,40,30,24] | 330,149 | 329,478 | +0.20 % |
-| O-2 chain final | [41,38,29,23] | **287,477** | 287,037 | +0.15 % |
+| O-2 chain final (unbound) | [41,38,29,23] | 287,477 *(bind = false)* | 287,037 | +0.15 % |
 
-The last row is the size-optimal O-2 chain; it is provisional pending the
-program-binding rerun. The G2 gate chain, measured with real settings and
-binding, gives **293,077 B** and `V_d` accept + forgery reject.
+The O-2 row is **provisional and not the sound configuration**: it ran with
+`bind = false`. The sound measured number is the G2 gate chain, with binding on at
+every level: **293,077 B**, `V_d` accept, forgery reject.
 
 ### 8.2 SHA-512 compression AIR
 
@@ -681,7 +704,8 @@ v2.1 is 2.6× smaller than OpenVM's SHA-512 AIR (18,963 cells) and is the
 smallest published SHA-512 AIR on a 31-bit field we are aware of. v4 trades
 cells for degree (21 → 9), which shrinks the recursive verifier circuit; it also
 folds the round constant into a lookup at zero cost. Both are validated by
-mutation sweeps: 5,921/5,921 and 5,848/5,848 detected.
+mutation sweeps: 5,921/5,921 (v2.1) and 6,321/6,321 (v4) detected; 5,848 is
+v4's constraint-DAG node count, not a mutation count.
 
 ---
 
@@ -746,9 +770,8 @@ capacity form) would not affect them either.
    met, and by necessity rather than choice.
 5. **Tight-heights kernel.** The univariate-skip encoding of the stacking kernel
    is validated by code and 24 tamper tests but not yet derived line by line.
-6. **Program-binding rerun.** The 287,477 B O-2 chain is provisional; the G2 gate
-   measured 293,077 B with binding. The final measurement on the pinned
-   program-binding circuit is in progress.
+6. **Program-binding rerun.** The 287,477 B O-2 chain ran with `bind = false` and
+   is superseded; 293,077 B (G2 gate) is the sound measured number.
 7. **Backends.** The `×15` and streaming patches must be ported to the CPU and
    CUDA backends; unpatched backends fail closed rather than producing unsound
    proofs.
@@ -793,11 +816,11 @@ only rate, at a proven radius.”*
 | domains | `15·2^K` multiplicative cosets |
 | per-round target | `2^-268` = 236 query + 32 PoW bits |
 | proximity | Johnson `m=64` / certified first order |
-| final queries | [38,35,29,24] (O-2), [41,38,29,23] (O-2 chain) |
+| final queries | [38,35,29,25] (O-2, b8), [41,38,29,23] (measured chain) |
 | one-layer rbr | `2^-268.01` |
 | QROM end to end | `≤ 2^-134.69` (union `2^-131.89`) |
-| measured final | 287,477 B (O-2 chain, provisional); 293,077 B (G2 gate) |
-| prover peak | `≈ 25.6–39 GB` (streamed), `≈ 1 TB` virtual codeword avoided |
+| measured final | **293,077 B** (G2 gate, binding on; sound) |
+| prover peak | 17.15 GB (G2 gate); `≈25.6 GB` (unbound chain); `≈39 GB` (streamed b=7); `≈1 TB` virtual codeword avoided |
 | setup | transparent |
 
 ## Appendix B: Reproduction
