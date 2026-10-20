@@ -10,10 +10,14 @@ concludes `R · (Sf − S_seg) + g = segb`.  A host-carrying trace cannot use it
 resynchronises the budget (`g := remaining`), so every instruction after it lives in a different
 segment.
 
-**Status: the segment-carrying spec is done; the induction is not.**  `RowSpecSeg` (a row whose
-successor segment is a parameter) and `RowFactsSeg` are defined and `RowSpec2`/`RowFacts2` embed into
-them at a fixed segment.  The remaining step is re-running `exec_of_rows`'s 235-line proof with
-`seg` threaded instead of fixed — see the "Remaining work" section at the end of this file.
+**Status: `exec_of_rows_seg` is proved.**  `exec_of_rows` is re-run with the gas segment threaded
+per row (`seg : Nat → Nat × Nat`, indexed by STATE time so it survives the `act`/`rs` permutation).
+`RowSpecSeg` takes the successor segment as a parameter; `RowFactsSegMap` reads it off the thread.
+
+What remains for `wasm_base_exec_host` is the *instantiation*: the bus decomposition
+(`occ_bits`, `looks_of`, the `ChanOK` assembly) re-done for `wasmBaseHostAir`, whose 26 tables
+include table 22's host rows.  That is `Exec.lean:wasm_base_exec`'s ~160-line body, not the
+induction.
 
 ## The two differences from `exec_of_rows`
 
