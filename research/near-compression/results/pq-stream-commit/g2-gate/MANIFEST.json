@@ -1,0 +1,97 @@
+{
+  "gate": "G2 real-settings chain",
+  "date_utc": "2026-10-19T15:01:16Z",
+  "lane": "lane/pq-stream-commit",
+  "tree": {
+    "pq-stream-commit": "0886cff20 (merge of lane/pq-recursion-sha384 @ 9159123be and lane/pq-cpu-prover @ 6134476fc)",
+    "g2_circuit": "lane/pq-recursion-sha384 @ 9159123be",
+    "fast_cpu_prover": "lane/pq-cpu-prover @ 6134476fc",
+    "streamed_commitments": "lane/pq-stream-commit overlay (stark-backend-stream.patch)"
+  },
+  "circuit": {
+    "anchors": "per-level (M, C_M); L2->M=1, L3->M=2, L4->M=3, L5 binds by BIND",
+    "converged_levels": 5,
+    "bound_by_bind": 1,
+    "anchor_M_final": 3,
+    "program_rows": 125550,
+    "nvair_cols": 72,
+    "nvair_interactions_per_row": 48,
+    "nvair_degree": 9,
+    "final_nvair_cols": 76,
+    "committed_heights": [262144, 1048576, 128, 65536]
+  },
+  "parameters": {
+    "target_bits": 268,
+    "query_bits": 236,
+    "query_pow_bits": 32,
+    "digests_bytes": 42,
+    "coset_leaves": true,
+    "domain": "x15",
+    "list_m": 64,
+    "o2_certificates": "kernel-proved entries only",
+    "l_skip": 2,
+    "parent": { "n_stack": 18, "k": 4, "log_blowup": 7, "k1": 2, "log_final": 6, "queries": [44, 35, 27, 23] },
+    "final":  { "n_stack": 18, "k": 4, "log_blowup": 7, "k1": 1, "log_final": 7, "queries": [41, 38, 29, 23] }
+  },
+  "certificate_files_sha256": {
+    "calc/dkt_certs_o2.json": "67f7c96596e79dd3ee35de07f4cf597328e2263712329e24fcc141dcdb9dc07d",
+    "lean/DKTCertsO2_big.keys": "250ac4bf22d7dad71ee46f90f3e916b33fb6ba7860e9f0882276f94c09179f63"
+  },
+  "binary_sha256": {
+    "nv-g2t": "83a76ead48d92d8438dd8e1cb20b021ed2309cf1004f8ed3b365a9e8e9c8402a"
+  },
+  "proofs_sha256": {
+    "L1.proof":    "9364e10d731ed76e66284f95801258d88c482106ae2e8aba91c7905afd6ee58e",
+    "L2.proof":    "6fbf62bd7eae5cd06c31bdcdb8027d5e0ea73364f41459128c0b87c2e88aadab",
+    "L3.proof":    "fe13835dea6520f388fda1d8430b625acbbefff7889066cbc45887dbb5bd9bee",
+    "L4.proof":    "c4c0fa8af946cce8a322d910d68f3c9aa4a873ce4dad69ee1952c25b741d5f52",
+    "L5.proof":    "176251e8de11cd26220b41609ac41508f8e999d352c8f047c097d6777cffd272",
+    "FINAL.proof": "a4f65ab8dac7bb2005c5640d0d38bcf4428543166d758afa43aa6365afa84323"
+  },
+  "proof_bytes": {
+    "L1": 288297,
+    "L2": 357805,
+    "L3": 364283,
+    "L4": 362939,
+    "L5": 364577,
+    "FINAL": 293077
+  },
+  "soundness_bits": {
+    "final_total": 268.2,
+    "final_logup": 323.4,
+    "final_proximity": 281.6,
+    "final_query": 268.2,
+    "per_level_total": 269.6
+  },
+  "resources": {
+    "final_wall_s": 441.4,
+    "final_peak_rss_gb": 13.98,
+    "chain_wall_s": 2766.70,
+    "host_peak_rss_gb": 17.15,
+    "threads": 24
+  },
+  "required_log_lines": [
+    "NV_G2 converged: 5 levels, 1 bound by BIND, anchor M = 3",
+    "FINAL_PROOF_BYTES total=293077",
+    "FINAL_SOUNDNESS total=268.2",
+    "FINAL_PROOF_SHA256 a4f65ab8dac7bb2005c5640d0d38bcf4428543166d758afa43aa6365afa84323 bytes=293077",
+    "NV_VD final accepted: level 6, pinned program 125550 rows",
+    "NV_VD wrong claim rejected: statement digest differs from the claim",
+    "NV_VD wrong level (5) rejected: level 6 != pinned 5",
+    "NV_VD forged final (776 rows) accepted without the program check, rejected with it: final program openings differ from the pinned program",
+    "test result: ok. 1 passed; 0 failed",
+    "EXIT 0"
+  ],
+  "gate_criteria": {
+    "1_final_bytes_le_296k": { "value": 293077, "pass": true },
+    "2_vd_accepts_pinned_program": { "pass": true },
+    "3_forged_final_rejected": { "pass": true, "control": "accepted without the program check" },
+    "4_reproduces_from_clean_deps": { "pass": "pending", "how": "reproduce.sh compares these hashes" }
+  },
+  "known_limits": [
+    "FINAL 293,077 B is above the earlier provisional 287,477 B; the margin to 300 KB is 6,923 B.",
+    "NvAir is at 2^18 rows with ~2.5% headroom in this run; a paired run (pq-cpu2/ckpt/chainA) failed at 262,572 rows, so the headroom is real but thin.",
+    "The interaction-count check and max_interaction_count=2^30 are NOT exercised here: the NV circuit's own AIRs are within 2^28.",
+    "This is a WASM-fib fixture chain, not a NEAR chunk. It measures the recursion tail, not coverage."
+  ]
+}

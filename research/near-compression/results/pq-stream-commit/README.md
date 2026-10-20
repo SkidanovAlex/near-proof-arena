@@ -253,3 +253,31 @@ This is a recursion-lane decision; I have not changed the circuit.
 **Data point.** L2 (bound, k1 = 1) commits 257,212 NvAir rows, which is under 2^18. L3's
 program is 9.4k rows longer, which puts it at about 271k, over 2^18, consistent with the model's
 270,105.
+
+## G2 gate: measured at real settings [M]
+
+The blocking finding above (tight heights prevent the program from converging) is fixed upstream by
+`lane/pq-recursion-sha384` @ `9159123be`: per-level anchors `(M, C_M)` while the committed heights
+change, a prover-side tight-height floor that pins them, and BIND once the program converges. This
+lane ran the resulting chain at real settings with the fast CPU prover and the streamed commitments.
+
+| | |
+|---|---|
+| chain | L1 -> L2 -> L3 -> L4 -> L5 -> FINAL, converged at 5 levels, 1 bound by BIND, anchor M = 3 |
+| **FINAL proof** | **293,077 B** (`gkr 32,408 / relations 24,292 / stacking 6,832 / whir 229,346`) |
+| soundness | 268.2 bits (logup 323.4, proximity 281.6, query 268.2) |
+| V_d | accepts level 6 under the pinned 125,550-row program; wrong claim and wrong level rejected |
+| forgery | 776-row verify-nothing FINAL accepted without the program check, rejected with it |
+| cost | 46 min wall, 24 threads, 17.15 GB host peak; FINAL 441 s / 13.98 GB |
+| NvAir | 72 cols, 48 interactions/row, degree 9, heights `[262144, 1048576, 128, 65536]` |
+
+Gate criteria, `MANIFEST.json` (proof SHA-256s + required log lines), the full log and a
+`reproduce.sh` are in [`g2-gate/`](g2-gate/). Criteria 1-3 pass; criterion 4 (clean-setup
+reproduction with identical hashes) is pending an independent run.
+
+**Two corrections to earlier figures.**
+* 293,077 B is 5,600 B **above** the 287,477 B provisional measurement, which ran with `bind = false`.
+  The real margin to 300 KB is 6,923 B (2.3 %).
+* The NvAir headroom is thinner than modelled. This run used 125,550 program rows; a paired run
+  (`pq-cpu2/ckpt/chainA`) failed with `NvAir: 262572 rows exceed 2^18`. Model-vs-measured is ~2.5 %,
+  not 0.2 %, so any program growth can cost L 24 -> 25 and eat the byte margin.
