@@ -718,7 +718,40 @@ theorem ext_descend_eq {k : List Nat} {c c' : PTrie} {m cm : Nat}
     (hmo : (PTrie.ext k c m).memOk) (hm : c.mem? = some cm) (hcm : m = extOwnMem k + cm) :
     m + c'.memD - cm = extOwnMem k + c'.memD := by
   rw [hcm]; omega
+/-! ## What is proved, and the exact remaining gap
 
+Proved here (every `#print axioms` ⊆ `{propext, Classical.choice, Quot.sound}`):
 
+* the encoding-length lemmas (`hexPrefix_length`, hence `hexPrefix_drop_lt`);
+* the `wf` field projections (`wf_leaf_parts'` etc.) and `slotOk_len`;
+* `memOk` / `memLe` for `kidsFrom`, `kids1`, `kids2`, `newLeaf`; `memLe` monotonicity;
+* `extOwnMem`'s monotonicity in the prefix;
+* `splitLeaf`'s `wf` (`splitLeaf_wf`) and usage bound (`splitLeaf_memD_budget`);
+* the leaf upsert step (`upsert_wf_leaf_step`), which is the *whole* theorem when `t` is a leaf.
+
+**Not yet proved: the full `PTrie.upsert_wf` induction.**  The statement is true and the
+counterexamples above pin its exact hypotheses; what remains is mechanical bookkeeping, not a new
+invariant.  The two missing lemmas, each a direct restatement of the same induction at `memD`
+rather than `wf`:
+
+* `PTrie.upsert_memD_le` — a child's usage grows by at most `budget`:
+  `t.upsert key v = some t' → t'.memD ≤ t.memD + budget` (mutual with `Kids.upsert_memD_le`).
+  With `memOk`, the extension descend then preserves `wf` (`m + c'.memD − cm = extOwnMem k + c'.memD`,
+  below `2^64` because `c'.memD ≤ memHead + budget`).
+* `splitExt_memD_le` — the extension split's usage is `≤ m + budget` (the `splitExt` analogue of
+  the proved `splitLeaf_memD_budget`), together with `splitExt_wf` (the `splitExt` analogue of
+  the proved `splitLeaf_wf`).
+
+The branch case is `Kids.upsert_wf` (written and compiling modulo the `PTrie.upsert_wf` it is
+mutually defined with).  The exact final statement is:
+
+```
+PTrie.upsert_wf :
+  ∀ (t : PTrie) (key : List Nat) (v : Bytes) (t' : PTrie),
+    t.wf = true → t.memOk → t.memLe memHead → nibblesOk key = true →
+    v.length < 4294967296 → (hexPrefix key true).length < 4294967296 →
+    t.upsert key v = some t' → t'.wf = true
+```
+-/
 
 end NearSpec
