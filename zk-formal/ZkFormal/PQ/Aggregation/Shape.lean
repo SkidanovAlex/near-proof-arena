@@ -72,7 +72,7 @@ theorem getLast?_map_cons (f : Nat → Stmt.Stmt α) (j : Nat) (tail : List Nat)
 statement from the first leaf's context/start index/start state to the last leaf's end
 index/end state. Arity and depth do not appear. -/
 theorem root_of_tree (t : RangeTree) (f : Nat → Stmt.Stmt α) (s : Stmt.Stmt α) (j jl : Nat)
-    (hne : t.leaves ≠ [])
+    (_hne : t.leaves ≠ [])
     (hhead : t.leaves.head? = some j)
     (hlast : t.leaves.getLast? = some jl)
     (hchain : Stmt.Chainable (t.leaves.map f))
