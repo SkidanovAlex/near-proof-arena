@@ -24,13 +24,23 @@ Two pieces:
   unpatched tree** (verified by restoring the baseline and re-running), so it is pre-existing and
   unrelated.
 
-## Still to do
+## The G2 gate is NOT invalidated (measured, not assumed)
 
-* The patch changes the statement format, so the sha256-pinned G2 gate artifacts
-  (`results/pq-stream-commit/g2-gate/`, `MANIFEST.json`) are stale.  Re-run `run_g2_chain.sh` and
-  re-pin before treating the gate as closed.
-* The same statement change must reach `lane/pq-host-chip`'s base driver (`check_statement` there
-  compares the TAPE root in-process today).
+The gate's chain is `FibFixture` → `FibonacciAir`, which has **no cached main**, so the patched
+branch is not reached and the statement digest is unchanged.  Measured directly: the Fib child's
+statement digest is `[495754296698778413, …]` with **and** without the patch — identical.  So
+`g2-gate/MANIFEST.json`'s proof hashes stay valid and no re-run is needed.
+
+(A re-run would in any case not discriminate: it would reproduce the same bytes, which is why it is
+the wrong check for this change.  The discriminating test is `nv_stmt_covers_cached_root`.)
+## What P4 does NOT cover, and where it has to go next
+
+`tapeNet_canon` + this patch answer "does the cached TAPE root reach V_d?" — yes.  They do not
+answer "does a *real NEAR-shaped* base run through the NV chain?".  Today's harness is
+`FibFixture`, which has no cached table; the discriminating test above uses
+`PreprocessedAndCachedFixture`, which has one but is not NEAR.  Feeding `pq-state-port`'s 25/30-table
+base proof into `nv_chain` is the remaining integration, and it is sized by the recursion harness,
+not by the statement change.
 
 ## Payload
 
