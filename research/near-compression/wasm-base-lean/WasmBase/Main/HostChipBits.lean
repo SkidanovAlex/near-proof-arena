@@ -3,56 +3,45 @@ import WasmBase.Main.HostChipFacts
 import WasmBase.Main.RowHostSpec
 
 /-!
-# WasmBase.Main.HostChipBits — what the host tables do and do not pin down
+# WasmBase.Main.HostChipBits — which host tables touch the buses the induction counts
 
-`ChipFacts` (`Main/Exec.lean`) is the premise `exec_of_rows` needs: every interaction count of a
-chip table is a bit, an inactive row carries none, and an active row satisfies its `RowSpec2`.  This
-file asks the same questions of the four host tables, because `exec_of_rows_seg` needs them to
-re-run the induction over `wasmBaseHostAir`.
+`ChipFacts` (`Main/Exec.lean`) constrains tables 1-14 of `wasmBaseAir`.  For `wasm_base_exec_host`
+the AIR is `wasmBaseHostAir` (26 tables; 22-25 appended).  This file records exactly what the
+induction needs from the four host tables, and which of those facts hold.
 
-## What holds
+## The requirement, precisely
 
-* **HOST (22)** — every count is `act` or `act · dir`-like, and since `edae7a53d` the CH channels are
-  gated by `act` (`Host.cActPf`, `Host.cActNres`).  So an inactive row emits nothing
-  (`host_row_inactive_emits_nothing`) and the counts are bits.  `HostChipFacts`
-  (`Main/HostChipFacts.lean`) supplies the row-level facts.
-* **HOSTT (24)** — one send with count `v mult`; `mult` is constrained (`hostTab_table_r16` and the
-  row-level facts show it is the cached row's flag).
-* **HOSTB (25)** — counts are `act · (1 − dir)` and `act · dir`, and `act`/`dir` are boolean, so
-  they are bits.
+`exec_of_rows` needs "every relevant interaction count is a bit" in only two places:
 
-## What does *not* hold, and why it matters
+1. `msgs_perm` turns bus **balance** into a message **permutation** — for the STATE bus (0) and the
+   CH bus (2), the only buses whose messages the induction permutes;
+2. `rowAct` is defined as "count = 1", so deciding row activity needs bit-ness on those same buses.
 
-**HOSTO (23) has no constraints at all and counts its two interactions with a free column
-`mult`.**  `HostO.table.constraints = []`, and both interactions are counted with `Expr.col
-HostO.mult` (`hosto_constraints_nil`, `hosto_counts_are_mult` below).  Nothing in the AIR forces
-`mult ≤ 1`, so on an admissible trace a `HOSTO` row may carry count 1, 2, 5, …  `ChipFacts.counts`
-therefore does **not** follow from `Holds` for table 23, and neither does the "inactive row carries
-nothing" analogue.
+So the premise is needed **only on buses 0 and 2**, not on the host buses 208-210.
 
-This is not a proof gap; it is a property of the AIR as designed.  `HOSTO` is the *witness oracle*
-`pq-host-chip` put in the trace so the Wasm-side proof can be stated without the state side
-(`results/pq-host-chip/RESULTS.md` §"HOSTO is the response oracle in-trace").  Its multiplicity is
-the number of calls the oracle answers, not a bit, so a "counts ≤ 1" premise is the wrong
-hypothesis for it.
+## What touches buses 0 and 2
 
-## Consequence for `wasm_base_exec_host`
+Only the HOST table.  HOSTO, HOSTT and HOSTB touch none of them:
 
-`exec_of_rows_seg` takes a per-row `RowSpecSeg` and a per-row gas bound; it does **not** itself
-require `ChipFacts`.  That premise enters twice, in the parts of `wasm_base_exec`'s body that:
+* `HOST` (22): `stateIn`/`stateOut` on bus 0 with count `act`, and CH receives/sends on bus 2 with
+  counts `pf j` / `nres` — all bits, the last two since `edae7a53d` added `Host.cActPf` /
+  `Host.cActNres` (`host_row_inactive_emits_nothing`);
+* `HOSTO` (23): only `HOSTQ` (208, receive) and `HOSTR` (209, send);
+* `HOSTT` (24): only `HOSTT` (9, receive);
+* `HOSTB` (25): only `HOSTB` (210) and `BYTE` (4).
 
-1. derive the bit-ness used by `msgs_perm` (to turn bus balance into a permutation), and
-2. decide which rows are "active" (`rowAct`, i.e. count 1).
+## `HOSTO.mult` is unconstrained, and harmless
 
-For a `HOSTO` row neither is available from `Holds`.  So `wasm_base_exec_host` must either
+`HostO.table.constraints = []` and both of its interactions are counted with the free column `mult`
+(`hosto_constraints_nil`, `hosto_counts_are_mult`).  Nothing forces `mult ≤ 1`.
 
-* (a) restrict the statement to traces whose `HOSTO` rows have `mult ≤ 1` — which is exactly the
-  honest witness oracle (one response per call), stated as a trace-level side condition; or
-* (b) constrain `mult` in the AIR (`bool (v mult)`), which changes `wasmBaseHostAir` and therefore
-  the pinned shape.
+**This does not affect `wasm_base_exec_host`.**  `HOSTO` is the witness oracle that stands in for
+the state side (`pq-host-chip/RESULTS.md`); its multiplicity is the number of calls it answers, so
+`mult > 1` is the correct semantics and constraining it would be wrong.  Because `HOSTO` touches
+neither bus 0 nor bus 2 (`hosto_avoids_state_ch`), the induction never reads that count.
 
-(a) is a statement change, (b) is an AIR change.  Both are decisions, not proofs; recorded here so
-the choice is explicit rather than discovered mid-proof.
+(An earlier revision of this file claimed this blocked the instantiation.  It does not: the
+requirement is per-bus, and `HOSTO` is on the wrong buses for it.)
 -/
 namespace WasmBase
 
@@ -71,13 +60,36 @@ theorem hosto_counts_are_mult :
     (HostO.table.inters.map fun i => i.count) = [Expr.col HostO.mult, Expr.col HostO.mult] := rfl
 
 /-- **`HOSTO`'s multiplicity is not bounded by any constraint.**  With no constraints, every row of
-`HOSTO` satisfies them vacuously whatever `mult` is, so "counts are bits" cannot follow from
-`Holds` for table 23.  This is why `wasm_base_exec_host` needs either a trace-level `mult ≤ 1`
-condition or an AIR change; see the header. -/
+`HOSTO` satisfies them vacuously whatever `mult` is.  Harmless for the induction: see
+`hosto_avoids_state_ch`. -/
 theorem hosto_no_count_bound (r : Nat) (tr : Trace) (pub : List F) :
     ∀ e ∈ HostO.table.constraints, e.eval (tr.row pub 23 r) = (0 : F) := by
   intro e he
   rw [hosto_constraints_nil] at he
   exact absurd he (List.not_mem_nil)
+
+/-! ## Which host tables touch the buses the induction counts -/
+
+/-- **The induction counts buses STATE (0) and CH (2) only.**  This is the predicate the segment
+theorem's `ChipFacts` analogue needs, and it is what makes `HOSTO.mult` irrelevant. -/
+def touchesStateOrCh (T : Table) : Prop :=
+  (T.inters.filter fun i => i.bus = busState ∨ i.bus = busStk) ≠ []
+
+/-- **`HOSTO` touches neither STATE nor CH.** -/
+theorem hosto_avoids_state_ch : ¬ touchesStateOrCh HostO.table := by
+  unfold touchesStateOrCh; decide
+
+/-- **`HOSTT` touches neither STATE nor CH.** -/
+theorem hosttab_avoids_state_ch : ¬ touchesStateOrCh HostTab.table := by
+  unfold touchesStateOrCh; decide
+
+/-- **`HOSTB` touches neither STATE nor CH.** -/
+theorem hostb_avoids_state_ch : ¬ touchesStateOrCh HostB.table := by
+  unfold touchesStateOrCh; decide
+
+/-- **Only `HOST` touches them**, and there its counts are `act`, `pf j` and `nres` — bits, the
+latter two by `edae7a53d`'s gating constraints. -/
+theorem host_touches_state_ch : touchesStateOrCh Host.table := by
+  unfold touchesStateOrCh; decide
 
 end WasmBase
