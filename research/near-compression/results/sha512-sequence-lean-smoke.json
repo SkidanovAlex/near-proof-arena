@@ -1,0 +1,45 @@
+{
+  "kind": "actual AIR cross-row SHA512 state chaining",
+  "table": {
+    "columns": 2608,
+    "constraints": 3188,
+    "state_bit_links": 512,
+    "max_degree": 3,
+    "max_log": 22
+  },
+  "formal_claims": [
+    "Every nonfinal next state equals the current full round output.",
+    "Every decoded state equals iteration of actual rounds on prior decoded k/w inputs.",
+    "The terminal output equals iteration over the entire trace, including its final row.",
+    "Final-row state links vanish without cyclic wraparound."
+  ],
+  "validation": {
+    "honest_traces": 2,
+    "rows_per_trace": 4,
+    "locally_valid_state_discontinuities_rejected": 48,
+    "independent_layout_matches_formal": true,
+    "terminal_all_eight_words_match": true,
+    "python_fixture_terminal_a": 2862924533056080847,
+    "python_fixture_terminal_e": 14174800055401604298,
+    "free_final_constant_changes_accepted": 2,
+    "free_final_message_word_changes_accepted": 2
+  },
+  "new_theorems": 11,
+  "full_audit_theorems": 1043,
+  "commands": [
+    "lake build NearCompression.SHA512SequenceRun",
+    "lake env lean --run SHA512RoundSequenceSmoke.lean",
+    "python3 check.py"
+  ],
+  "source_sha256": {
+    "NearCompression/SHA512RoundSequence.lean": "8434b12474df3c6904e0a9c5ed818b681b8125c77faf3f45bae983913ea23a9a",
+    "NearCompression/SHA512SequenceRun.lean": "b0868dbb88b0a863b2ca973cb3081bd0e0efc84e8b39ea0d76bcc30b957977d6",
+    "SHA512RoundSequenceSmoke.lean": "7bf0793f0999deed8a55587833ea913e5cb8053b703a07e8eff47027167fc411"
+  },
+  "limitations": [
+    "k/w remain independent row inputs; changing final-row k or w still passes these constraints.",
+    "No message schedule, 80-round boundary, initial-state authentication, feed-forward, padding or digest binding.",
+    "Universal honest sequence trace completeness is not yet proved.",
+    "No full NEAR state-transition proof, 1 Pgas measurement, sub-300 KB proof or 128-bit quantum-security bound."
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "case": "locals-taken",
+  "proof_bytes": 38499,
+  "public_fixed_width_bytes": 2696,
+  "proof_and_public_bytes": 41195,
+  "proof_sha256": "1f9161b69b12b45a186df104b1623d2d099f37e9097eabdfa664c37ba5e15d34",
+  "wire_mutations_rejected": [
+    "truncated",
+    "trailing",
+    "magic",
+    "source-root",
+    "middle",
+    "opening"
+  ],
+  "source_spec_sha256": "7b3c744946a1e2e6ac605d9dfb16db12451840193339e50a774be11f6af5c202",
+  "scope": "Full local AIR/GKR/PCS diagnostic on actual prepared locals trace; canonical AIR is verifier configuration excluded from size. Q8/Ext4, no128bit security/fullNEAR/recursion or completed locals whole-call theorem."
+}

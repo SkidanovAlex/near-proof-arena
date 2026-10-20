@@ -1,0 +1,50 @@
+{
+  "status": "PASS",
+  "exhaustive_received_words": 3125,
+  "codewords": 25,
+  "observed_maximum_list": 2,
+  "exhaustive_parameters": {
+    "prime": 5,
+    "domain": 5,
+    "degree": 2,
+    "agreement": 3
+  },
+  "profiles": [
+    {
+      "domain": 64,
+      "degree": 16,
+      "agreement": 36,
+      "gap": 336,
+      "candidate_list_cap": 12,
+      "candidate_pair_cap": 144,
+      "constraint_root_penalty_cap": 288,
+      "queries_for_isolated_list_union_tail_2powminus130": 161
+    },
+    {
+      "domain": 4096,
+      "degree": 1024,
+      "agreement": 2304,
+      "gap": 1118208,
+      "candidate_list_cap": 15,
+      "candidate_pair_cap": 225,
+      "constraint_root_penalty_cap": 450,
+      "queries_for_isolated_list_union_tail_2powminus130": 162
+    },
+    {
+      "domain": 524288,
+      "degree": 131072,
+      "agreement": 294912,
+      "gap": 18254135296,
+      "candidate_list_cap": 15,
+      "candidate_pair_cap": 225,
+      "constraint_root_penalty_cap": 450,
+      "queries_for_isolated_list_union_tail_2powminus130": 162
+    }
+  ],
+  "source_sha256": "a14066a61b4f3a98a8b29c0c57e15ab6669543c4de5ef4e0d5256edefce51813",
+  "limits": [
+    "The cardinality theorem bounds any given coefficient-distinct finite family.",
+    "Complete normalized list construction and support-preserving MCA remain separate obligations.",
+    "Displayed tail/root penalties are components, not an end-to-end or quantum security budget."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "airbender/direct-wasm/prove_swirl_native_dag.py": "fee5efdac3a69ad24936f8c655bd163e6ae8fb9243380287e32564c020581da3",
+  "airbender/direct-wasm/prove_swirl_weighted_dag.py": "f12170b736a91ffbddc26e5f43d35dcec3afa4a3efb4c680e69d82098f2ed690",
+  "airbender/direct-wasm/compile_swirl_fixed_dag.py": "e0eda935f8b6547ae6f5925981bd386afb1b92095675456921eca7ca31716456",
+  "airbender/direct-wasm/swirl_consumer_weights.py": "23870f5b5703832ad55833812b5004461aa90d0a406e999450b136bd7dd67e29",
+  "results/swirl-security-review/native-controls/internal.proof.gz": "e5b76437d09adbebadc7e6ccff2c98d5d576a31a7d8c3b8bc713691c8af79b3a",
+  "results/swirl-security-review/native-controls/capture.jsonl.gz": "550825b7b4e693a71c9699d9a5ec93a508056f095e9dd8fcb756bd70c0ed7d6a",
+  "results/swirl-security-review/native-dag-gkr/input-obligation.json.gz": "d879456c8de7c623154d6b89559a030fe221f631c751ed40c1ca6e33ccc053a1",
+  "results/swirl-security-review/native-dag-gkr/openings.json.gz": "466df6daf82ead4af8a7c1365907f016c9a4c4b7944c3bc741d5a2cb1e0886a4",
+  "results/swirl-security-review/native-dag-gkr/pcs-obligation.json.gz": "a85dad96c3187c044007ac1aef8815f2b6e5cb260840d92367d2697ea8830474",
+  "results/swirl-security-review/native-dag-gkr/proof.json.gz": "0c639d996835576261bf918d18b3be49fb6fdd6c8e4b48cd7165c686b9ae62bd"
+}

@@ -1,0 +1,9 @@
+{
+  "polynomial_matrices": 240,
+  "numeric_specializations": 1620,
+  "nonzero_determinant_root_bounds": 220,
+  "derivative_bezout_matrices": 100,
+  "nonzero_derivative_determinants": 99,
+  "missing_nonzero_counterexamples": 1,
+  "scope": "Lean determinant source-degree and evaluation bounds. Nonzeroness from Bezout-map invertibility and inverse/denominator interpretation remain open."
+}

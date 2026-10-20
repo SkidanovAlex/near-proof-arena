@@ -1,0 +1,802 @@
+{
+  "status": "THREE_PARENT_PROOFS_GENERATED_AND_VERIFIED",
+  "openvm_revision": "e74f9b1ee868c42776faf821b8b9f2e8829a7f68",
+  "backend_revision": "d667af5929d0ea9e5194adf639d6bddeb8c10f9a",
+  "records": [
+    {
+      "stage": "leaf",
+      "serialized_bytes": 383529,
+      "common_cells": 6489279,
+      "cached_cells": 3072,
+      "components": {
+        "gkr": 10424,
+        "constraints": 46700,
+        "stacking": 1140,
+        "whir": 324716,
+        "framing_and_other": 549
+      },
+      "traces": [
+        {
+          "air": "SymbolicExpressionAir<BabyBearParameters>",
+          "height": 256,
+          "width": 24,
+          "cells": 6144
+        },
+        {
+          "air": "FractionsFolderAir",
+          "height": 16,
+          "width": 29,
+          "cells": 464
+        },
+        {
+          "air": "UnivariateSumcheckAir",
+          "height": 64,
+          "width": 24,
+          "cells": 1536
+        },
+        {
+          "air": "MultilinearSumcheckAir",
+          "height": 32,
+          "width": 33,
+          "cells": 1056
+        },
+        {
+          "air": "EqNsAir",
+          "height": 8,
+          "width": 41,
+          "cells": 328
+        },
+        {
+          "air": "Eq3bAir",
+          "height": 16,
+          "width": 25,
+          "cells": 400
+        },
+        {
+          "air": "EqSharpUniAir",
+          "height": 16,
+          "width": 17,
+          "cells": 272
+        },
+        {
+          "air": "EqSharpUniReceiverAir",
+          "height": 16,
+          "width": 17,
+          "cells": 272
+        },
+        {
+          "air": "EqUniAir",
+          "height": 8,
+          "width": 16,
+          "cells": 128
+        },
+        {
+          "air": "ExpressionClaimAir",
+          "height": 32,
+          "width": 32,
+          "cells": 1024
+        },
+        {
+          "air": "InteractionsFoldingAir",
+          "height": 16,
+          "width": 37,
+          "cells": 592
+        },
+        {
+          "air": "ConstraintsFoldingAir",
+          "height": 64,
+          "width": 25,
+          "cells": 1600
+        },
+        {
+          "air": "EqNegAir",
+          "height": 16,
+          "width": 40,
+          "cells": 640
+        },
+        {
+          "air": "TranscriptAir",
+          "height": 512,
+          "width": 44,
+          "cells": 22528
+        },
+        {
+          "air": "Poseidon2Air<BabyBearParameters>, 1>",
+          "height": 8192,
+          "width": 301,
+          "cells": 2465792
+        },
+        {
+          "air": "MerkleVerifyAir",
+          "height": 8192,
+          "width": 38,
+          "cells": 311296
+        },
+        {
+          "air": "ProofShapeAir<4, 8>",
+          "height": 16,
+          "width": 40,
+          "cells": 640
+        },
+        {
+          "air": "PublicValuesAir",
+          "height": 32,
+          "width": 8,
+          "cells": 256
+        },
+        {
+          "air": "RangeCheckerAir<8>",
+          "height": 256,
+          "width": 2,
+          "cells": 512
+        },
+        {
+          "air": "GkrInputAir",
+          "height": 1,
+          "width": 26,
+          "cells": 26
+        },
+        {
+          "air": "GkrLayerAir",
+          "height": 1,
+          "width": 46,
+          "cells": 46
+        },
+        {
+          "air": "GkrLayerSumcheckAir",
+          "height": 1,
+          "width": 45,
+          "cells": 45
+        },
+        {
+          "air": "GkrXiSamplerAir",
+          "height": 8,
+          "width": 10,
+          "cells": 80
+        },
+        {
+          "air": "OpeningClaimsAir",
+          "height": 32,
+          "width": 63,
+          "cells": 2016
+        },
+        {
+          "air": "UnivariateRoundAir",
+          "height": 32,
+          "width": 27,
+          "cells": 864
+        },
+        {
+          "air": "SumcheckRoundsAir",
+          "height": 8,
+          "width": 57,
+          "cells": 456
+        },
+        {
+          "air": "StackingClaimsAir",
+          "height": 2048,
+          "width": 35,
+          "cells": 71680
+        },
+        {
+          "air": "EqBaseAir",
+          "height": 8,
+          "width": 51,
+          "cells": 408
+        },
+        {
+          "air": "EqBitsAir",
+          "height": 32,
+          "width": 16,
+          "cells": 512
+        },
+        {
+          "air": "WhirRoundAir",
+          "height": 1,
+          "width": 46,
+          "cells": 46
+        },
+        {
+          "air": "SumcheckAir",
+          "height": 4,
+          "width": 38,
+          "cells": 152
+        },
+        {
+          "air": "WhirQueryAir",
+          "height": 256,
+          "width": 32,
+          "cells": 8192
+        },
+        {
+          "air": "InitialOpenedValuesAir",
+          "height": 4096,
+          "width": 89,
+          "cells": 364544
+        },
+        {
+          "air": "NonInitialOpenedValuesAir",
+          "height": 1,
+          "width": 28,
+          "cells": 28
+        },
+        {
+          "air": "WhirFoldingAir",
+          "height": 4096,
+          "width": 31,
+          "cells": 126976
+        },
+        {
+          "air": "FinalPolyMleEvalAir",
+          "height": 512,
+          "width": 34,
+          "cells": 17408
+        },
+        {
+          "air": "FinalPolyQueryEvalAir",
+          "height": 65536,
+          "width": 45,
+          "cells": 2949120
+        },
+        {
+          "air": "PowerCheckerAir<2, 32>",
+          "height": 32,
+          "width": 4,
+          "cells": 128
+        },
+        {
+          "air": "ExpBitsLenAir",
+          "height": 8192,
+          "width": 16,
+          "cells": 131072
+        }
+      ]
+    },
+    {
+      "stage": "internal",
+      "serialized_bytes": 398697,
+      "common_cells": 25261532,
+      "cached_cells": 393216,
+      "components": {
+        "gkr": 12520,
+        "constraints": 46220,
+        "stacking": 1476,
+        "whir": 337932,
+        "framing_and_other": 549
+      },
+      "traces": [
+        {
+          "air": "SymbolicExpressionAir<BabyBearParameters>",
+          "height": 32768,
+          "width": 24,
+          "cells": 786432
+        },
+        {
+          "air": "FractionsFolderAir",
+          "height": 64,
+          "width": 29,
+          "cells": 1856
+        },
+        {
+          "air": "UnivariateSumcheckAir",
+          "height": 128,
+          "width": 24,
+          "cells": 3072
+        },
+        {
+          "air": "MultilinearSumcheckAir",
+          "height": 128,
+          "width": 33,
+          "cells": 4224
+        },
+        {
+          "air": "EqNsAir",
+          "height": 32,
+          "width": 41,
+          "cells": 1312
+        },
+        {
+          "air": "Eq3bAir",
+          "height": 16384,
+          "width": 25,
+          "cells": 409600
+        },
+        {
+          "air": "EqSharpUniAir",
+          "height": 16,
+          "width": 17,
+          "cells": 272
+        },
+        {
+          "air": "EqSharpUniReceiverAir",
+          "height": 16,
+          "width": 17,
+          "cells": 272
+        },
+        {
+          "air": "EqUniAir",
+          "height": 8,
+          "width": 16,
+          "cells": 128
+        },
+        {
+          "air": "ExpressionClaimAir",
+          "height": 128,
+          "width": 32,
+          "cells": 4096
+        },
+        {
+          "air": "InteractionsFoldingAir",
+          "height": 4096,
+          "width": 37,
+          "cells": 151552
+        },
+        {
+          "air": "ConstraintsFoldingAir",
+          "height": 4096,
+          "width": 25,
+          "cells": 102400
+        },
+        {
+          "air": "EqNegAir",
+          "height": 16,
+          "width": 40,
+          "cells": 640
+        },
+        {
+          "air": "TranscriptAir",
+          "height": 4096,
+          "width": 44,
+          "cells": 180224
+        },
+        {
+          "air": "Poseidon2Air<BabyBearParameters>, 1>",
+          "height": 32768,
+          "width": 301,
+          "cells": 9863168
+        },
+        {
+          "air": "MerkleVerifyAir",
+          "height": 16384,
+          "width": 38,
+          "cells": 622592
+        },
+        {
+          "air": "ProofShapeAir<4, 8>",
+          "height": 64,
+          "width": 45,
+          "cells": 2880
+        },
+        {
+          "air": "PublicValuesAir",
+          "height": 1,
+          "width": 8,
+          "cells": 8
+        },
+        {
+          "air": "RangeCheckerAir<8>",
+          "height": 256,
+          "width": 2,
+          "cells": 512
+        },
+        {
+          "air": "GkrInputAir",
+          "height": 1,
+          "width": 26,
+          "cells": 26
+        },
+        {
+          "air": "GkrLayerAir",
+          "height": 32,
+          "width": 46,
+          "cells": 1472
+        },
+        {
+          "air": "GkrLayerSumcheckAir",
+          "height": 256,
+          "width": 45,
+          "cells": 11520
+        },
+        {
+          "air": "GkrXiSamplerAir",
+          "height": 1,
+          "width": 10,
+          "cells": 10
+        },
+        {
+          "air": "OpeningClaimsAir",
+          "height": 2048,
+          "width": 63,
+          "cells": 129024
+        },
+        {
+          "air": "UnivariateRoundAir",
+          "height": 32,
+          "width": 27,
+          "cells": 864
+        },
+        {
+          "air": "SumcheckRoundsAir",
+          "height": 32,
+          "width": 57,
+          "cells": 1824
+        },
+        {
+          "air": "StackingClaimsAir",
+          "height": 2048,
+          "width": 35,
+          "cells": 71680
+        },
+        {
+          "air": "EqBaseAir",
+          "height": 8,
+          "width": 51,
+          "cells": 408
+        },
+        {
+          "air": "EqBitsAir",
+          "height": 4096,
+          "width": 16,
+          "cells": 65536
+        },
+        {
+          "air": "WhirRoundAir",
+          "height": 4,
+          "width": 46,
+          "cells": 184
+        },
+        {
+          "air": "SumcheckAir",
+          "height": 16,
+          "width": 38,
+          "cells": 608
+        },
+        {
+          "air": "WhirQueryAir",
+          "height": 512,
+          "width": 32,
+          "cells": 16384
+        },
+        {
+          "air": "InitialOpenedValuesAir",
+          "height": 4096,
+          "width": 89,
+          "cells": 364544
+        },
+        {
+          "air": "NonInitialOpenedValuesAir",
+          "height": 4096,
+          "width": 28,
+          "cells": 114688
+        },
+        {
+          "air": "WhirFoldingAir",
+          "height": 8192,
+          "width": 31,
+          "cells": 253952
+        },
+        {
+          "air": "FinalPolyMleEvalAir",
+          "height": 1024,
+          "width": 34,
+          "cells": 34816
+        },
+        {
+          "air": "FinalPolyQueryEvalAir",
+          "height": 262144,
+          "width": 45,
+          "cells": 11796480
+        },
+        {
+          "air": "PowerCheckerAir<2, 32>",
+          "height": 32,
+          "width": 4,
+          "cells": 128
+        },
+        {
+          "air": "ExpBitsLenAir",
+          "height": 16384,
+          "width": 16,
+          "cells": 262144
+        }
+      ]
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "serialized_bytes": 242809,
+      "common_cells": 14447856,
+      "cached_cells": 393216,
+      "components": {
+        "gkr": 11448,
+        "constraints": 45980,
+        "stacking": 948,
+        "whir": 183884,
+        "framing_and_other": 549
+      },
+      "traces": [
+        {
+          "air": "SymbolicExpressionAir<BabyBearParameters>",
+          "height": 32768,
+          "width": 24,
+          "cells": 786432
+        },
+        {
+          "air": "FractionsFolderAir",
+          "height": 64,
+          "width": 29,
+          "cells": 1856
+        },
+        {
+          "air": "UnivariateSumcheckAir",
+          "height": 16,
+          "width": 24,
+          "cells": 384
+        },
+        {
+          "air": "MultilinearSumcheckAir",
+          "height": 128,
+          "width": 33,
+          "cells": 4224
+        },
+        {
+          "air": "EqNsAir",
+          "height": 32,
+          "width": 41,
+          "cells": 1312
+        },
+        {
+          "air": "Eq3bAir",
+          "height": 16384,
+          "width": 25,
+          "cells": 409600
+        },
+        {
+          "air": "EqSharpUniAir",
+          "height": 4,
+          "width": 17,
+          "cells": 68
+        },
+        {
+          "air": "EqSharpUniReceiverAir",
+          "height": 4,
+          "width": 17,
+          "cells": 68
+        },
+        {
+          "air": "EqUniAir",
+          "height": 4,
+          "width": 16,
+          "cells": 64
+        },
+        {
+          "air": "ExpressionClaimAir",
+          "height": 128,
+          "width": 32,
+          "cells": 4096
+        },
+        {
+          "air": "InteractionsFoldingAir",
+          "height": 4096,
+          "width": 37,
+          "cells": 151552
+        },
+        {
+          "air": "ConstraintsFoldingAir",
+          "height": 4096,
+          "width": 25,
+          "cells": 102400
+        },
+        {
+          "air": "EqNegAir",
+          "height": 8,
+          "width": 40,
+          "cells": 320
+        },
+        {
+          "air": "TranscriptAir",
+          "height": 4096,
+          "width": 44,
+          "cells": 180224
+        },
+        {
+          "air": "Poseidon2Air<BabyBearParameters>, 1>",
+          "height": 32768,
+          "width": 301,
+          "cells": 9863168
+        },
+        {
+          "air": "MerkleVerifyAir",
+          "height": 8192,
+          "width": 38,
+          "cells": 311296
+        },
+        {
+          "air": "ProofShapeAir<4, 8>",
+          "height": 64,
+          "width": 45,
+          "cells": 2880
+        },
+        {
+          "air": "PublicValuesAir",
+          "height": 1,
+          "width": 8,
+          "cells": 8
+        },
+        {
+          "air": "RangeCheckerAir<8>",
+          "height": 256,
+          "width": 2,
+          "cells": 512
+        },
+        {
+          "air": "GkrInputAir",
+          "height": 1,
+          "width": 26,
+          "cells": 26
+        },
+        {
+          "air": "GkrLayerAir",
+          "height": 32,
+          "width": 46,
+          "cells": 1472
+        },
+        {
+          "air": "GkrLayerSumcheckAir",
+          "height": 256,
+          "width": 45,
+          "cells": 11520
+        },
+        {
+          "air": "GkrXiSamplerAir",
+          "height": 1,
+          "width": 10,
+          "cells": 10
+        },
+        {
+          "air": "OpeningClaimsAir",
+          "height": 2048,
+          "width": 63,
+          "cells": 129024
+        },
+        {
+          "air": "UnivariateRoundAir",
+          "height": 8,
+          "width": 27,
+          "cells": 216
+        },
+        {
+          "air": "SumcheckRoundsAir",
+          "height": 32,
+          "width": 57,
+          "cells": 1824
+        },
+        {
+          "air": "StackingClaimsAir",
+          "height": 512,
+          "width": 35,
+          "cells": 17920
+        },
+        {
+          "air": "EqBaseAir",
+          "height": 4,
+          "width": 51,
+          "cells": 204
+        },
+        {
+          "air": "EqBitsAir",
+          "height": 2048,
+          "width": 16,
+          "cells": 32768
+        },
+        {
+          "air": "WhirRoundAir",
+          "height": 4,
+          "width": 46,
+          "cells": 184
+        },
+        {
+          "air": "SumcheckAir",
+          "height": 16,
+          "width": 38,
+          "cells": 608
+        },
+        {
+          "air": "WhirQueryAir",
+          "height": 128,
+          "width": 32,
+          "cells": 4096
+        },
+        {
+          "air": "InitialOpenedValuesAir",
+          "height": 16384,
+          "width": 89,
+          "cells": 1458176
+        },
+        {
+          "air": "NonInitialOpenedValuesAir",
+          "height": 1024,
+          "width": 28,
+          "cells": 28672
+        },
+        {
+          "air": "WhirFoldingAir",
+          "height": 2048,
+          "width": 31,
+          "cells": 63488
+        },
+        {
+          "air": "FinalPolyMleEvalAir",
+          "height": 256,
+          "width": 34,
+          "cells": 8704
+        },
+        {
+          "air": "FinalPolyQueryEvalAir",
+          "height": 16384,
+          "width": 45,
+          "cells": 737280
+        },
+        {
+          "air": "PowerCheckerAir<2, 32>",
+          "height": 32,
+          "width": 4,
+          "cells": 128
+        },
+        {
+          "air": "ExpBitsLenAir",
+          "height": 8192,
+          "width": 16,
+          "cells": 131072
+        }
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "run.log.gz",
+      "raw_bytes": 11382,
+      "raw_sha256": "6b54fb09f60739cf50c5f06d8f7ae826b4e631c6e6815c5af918239018f4c9a0"
+    },
+    {
+      "file": "clippy.log.gz",
+      "raw_bytes": 156,
+      "raw_sha256": "1337c8f6ec7b8f3acfe9649a88f37c90dc20be72f846686a12467ff6541bdf46"
+    },
+    {
+      "file": "instrumented-tests.rs.gz",
+      "raw_bytes": 37642,
+      "raw_sha256": "fd6e88a800242ccdd051d9284a66af43f2642accad5b62d6a38bbde3ac2cba8a"
+    },
+    {
+      "file": "Cargo.lock.gz",
+      "raw_bytes": 210798,
+      "raw_sha256": "76467b143beff28428cfbfbe02e6f2badac3922ad6ded02a7cc4859cec2e7d57"
+    },
+    {
+      "file": "final-poly-air.rs.gz",
+      "raw_bytes": 11963,
+      "raw_sha256": "9782c9c3b6273f067371512824ca0fd1cea00bcb9292f62c2d4c875bb67a08ef"
+    },
+    {
+      "file": "leaf.proof.gz",
+      "raw_bytes": 383529,
+      "raw_sha256": "a45c14b72d91cec736a38ab7aa665af5a7fb236e20533095b6223014046b7bed"
+    },
+    {
+      "file": "internal.proof.gz",
+      "raw_bytes": 398697,
+      "raw_sha256": "145b620731c9e45aef6c93a64dad34fe77dd273340aef4bf4e073fc07b6d08b1"
+    },
+    {
+      "file": "root_geometry_babybear_hash.proof.gz",
+      "raw_bytes": 242809,
+      "raw_sha256": "e902a7c83572e2d644571f42be5bef1f9b71b223696c3a01bac2c1f7863d6187"
+    }
+  ],
+  "security_certified": false,
+  "full_near": false,
+  "root_wrapper": false,
+  "scope": "Generic VerifierSubCircuit chain, MAX_NUM_PROOFS2; BabyBear Poseidon2 throughout; upstream app(12), leaf, internal, root parameter constructors; no VM public-value wrapper or stabilized recursion VK.",
+  "replay": "Apply patch at pinned revision; RAYON_NUM_THREADS=4 cargo test --locked --profile fast -p openvm-recursion-circuit tests::nearproof_recursive_chain -- --exact --nocapture",
+  "next_gate": "Count actual extension elements and hash outputs before claiming PQ128 can fit the remaining byte budget."
+}

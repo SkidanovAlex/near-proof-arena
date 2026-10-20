@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2241,
+  "audit_log": "/tmp/root-sparse-polynomial-audit.log",
+  "module_sha256": "cb41030b39c202bbf0483a1e7dab89e8327b227cb08e45b9cfcfc0799aee9066",
+  "theorems": 7,
+  "parity": "results/sparse-polynomial-parity.json",
+  "proved": [
+    "exact sparse coefficient array evaluation",
+    "weighted lane polynomial evaluation",
+    "common degree bound",
+    "stride coefficient slots",
+    "composition with authenticated heterogeneous pair"
+  ],
+  "remaining": [
+    "native FFT source polynomial evaluation refinement",
+    "cryptographic leaf binding",
+    "pre-GKR shared witness extraction",
+    "quantum security composition"
+  ]
+}

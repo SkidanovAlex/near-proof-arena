@@ -1,0 +1,29 @@
+{
+  "status": "BINARY_TRANSCRIPT_HASH_CENSUS_VERIFIED",
+  "boundary": [
+    {
+      "tag": "nearproof-binary-prefix-gkr-v2",
+      "bytes": 14362,
+      "blocks": 113,
+      "digest": "c59ffad9c8a7777daf66a1e90c6ced835be3ebd699e25455a572a096e1e75525560ece33266c840cac930025f1a5adfb"
+    },
+    {
+      "tag": "nearproof-binary-gkr-to-whir-v2",
+      "bytes": 20735,
+      "blocks": 163,
+      "digest": "b283b0fcb29768e5c1e1fd3ed27378753a4ed216d261841241a4bb1b7f7c5a2582c9dc81ce75c7af1f5c193707392dab"
+    }
+  ],
+  "dynamic_gkr_blocks": 4373,
+  "total_dynamic_blocks": 4649,
+  "previous_total": 6855,
+  "saved_blocks": 2206,
+  "challenges": 437,
+  "squeeze_blocks": 437,
+  "rejected_words": 103,
+  "limitations": [
+    "Different versioned transcript and fresh proof; not lossless old-proof conversion.",
+    "Fixed layout hash precomputed; native prefix/WHIR hashing excluded.",
+    "No hash circuit proof, QROM security or PQ128/full NEAR claim."
+  ]
+}

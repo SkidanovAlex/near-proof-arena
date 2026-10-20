@@ -1,0 +1,42 @@
+    Updating git repository `https://github.com/Plonky3/Plonky3`
+    Updating crates.io index
+     Locking 37 packages to latest Rust 1.96.0 compatible versions
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling autocfg v1.5.1
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling paste v1.0.15
+   Compiling rand_core v0.10.1
+   Compiling either v1.19.0
+   Compiling p3-maybe-rayon v0.8.0 (https://github.com/Plonky3/Plonky3?rev=f98331687e47106a64ab82a77e2e1d0d66c9161b#f9833168)
+   Compiling pin-project-lite v0.2.17
+   Compiling tracing-core v0.1.36
+   Compiling scopeguard v1.2.0
+   Compiling thiserror v2.0.21
+   Compiling lock_api v0.4.14
+   Compiling rand v0.10.3
+   Compiling itertools v0.15.0
+   Compiling num-traits v0.2.19
+   Compiling spin v0.12.3
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+   Compiling num-integer v0.1.47
+   Compiling num-bigint v0.5.1
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.21
+   Compiling tracing-attributes v0.1.31
+   Compiling tracing v0.1.44
+   Compiling p3-util v0.8.0 (https://github.com/Plonky3/Plonky3?rev=f98331687e47106a64ab82a77e2e1d0d66c9161b#f9833168)
+   Compiling p3-field v0.8.0 (https://github.com/Plonky3/Plonky3?rev=f98331687e47106a64ab82a77e2e1d0d66c9161b#f9833168)
+   Compiling p3-matrix v0.8.0 (https://github.com/Plonky3/Plonky3?rev=f98331687e47106a64ab82a77e2e1d0d66c9161b#f9833168)
+   Compiling p3-symmetric v0.8.0 (https://github.com/Plonky3/Plonky3?rev=f98331687e47106a64ab82a77e2e1d0d66c9161b#f9833168)
+   Compiling p3-dft v0.8.0 (https://github.com/Plonky3/Plonky3?rev=f98331687e47106a64ab82a77e2e1d0d66c9161b#f9833168)
+   Compiling p3-mds v0.8.0 (https://github.com/Plonky3/Plonky3?rev=f98331687e47106a64ab82a77e2e1d0d66c9161b#f9833168)
+   Compiling p3-poseidon1 v0.8.0 (https://github.com/Plonky3/Plonky3?rev=f98331687e47106a64ab82a77e2e1d0d66c9161b#f9833168)
+   Compiling p3-poseidon2 v0.8.0 (https://github.com/Plonky3/Plonky3?rev=f98331687e47106a64ab82a77e2e1d0d66c9161b#f9833168)
+   Compiling p3-monty-31 v0.8.0 (https://github.com/Plonky3/Plonky3?rev=f98331687e47106a64ab82a77e2e1d0d66c9161b#f9833168)
+   Compiling p3-baby-bear v0.8.0 (https://github.com/Plonky3/Plonky3?rev=f98331687e47106a64ab82a77e2e1d0d66c9161b#f9833168)
+   Compiling near-poseidon2-layout-oracle v0.1.0 (/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/poseidon2-oracle)
+    Finished `release` profile [optimized] target(s) in 5.11s

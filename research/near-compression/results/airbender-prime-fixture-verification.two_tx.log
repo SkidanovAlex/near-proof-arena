@@ -1,0 +1,37 @@
+Compiling 1 files with Solc 0.8.36
+Solc 0.8.36 finished in 463.69ms
+Compiler run successful!
+
+Ran 8 tests for test/RegistryBoundary.t.sol:RegistryBoundaryTest
+[PASS] test_factory_deployment_preserves_explicit_initializer() (gas: 769106)
+[PASS] test_invalid_authorities_are_rejected() (gas: 4320)
+[PASS] test_only_initializer_can_register_pair() (gas: 143577)
+[PASS] test_pair_accepts_in_either_order_and_allows_identical_replays() (gas: 424637)
+[PASS] test_public_data_cannot_change_before_or_after_acceptance() (gas: 302933)
+[PASS] test_uninitialized_registry_rejects_writes() (gas: 61635)
+[PASS] test_unregistered_caller_cannot_record_pair() (gas: 132634)
+[PASS] test_verifier_roles_are_separate() (gas: 130537)
+Suite result: ok. 8 passed; 0 failed; 0 skipped; finished in 888.55µs (1.80ms CPU time)
+
+Ran 1 test for test/GkrWhirTwoTx.t.sol:GkrWhirTwoTxTest
+[PASS] test_two_tx_linked_by_committed_state() (gas: 7439651)
+Logs:
+  gkr_committed_state: 0xe1644a73a08418e6f6646cf627780f8c5b9ac2329cbcb37a729f86c9377b734b
+  whir_committed_state: 0xe1644a73a08418e6f6646cf627780f8c5b9ac2329cbcb37a729f86c9377b734b
+
+Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 9.18ms (9.07ms CPU time)
+
+Ran 10 tests for test/NearProofFixtureMutation.t.sol:NearProofFixtureMutationTest
+[PASS] test_gkr_appended() (gas: 14482190)
+[PASS] test_gkr_first_bit_flip() (gas: 4354266)
+[PASS] test_gkr_last_bit_flip() (gas: 4354177)
+[PASS] test_gkr_middle_bit_flip() (gas: 4354001)
+[PASS] test_gkr_truncated() (gas: 14481757)
+[PASS] test_whir_appended() (gas: 29842438)
+[PASS] test_whir_first_bit_flip() (gas: 7428321)
+[PASS] test_whir_last_bit_flip() (gas: 7428284)
+[PASS] test_whir_middle_bit_flip() (gas: 7428218)
+[PASS] test_whir_truncated() (gas: 29842070)
+Suite result: ok. 10 passed; 0 failed; 0 skipped; finished in 44.36ms (155.37ms CPU time)
+
+Ran 3 test suites in 44.66ms (54.44ms CPU time): 19 tests passed, 0 failed, 0 skipped (19 total tests)

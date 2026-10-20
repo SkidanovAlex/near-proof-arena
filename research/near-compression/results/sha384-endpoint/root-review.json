@@ -1,0 +1,62 @@
+{
+  "status": "PASS",
+  "canonical_fixture_regenerated_from": "/tmp/root-captured-sha384/message.bin",
+  "canonical_fixture_matches_agent": true,
+  "fresh_binary_verifier_log": "PASS: complete AIR and randomized bus-fingerprint binary diagnostic",
+  "root_reran_endpoint_adversarial_suite": true,
+  "tests": {
+    "status": "PASS",
+    "tables": 5,
+    "core_width": 5280,
+    "core_rows": 128,
+    "endpoint_width": 1668,
+    "endpoint_rows": 4,
+    "exact_natural_bus_sent": {
+      "0": 4,
+      "1": 4,
+      "2": 3,
+      "3": 1
+    },
+    "exact_natural_bus_received": {
+      "2": 3,
+      "0": 4,
+      "1": 4,
+      "3": 1
+    },
+    "endpoint_residual_checks": 6816,
+    "negative_checks": 8,
+    "fresh_duplicate_tag_local_and_PCS_accept": true,
+    "fresh_duplicate_tag_global_reject": true,
+    "hashlib_digest_match": true,
+    "proof_bytes_including_source_roots": 1289410,
+    "baseline_multiblock_bytes": 1508054,
+    "proof_bytes_saved": 218644,
+    "proof_sha256": "351088b1caf04208e6bfb2463fe2d5db8a8f6ccea2c071f0fe147e764cee85ef",
+    "scope": "Canonical split AIR diagnostic; exact witness routing checked. Full Lean routing-to-hash composition and cryptographic soundness remain separate obligations."
+  },
+  "preparation": {
+    "status": "PASS",
+    "original_source_sha256": [
+      "e5eba5524e499a54dcf476eb63e915592ae17f4129ca47b904bd83fc4e045f3a",
+      "f1429877cab5c8df85d40ab76fa5bffca93df785bab99efc88ee357fdb8cb183",
+      "eeae263392545a0347c49311e611d18c557a82b5c3f40d6104b8193afd417aac",
+      "d332b378e386b3f0a8e9d3ba275875d96075ebc2148e5d307f2b51281370ba06"
+    ],
+    "core_prefix_cells_exact": 2703360,
+    "endpoint_adder_cells_exact": 6656,
+    "old_cells": 3555328,
+    "new_cells": 2710032,
+    "reduction_percent": 23.77547163018433,
+    "endpoint_rows": 4,
+    "public_original_prefix_unchanged": true,
+    "derived_public_count_bytes": [
+      1,
+      0,
+      0,
+      0
+    ],
+    "scope": "Witness projection only; newAIRfullproof and routing checks required"
+  },
+  "scope": "Exact original witness projection, canonical statement, independent binary verifier and regenerated invalid-routing proof. Full Lean endpoint routing composition remains open.",
+  "proof_sha256": "351088b1caf04208e6bfb2463fe2d5db8a8f6ccea2c071f0fe147e764cee85ef"
+}

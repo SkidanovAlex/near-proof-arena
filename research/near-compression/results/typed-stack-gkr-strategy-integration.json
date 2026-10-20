@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "audit_count": 3039,
+  "audit_log": "/tmp/root-typed-gkr-strategy-audit.log",
+  "source_sha256": {
+    "PreparedTypedStackValues": "909dbffd602e00fdce28aeb70d36b32be8caca6ffbd5c7f161a1893c794c19f3",
+    "PreparedTypedEqzSource": "85a1bc9026539b89b30e7aae3873d031a4744e0a6a52819ccbdb9a38e5baac0d",
+    "GKRStrategyRepair": "3b994e6528c92dd1986e779ccc4ef0ed3d9bcacd5c994543f2048b94275beda4"
+  },
+  "scope": "Literal source-derived typed stack decoding and selected eqz correctness (nonempty SP/onehot explicit). Unconditional false-to-true GKR repair bound for any fixed causal strategy at a layer boundary. Full successor, whole multilayer acceptance, commitments/QROM and target security remain open."
+}

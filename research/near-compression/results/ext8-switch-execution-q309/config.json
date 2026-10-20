@@ -1,0 +1,37 @@
+{
+  "queries": 309,
+  "child_blowup": 8,
+  "child_fold_bits": 3,
+  "tail_steps": [
+    {
+      "next_blowup": 16,
+      "next_fold_bits": 3,
+      "queries": 309
+    },
+    {
+      "next_blowup": 32,
+      "next_fold_bits": 3,
+      "queries": 309
+    },
+    {
+      "next_blowup": 64,
+      "next_fold_bits": 3,
+      "queries": 309
+    },
+    {
+      "next_blowup": 128,
+      "next_fold_bits": 3,
+      "queries": 309
+    },
+    {
+      "next_blowup": 256,
+      "next_fold_bits": 1,
+      "queries": 309
+    },
+    {
+      "next_blowup": 256,
+      "next_fold_bits": 0,
+      "queries": 309
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "rows": 32,
+  "width": 179,
+  "input_log": 14,
+  "row_log": 5,
+  "column_log": 9,
+  "all_column_weights_match_lean": true,
+  "all_next_and_padding_weights_zero": true,
+  "same_source_root": true,
+  "constant_subtracted_claim_matches": true,
+  "high_coordinate_truncation_changes": 358,
+  "fixture_sha256": "79bf0361f6a261942fa74c26572246793e0da2df869a2980432099c81f323454",
+  "output_sha256": "9316cc039bd9ef2179b22433b991cbc7ca303a02078c1832bc211ec1493e13a2",
+  "files": {
+    "airbender/direct-wasm/test_call_source_opening.py": "dadc5e15e341f1225261c08b684e60818b9e7893e7336bed2b7791a6ca657c2a",
+    "ReplayCallSource.lean": "06f1fd3bf0290803ec003d867bb56f2b58a1c5de7453c121c326c29d069a72b1",
+    "NearCompression/CallSourceOpening.lean": "0fd02ebf021ac0e2ad773e6c07a77d93fc261ef7c9815cd3dd9b7051d07323ec",
+    "airbender/direct-wasm/sha384_call_pcs.py": "63ae695727b6fb92ab939d4ad7e90e992a160d71d56601d1d55cd7da66ba8619"
+  },
+  "scope": "General source-MLE and constant-subtraction identities are proved in Lean; actual two-query branch weights and claims match a replay over the diagnostic field. Source rows are used only for this regression. This is algebraic opening-obligation binding, not Merkle/PCS cryptographic soundness or QROM certification."
+}

@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "legacy_cases": [
+    "wrap",
+    "positive",
+    "negative",
+    "exact-gas",
+    "range-charge-exhaustion",
+    "long-25",
+    "long-193"
+  ],
+  "scope": "Honest old straight-line witnesses accepted by new versioned locals profile"
+}

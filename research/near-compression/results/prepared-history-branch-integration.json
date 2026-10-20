@@ -1,0 +1,41 @@
+{
+  "status": "PREPARED_BUS_AND_DISJOINT_LOCAL_BRANCHES_COMPOSED_CONDITIONALLY",
+  "modules": [
+    "NearCompression/HistoryBranchBudget.lean",
+    "NearCompression/PreparedHistoryBranchBudget.lean"
+  ],
+  "theorems": [
+    "history_three_branch_count",
+    "history_three_branch_budget",
+    "prepared_history_branch_budget"
+  ],
+  "proved": [
+    "Exact partition of chronological acceptance and failure counts by an earlier-only Option Bool selector.",
+    "Three branch budgets aggregate with the shared accepted downstream failure count charged exactly once.",
+    "The locally-valid fixed-source prepared-Wasm theorem invokes the actual prepared_decoded_bus_continuation_bound on the valid-auxiliary branch, then combines both invalid-table branches."
+  ],
+  "bound": "accepted_count*S <= busTraceErrorBudget* S * continuations.length * S + localBudget(false) + localBudget(true) + pcsBudget",
+  "assumptions": [
+    "Fixed source is locally valid; prepared execution/public fit, fuel and wrong published output premises remain explicit.",
+    "Branch selector depends only on earlier bus challenge pair. Its meaning and derivation from authenticated commitments remain to be supplied.",
+    "Accepted valid-auxiliary branch yields decoded bus witness or shared failure.",
+    "Both invalid-table budgets cover their exact restricted full chronological experiments and retain the same restricted shared failure event.",
+    "Joint accepted failure count has the supplied pcsBudget."
+  ],
+  "remaining": [
+    "Derive earlier-only auxiliary representatives and branch selector from commitments.",
+    "Instantiate restricted invalid-table bounds using checked_auxiliary_after_earlier_budget and chronological GKR/PCS repair; normalize table-specific experiments to the common continuation.",
+    "Combine this source-valid result with fixed-source-invalid local branches.",
+    "Native Ext8 slice, global acceptance theorem, QROM, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4088,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal-only composition."
+  }
+}

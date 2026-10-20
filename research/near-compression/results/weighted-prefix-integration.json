@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3438,
+  "added_theorems": 6,
+  "source_sha256": "413143aeae299540f3dbbb2d5862d56b8da81c19c2e22290c4b80f47cd6729ef",
+  "audit_log": "/tmp/root-weighted-prefix-audit.log",
+  "audit_sha256": "1705ad98aa9d7fb41f11ab7aa5a566145515045e210cfa9cedd5e2c94af884e4",
+  "scope": "Derives fixed source and snapshot causality from prefix-indexed oracle/quadratic strategy, including history-dependent query mass.",
+  "limits": [
+    "Ideal interactive fixed-oracle strategy; not adversarial commitment extraction.",
+    "Terminal authentication, domain geometry, independent samples remain explicit.",
+    "No Fiat-Shamir/QROM certification."
+  ]
+}

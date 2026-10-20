@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "source_indices": [
+    453,
+    454,
+    455,
+    456
+  ],
+  "formal_json_sha256": "c1fddcb96f05dee7619ba96565e8146c424fd39637d0ed44fdc0756eeb67e34b",
+  "scope": "Exact firstPC/firstSP/firstactive/lastDONE expressions; no initial-gas or final-output linkage asserted"
+}

@@ -1,0 +1,120 @@
+{
+  "baseline": {
+    "height": 20,
+    "log_rate": 4,
+    "fold": 4,
+    "terminal_max": 10,
+    "final_log": 8,
+    "rounds": 3,
+    "widths": [
+      10,
+      1
+    ],
+    "domains": [
+      20,
+      19,
+      18
+    ],
+    "queries": [
+      61,
+      30,
+      20
+    ],
+    "extension": 4,
+    "digest_bytes": 32,
+    "public_cached": false,
+    "fixed_bytes": 40492,
+    "query_value_bytes": 55744,
+    "raw_paths_bytes": 204076,
+    "expected_frontier_bytes": 168640.1754054628,
+    "expected_frontier_hashes": 2262.6304814207124
+  },
+  "records": [
+    {
+      "free_cached_work": false,
+      "screened": 5790,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          37,
+          2
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": false,
+        "fixed_bytes": 100424,
+        "query_value_bytes": 110304,
+        "raw_paths_bytes": 489188,
+        "expected_frontier_bytes": 408973.81269436097,
+        "expected_frontier_hashes": 3812.419474891557
+      },
+      "below_target": 0
+    },
+    {
+      "free_cached_work": true,
+      "screened": 5790,
+      "best": {
+        "height": 18,
+        "log_rate": 9,
+        "fold": 3,
+        "terminal_max": 9,
+        "final_log": 9,
+        "rounds": 3,
+        "widths": [
+          37
+        ],
+        "domains": [
+          24,
+          23,
+          22
+        ],
+        "queries": [
+          66,
+          53,
+          44
+        ],
+        "extension": 9,
+        "digest_bytes": 52,
+        "public_cached": true,
+        "fixed_bytes": 100296,
+        "query_value_bytes": 106080,
+        "raw_paths_bytes": 402468,
+        "expected_frontier_bytes": 346015.20369719237,
+        "expected_frontier_hashes": 2685.3693018690847
+      },
+      "below_target": 0
+    }
+  ],
+  "security_certified": false,
+  "sha256": {
+    "results/swirl-security-review/root-bundle-codec/report.json": "fb311b81865004d5c9fcb51023ab72ad032f233a3db0042df0dad8d4a8d74df1",
+    "results/swirl-security-review/root-bundle-codec/proof.bin": "ce7e9c6107e07cb45ff442f2e308fd45adf67a26326b49956b38b61d29721f6b",
+    "airbender/direct-wasm/screen_swirl_root_bundle.py": "97f897e41a58c9f3ae185cf4e3d73c7863b79139a753d222231a772714941a01",
+    "airbender/direct-wasm/screen_swirl_stacking_geometry.py": "7b0d8fc7e66faaaaedba834f8318f278365996ed66468eeb76256084d1de9a75",
+    "airbender/direct-wasm/screen_swirl_query_payload.py": "c2c993fd1ca3d67fcd198032df42a50f194d34c6d9fe4e1e8e0e909ed2d084d6"
+  },
+  "assumptions": [
+    "C=1,Q=2^128,zero grinding credit; each query error independently gets half budget.",
+    "Uninstantiated extension9/digest52 sensitivity; all other security terms omitted.",
+    "Frozen trace and GKR message counts despite changed security and geometry.",
+    "296-byte residual calibrated to bundle; not independent typed census.",
+    "Free-cache variant omits cached evaluation and binding costs.",
+    "Expected Merkle frontier cost is not a deterministic size bound.",
+    "No QROM, recursive closure, full NEAR or Lean composition certification."
+  ]
+}

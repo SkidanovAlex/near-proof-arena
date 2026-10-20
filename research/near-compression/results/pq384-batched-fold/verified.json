@@ -1,0 +1,74 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "rows": 64,
+      "width": 17,
+      "packing": 2,
+      "lanes": 9,
+      "rounds": 1,
+      "proof_json_bytes": 17699,
+      "negative_checks": 34,
+      "query_sides_per_round": [
+        [
+          0,
+          1
+        ]
+      ],
+      "fresh_intermediate_and_all_later_rounds_rebuilt_attack_rejected": true
+    },
+    {
+      "rows": 64,
+      "width": 68,
+      "packing": 8,
+      "lanes": 9,
+      "rounds": 3,
+      "proof_json_bytes": 50351,
+      "negative_checks": 64,
+      "query_sides_per_round": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "fresh_intermediate_and_all_later_rounds_rebuilt_attack_rejected": true
+    },
+    {
+      "rows": 8,
+      "width": 544,
+      "packing": 32,
+      "lanes": 17,
+      "rounds": 2,
+      "proof_json_bytes": 34515,
+      "negative_checks": 58,
+      "query_sides_per_round": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "fresh_intermediate_and_all_later_rounds_rebuilt_attack_rejected": true
+    }
+  ],
+  "independent_fft_points": 32,
+  "independent_pair_indices": 7936,
+  "scope": "BatchedlaneSHA384multiroundcoefficientfolding; witnessfreeverifier",
+  "limits": [
+    "No proximity/RBR/QROM theorem",
+    "8queries/Ext4 not128-bitsecurity",
+    "No completeAIRintegration orrecursion",
+    "NoZK; terminalcoefficients disclosed"
+  ]
+}

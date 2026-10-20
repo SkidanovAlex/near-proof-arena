@@ -1,0 +1,39 @@
+{
+  "status": "PASS clean Lean compilation",
+  "source": "/data/illia/nearproof-wt/generic-air-reference/research/near-compression/NearCompression/RateShiftCandidateList.lean",
+  "sha256": "63c53b48f0991bac2f8d21c6be7197b176fe74cb93204983d832a891ec6b9934",
+  "public_theorems": [
+    "rate_shift_list_mixing_bound",
+    "rate_shift_close_unique",
+    "rate_shift_unique_list_length",
+    "rate_shift_unique_list_complete",
+    "rate_shift_unique_mixing_bound"
+  ],
+  "proved": "For a candidate family fixed before gamma, at most family.length*points.length distinct gamma values admit a wrong constituent relation but accepted aggregate. A normalized unique-decoding list selected only from fixed next oracle/domain/radius has length<=1 and contains all close candidates; hence at most points.length bad mixing challenges, with no close-candidate existence premise.",
+  "actual_schedule": {
+    "source_degree": 32,
+    "source_domain": 128,
+    "next_degree": 8,
+    "next_domain": 64,
+    "OOD_constraints": 1,
+    "query_constraints": 4,
+    "points_length": 5,
+    "max_unique_radius": 28,
+    "radius28_separation": true,
+    "radius29_separation": false,
+    "equivalent_minimum_agreement": 36,
+    "field": "Fp8"
+  },
+  "prechallenge_order": [
+    "Next oracle fixed before OOD point; unique candidate list depends only on that oracle and public domain/degree/radius.",
+    "OOD value is sent before consistency locations. Query values are derived from authenticated fixed-source cosets after prior fold challenges.",
+    "After locations and values are fixed, gamma is drawn. The accepting candidate may depend on gamma but must belong to the already fixed list."
+  ],
+  "exact_missing_extraction": {
+    "statement": "For each fixed pre-gamma history and next received oracle R, accepted continuation at gamma implies, outside an explicitly bounded continuation bad event, existence of a normalized p with degree<8, at most28 mismatches from R on64distinct next-domain points, and the new accumulated functional equal to the new claim.",
+    "not_assumed_proved": "This statement is NOT derived from the existence of a Merkle root, fixed list construction, or a bare sumcheck residual. Need actual recursive continuation-to-proximity extraction. The small diagnostic full coefficient/root reconstruction gives radius0 only conditional on fixed-oracle binding.",
+    "subsequent_gap": "After unmixing gives one candidate satisfying old functional, OOD and sampled consistency equations, prove rate-shift queries/OOD transfer to a prior-domain candidate or count failure. Requires explicit unique-decoding/proximity-generator argument, not inherited Johnson/MCA."
+  },
+  "soundness_ledger": "Conditional on actual fixed-oracle/root binding and continuation extraction, mixing contributes at most5/P^8 here. Add continuation/rate-shift/query/commitment/FS errors separately. No total128/PQ claim.",
+  "reproduction": "cd /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression && lake env lean /data/illia/nearproof-wt/generic-air-reference/research/near-compression/NearCompression/RateShiftCandidateList.lean"
+}

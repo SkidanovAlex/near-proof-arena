@@ -1,0 +1,167 @@
+{
+ "schema": "near-arena-class-weights-measured-v1",
+ "challenge": "near-chunk-v3",
+ "status": "MEASURED (research artifact; no signed draft is changed; a successor challenge adopts weights per CONTRACTS \u00a711)",
+ "window": {
+  "heights": [
+   220185437,
+   220186815
+  ],
+  "blocks": 1378,
+  "chunks": 13770
+ },
+ "predicate_note": "Explicit mainnet observables per chunk; documented analogues of oracle/v3-d1/src/arena.rs class_of (tools/mainnet-replay/replay.py). `counts`/`weights_ppm` partition chunks (lowest tier first; receipts-only chunks without transactions are d0-transfers, and the same chunks also satisfy d1-receipts); `predicate_frequencies` measures every class's predicate independently with overlaps.",
+ "counts": {
+  "d0-quiet": 3420,
+  "d0-transfers": 1083,
+  "d0-missing": 214,
+  "d1-transfers": 323,
+  "d1-mixed": 432,
+  "d1-receipts": 0,
+  "d2-actions": 23,
+  "d2-queues": 2,
+  "d2-epoch": 0,
+  "d3-calls": 2653,
+  "d3-callbacks": 1306,
+  "d3-nonwasm": 58,
+  "d3-maxgas": 4256
+ },
+ "weights_ppm": {
+  "d0-quiet": 248366,
+  "d0-transfers": 78649,
+  "d0-missing": 15541,
+  "d1-transfers": 23457,
+  "d1-mixed": 31373,
+  "d1-receipts": 0,
+  "d2-actions": 1670,
+  "d2-queues": 145,
+  "d2-epoch": 0,
+  "d3-calls": 192665,
+  "d3-callbacks": 94844,
+  "d3-nonwasm": 4212,
+  "d3-maxgas": 309078
+ },
+ "wilson95_partition": {
+  "d0-quiet": [
+   0.24122,
+   0.255652
+  ],
+  "d0-transfers": [
+   0.07427,
+   0.083264
+  ],
+  "d0-missing": [
+   0.013606,
+   0.017746
+  ],
+  "d1-transfers": [
+   0.021059,
+   0.026121
+  ],
+  "d1-mixed": [
+   0.028589,
+   0.034417
+  ],
+  "d1-receipts": [
+   0.0,
+   0.000279
+  ],
+  "d2-actions": [
+   0.001113,
+   0.002505
+  ],
+  "d2-queues": [
+   4e-05,
+   0.000529
+  ],
+  "d2-epoch": [
+   0.0,
+   0.000279
+  ],
+  "d3-calls": [
+   0.186164,
+   0.199338
+  ],
+  "d3-callbacks": [
+   0.090062,
+   0.099851
+  ],
+  "d3-nonwasm": [
+   0.00326,
+   0.005441
+  ],
+  "d3-maxgas": [
+   0.301413,
+   0.316849
+  ]
+ },
+ "predicate_frequencies": {
+  "d0-quiet": 3570,
+  "d0-transfers": 1173,
+  "d0-missing": 240,
+  "d1-transfers": 339,
+  "d1-mixed": 3,
+  "d1-receipts": 1173,
+  "d2-actions": 23,
+  "d2-queues": 2,
+  "d2-epoch": 0,
+  "d3-calls": 2653,
+  "d3-callbacks": 1306,
+  "d3-nonwasm": 0,
+  "d3-maxgas": 4256
+ },
+ "predicate_wilson95": {
+  "d0-quiet": [
+   0.252008,
+   0.266645
+  ],
+  "d0-transfers": [
+   0.080637,
+   0.089964
+  ],
+  "d0-missing": [
+   0.015374,
+   0.019753
+  ],
+  "d1-transfers": [
+   0.02216,
+   0.027343
+  ],
+  "d1-mixed": [
+   7.4e-05,
+   0.00064
+  ],
+  "d1-receipts": [
+   0.080637,
+   0.089964
+  ],
+  "d2-actions": [
+   0.001113,
+   0.002505
+  ],
+  "d2-queues": [
+   4e-05,
+   0.000529
+  ],
+  "d2-epoch": [
+   0.0,
+   0.000279
+  ],
+  "d3-calls": [
+   0.186164,
+   0.199338
+  ],
+  "d3-callbacks": [
+   0.090062,
+   0.099851
+  ],
+  "d3-nonwasm": [
+   0.0,
+   0.000279
+  ],
+  "d3-maxgas": [
+   0.301413,
+   0.316849
+  ]
+ }
+}

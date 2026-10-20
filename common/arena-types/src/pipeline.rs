@@ -212,6 +212,11 @@ pub struct ClassMeasurement {
     pub ref_verify_runs_ns: Vec<u64>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub ref_proof_bytes_runs: Vec<u64>,
+    /// Per measured run: Σ total gas of the batch's cases (v1.9, additive;
+    /// empty when the oracle records no per-case gas). The x axis of the
+    /// `succinct` badge's log-log slope test (BENCHMARK_SPEC §17).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub gas_runs: Vec<u64>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -226,6 +231,12 @@ pub struct BenchmarkResult {
     pub prepare_ns: u64,
     pub public_artifact_bytes: u64,
     pub measured_by: String,
+    /// `succinct` badge evaluation (v1.9, additive; BENCHMARK_SPEC §17),
+    /// recomputed by the control plane from the measurements and the
+    /// challenge's thresholds. Serialized only when the challenge defines
+    /// thresholds.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub succinct: Option<crate::coverage::SuccinctBadge>,
     /// Cost-board result for `scoring.kind = cost_v1` challenges (v1.5,
     /// additive). Never compared with `score_milli` (a speed score).
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -278,9 +289,10 @@ pub struct SubmissionView {
     pub revocation_history: Vec<RevocationEvent>,
     // ---- additive, optional (v1.7) ----
     /// Coverage-tiered challenges: the declared tier and proven coverage
-    /// (CONTRACTS §11).
+    /// (CONTRACTS §11). Held-out coverage is published aggregate-only
+    /// (covert-channel mitigation); the per-class breakdown stays internal.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub coverage: Option<crate::coverage::CoverageReport>,
+    pub coverage: Option<crate::coverage::CoveragePublic>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -394,6 +406,11 @@ pub struct LeaderboardEntry {
     /// `coverage.conformance.share_ppm` of the ranked run.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub coverage_share_ppm: Option<u32>,
+    /// `succinct` badge evaluation of the ranked run (v1.9, additive;
+    /// BENCHMARK_SPEC §17): `granted` drives the board's "succinct only"
+    /// filter. Display-only: not a gate, not a score component.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub succinct: Option<crate::coverage::SuccinctBadge>,
 }
 
 /// Pure decision function shared by server and tests.

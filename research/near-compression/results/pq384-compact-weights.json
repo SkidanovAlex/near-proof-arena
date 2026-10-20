@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "dense_compact_comparisons": 270,
+  "zero_factors_included": true,
+  "scope": "Exact implementation parity; no cryptographic soundness claim"
+}

@@ -10,7 +10,7 @@ describe('unsigned draft challenges', () => {
     const d = DRAFTS.find((x) => x.name === 'near-chunk-v3');
     expect(d).toBeDefined();
     expect(d!.source_path).toBe('challenges/drafts/near-chunk-v3.draft.json');
-    expect(d!.coverage?.tiers.map((t) => t.id)).toEqual(['D0', 'D1', 'D2', 'D3a']);
+    expect(d!.coverage?.tiers.map((t) => t.id)).toEqual(['D0a', 'D0', 'D1a', 'D1', 'D2', 'D3a']);
     const tiers = newClassesByTier(d!);
     // Every class is introduced by exactly one tier.
     expect(tiers.flatMap((t) => t.added.map((c) => c.id)).sort()).toEqual(d!.classes.map((c) => c.id).sort());

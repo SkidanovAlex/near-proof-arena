@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "binary_fresh_process": "PASS: table-local SHA384 diagnostic; no global bus or security certification",
+  "wrong_external_root_rejected": true,
+  "scope": "Actual full-height table-local binary verification; no source witness/cache used"
+}

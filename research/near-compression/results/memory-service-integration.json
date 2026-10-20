@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3369,
+  "added_theorems": 2,
+  "sources": {
+    "PreparedMemoryStoreService": "465c081ee1ce9c5960809627a5e3f5a177d2dafd6eae1a198aa73667b458e1b4"
+  },
+  "audit_log": "/tmp/root-memory-service-audit.log",
+  "audit_sha256": "747e48cf5264464a364ac0a42a6d884c32e3c74b17f93b870a16acdcef258bb1",
+  "scope": [
+    "Accepted service clocks equal a consecutive range.",
+    "Every accepted descriptor transition refines actual ordered writeLE at the prior state or yields a supported collision."
+  ],
+  "limits": [
+    "Caller-supplied clocks are not yet authenticated to execution events.",
+    "Store-only sequence; mixed read/write timeline requested next.",
+    "Initial descriptor and hash assumptions explicit; no AIR or quantum bound inferred."
+  ]
+}

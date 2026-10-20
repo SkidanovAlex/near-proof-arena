@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "cases": 24,
+  "stage_arrays": 108,
+  "native_values": 765,
+  "plus_minus_pairs": 381,
+  "mixed_ext4_values": 765,
+  "lean_export_sha256": "e04307fe0f1624d0941ba076c2c677449ce75f95708253f7931b15d00db616cc",
+  "library_sha256": "9bcae9610938c6109260c4c4677a58b625cd5783dea910c040ba6a23c460b038",
+  "scope": "Dimensions0..7, empty/short/full inputs. Exact Lean functional-stage parity, mutable-loop regression and native polynomial/pair checks. Native permutation, mutable writes and machine arithmetic remain formally unproved."
+}

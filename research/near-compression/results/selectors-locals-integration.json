@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "audit_checks": 2592,
+  "modules": {
+    "GKRSlotCertificate": "5d536aa06735618faedd6242ef0712f9c85fe2351114f49da9f67c8a97b8731f",
+    "PreparedLocalsFrameWrite": "b76f867c3b34857aca7868050edc22c1a407460ca1129ad36206bd67896a83cc",
+    "PreparedLocalsAuthenticated": "7b9b84f1a8d7e2689eed0ec3998baf0e9e3c2ea7ef34538b2f526b7bd2b5fb7f"
+  },
+  "lean_capture_evaluations": "results/heterogeneous-metadata/lean-selectors.json",
+  "scope": "Executable natural slot geometry checker with audited soundness implication; 1052 canonical lane evaluations and12 malformed geometry rejections. Locals authenticated instruction/selector and actual set/tee frame update. Full locals successor-state and whole-call theorem remain incomplete."
+}

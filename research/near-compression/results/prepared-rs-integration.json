@@ -1,0 +1,27 @@
+{
+  "status": "incremental progress; full objective open",
+  "audit": {
+    "declarations": 1468,
+    "log": "/tmp/near-prepared-gas-public-audit.log",
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  },
+  "gas_source": "prepared-gas-source-parity.json",
+  "rs_encoding": "pq384-rs-verified.json",
+  "whir_conditions": "whir-rbr-applicability.json",
+  "packing_design": "flat-pcs-design.json",
+  "remaining": [
+    "Full Wasm/PREP and host/state transition refinement",
+    "Authenticated complete NEAR execution at1Pgas",
+    "Recursive compression below300000bytes",
+    "Concrete128-bit quantum security with applicable RBR/QROM theorem and constants"
+  ],
+  "next": [
+    "Integrate exact operand addition bridge",
+    "Measure configurable column packing behind explicit versioned encoding",
+    "Prove small-domain terminal rule and coherent PCS invariant"
+  ]
+}

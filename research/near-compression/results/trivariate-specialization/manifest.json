@@ -1,0 +1,23 @@
+{
+  "scope": "Dense bivariate specialization, mixed-jet preservation and total-annihilation bound; useful-factor/Hensel and full MCA exception bound remain open",
+  "cwd": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/test_trivariate_specialization.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/airbender/direct-wasm/test_trivariate_interpolation.py": "e2840e120bf4e51cdf00d90ff1c7cfb621989d94d3ea5f2155c76ea3f2e88dbd",
+    "research/near-compression/airbender/direct-wasm/test_jet_center_polynomial.py": "4148b9f96643b2688abe548f43d55656e9e43dcec9f7b99d27c9288ba4c40f4d",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_translation.py": "842a17ca32b1a547553a96e9e0745de6b7b0db618ad7d48a53d0793d892de53b",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_weighted_degree.py": "05de325b263c62fe7f4e444e400c97e6ee0ec1e626483927fdbeb2eaeb0b6617",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_multiplicity.py": "db06fa513db79ed2f4fc6aa6723bac5a0b6a4ffa243144b01c51e7b47e030888",
+    "research/near-compression/airbender/direct-wasm/test_synthetic_multiplicity.py": "a61b2cdb7a9e6d2b81098a94de13be3d17a4eabca9bbd0f56996cc651a56f684",
+    "research/near-compression/airbender/direct-wasm/test_independent_constraint_mixing.py": "cdb75bb944093fa6d4d8354d57da11976e4e59833cb13c17d55ee5526e26fcc7",
+    "research/near-compression/NearCompression/TrivariateSpecialization.lean": "2e1630795eff68e61ddf699e01602cf31801078dd390347faf1f9cc7013e34de",
+    "research/near-compression/NearCompression/TrivariateInterpolation.lean": "09ddd592efdd456194b442cdbdb492a537ec6c608c77773f85a0948cb9d487f8",
+    "research/near-compression/airbender/direct-wasm/test_trivariate_specialization.py": "28c0f33120169289eeaaf432c050e02e233930b19b2dc43ba4e57b0bd33d9694",
+    "research/near-compression/results/trivariate-interpolation/report.json": "d3d9d755b363dd739f9c9d16741edd9d596dfff7af88fc41e541ab037c66a03a",
+    "research/near-compression/results/trivariate-specialization/report.json": "2ab37a1d6a8033abb08e55c40b1d9e76cb6ac1e4e1d826ccd94f5b03b240bafe",
+    "research/near-compression/results/trivariate-specialization/lean-audit.log.gz": "f5d8e3830d1b537787cbeae841d6451e2a6c8f45a957a49db616d45dcb20964b"
+  }
+}

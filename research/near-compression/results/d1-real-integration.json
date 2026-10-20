@@ -1,0 +1,56 @@
+{
+  "status": "PASS",
+  "main_commit": "9116a4da95f2d17cfddecc1618ccc0daaa9ba37d",
+  "case": "oracle/fixtures/v3/public-d1/d1/00-h10012-s2",
+  "native_report": "d1-real-00-h10012-s2/report.json",
+  "independent_report": "d1-real-00-h10012-s2/independent-check.json",
+  "full_trace_dumped": false,
+  "native_checks": {
+    "tables": 33,
+    "buses": 61,
+    "total_cells": 2504687442,
+    "compact_bytes": 3076109234,
+    "raw_dump_bytes": 10018750032
+  },
+  "independent_checks": {
+    "sampled_constraint_residuals": 32740,
+    "sampled_cells": 30948,
+    "public_messages": 1153,
+    "negative_cases": 4
+  },
+  "formal_audit_theorems": 1347,
+  "folded_prover_evidence": "folded-prover-verified.json",
+  "next_work": {
+    "actual_height_range": [
+      1,
+      22
+    ],
+    "fixed_scheduler_height_is_renderer_choice": true,
+    "requirements": [
+      "Parameterize shared scheduler height using capacity covering all five tables; reject insufficient capacity before copying",
+      "Preserve special proc tail, cmp/rcpt padding, cyclic-next constraints and exact bus traffic",
+      "Prove renderer-height/padding correspondence; unchanged AIR plus full native recheck as diagnostic",
+      "Support actual small/large heights with scalable WHIR folding; do not use fixed2fold finalpolynomial atlog22"
+    ],
+    "source_findings": [
+      "v3/sched.rs SCHED_LOG/sched_tab/proc_aligned/cmp_aligned",
+      "v3/rcpt.rs RCPT_LOG/rcpt_at_log",
+      "Lean Candidates/SchedHeight,Render/PaddedProc,Render/PaddedSched,Render/PaddedRcptR"
+    ]
+  },
+  "limitations": [
+    "Native witness construction and exact checks, not a D1 succinct proof",
+    "Independent Pythonchecks sample rows only; no independentfulltrace/buscheck",
+    "Lean partialfoldlemmas do not prove complete renderer/optimizedimplementation refinement",
+    "No128bitPQsecurity,recursivecompression,1Pgasthroughput or<300KB fullNEAR result"
+  ],
+  "sha256": {
+    "airbender/direct-wasm/near_d1_trace_export.rs": "de705099525e0bc78a81881b549dcee3806941f71024e46ec49cbeebc78d0def",
+    "airbender/direct-wasm/d1-trace-export/Cargo.toml": "c0b7e1c459425b1c95c2a9fd6b3f52e82edacaecd9424bc05899c7fa7f83d2d4",
+    "airbender/direct-wasm/d1-trace-export/Cargo.lock": "17153ae866a378eaf8f822fefd30dc603b9a956ae0dca0a4de4da75f8fcfe30e",
+    "airbender/generic-air/check_d1_trace_export.py": "a0cf980d9760d87e5360c90ea9eb71adb1c843c145bc56c80671889ac753d068",
+    "airbender/generic-air/test_d1_trace_samples.py": "c29256e4f8b865fc828e568fcfbf8f815a38e826573e7a526e84b1c2fd5fe165",
+    "NearCompression/GenericMLEFold.lean": "d737e19c602373ce97479c30dda4c4d03fdc522840beb25538448349a80d59a4",
+    "airbender/direct-wasm/folded_prover.py": "91d1b2c7f56c93512d8a36b85256c4b01e67f31944ef6bbd4d36abd73d9bc3c1"
+  }
+}

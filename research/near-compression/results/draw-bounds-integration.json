@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3208,
+  "added_theorems": 3,
+  "source_sha256": "16d4550fbb26e734834df2034efa8d82fcda70610452d2184173e86adb6c0ab7",
+  "audit_log": "/tmp/root-draw-bounds-audit.log",
+  "audit_sha256": "f870a452e184ede638671ebe604128fcdf2d30a709b7c1d1ce304c921d6761c9",
+  "scope": "Successful draw block/fuel bounds, u64 final counter/request dimensions, consumed word accounting including partial final digest.",
+  "limits": [
+    "No probabilistic termination, hash-uniformity, independence or FS/QROM claim",
+    "No fullNEAR or secure proof-size certification"
+  ]
+}

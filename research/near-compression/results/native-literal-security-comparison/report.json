@@ -1,0 +1,57 @@
+{
+  "rows": [
+    {
+      "log_blowup": 1,
+      "child_bytes": 366641,
+      "parent_bytes": 875289,
+      "total_parent_plus_request": 876208,
+      "test_seconds_excluding_build": 4.02,
+      "whir_bytes": 796956,
+      "whir_fraction": 0.9105061299753567,
+      "native_parent_min_component_bits": 85.62756238530045,
+      "native_parent_query_bits": 128.24658720335353,
+      "native_parent_proximity_bits": 85.67574341494256,
+      "strict_300000_byte_gate": false,
+      "PQ128_certified": false,
+      "report_sha256": "faefca52fc0ad4fdecd4a98d30129c15d819bbc097353b37e9ea96149b35c51f"
+    },
+    {
+      "log_blowup": 3,
+      "child_bytes": 257393,
+      "parent_bytes": 513561,
+      "total_parent_plus_request": 514480,
+      "test_seconds_excluding_build": 7.65,
+      "whir_bytes": 436316,
+      "whir_fraction": 0.8495894353348482,
+      "native_parent_min_component_bits": 80.67574853784195,
+      "native_parent_query_bits": 128.3282269644555,
+      "native_parent_proximity_bits": 80.67574853800312,
+      "strict_300000_byte_gate": false,
+      "PQ128_certified": false,
+      "report_sha256": "6e71a1fd11c2bbd67eee22ff1549149d4b67437d4a8d0acf031bcce8e0447dc7"
+    },
+    {
+      "log_blowup": 5,
+      "child_bytes": 236977,
+      "parent_bytes": 470137,
+      "total_parent_plus_request": 471056,
+      "test_seconds_excluding_build": 26.12,
+      "whir_bytes": 392892,
+      "whir_fraction": 0.8356968287967125,
+      "native_parent_min_component_bits": 75.6757498384644,
+      "native_parent_query_bits": 128.05118791576322,
+      "native_parent_proximity_bits": 75.67574983847447,
+      "strict_300000_byte_gate": false,
+      "PQ128_certified": false,
+      "report_sha256": "949ca94d15e2a442ff1d4044a5f31b3d865fbdbb5a88dc79a96fe9703ecfc17a"
+    }
+  ],
+  "source_hashes": {
+    "crates/stark-backend/src/config.rs": "da5d01c870b5f45a66ac0ec7c1e862aa01dac1e47a9f44d2cf24e4c24bfba286",
+    "crates/stark-backend/src/soundness/calculator.rs": "4108efeb632bb55d1ca033b3ae852bc126c6e2715d9555eeb586ce545ae584fc",
+    "crates/stark-backend/src/soundness/vk.rs": "7119703de5fd59008b103dd97bdc86ade485aeeea0d1127746fe100767e12587"
+  },
+  "decision": "Stop query-only tuning of this fixed Ext4 profile. The integrated parent misses size and the current native component bounds do not support 128 bits, before QROM/composition.",
+  "scope": "Finite measured configurations, not an impossibility theorem. Native calculator minima are conservative component/RBR estimates, not end-to-end security guarantees.",
+  "next_gate": "Choose field/hash/proximity parameters with a complete quantum soundness ledger for this same integrated slice before further size optimization; preserve public statement binding and source semantics."
+}

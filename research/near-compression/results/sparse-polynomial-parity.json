@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "cases": 48,
+  "coefficient_cells": 675,
+  "mixed_extension_evaluations": 48,
+  "lean_export_sha256": "62bc6579995eb41654320a1c75aa6ed4aa6c828b6f11d6e97900596edd5f52ee",
+  "scope": "Executable Lean coefficient/evaluation parity with actual branch_words for empty, short and full lanes, lift0..3, source dimension0..3, x=0/1/17. Extra mixed Ext4 beta regression. Not native FFT correctness, commitment binding, or quantum soundness."
+}

@@ -1,0 +1,41 @@
+{
+  "status": "SYMBOLIC_RECONSTRUCTION_PRESERVES_ALL_INPUT_ASSIGNMENTS",
+  "module": "NearCompression/TerminalSymbolicRebuild.lean",
+  "theorems": [
+    "terminal_symbolic_record_value",
+    "terminal_symbolic_records_value",
+    "terminal_symbolic_rebuild_executed",
+    "terminal_symbolic_instruction_value",
+    "terminal_symbolic_program_run",
+    "terminal_symbolic_compiled_program",
+    "terminal_symbolic_rebuild_regressions"
+  ],
+  "proved": [
+    "Input recipes check exact symbolic slot identities instead of equality under one chosen assignment.",
+    "One accepted reconstruction establishes source/target DAG root equality for every input assignment.",
+    "Current/next placement and fixed selectors lower actual source-program execution to the symbolic DAG for every assignment.",
+    "When paired with a checked finite bundle for that root, program execution equals finite circuit output for every input assignment."
+  ],
+  "native": {
+    "report": "results/lean-rebuild-captures.json",
+    "programs": 2,
+    "records": 9152,
+    "symbolic_check_executed": true,
+    "diagnostic_assignments": 2,
+    "malformed_rejections": 24
+  },
+  "remaining": [
+    "Compose per-program universal root identities with the full batched compiler interface and recovered input construction.",
+    "Formal expected AIR/bus generation, metadata ownership/environment identification, parser/transcript/commitment refinement remain open.",
+    "No commitment extraction, global execution/PQ soundness or secure full-NEAR size certification."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3874,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

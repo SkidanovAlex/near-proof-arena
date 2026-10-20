@@ -1,0 +1,78 @@
+{
+  "profile": "prepared-typed-v1",
+  "status": "source/provenance prototype; typed whole-call theorem pending",
+  "files": {
+    "NearCompression/PreparedTypedLiteral.lean": "5ce715dd9f142e46cbf9734816b67664b926e794ee354deeba8d665b87c9e5f1",
+    "NearCompression/PreparedTypedCode.lean": "fd102664e192835af2134f9914e41b6a238b7cf5feec6a1c46c96b08e6b309a6",
+    "PreparedTypedProfileFixture.lean": "ae131597aefe1088c9ffbe667a5e35f02575ab1254c2d4b1cd5bd593ce5513df",
+    "PreparedTypedLiteralExport.lean": "fc65ada1cb6fa5f4ef0e4d7b376261ba77faa9b742cb75bab15090025f22fc19",
+    "PreparedTypedCodeSmoke.lean": "d574f8865ab934b1ccac8c49484ae33dba54e3aeeaa9765cbd5a23118a3f91ab",
+    "airbender/direct-wasm/prepared_typed_air.py": "43ecf9f9bd2a6e285b5b30cda0f9a2afb9dd75bb857d923dfeef0ce1bcd9e86a",
+    "airbender/direct-wasm/test_prepared_typed_air.py": "684a991d89042e7820b2de80c36b9a0132c6b796c6a550a694c76fdecfeed918",
+    "airbender/direct-wasm/generate_prepared_typed_literal.py": "ac0e72ae85442b213e4dece61a8180be4672abe0a50703ba69b2043a3052db65",
+    "airbender/direct-wasm/check_prepared_typed_literal.py": "75644e785e534630083d5ab602809cb3aa60ed8b6ce869d1b9e34c7f7e2d9298"
+  },
+  "layout": {
+    "exec_width": 1285,
+    "code_width": 270,
+    "record_fields": 37,
+    "boundary_fields": 51,
+    "public_local_type_fields": [
+      114,
+      115,
+      116,
+      117
+    ],
+    "public_code_start": 118
+  },
+  "constraint_counts": {
+    "exec_explicit_by_local_count": [
+      2097,
+      2031,
+      1965,
+      1899,
+      1833
+    ],
+    "exec_automatic": 3,
+    "code_explicit": 621,
+    "code_automatic": 26,
+    "maximum_degree": 12
+  },
+  "tests": {
+    "source_replay": "/tmp/near-prepared-typed-full/report.json",
+    "cases": 19,
+    "source_negative_rejections": 747,
+    "literal_parity": "/tmp/near-prepared-typed-literal-parity.json",
+    "all_count_settings": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "actual_setup_checker": "/tmp/near-prepared-typed-code-smoke.log",
+    "actual_setup_cases": 7,
+    "exact_code_fields": 5439,
+    "checker_rejections": 5614
+  },
+  "known_obligation": "Changing an unused local declaration and public type header can satisfy AIR under a changed statement. Actual preparedTypedCodeCheck rejects it; future public soundness theorem must require and compose this check. Counterexamples retained in full replay report.",
+  "formal_checked": [
+    "prepared_typed_inspect",
+    "prepared_typed_target_checked",
+    "prepared_typed_code_shape",
+    "prepared_typed_code_entry",
+    "prepared_typed_entry_checked",
+    "prepared_typed_setup_checked",
+    "prepared_typed_local_type"
+  ],
+  "remaining": [
+    "Literal source membership certificates",
+    "Natural37field bus fetch/provenance composition",
+    "Typed operand/stack/local successor state projections",
+    "Actual enter with mixed defaults and typed public header",
+    "Gasfailure and DONE typed boundary propagation",
+    "Whole-run/runCall plus published typed output theorem",
+    "Cryptographic diagnostic proof of new profile (not run by this lane)"
+  ],
+  "scope": "Synthetic D3 workload driven extension; stack8/locals4/single function/one nested void block, no memory/calls/loops/host execution. PREP checked outsideAIR; publicCODE linear; no new PQ security claim."
+}

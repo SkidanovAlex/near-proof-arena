@@ -1,0 +1,10 @@
+{
+  "random_primitive_products": 400,
+  "exhaustive_primitive_products": 3217,
+  "residue_reduction_checks": 17700,
+  "parameter_specialization_checks": 2700,
+  "nonprimitive_factor_negatives": 800,
+  "reducible_modulus_negatives": 4,
+  "finite_function_zero_negatives": 4,
+  "scope": "Primitive-product Gauss lemma and exact dense product transport. Rational scalar descent, source-degree inheritance, full MCA and PQ128 remain open."
+}

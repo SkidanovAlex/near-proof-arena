@@ -50,6 +50,7 @@ ClassMeasurement = TypedDict(
         "baseline_ns": int,
         "class_id": str,
         "cold_ns": NotRequired[Optional[int]],
+        "gas_runs": NotRequired[List[int]],
         "mad_ns": int,
         "median_ns": int,
         "peak_rss_bytes": int,
@@ -105,6 +106,21 @@ CostResult = TypedDict(
     },
 )
 
+# One measured evaluation of the badge criteria ("recorded per run").
+SuccinctBadge = TypedDict(
+    "SuccinctBadge",
+    {
+        "bytes_exponent_ppm": NotRequired[Optional[int]],
+        "bytes_ucb_ppm": NotRequired[Optional[int]],
+        "denied": NotRequired[List[str]],
+        "granted": bool,
+        "max_proof_bytes": int,
+        "max_verify_ns": int,
+        "verify_exponent_ppm": NotRequired[Optional[int]],
+        "verify_ucb_ppm": NotRequired[Optional[int]],
+    },
+)
+
 BenchmarkResult = TypedDict(
     "BenchmarkResult",
     {
@@ -116,6 +132,7 @@ BenchmarkResult = TypedDict(
         "public_artifact_bytes": int,
         "score_ci_milli": NotRequired[Optional[int]],
         "score_milli": NotRequired[Optional[int]],
+        "succinct": NotRequired[Optional[SuccinctBadge]],
         "suite_revision": str,
     },
 )
@@ -225,12 +242,24 @@ CoverageTier = TypedDict(
     },
 )
 
+# Thresholds of the `succinct` badge (BENCHMARK_SPEC §17; proposal for `near-chunk-v3`: 2 MiB and 50 ms).
+SuccinctSpec = TypedDict(
+    "SuccinctSpec",
+    {
+        "exponent_bound_ppm": NotRequired[int],
+        "max_proof_bytes": int,
+        "max_verify_ns": int,
+        "ucb_bound_ppm": NotRequired[int],
+    },
+)
+
 # `ChallengeDefinition.coverage`.
 CoverageSpec = TypedDict(
     "CoverageSpec",
     {
         "soundness_lift": str,
         "statement_spec": str,
+        "succinct": NotRequired[Optional[SuccinctSpec]],
         "tiers": List[CoverageTier],
         "version": str,
     },
@@ -432,6 +461,18 @@ ToolchainPolicy = TypedDict(
     },
 )
 
+WeightSourceStatus = Literal["ASSUMED", "MEASURED"]
+
+# Provenance of `WorkloadSuite` class weights (contracts v1.7, additive).
+WeightSource = TypedDict(
+    "WeightSource",
+    {
+        "note": str,
+        "ref": NotRequired[Optional[str]],
+        "status": WeightSourceStatus,
+    },
+)
+
 WorkloadClass = TypedDict(
     "WorkloadClass",
     {
@@ -452,6 +493,7 @@ WorkloadSuite = TypedDict(
         "heldout_commitment": Digest,
         "public_fixtures": Digest,
         "revision": str,
+        "weight_source": NotRequired[Optional[WeightSource]],
     },
 )
 
@@ -506,12 +548,23 @@ CoverageSection = TypedDict(
     },
 )
 
-# Report field `coverage` (CONTRACTS §11).
-CoverageReport = TypedDict(
-    "CoverageReport",
+# Held-out coverage as it may be **published** (CONTRACTS §11, covert channel): aggregate counts and the weight-averaged share only — never the per-class breakdown. Per-class held-out abstention counts are chosen by the candidate and would leak a few bits per class about the secret inputs.
+HeldoutAggregate = TypedDict(
+    "HeldoutAggregate",
+    {
+        "abstained": int,
+        "cases": int,
+        "proven": int,
+        "share_ppm": int,
+    },
+)
+
+# The published form of [`CoverageReport`]: conformance in full (public fixtures and public workload classes), held-out aggregate-only.
+CoveragePublic = TypedDict(
+    "CoveragePublic",
     {
         "conformance": CoverageSection,
-        "heldout": NotRequired[Optional[CoverageSection]],
+        "heldout": NotRequired[Optional[HeldoutAggregate]],
         "tier": str,
     },
 )
@@ -608,6 +661,7 @@ LeaderboardEntry = TypedDict(
         "security_profile": str,
         "submission_id": str,
         "submitted_at": str,
+        "succinct": NotRequired[Optional[SuccinctBadge]],
         "superseded_by": NotRequired[Optional[str]],
         "tier": Tier,
         "tier_rank": NotRequired[Optional[int]],
@@ -688,7 +742,7 @@ SubmissionView = TypedDict(
         "candidate_name": str,
         "challenge_id": str,
         "change_class": NotRequired[Optional[ChangeClass]],
-        "coverage": NotRequired[Optional[CoverageReport]],
+        "coverage": NotRequired[Optional[CoveragePublic]],
         "created_at": str,
         "decision": NotRequired[Optional[Decision]],
         "evidence_graph": NotRequired[Optional[EvidenceGraph]],
@@ -709,4 +763,4 @@ SubmissionView = TypedDict(
     },
 )
 
-__all__ = ["AdversaryClass", "ArtifactRef", "Assumption", "AssumptionRef", "BaselineMode", "BenchmarkResult", "BuildInfo", "BuildSection", "CalibrationSpec", "CandidateManifest", "ChallengeDefinition", "ChangeClass", "ClaimEncoding", "ClassCoverage", "ClassMeasurement", "CostBaselineClass", "CostClass", "CostResult", "CoverageReport", "CoverageSection", "CoverageSpec", "CoverageTier", "Decision", "Digest", "EdgeStatus", "EntrySection", "EvidenceEdge", "EvidenceGraph", "EvidenceNode", "EvidenceRef", "FormalParams", "FormalSection", "FormalSpecRef", "GateResult", "GateStatus", "HardwareProfile", "HardwareRequest", "InvocationMode", "LeaderboardEntry", "LogExcerpt", "MeasurementProcedure", "NearcorePin", "NodeKind", "ObligationId", "PriceModel", "PriceRationale", "Privacy", "ReasonCode", "ResourceLimits", "Restriction", "Revocation", "RevocationEvent", "ScopeKind", "ScoringKind", "ScoringSpec", "SecurityModel", "SecurityProfile", "SemanticScope", "SetupModel", "Stage", "SubmissionView", "Tier", "ToolchainPolicy", "TrustedBaseEntry", "VerifiedSurface", "VerifyRoute", "VerifyStatistic", "WorkloadClass", "WorkloadSuite"]
+__all__ = ["AdversaryClass", "ArtifactRef", "Assumption", "AssumptionRef", "BaselineMode", "BenchmarkResult", "BuildInfo", "BuildSection", "CalibrationSpec", "CandidateManifest", "ChallengeDefinition", "ChangeClass", "ClaimEncoding", "ClassCoverage", "ClassMeasurement", "CostBaselineClass", "CostClass", "CostResult", "CoveragePublic", "CoverageSection", "CoverageSpec", "CoverageTier", "Decision", "Digest", "EdgeStatus", "EntrySection", "EvidenceEdge", "EvidenceGraph", "EvidenceNode", "EvidenceRef", "FormalParams", "FormalSection", "FormalSpecRef", "GateResult", "GateStatus", "HardwareProfile", "HardwareRequest", "HeldoutAggregate", "InvocationMode", "LeaderboardEntry", "LogExcerpt", "MeasurementProcedure", "NearcorePin", "NodeKind", "ObligationId", "PriceModel", "PriceRationale", "Privacy", "ReasonCode", "ResourceLimits", "Restriction", "Revocation", "RevocationEvent", "ScopeKind", "ScoringKind", "ScoringSpec", "SecurityModel", "SecurityProfile", "SemanticScope", "SetupModel", "Stage", "SubmissionView", "SuccinctBadge", "SuccinctSpec", "Tier", "ToolchainPolicy", "TrustedBaseEntry", "VerifiedSurface", "VerifyRoute", "VerifyStatistic", "WeightSource", "WeightSourceStatus", "WorkloadClass", "WorkloadSuite"]

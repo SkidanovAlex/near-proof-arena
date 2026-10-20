@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "small_reference_cases": 8,
+  "actual_caches": [
+    {
+      "cache": "/tmp/near-sha384-direct-proof/source-00-cache",
+      "leaf_count": 131072,
+      "tree_bytes": 12582864,
+      "seconds": 1.8827749290503561,
+      "python_traced_peak_bytes": 15514,
+      "exact_tree_and_root": true,
+      "authenticated_opening_parity": true
+    },
+    {
+      "cache": "/tmp/near-sha384-direct-proof/source-01-cache",
+      "leaf_count": 256,
+      "tree_bytes": 24528,
+      "seconds": 0.003724270034581423,
+      "python_traced_peak_bytes": 15398,
+      "exact_tree_and_root": true,
+      "authenticated_opening_parity": true
+    },
+    {
+      "cache": "/tmp/near-sha384-direct-proof/source-02-cache",
+      "leaf_count": 256,
+      "tree_bytes": 24528,
+      "seconds": 0.003794201649725437,
+      "python_traced_peak_bytes": 15350,
+      "exact_tree_and_root": true,
+      "authenticated_opening_parity": true
+    }
+  ],
+  "scope": "Tree construction only; leaves and coefficients already exist. Python-traced allocations are not RSS or total prover memory.",
+  "source_sha256": {
+    "airbender/direct-wasm/pq384_disk_tree.py": "a06f34b62e41ed2dfe8ba40a63f30d9aac85ab8fbf849abb9b0ce2c3e39533b0",
+    "airbender/direct-wasm/test_pq384_disk_tree.py": "e56aac786c49c7eac750bd5c4acc49d07f6bbc005ab4ef1c81a790302f39c5d0"
+  }
+}

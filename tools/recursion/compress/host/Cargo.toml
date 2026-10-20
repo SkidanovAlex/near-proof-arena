@@ -1,0 +1,16 @@
+[package]
+name = "compression-host"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+risc0-zkvm = { version = "=3.0.6", default-features = false, features = ["client", "disable-dev-mode"] }
+compression-methods = { path = "../methods" }
+compression-verifier = { path = "../verifier" }
+anyhow = "1"
+bincode = "1"
+serde_json = "1"
+sha2 = "=0.10.8"
+hex = "0.4"
+

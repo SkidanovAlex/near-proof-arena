@@ -236,6 +236,7 @@ export function benchmark(scoreMilli: number | null, factor = 1) {
     prepare_ns: 12_000_000_000,
     public_artifact_bytes: 48_000_000,
     measured_by: 'demo-fixture-runner',
+    succinct: null,
   };
 }
 
@@ -289,6 +290,7 @@ export function toEntry(s: SubmissionDetail, def: ChallengeDefinition, rank: num
     security_profile: def.security_profile.id,
     submitted_at: s.created_at,
     revoked: !!s.revoked,
+    succinct: s.benchmark?.succinct ?? null,
     cost: s.benchmark?.cost ?? null,
   };
 }

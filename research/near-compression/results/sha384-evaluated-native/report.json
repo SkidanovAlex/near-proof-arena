@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "log_rows": 1,
+      "packing": 1,
+      "width": 3,
+      "leaves": 4
+    },
+    {
+      "log_rows": 1,
+      "packing": 2,
+      "width": 3,
+      "leaves": 8
+    },
+    {
+      "log_rows": 2,
+      "packing": 4,
+      "width": 7,
+      "leaves": 32
+    },
+    {
+      "log_rows": 3,
+      "packing": 2,
+      "width": 5,
+      "leaves": 32
+    }
+  ],
+  "leaves": 76,
+  "compared": [
+    "all coefficients",
+    "all leaf bytes",
+    "all tree digests",
+    "context",
+    "root",
+    "all opening paths"
+  ],
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_sha384_evaluated_native.py",
+      "sha256": "61f17181a5df5605a338131b4392153e4a9dee1973d16575cd6c899fef5144ba"
+    },
+    {
+      "path": "/tmp/near-pq384-target/release/rs_commit",
+      "sha256": "72416c9a4f24c8ddb8a86ebcdcf3e636900c01fabfcc576b3f6134759e06c2bb"
+    },
+    {
+      "path": "airbender/direct-wasm/pq384-native/src/bin/rs_commit.rs",
+      "sha256": "49a2b680bd43133789f65b21b334539e3938ac8a1296ceb373cfe4a202ed15dc"
+    },
+    {
+      "path": "NearCompression/SHA384EvaluatedSource.lean",
+      "sha256": "cfc0a98defd9c1ad47aebe025657ed77c64f6859957dc38e990302f3dcddcd3f"
+    },
+    {
+      "path": "results/sha384-evaluated-source/inputs.json",
+      "sha256": "f6ca35b6406dd33fc672f3f5ce09ef56638c3034b0a2c7b6505495204d6289c6"
+    },
+    {
+      "path": "results/sha384-evaluated-source/lean-results.json",
+      "sha256": "7d5d8693d32e66e30d79da4cd8cf6644b4ab01c399946ef1e29320b6737aa9ca"
+    },
+    {
+      "path": "results/sha384-evaluated-source/report.json",
+      "sha256": "b8e301900753707cb0b854bbcc1c3a993b552ddc5054d2721516ea5b5bed61ba"
+    },
+    {
+      "path": "airbender/direct-wasm/pq384_primitives.py",
+      "sha256": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96"
+    }
+  ],
+  "limitations": [
+    "Uses Lean evaluation form proved equal to mutable FFT model; original slow direct evaluator did not complete.",
+    "Bounded native executable parity only, not a formal Rust machine execution refinement.",
+    "Fixed computed sources only; unknown-root extraction and cryptographic soundness remain separate."
+  ]
+}

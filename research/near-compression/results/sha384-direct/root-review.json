@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "root_independent_fresh_process_full_verify_and_12_negatives": true,
+  "log": "/tmp/root-direct-negative-review.log",
+  "source_hashes_checked": 8,
+  "fresh_canonical_Lean_export_exact_JSON_match": true,
+  "input_residual_checks": 6174,
+  "exact_block_records": 4,
+  "natural_bus_balance_checked": 6,
+  "proof_bytes": 99382,
+  "public_bytes": 352,
+  "receipt_bytes": 716,
+  "total_transport_bytes": 100450,
+  "reusable_verifier_configuration_excluded": true,
+  "proof_sha256": "7e6e2967f68bb308d7a7e4f70d120e1f9f3c5a2a7df31794205c49f7301d2b3b",
+  "security": "Diagnostic Q8/Ext4;no quantum soundness or zero knowledge claim",
+  "scope": "Captured376byte committed-witness hash component;not fullNEAR1Pgas or complete recursive verifier"
+}

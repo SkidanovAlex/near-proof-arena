@@ -328,6 +328,17 @@
           "description": "Lean declaration of the top `ChallengeSpec` (the statement every admitted verifier is sound for), e.g. `NearSpecV3.challengeSpecChunkTop`.",
           "type": "string"
         },
+        "succinct": {
+          "description": "`succinct` badge thresholds (v1.9, BENCHMARK_SPEC §17). Serialized only when present, so ids of challenges without the badge are unchanged. Display-only: not a gate and not a score component.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SuccinctSpec"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "tiers": {
           "description": "Tiers in any order; `rank` is the total order (higher = larger domain).",
           "type": "array",
@@ -1032,6 +1043,40 @@
         "transparent",
         "approved_ceremony"
       ]
+    },
+    "SuccinctSpec": {
+      "description": "Thresholds of the `succinct` badge (BENCHMARK_SPEC §17; proposal for `near-chunk-v3`: 2 MiB and 50 ms).",
+      "type": "object",
+      "required": [
+        "max_proof_bytes",
+        "max_verify_ns"
+      ],
+      "properties": {
+        "exponent_bound_ppm": {
+          "description": "Log-log slope test (§17): fitted exponent of proof bytes and of verify time against the case's total gas must be ≤ 0.1 (`exponent_bound_ppm`), with a 95% upper confidence bound ≤ `ucb_bound_ppm` ppm of the same quantity (proposal: 0.25 = 250,000 ppm).",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "max_proof_bytes": {
+          "description": "Largest accepted proof over the conformance and held-out runs.",
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "max_verify_ns": {
+          "description": "Largest verify wall time over the conformance and held-out runs.",
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "ucb_bound_ppm": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false
     },
     "Tier": {
       "oneOf": [

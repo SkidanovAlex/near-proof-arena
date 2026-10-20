@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "original_columns_authenticated": 104,
+  "current_claims": 104,
+  "cyclic_next_claims": 104,
+  "whir_verified": true,
+  "verifier_witness_used": false,
+  "mutations_rejected": 222,
+  "kernel_expansion_checks": 18,
+  "generic_dimensions_tested": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "shift_weight_verifier_cost": "O(log rows), two field-state accumulators",
+  "sumcheck_degree": 2,
+  "upstream_commit": "129f827003b34acd64a3315a5863eac75bc09fe6",
+  "limitations": [
+    "Fixed eight-row WHIR adapter; generic algebra tested through64rows.",
+    "No AIR constraint or bus proof in this opening-only experiment.",
+    "Toy BLAKE2s/BabyBearExt4 profile, no PQ security claim.",
+    "No complete Lean verifier/implementation refinement."
+  ],
+  "sha256": {
+    "airbender/direct-wasm/shift_opening.py": "f4118b0c2d63f639d7ef1627ab683b57c72a3caa9897830b171cbd0d1e97c4e8",
+    "airbender/direct-wasm/run_shift_whir.py": "981f00e611206f7428c184bb186854d3aaf9f8659387a8820f4babaa1899812e",
+    "results/direct-wasm-shift-proof.json": "79108a125a224caa21bb0e0647642570fb07b322cd9f0bcf1b250c0ad60b0516"
+  }
+}

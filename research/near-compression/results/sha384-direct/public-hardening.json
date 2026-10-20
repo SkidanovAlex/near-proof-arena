@@ -1,0 +1,18 @@
+{
+  "change": "Canonical public-input hardening after original frozen proof generation",
+  "original_manifest": "source-files.json",
+  "current_sources": {
+    "airbender/direct-wasm/verify_sha384_direct.py": "82122a7df5acee311fdbe1920900438653ac65dba3ba61070a5ad13b8a07270e",
+    "airbender/direct-wasm/test_sha384_direct.py": "17cd7c6f4b19d9216401595bb7ee47c061c4ab0fcb39d40305169659fb377325",
+    "NearCompression/SHA384DirectPublicCheck.lean": "9542807a8b8f9c8e7beaa10b4d1a246e0bc4766bf1d91d5fe9382c9e503a813a"
+  },
+  "compatibility": "Proof, AIR and receipt unchanged; verifier narrows accepted public statements",
+  "lean_audit": 2484,
+  "lean_log": "/tmp/root-direct-public-check-audit.log",
+  "regression_log": "/tmp/root-direct-public-hardening.log",
+  "regression_status": "PASS",
+  "boundary": "Semantic checker-to-HoldsP theorem only; cryptographic acceptance-to-HoldsP and QROM security remain unproved",
+  "negative_tests": 59,
+  "direct_layout_rejections": 47,
+  "honest_full_binary_verification": true
+}

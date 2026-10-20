@@ -1,10 +1,11 @@
 import type { BoardEntry, ChallengeDefinition } from '../api/types';
 import { belongsTo, partition, type RankedEntry } from '../lib/board';
 import { fmtBytes, fmtNs, fmtScoreCi, fmtTime } from '../lib/format';
-import { AcceptedText, DecisionBadge, ReferenceBadge, RevokedBadge, TierBadge } from './Badges';
+import { AcceptedText, DecisionBadge, ReferenceBadge, RevokedBadge, SuccinctBadge, TierBadge } from './Badges';
 import { CostBoard } from './CostBoard';
 import { SubLink } from './Links';
 import { T } from './Text';
+import { useState } from 'react';
 
 function Row({ e, rank }: { e: BoardEntry; rank: number | null }) {
   return (
@@ -21,6 +22,7 @@ function Row({ e, rank }: { e: BoardEntry; rank: number | null }) {
       <td>
         <DecisionBadge decision={e.decision} /> <TierBadge tier={e.tier} />
         {e.revoked && <RevokedBadge />}
+        {e.succinct?.granted && <SuccinctBadge />}
         <div className="small">
           <AcceptedText accepted={e.accepted} />
         </div>
@@ -87,7 +89,7 @@ const unranked = (list: BoardEntry[]) => list.map((e) => ({ e, rank: null }));
 const ranked = (list: RankedEntry[]) => list.map(({ entry, rank }) => ({ e: entry, rank }));
 
 export function Leaderboard({
-  entries,
+  entries: allEntries,
   def,
   challengeId,
 }: {
@@ -95,11 +97,25 @@ export function Leaderboard({
   def: ChallengeDefinition;
   challengeId?: string;
 }) {
+  const [succinctOnly, setSuccinctOnly] = useState(false);
+  const hasBadge = allEntries.some((e) => e.succinct?.granted);
+  const entries = succinctOnly ? allEntries.filter((e) => e.succinct?.granted) : allEntries;
   const b = partition(entries, def, challengeId);
-  const foreign = challengeId ? entries.filter((e) => !belongsTo(e, challengeId)).length : 0;
+  const foreign = challengeId ? allEntries.filter((e) => !belongsTo(e, challengeId)).length : 0;
   const isFormal = def.tier === 'formal';
   return (
     <div className="leaderboard">
+      <div className="board-filters">
+        <label className="small">
+          <input
+            type="checkbox"
+            checked={succinctOnly}
+            onChange={(ev) => setSuccinctOnly(ev.target.checked)}
+            disabled={!hasBadge}
+          />{' '}
+          succinct only
+        </label>
+      </div>
       {foreign > 0 && (
         <p className="bad" role="alert">
           {foreign} entr{foreign === 1 ? 'y is' : 'ies are'} labelled with a different challenge id and are not ranked here.

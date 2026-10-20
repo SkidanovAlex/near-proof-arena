@@ -1,0 +1,6 @@
+{
+  "airbender/direct-wasm/pq384_ext8_weighted_codec.py": "f1637d8fec87e4bc3ccdabcfbb9db4f4306d031caea3a5db1434d0069abbc73a",
+  "airbender/direct-wasm/sha384_call_ext8_pcs.py": "99a563c83bf096fe751b0aba00897839fdfc40793af8c3a0913bc0754ded04f0",
+  "airbender/direct-wasm/test_call_ext8_shared_codec.py": "d8e7fd28b633ad8ba3259c430b56fdb12f225ed4aeebbf4d3ea6d3476000b46b",
+  "airbender/direct-wasm/test_ext8_weighted.py": "511b67dd6be851c2b4d42888b11baf31eb852a202b35a00a239518fb0403bc9d"
+}

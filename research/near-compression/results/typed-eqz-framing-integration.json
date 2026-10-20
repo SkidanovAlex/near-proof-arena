@@ -1,0 +1,113 @@
+{
+  "modules": [
+    {
+      "module": "PreparedTypedBus",
+      "sha256": "5a6b68b91ea2d7ca7ed7f9091a634dc6d2bc3b39306e46ef0082dfb0f28fcdac",
+      "theorems": [
+        "prepared_typed_bus_mult_zero",
+        "prepared_typed_bus_receive_active",
+        "prepared_typed_bus_receive_count",
+        "prepared_typed_bus_fetch_matched",
+        "prepared_typed_bus_no_public_table_receives",
+        "prepared_typed_bus_public_count_record",
+        "prepared_typed_bus_published",
+        "prepared_typed_bus_table_local",
+        "prepared_typed_bus_fetch_authenticated",
+        "prepared_typed_bus_message_pc",
+        "prepared_typed_bus_fetch_at_pc",
+        "prepared_typed_bus_literal_air",
+        "prepared_typed_bus_literal_boolean",
+        "prepared_typed_bus_literal_order",
+        "prepared_typed_bus_literal_inactive",
+        "prepared_typed_literal_fetch"
+      ]
+    },
+    {
+      "module": "PreparedTypedProvenance",
+      "sha256": "daa84c37db5e077c3cbbef8f7e27cba9d511d49fd1b684980d4b380f2dde6956",
+      "theorems": [
+        "prepared_typed_public_record_field",
+        "prepared_typed_record_pc",
+        "prepared_typed_authenticated_fetch",
+        "prepared_typed_authenticated_fee",
+        "prepared_typed_setup_authenticated_fee"
+      ]
+    },
+    {
+      "module": "PreparedTypedSequential",
+      "sha256": "4ffdb5c7ef9691da447dda32f13c66f80fc9c28a2d395e049c225c820eaf687b",
+      "theorems": [
+        "prepared_typed_literal_limb",
+        "prepared_typed_sequential_pc",
+        "prepared_typed_continue_status",
+        "prepared_typed_label_equations",
+        "prepared_typed_pc_label"
+      ]
+    },
+    {
+      "module": "PreparedTypedGas",
+      "sha256": "77b590cdf6e6b3e35901787a7162017197fde9b5cbb3994b9f969f356ca9dd72",
+      "theorems": [
+        "prepared_typed_gas_source"
+      ]
+    },
+    {
+      "module": "PreparedTypedEqzDepth",
+      "sha256": "48f755b22ddaf9fb98ec9428f167c1ca3565771cbc5c2185b0957721cb91fdee",
+      "theorems": [
+        "prepared_typed_eqz_depth"
+      ]
+    },
+    {
+      "module": "PreparedTypedLocalPreserve",
+      "sha256": "fad194c6b9dbe80618d2612c90240e9f309d4079a4c5d4f5e07ca0ebcc1f1028",
+      "theorems": [
+        "prepared_typed_local_preserve",
+        "prepared_typed_local_value_preserve",
+        "prepared_typed_local_array_preserve"
+      ]
+    },
+    {
+      "module": "PreparedTypedEqzArray",
+      "sha256": "c070e93285cc90032f710d2ae0bbdfd92ec52e42d3cad58127d54410ec91062b",
+      "theorems": [
+        "prepared_typed_stack_succ",
+        "prepared_typed_stack_congr",
+        "prepared_typed_eqz_arrays"
+      ]
+    },
+    {
+      "module": "PreparedTypedEqzState",
+      "sha256": "a656bbad51825b7d6e5efc8d7a824dd22bf9b89c56e49647957a0bc3e6647c55",
+      "theorems": [
+        "prepared_typed_eqz_success_state"
+      ]
+    },
+    {
+      "module": "PreparedTypedEqzAuthenticated",
+      "sha256": "98d54ed0b6b05ec1c20e7d319fb043d695ddbc55c22f33a6986bc3a733fa0bab",
+      "theorems": [
+        "prepared_typed_exec_local",
+        "prepared_typed_authenticated_eqz",
+        "prepared_typed_setup_eqz_state"
+      ]
+    },
+    {
+      "module": "SHA384HashFrameDecoder",
+      "sha256": "4c6201be48e0975be372938b0652969a5c844a04bfc9046d33dd638e30650df5",
+      "theorems": [
+        "sha384_read_parts_append",
+        "sha384_read_frame_append",
+        "sha384_decode_frame_encode",
+        "sha384_hash_frame_injective",
+        "sha384_decode_frame_trailing"
+      ]
+    }
+  ],
+  "added_theorems": 43,
+  "status": "PASS",
+  "integrated_theorems": 3133,
+  "audit_log": "/tmp/root-typed-eqz-framing-audit.log",
+  "audit_log_sha256": "c41c074cfc2f8540ba37442a31aca76155c0efe744e655ebfc0381a757aa2e73",
+  "scope": "Authenticated successful i64.eqz step for bounded prepared-typed-v1; SHA384 byte framing decode/injectivity. Not full-call, PCS binding, quantum soundness, or full NEAR capacity."
+}

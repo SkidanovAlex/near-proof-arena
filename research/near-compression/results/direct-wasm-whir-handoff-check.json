@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "opening_claims_recomputed": 104,
+  "changed_claims_rejected": 104,
+  "base_query_openings_checked": 8,
+  "initial_sumcheck_identity_checked": true,
+  "fresh_whir_artifact_generated": true,
+  "artifact_bincode_bytes": 11315,
+  "full_whir_verified": false,
+  "limitations": [
+    "Full witness used to recompute claims.",
+    "Fiat-Shamir replay, intermediate openings, OOD mixing, final folding and polynomial checks remain.",
+    "Toy parameters; no GKR proof, recursion or quantum-security claim."
+  ],
+  "sha256": {
+    "/data/illia/nearproof/research/near-compression/airbender/direct-wasm/near_wasm_whir.rs": "c75b94d46fa2bc9ecb7eaea7ae2392643827b6b9eb789630ed4ceb9de649ea01",
+    "/data/illia/nearproof/research/near-compression/airbender/direct-wasm/check_whir_handoff.py": "d01f61822dd66d77c1d64a43cc2656d7569cf319807c0aeb192d75b10ffc10b7",
+    "/data/illia/nearproof/research/near-compression/results/direct-wasm-whir-opening.json": "066702564b5368a2bdf9ad592d9d10772f432d285eec19aca1bc144fed88cda6"
+  },
+  "log": "/data/illia/nearproof/research/near-compression/results/direct-wasm-whir.log"
+}

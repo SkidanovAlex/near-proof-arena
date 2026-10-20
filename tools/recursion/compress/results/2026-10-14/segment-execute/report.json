@@ -1,0 +1,47 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "8-15,24-31",
+    "/data/illia/nearproof-deps/bin/heavy",
+    "/usr/bin/time",
+    "-v",
+    "timeout",
+    "--kill-after=10s",
+    "180",
+    "/data/illia/nearproof/target/recursion-compress/release/compression-host",
+    "execute",
+    "target/recursion-compression-inputs/segment/air.json",
+    "target/recursion-compression-inputs/segment/pub.bin",
+    "target/recursion-compression-inputs/segment/claim.bin",
+    "target/recursion-compression-inputs/segment/proof.bin",
+    "tools/recursion/compress/results/2026-10-14/segment-execute/receipt.bin"
+  ],
+  "inputs": {
+    "air.json": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/segment/air.json",
+      "bytes": 23358,
+      "sha256": "5df92438e378405a97a84853b5ec113649466dbfd27e54f5481e3f155df6dbaf"
+    },
+    "pub.bin": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/segment/pub.bin",
+      "bytes": 11,
+      "sha256": "c1156e54d87767c570e51310d9d9bfe92dd83e9df8be73bf066f57e772908052"
+    },
+    "claim.bin": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/segment/claim.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proof.bin": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/segment/proof.bin",
+      "bytes": 844173,
+      "sha256": "f430850f8ada33dba05493b3ead3b9a8746178f1e80eae236363dd6ba075593e"
+    }
+  },
+  "exit_code": 1,
+  "binary_sha256": "6b15ae8c684c85301845f25409ece04bbcd8608ff77bf96b95cfa29dd3f0a078",
+  "status": "CYCLE_LIMIT",
+  "peak_rss_kib": 57744,
+  "cycle_limit": 268435456
+}

@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3430,
+  "added_theorems": 4,
+  "sources": {
+    "PreparedMemoryLoadService": "c34289b6b87df33b3f4d5192a3715cde0d4b1ebac14388d3b86fdafe2c76a389",
+    "PreparedMemoryStoreBridge": "55a6e62c49acee152df470fa4ce6e1647b69523ebd46708a16a9ff075b988302"
+  },
+  "audit_log": "/tmp/root-memory-exec-service-audit.log",
+  "audit_sha256": "584ca3a8c1c79400a0a3999183e72a089c9ab39d797af534679317ad0891684f",
+  "scope": [
+    "Literal table constraints and exact decoded singleton service acceptance imply actual load/store execution and root agreement, or supported collision.",
+    "Typed operands, stack pop/push, result and PC reflected in actual exec."
+  ],
+  "limits": [
+    "Input operands are decoded from row; EXEC/CODE/gas/clock provenance is not established.",
+    "Initial root/full pages/hash output conditions explicit.",
+    "Mixed execution and bus composition pending; no full NEAR/security claim."
+  ]
+}

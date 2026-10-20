@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "algebra_checks": 72,
+  "negative_checks": 32,
+  "scope": "GKR reduction plus exact input-functional mapping; PCS obligation remains required",
+  "actual_layers": 41,
+  "prover_seconds": 139.8955664653331,
+  "verifier_seconds": 7.069686017930508,
+  "extension_elements": 2230,
+  "transport_field_bytes": 35680
+}

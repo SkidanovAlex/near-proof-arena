@@ -1,0 +1,21 @@
+{
+  "scope": "Low-Y-degree formal derivative nonvanishing, generic characteristic theorem and concrete Fp8 bridge. Not squarefreeness or irreducibility. Dimension screen remains diagnostic.",
+  "cwd": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/test_small_characteristic_derivative.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/NearCompression/SmallCharacteristicDerivative.lean": "f51b8f5bccb41bdcca5d2fc899919351d13f26c7606f0ff8884907fcc2dbab2d",
+    "research/near-compression/airbender/direct-wasm/test_small_characteristic_derivative.py": "3e82eadc007280e6a967e8981794811956750fb944e40966953fba46ef3025cd",
+    "research/near-compression/airbender/direct-wasm/test_hensel_coefficient_step.py": "608f18f357f66021c8a3081ce4c8fd1425bbeff3572fbdba956225bec51ff9d6",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_curve_division.py": "caa6f88b112bdf9ca03d6682425ce69918fbc238532bf8412005bd664e26a52b",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_multiplicity.py": "db06fa513db79ed2f4fc6aa6723bac5a0b6a4ffa243144b01c51e7b47e030888",
+    "research/near-compression/airbender/direct-wasm/test_independent_constraint_mixing.py": "cdb75bb944093fa6d4d8354d57da11976e4e59833cb13c17d55ee5526e26fcc7",
+    "research/near-compression/results/trivariate-interpolation/report.json": "d3d9d755b363dd739f9c9d16741edd9d596dfff7af88fc41e541ab037c66a03a",
+    "research/near-compression/results/small-characteristic-derivative/report.json": "ff64d65ed0852ee6c8187213c52141112e5665cb63073747c94dd3c623cb274b",
+    "research/near-compression/results/small-characteristic-derivative/lean-audit.log.gz": "fcfb140469f935f2e7f648e7901e74fe695d04f1497a7826a8d2e16da9c4a6e8",
+    "zk-formal/ZkFormal/Algebra/Fp.lean": "a54a17cb958402687acadebd66fdf76bccaf9ff122608df5a6ab2653b9f6fcfb",
+    "zk-formal/ZkFormal/Algebra/Fp8.lean": "56cac0031172a4730c90701ace49de02a3ba2a1a7b9d58075f8a10d7f9832fff"
+  }
+}

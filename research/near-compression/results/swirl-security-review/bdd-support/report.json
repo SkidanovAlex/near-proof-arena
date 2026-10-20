@@ -1,0 +1,565 @@
+{
+  "status": "EXACT_BOOLEAN_SUPPORT_CHECKED",
+  "graphs": 69,
+  "support_elements": 81062,
+  "rejected": 358,
+  "records": [
+    {
+      "layer": 0,
+      "op": "add",
+      "variables": 42,
+      "nodes": 13391,
+      "support": 10635,
+      "graph_sha256": "62d36cb9f991a359b05e41bd8c496c2bf669f973fc9fe2eec8012cd988c32026"
+    },
+    {
+      "layer": 0,
+      "op": "sub",
+      "variables": 42,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "38604c1ae4fa9ba898ffbe89bdb4ef2937aa8422690da1aa291b7b09655403e9"
+    },
+    {
+      "layer": 0,
+      "op": "mul",
+      "variables": 42,
+      "nodes": 19889,
+      "support": 5749,
+      "graph_sha256": "ed72f36be2056456ab25c33cc4d55d623e85f8e40a3b13a5f541c5daea2f4168"
+    },
+    {
+      "layer": 1,
+      "op": "add",
+      "variables": 42,
+      "nodes": 19509,
+      "support": 13770,
+      "graph_sha256": "988155a54efba23193867288f917070604a16522ce86d6a322480813bbad424d"
+    },
+    {
+      "layer": 1,
+      "op": "sub",
+      "variables": 42,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "38604c1ae4fa9ba898ffbe89bdb4ef2937aa8422690da1aa291b7b09655403e9"
+    },
+    {
+      "layer": 1,
+      "op": "mul",
+      "variables": 42,
+      "nodes": 11311,
+      "support": 2614,
+      "graph_sha256": "574da43155bc3febb17c1399257440b5e2945605d4c6eb5477dde6e59b94799e"
+    },
+    {
+      "layer": 2,
+      "op": "add",
+      "variables": 42,
+      "nodes": 15264,
+      "support": 13586,
+      "graph_sha256": "35d45ff13bf4a6e14adb4a7ca17e2f7cbdf39a5b62891bfd4074420a6080d201"
+    },
+    {
+      "layer": 2,
+      "op": "sub",
+      "variables": 42,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "38604c1ae4fa9ba898ffbe89bdb4ef2937aa8422690da1aa291b7b09655403e9"
+    },
+    {
+      "layer": 2,
+      "op": "mul",
+      "variables": 42,
+      "nodes": 11446,
+      "support": 2798,
+      "graph_sha256": "9f365f9de429ffb57487af0019b343f63b8071464d4ea40747a73241f58acc31"
+    },
+    {
+      "layer": 3,
+      "op": "add",
+      "variables": 41,
+      "nodes": 14534,
+      "support": 6665,
+      "graph_sha256": "fc094420015b269a46a8e2cef71e097cf9a9e4afef0e4b1ec312f0b7ac88b2a0"
+    },
+    {
+      "layer": 3,
+      "op": "sub",
+      "variables": 41,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "63053d41fb9509d1d15e581961d14e2bc4833d45324860c26f0a4b43dcfd2279"
+    },
+    {
+      "layer": 3,
+      "op": "mul",
+      "variables": 41,
+      "nodes": 7011,
+      "support": 1527,
+      "graph_sha256": "6dc136f61873495299dcfb0dca530bc01dbc4741e76b7b9ca07ca55ce11b365b"
+    },
+    {
+      "layer": 4,
+      "op": "add",
+      "variables": 39,
+      "nodes": 11016,
+      "support": 7316,
+      "graph_sha256": "1d34abf6df40160dada4314949228bfba69ad2635dcb73e025b5992608f27892"
+    },
+    {
+      "layer": 4,
+      "op": "sub",
+      "variables": 39,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "cba1522042930538ab580ded8cd373bdb935daa915e55d1a690786669899e402"
+    },
+    {
+      "layer": 4,
+      "op": "mul",
+      "variables": 39,
+      "nodes": 4458,
+      "support": 876,
+      "graph_sha256": "abee0f682f3abdb9be0d001c34084ecc5476f5b9c105763b1c4bc7c541a6d00f"
+    },
+    {
+      "layer": 5,
+      "op": "add",
+      "variables": 38,
+      "nodes": 6942,
+      "support": 3165,
+      "graph_sha256": "2e30e9ab5c1cb6337a3f6fff791be550b3e40a611803309e38fec4d2b2ad9e4e"
+    },
+    {
+      "layer": 5,
+      "op": "sub",
+      "variables": 38,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "a3ef14861af589f3233722afb2e83055e69c2c20db595fb29ca171be38ab59c5"
+    },
+    {
+      "layer": 5,
+      "op": "mul",
+      "variables": 38,
+      "nodes": 3659,
+      "support": 931,
+      "graph_sha256": "5db29468c92c23e5a8c2d00f3759722ca30916bd030f493113a005619803587b"
+    },
+    {
+      "layer": 6,
+      "op": "add",
+      "variables": 36,
+      "nodes": 5940,
+      "support": 3476,
+      "graph_sha256": "43e0627bdf58e74cb728e46d77bbe6a306b40b7f1b718f81a3b5bd07e3a2fdd4"
+    },
+    {
+      "layer": 6,
+      "op": "sub",
+      "variables": 36,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "e3300b5e225cf9c39f35a5e04909b4adf5fb5be0ea3f308c85a7b2b14192ccde"
+    },
+    {
+      "layer": 6,
+      "op": "mul",
+      "variables": 36,
+      "nodes": 2860,
+      "support": 620,
+      "graph_sha256": "03e37a8a339bc0d36d17f12977c7ce7576979f0e56f1ecd3df31c9494ff01478"
+    },
+    {
+      "layer": 7,
+      "op": "add",
+      "variables": 35,
+      "nodes": 5077,
+      "support": 1419,
+      "graph_sha256": "0cadaaa7064d2480969e4e895bb7639fb97328e01240886774c67922bf3c2d5d"
+    },
+    {
+      "layer": 7,
+      "op": "sub",
+      "variables": 35,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "4d882cc5681e4e2282cd11882caa99481f44b6e76546642a077fbbffa45f8272"
+    },
+    {
+      "layer": 7,
+      "op": "mul",
+      "variables": 35,
+      "nodes": 2306,
+      "support": 629,
+      "graph_sha256": "c892f41e39f76808f40ab8236bc714f03cf42b0af93fe8432cdb3341ba4681eb"
+    },
+    {
+      "layer": 8,
+      "op": "add",
+      "variables": 33,
+      "nodes": 4362,
+      "support": 1836,
+      "graph_sha256": "925dd6cd061c52a08a651a56ebe34eadeedf910dc216b727bd4581acfc4cda86"
+    },
+    {
+      "layer": 8,
+      "op": "sub",
+      "variables": 33,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "1a5c7b07ce991a42a3308e71c0edbb330a43f436434e9f5764c0c71c3d5da4db"
+    },
+    {
+      "layer": 8,
+      "op": "mul",
+      "variables": 33,
+      "nodes": 1118,
+      "support": 212,
+      "graph_sha256": "2c47adcb2a336273cfff3d8c9b7d9e934f24dda8648a0bf8ebc7135ca1e6bc68"
+    },
+    {
+      "layer": 9,
+      "op": "add",
+      "variables": 32,
+      "nodes": 2655,
+      "support": 903,
+      "graph_sha256": "5ffb9aa8d472b0e128b5419aa0d61840bd2b22e21bf1862fa65a04d52671f115"
+    },
+    {
+      "layer": 9,
+      "op": "sub",
+      "variables": 32,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "f651e91e25fe6f10f691d94b048fd876b83e51a14ec546fb8e35a3656129186d"
+    },
+    {
+      "layer": 9,
+      "op": "mul",
+      "variables": 32,
+      "nodes": 613,
+      "support": 121,
+      "graph_sha256": "07bf8d802abc4f55994011ee71e095a8b99dc94c11e9c7ad3fd0f4390827b985"
+    },
+    {
+      "layer": 10,
+      "op": "add",
+      "variables": 30,
+      "nodes": 1611,
+      "support": 931,
+      "graph_sha256": "32b3f945d954838e5c5198543f7a1fd37f8c3dd57e700d93ff707faf14f00a9b"
+    },
+    {
+      "layer": 10,
+      "op": "sub",
+      "variables": 30,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "15e3f736bc0af04a633bdcc84bbebf25de26d91f262462d86bd1db9750f9e3b1"
+    },
+    {
+      "layer": 10,
+      "op": "mul",
+      "variables": 30,
+      "nodes": 447,
+      "support": 93,
+      "graph_sha256": "9455113b7edb424a9cd16ca822079b34efc422664a4deb4e8e3eb5c98a28d595"
+    },
+    {
+      "layer": 11,
+      "op": "add",
+      "variables": 29,
+      "nodes": 1080,
+      "support": 404,
+      "graph_sha256": "dbbe73b4457b2bd0d2e85f32fd12ca06b1851467bef62d0f768681ec8a522d40"
+    },
+    {
+      "layer": 11,
+      "op": "sub",
+      "variables": 29,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "00f4cfba84cfcb1405a927f1c30701b5899d34be9754addebc1141b8976fbea1"
+    },
+    {
+      "layer": 11,
+      "op": "mul",
+      "variables": 29,
+      "nodes": 444,
+      "support": 108,
+      "graph_sha256": "8b4399c696b4fa3ea9c0716954ea57a3e919531774ffa8cdf09ff08c0ea6dd5e"
+    },
+    {
+      "layer": 12,
+      "op": "add",
+      "variables": 26,
+      "nodes": 777,
+      "support": 157,
+      "graph_sha256": "b9522f4fb6bb883c3de046c3bc56b3245c2865deb4b9281e7ef835dfa19eb7a3"
+    },
+    {
+      "layer": 12,
+      "op": "sub",
+      "variables": 26,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "67e411f0d23db3472c35c95ef309021e36b48762f2503fe4c3f8262f586de1a6"
+    },
+    {
+      "layer": 12,
+      "op": "mul",
+      "variables": 26,
+      "nodes": 428,
+      "support": 99,
+      "graph_sha256": "7ad818bf8824e27f2ef61a3a54c7a23578e5be608018c22d1eeb11931e624928"
+    },
+    {
+      "layer": 13,
+      "op": "add",
+      "variables": 23,
+      "nodes": 670,
+      "support": 124,
+      "graph_sha256": "638bf43eb1a0ce24dd7cb37510d729502bdcd2cad2ca8c792afefc63cbc2f9d5"
+    },
+    {
+      "layer": 13,
+      "op": "sub",
+      "variables": 23,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "54460d74b90018728f78ad91be78381235fb06c0ddad404fe1b17e15422ebec1"
+    },
+    {
+      "layer": 13,
+      "op": "mul",
+      "variables": 23,
+      "nodes": 50,
+      "support": 4,
+      "graph_sha256": "26eb64bff1236361e682bee8f0b23061a48fad89019003a05060b6c251485e8a"
+    },
+    {
+      "layer": 14,
+      "op": "add",
+      "variables": 21,
+      "nodes": 479,
+      "support": 127,
+      "graph_sha256": "355af9a5f68933410663905e692bbc9adce4cfcd439a43d2564e42e3b10afefc"
+    },
+    {
+      "layer": 14,
+      "op": "sub",
+      "variables": 21,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "6af8fa276533eb7f6e94cd5de5c20fc8485a593310a746c71645fa162058bde2"
+    },
+    {
+      "layer": 14,
+      "op": "mul",
+      "variables": 21,
+      "nodes": 23,
+      "support": 1,
+      "graph_sha256": "94a5940f15944029a97e31210c8243e690f2def3537fb37c02eeb9988da8af15"
+    },
+    {
+      "layer": 15,
+      "op": "add",
+      "variables": 20,
+      "nodes": 281,
+      "support": 62,
+      "graph_sha256": "b6f9d63a8d4889a25daf17df91d1b19e2b1cf043644218407e35176b211c84b4"
+    },
+    {
+      "layer": 15,
+      "op": "sub",
+      "variables": 20,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "6cd1b15e30aea481c33bb518cd0e79f3c3b390e64c24e843b7b9014dc33480a4"
+    },
+    {
+      "layer": 15,
+      "op": "mul",
+      "variables": 20,
+      "nodes": 36,
+      "support": 2,
+      "graph_sha256": "90ebe96310f8a3912b1f5f0499d09d82bca4fa8d4226356d9bd5e61a04a3ec23"
+    },
+    {
+      "layer": 16,
+      "op": "add",
+      "variables": 17,
+      "nodes": 139,
+      "support": 23,
+      "graph_sha256": "007001885fa2b618e4c6049393407c25aba9ae3d565130abc8c8d407d72a2ea8"
+    },
+    {
+      "layer": 16,
+      "op": "sub",
+      "variables": 17,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "dbdf38c2ab54c241a72f27c71d5af66a8dc64b5e77d9997b5f678083ef87ddc5"
+    },
+    {
+      "layer": 16,
+      "op": "mul",
+      "variables": 17,
+      "nodes": 54,
+      "support": 9,
+      "graph_sha256": "1294b4e765c7ed4959038d3b38fd8a59ee5256b4cc871e4d90ef8ea25e542bfe"
+    },
+    {
+      "layer": 17,
+      "op": "add",
+      "variables": 15,
+      "nodes": 109,
+      "support": 27,
+      "graph_sha256": "96f7cb0e90071bfb12ab7eb9cea41e8794935e72fcf60308805f246371b316ed"
+    },
+    {
+      "layer": 17,
+      "op": "sub",
+      "variables": 15,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "60fdb3206ba4535b215a8d5ae5d3f7c3e3f9c4b66bbb14e6cd5722aa6d4d71b6"
+    },
+    {
+      "layer": 17,
+      "op": "mul",
+      "variables": 15,
+      "nodes": 31,
+      "support": 5,
+      "graph_sha256": "c1b81c2b300d6519f97347881b3aecda2d272085328d3b50d91cc5f65e8ad4b8"
+    },
+    {
+      "layer": 18,
+      "op": "add",
+      "variables": 14,
+      "nodes": 87,
+      "support": 16,
+      "graph_sha256": "f54d8fb1f8338ba5c47f48a2a53daa2d71d438f08cf2f49c09e34aac3848f626"
+    },
+    {
+      "layer": 18,
+      "op": "sub",
+      "variables": 14,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "bbef644d1152a83fe86bbbcd7340074d66dad7dcec2a1b8230ad844b28974b76"
+    },
+    {
+      "layer": 18,
+      "op": "mul",
+      "variables": 14,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "bbef644d1152a83fe86bbbcd7340074d66dad7dcec2a1b8230ad844b28974b76"
+    },
+    {
+      "layer": 19,
+      "op": "add",
+      "variables": 11,
+      "nodes": 53,
+      "support": 8,
+      "graph_sha256": "c163c8d64787c2b41587358c79803aef0aede1be46f5c63a6b82b06aa8184d19"
+    },
+    {
+      "layer": 19,
+      "op": "sub",
+      "variables": 11,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "2f4c0f0b99d59711b8c2671ab5b0ecc254d70a9776f1ce951e74b3f52f0e5e3c"
+    },
+    {
+      "layer": 19,
+      "op": "mul",
+      "variables": 11,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "2f4c0f0b99d59711b8c2671ab5b0ecc254d70a9776f1ce951e74b3f52f0e5e3c"
+    },
+    {
+      "layer": 20,
+      "op": "add",
+      "variables": 9,
+      "nodes": 35,
+      "support": 8,
+      "graph_sha256": "5d319699b0d50c7a11478e99172850eea107a47ef9fc99c51c0c835914bcd317"
+    },
+    {
+      "layer": 20,
+      "op": "sub",
+      "variables": 9,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "6e5e73cc181fb24a86b6dc3dde6329f7d7b53fbdb39d7ea4d288e6f76be503d9"
+    },
+    {
+      "layer": 20,
+      "op": "mul",
+      "variables": 9,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "6e5e73cc181fb24a86b6dc3dde6329f7d7b53fbdb39d7ea4d288e6f76be503d9"
+    },
+    {
+      "layer": 21,
+      "op": "add",
+      "variables": 8,
+      "nodes": 22,
+      "support": 4,
+      "graph_sha256": "1562736a9576369eba577384817df60fd1c1532e1c0e0a4d420a0db64b45b13f"
+    },
+    {
+      "layer": 21,
+      "op": "sub",
+      "variables": 8,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "ceff8b99e11b784280030852531d40c8e675457d9a0ec8a691e0827c3ecc1eaf"
+    },
+    {
+      "layer": 21,
+      "op": "mul",
+      "variables": 8,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "ceff8b99e11b784280030852531d40c8e675457d9a0ec8a691e0827c3ecc1eaf"
+    },
+    {
+      "layer": 22,
+      "op": "add",
+      "variables": 5,
+      "nodes": 9,
+      "support": 2,
+      "graph_sha256": "840ab456494743a1b097c937970bff7a786dc5c6fad74e2db411aec7c9e73785"
+    },
+    {
+      "layer": 22,
+      "op": "sub",
+      "variables": 5,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "d8ba21550828ab59b46cc5bda14548ef78fa386d62871180745eab0d3fd760de"
+    },
+    {
+      "layer": 22,
+      "op": "mul",
+      "variables": 5,
+      "nodes": 2,
+      "support": 0,
+      "graph_sha256": "d8ba21550828ab59b46cc5bda14548ef78fa386d62871180745eab0d3fd760de"
+    }
+  ],
+  "limitations": [
+    "Python structural/count checker not formally refined.",
+    "Lean theorem applies to ordered unfolded view; explicit graph-to-view bridge remains.",
+    "No transcript, PCS, PQ128 or full NEAR claim."
+  ]
+}

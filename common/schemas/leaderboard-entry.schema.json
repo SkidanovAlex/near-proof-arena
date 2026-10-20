@@ -175,6 +175,17 @@
     "submitted_at": {
       "type": "string"
     },
+    "succinct": {
+      "description": "`succinct` badge evaluation of the ranked run (v1.9, additive; BENCHMARK_SPEC §17): `granted` drives the board's \"succinct only\" filter. Display-only: not a gate, not a score component.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/SuccinctBadge"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "superseded_by": {
       "description": "Set when the challenge has been superseded: the board is historical (frozen, closed for new submissions) and scores are not comparable with the successor's (additive, v1.4).",
       "default": null,
@@ -424,6 +435,72 @@
           ]
         }
       ]
+    },
+    "SuccinctBadge": {
+      "description": "One measured evaluation of the badge criteria (\"recorded per run\").",
+      "type": "object",
+      "required": [
+        "granted",
+        "max_proof_bytes",
+        "max_verify_ns"
+      ],
+      "properties": {
+        "bytes_exponent_ppm": {
+          "description": "Log-log slope of proof bytes against per-run batch gas, in ppm of the exponent (0.137 → 137_000). `None` without gas data or spread.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "bytes_ucb_ppm": {
+          "description": "95% upper confidence bound of the bytes exponent, ppm.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "denied": {
+          "description": "Why the badge was denied (empty when granted).",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "granted": {
+          "description": "Both the thresholds and both slope tests passed (fail-closed: a fit that cannot be computed denies the badge).",
+          "type": "boolean"
+        },
+        "max_proof_bytes": {
+          "description": "Largest proof over the measured runs (`ClassMeasurement.proof_bytes_max`).",
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "max_verify_ns": {
+          "description": "Largest per-run Σ verify wall ns of a class's batch over the measured runs (cost_v1's paid quantity; ≥ any single proof's verify wall).",
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "verify_exponent_ppm": {
+          "description": "Log-log slope of verify time against per-run batch gas, ppm.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "verify_ucb_ppm": {
+          "description": "95% upper confidence bound of the verify exponent, ppm.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        }
+      }
     },
     "Tier": {
       "oneOf": [

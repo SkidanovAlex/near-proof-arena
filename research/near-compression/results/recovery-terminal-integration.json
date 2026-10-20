@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "audit_checks": 2743,
+  "new_public_theorems": 15,
+  "modules": {
+    "RecoveredGKRTable": "fffa0e3bbcd556e9adf4eababca24a1dc2fa8448d5db7637869d7bfab9a5225b",
+    "PreparedLocalsTerminal": "a3e46144794f8404d9c349cc14fb6d4086e8af118c801f44813c47b7db3e85fd",
+    "PreparedLocalsCondition": "9dd88385b5ac97379afc720ac8cb5eed5133ed173f69a6a8e01b8a05dbbc01f1"
+  },
+  "scope": "Deterministic recovered table has exact inverse Mobius coefficients and actual heterogeneous current/next functionals. No source equality or adversarial claim correctness asserted. Locals actual root-end and gas-exhaustion semantics plus branch zero-condition source. Whole-run and cryptographic/QROM soundness remain pending."
+}

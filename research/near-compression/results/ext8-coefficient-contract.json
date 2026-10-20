@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "three_way_small_cases": 36,
+  "benchmark": {
+    "rows": 2048,
+    "width": 128,
+    "reference_seconds": 5.4761088327504694,
+    "contract_seconds": 0.4705065218731761,
+    "speedup": 11.638752234398446,
+    "source_sha256": "19c13e6ae3852a39824d04d83a25356de87c3327b73a3aea54c79a469ed7cfef",
+    "opening_sha256": "eeedd04c0153a96684063fe75015d03ef8d11950710f4b6e9e9fcb74119f77ba",
+    "scope": "One actual source lane; not an end-to-end prover speedup"
+  },
+  "scope": "Reference tensor and direct cyclic-row parity. Generic contraction identity is Lean proved; Python integer/field refinement remains outside that theorem."
+}

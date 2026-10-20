@@ -1,0 +1,93 @@
+{
+  "hash_tags": {
+    "gkr-after-all-constraints": {
+      "calls": 1,
+      "framed_input_bytes": 113,
+      "compression_blocks": 2
+    },
+    "gkr-static-air-config-v1": {
+      "calls": 1,
+      "framed_input_bytes": 1758097,
+      "compression_blocks": 13736
+    },
+    "merkle/leaf": {
+      "calls": 194,
+      "framed_input_bytes": 60646,
+      "compression_blocks": 582
+    },
+    "merkle/node": {
+      "calls": 1689,
+      "framed_input_bytes": 517083,
+      "compression_blocks": 5667
+    },
+    "merkle/root": {
+      "calls": 193,
+      "framed_input_bytes": 48419,
+      "compression_blocks": 459
+    },
+    "near-pq384-gkr-bus-v1": {
+      "calls": 1,
+      "framed_input_bytes": 621,
+      "compression_blocks": 5
+    },
+    "near-pq384-terminal-gkr-v1": {
+      "calls": 2,
+      "framed_input_bytes": 10358293,
+      "compression_blocks": 80925
+    },
+    "transcript/commit": {
+      "calls": 1333,
+      "framed_input_bytes": 261953,
+      "compression_blocks": 2777
+    },
+    "transcript/draw-result": {
+      "calls": 1324,
+      "framed_input_bytes": 237324,
+      "compression_blocks": 2648
+    },
+    "transcript/init": {
+      "calls": 3,
+      "framed_input_bytes": 337,
+      "compression_blocks": 4
+    },
+    "transcript/ratchet": {
+      "calls": 1327,
+      "framed_input_bytes": 243193,
+      "compression_blocks": 2654
+    },
+    "transcript/request": {
+      "calls": 1324,
+      "framed_input_bytes": 210844,
+      "compression_blocks": 2648
+    },
+    "transcript/squeeze": {
+      "calls": 1327,
+      "framed_input_bytes": 190113,
+      "compression_blocks": 2654
+    },
+    "weighted-joint-public-v1": {
+      "calls": 1,
+      "framed_input_bytes": 1232463,
+      "compression_blocks": 9629
+    },
+    "weighted-joint-stage-v1": {
+      "calls": 17,
+      "framed_input_bytes": 1887,
+      "compression_blocks": 17
+    },
+    "weighted-pcs-after-gkr": {
+      "calls": 1,
+      "framed_input_bytes": 165875,
+      "compression_blocks": 1297
+    }
+  },
+  "total_hash_calls": 8738,
+  "total_sha384_compression_blocks": 125704,
+  "ext4_operation_calls": {
+    "mul": 9498258,
+    "add": 2804881,
+    "sub": 3055932
+  },
+  "proof_sha256": "d174fb818a6d6132626e79c6c083750ceb970479f6ec8636b201fab5c5b6c2f2",
+  "statement_sha256": "7d3fdc8416166ac1be4e985e3a8841c7bc8380bc1cef09854a4aeca5f7a34f47"
+}

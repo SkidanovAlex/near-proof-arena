@@ -1,0 +1,47 @@
+{
+  "status": "PASS",
+  "exhaustive_expectation_cases": 12,
+  "authenticated_source_branches": 66,
+  "fixed_bytes": 66244,
+  "scenarios": [
+    {
+      "queries": 8,
+      "expected_total_bytes": 310066.77061460423,
+      "source_leaf_bytes": 28750.14379690662,
+      "source_sibling_bytes": 174610.24288157682,
+      "fold_leaf_bytes": 3827.715133655834,
+      "fold_sibling_bytes": 36634.66880246496
+    },
+    {
+      "queries": 309,
+      "expected_total_bytes": 3852228.9545337,
+      "source_leaf_bytes": 971045.9831785468,
+      "source_sibling_bytes": 2177103.9822879983,
+      "fold_leaf_bytes": 97253.65642742105,
+      "fold_sibling_bytes": 540581.3326397338
+    },
+    {
+      "queries": 463,
+      "expected_total_bytes": 5064457.312399364,
+      "source_leaf_bytes": 1385929.0271077096,
+      "source_sibling_bytes": 2769688.2870138143,
+      "fold_leaf_bytes": 137108.46798654474,
+      "fold_sibling_bytes": 705487.530291295
+    },
+    {
+      "queries": 617,
+      "expected_total_bytes": 6141667.54840405,
+      "source_leaf_bytes": 1774889.9035967945,
+      "source_sibling_bytes": 3278575.5599316205,
+      "fold_leaf_bytes": 174558.65066059495,
+      "fold_sibling_bytes": 847399.4342150398
+    }
+  ],
+  "assumptions": [
+    "Uniform independent queries with replacement; expected size, not a bound or measured proof.",
+    "Retains current commitments, source packing, 32-bit field transport and SHA384 paths.",
+    "Uses current GKR/zerocheck transcript dimensions; does not adjust extension field or degrees.",
+    "309/463/617 only illustrate the conditional (3/4)^q tail at128/192/256bits.",
+    "Other protocol errors and QROM losses excluded; no secure parameter choice is certified."
+  ]
+}

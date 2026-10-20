@@ -1,0 +1,19 @@
+{
+  "scope": "Exact monomial/constraint counts and generic nonzero polynomial interpolation; mixed-jet matrix equivalence remains open",
+  "cwd": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/test_gs_monomial_space.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/NearCompression/GSMonomialSpace.lean": "2d34d49a8711719167c9db366721567f2b7d43d385345b4d846925c8998a2516",
+    "research/near-compression/airbender/direct-wasm/test_gs_monomial_space.py": "abe7f713f5f0f7685e89cde4f19f5b549f943517bcb0e49afb8a29e9820086f7",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_weighted_degree.py": "05de325b263c62fe7f4e444e400c97e6ee0ec1e626483927fdbeb2eaeb0b6617",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_multiplicity.py": "db06fa513db79ed2f4fc6aa6723bac5a0b6a4ffa243144b01c51e7b47e030888",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_translation.py": "842a17ca32b1a547553a96e9e0745de6b7b0db618ad7d48a53d0793d892de53b",
+    "research/near-compression/airbender/direct-wasm/test_synthetic_multiplicity.py": "a61b2cdb7a9e6d2b81098a94de13be3d17a4eabca9bbd0f56996cc651a56f684",
+    "research/near-compression/airbender/direct-wasm/test_independent_constraint_mixing.py": "cdb75bb944093fa6d4d8354d57da11976e4e59833cb13c17d55ee5526e26fcc7",
+    "research/near-compression/results/gs-monomial-space/report.json": "5035eeb5b52542b96bd27c42680fce8f8ed359cbe2dc5c7f6f29df6a3ccc7b1b",
+    "research/near-compression/results/gs-monomial-space/lean-audit.log.gz": "b7ee9ee7095d6069d6f531cfd6a3f0513843238005f8c40beaa04b3fcc58bcef"
+  }
+}

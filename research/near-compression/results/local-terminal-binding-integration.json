@@ -1,0 +1,35 @@
+{
+  "status": "NATIVE_LOCAL_TERMINAL_REPLAY_BINDING_CHECKED",
+  "module": "NearCompression/LocalTerminalBindingCheck.lean",
+  "theorems": [
+    "local_terminal_binding_checked"
+  ],
+  "changed": [
+    "Replayed terminal manifest now carries tau, mixing and claim.",
+    "Lean adapter checks mixing/claim equality and recomputes weight as whirKernel tau point with exact dimensions.",
+    "Existing batch-node and selector checks remain required."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3992,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "capture": "Full retained proof verified and reconstruction regenerated; circuit and AIR artifacts unchanged.",
+    "native_assignments": 2,
+    "native_rejections": 32,
+    "new_rejections": [
+      "changed-replay-mixing",
+      "changed-replay-claim",
+      "changed-replay-tau",
+      "truncated-replay-tau"
+    ]
+  },
+  "limitations": [
+    "Manifest remains supplied input; this does not authenticate its transcript values.",
+    "Expected AIR generation, parser and native transcript refinement remain open.",
+    "Global/PQ soundness and secure full-NEAR size remain open."
+  ]
+}

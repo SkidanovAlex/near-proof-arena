@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1616,
+  "audit_log": "/tmp/near-wasm-terminal-audit.log",
+  "module": "PreparedWasmTerminal",
+  "theorems_added": 10,
+  "scope": "Actual table-local end/exhaustion to Wasm.step return/trap plus exact synchronization",
+  "explicit_assumptions": [
+    "Source constraint structure and public CODE classification",
+    "Prepared function/code/range-charge metadata provenance",
+    "Final-frame/label context for end",
+    "No-host gas context for synchronization and exhaustion"
+  ],
+  "remaining": [
+    "Whole runCall composition",
+    "Entry/PREP provenance",
+    "Full Wasm and host coverage",
+    "Whole chunk relation"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "parent_revision": "c8837f0a1",
+  "lean_audit": 4235,
+  "replay": "python3 airbender/direct-wasm/test_ext8_code_switch_functional.py --output /tmp/ext8-code-switch-functional-replay.json",
+  "working_directory": "research/near-compression",
+  "files": {
+    "research/near-compression/results/ext8-code-switch-functional/lean-audit.log.gz": "9a6c017316d9df88d73aa72167ffc53f3bf8896b1c732eaa52e0d2fa82cf7ce4",
+    "research/near-compression/results/ext8-code-switch-functional/report.json": "7cd9693941396cfacd250f16fb1f6ece97c50d435786b8561057d64f599874f4",
+    "research/near-compression/airbender/direct-wasm/ext8_code_switch_functional.py": "f672709cc8268b65f01e20dff68bcd060cb185c7b7e6cbc4da58b962714db09c",
+    "research/near-compression/airbender/direct-wasm/test_ext8_code_switch_functional.py": "5e9746eaa08d0739705fd85c807e09bbfd6fe24854ebb6ec846dec6831081454",
+    "research/near-compression/NearCompression/CodeSwitchFunctional.lean": "58dba88e46fad88760e5d86a1db65d8e7d5b21beaecde48130db431afecaf785",
+    "research/near-compression/NearCompression/GroupedCosetFold.lean": "4157f90249a398f27d93bd01508ba0c264a43c0f913e571f8ca02872896ddac0"
+  },
+  "scope": "Code-switch algebra prerequisites only. Four-value identity formalized; general k tested. No new transcript, PCS implementation, full NEAR, proximity/extraction, PQ128 or QROM certificate."
+}

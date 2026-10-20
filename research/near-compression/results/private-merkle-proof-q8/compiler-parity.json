@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "independent_layered_equation_cases": 3,
+  "equations": 984,
+  "private_capacity": 4096,
+  "layer_count": 13,
+  "scope": "Concrete generated circuit parity including negative signed coefficients. Not a universal compiler proof or cryptographic soundness theorem."
+}

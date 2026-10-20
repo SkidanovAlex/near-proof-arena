@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "audit_checks": 1796,
+  "code_fetch_theorems": 11,
+  "shared_curve_theorems": 3,
+  "code_bus_parity": {
+    "tables": 2,
+    "interactions": 5,
+    "public_segments": 3,
+    "inactive_constraints": 25,
+    "automatic_multiplicity_constraints": 29
+  },
+  "scope": [
+    "Exact natural bus balance and source constraints imply unique public-authenticated25-field fetch at EXEC PC",
+    "Fixed shared candidate curve preserves weighted threshold and yields quadratic residual identity"
+  ],
+  "open": [
+    "Actual prepare-to-publicCODE provenance and new EXEC refinement",
+    "Extract shared curve from challenge-dependent candidates",
+    "Full protocol soundness and QROM security",
+    "FullNEAR1Pgas and secure sub300000-byte proof"
+  ]
+}

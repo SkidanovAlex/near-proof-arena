@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "added_theorems": 13,
+  "integrated_theorems": 3454,
+  "audit_log": "/tmp/root-memory-sender-formal-audit.log",
+  "audit_sha256": "5f7f12ef238f42d32a6aab3abbb6821c5e75e8aecd220e3a783b69b6f0bfbc47",
+  "source_sha256": {
+    "PreparedMemorySenderLiteral.lean": "d1fef4396e3fdcd5284dff48a59ef0d9e11cf17611c9a0c9de2e5b3670d10fee",
+    "PreparedMemorySenderSource.lean": "0949872118351484cc35d62d2e91252f5a6aa69ca9227b0bdb2af65512e6fa74",
+    "PreparedMemorySenderOperands.lean": "175510b84b8b201bea622c9827bfa0d3ae55f1e8895924217f016980f0f08f72",
+    "PreparedMemorySenderTypes.lean": "ba2e6866040a2a5c5fa4935f0ed8e3534a277afee0ad458f64a38f07edb31251"
+  },
+  "literal_export_sha256": "fdba713bbb709db224d4ee4b9ae7a93f12e7b84bbd1da11a12bff784792d6b46",
+  "scope": "Actual literal AIR implies selected stack address/value limbs, onehot op/stack, store depth and operand types, and canonical i32 high bits. Exact Python/Lean table AST parity passed.",
+  "limits": [
+    "Local sender selection, not global bus pairing or full instruction transition proof.",
+    "CODE provenance, gas, pages and segment boundary authentication remain open."
+  ]
+}

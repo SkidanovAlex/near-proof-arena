@@ -1,0 +1,88 @@
+{
+  "profile": "near-committed-input-sha384-v1/captured376",
+  "trusted_public_contract": {
+    "declared_message_bytes": 376,
+    "digest_bytes": 48,
+    "public_field_elements": 88,
+    "public_layout": "digest48, fixedcount[1,0,0,0], SHA384 IV32 little16bitlimbs, fixedcount[1,0,0,0]",
+    "fixed_framing": "75bytepositions: PREFIX, LEu32taglength, merkle/node tag, LEu32partcount, each LEu64partlength;301partbodybytes private",
+    "mandatory_expected_input": "Caller supplied48byte input root plus packing context, declaredlength and trusted canonical AIR digest; verifier rejects absent/mismatched root. Receipt is externalinput, never extracted from proof.",
+    "transcript_binding": "Generic globalbus statement hashes fullcanonical AIR(public n encodedininputwidthandpadconstants),publicvalues,shapes,packings. All4source roots absorbed before alpha/gamma. Wrapper checks expectedroot/context before calling fullverifier."
+  },
+  "air_tables": [
+    {
+      "index": 0,
+      "kind": "existing batched80core",
+      "shape": [
+        512,
+        5234
+      ]
+    },
+    {
+      "index": 1,
+      "kind": "existing endpoint",
+      "shape": [
+        4,
+        1668
+      ]
+    },
+    {
+      "index": 2,
+      "kind": "committed framedinput",
+      "shape": [
+        2,
+        3008
+      ],
+      "meaning": "row0 byte i from8Booleanbits sends(i,byte)bus6 onfirst;row1 hasnoinputtraffic; framingconstants constrainedonfirst"
+    },
+    {
+      "index": 3,
+      "kind": "paddedblocks",
+      "shape": [
+        4,
+        1028
+      ],
+      "meaning": "1024Booleanbits+4blockselectors. Selectorfirst/shiftforcesrowblock. Realbytes receive(index,byte)bus6; delimiter/zeros/128bitlength fixedfromn. Sends(block,64limbs)bus4."
+    }
+  ],
+  "composable_lean_interfaces": [
+    {
+      "name": "pad_selector",
+      "claim": "HoldsP committedAIR -> selector(r,b)=if r=b then1else0; parent owns SHA384CommittedPadPhase."
+    },
+    {
+      "name": "byte_range_and_decode",
+      "claim": "Actual input/pad Booleanconstraints imply bytevalues<256 and natural decoding nofieldwrap."
+    },
+    {
+      "name": "input_receive_match",
+      "claim": "Each activepad realbyte receive has unique naturalmatched input firstrow sameconstantindex; finiteinputindex bounds and frameconfig establish exactbytes. No assumed routingmatch."
+    },
+    {
+      "name": "padding_identity",
+      "claim": "Actualpaddingconstraints plus declaredn derive pad(decoded inputbytes) perblock; selectors and realbytes separate. Padding tracecapacity is derived through globalbus4/6 availability; localrows alone do not enforcecapacity."
+    },
+    {
+      "name": "hash_refinement",
+      "claim": "Extract sharedcore/endpoint localconstraints and naturalbus0..3 routing fromnewAIR, IVpublicbus5, messageprivatebus4; previous batched theorem cannotapply directly because it assumespublicbus4 payload."
+    },
+    {
+      "name": "commitment_boundary",
+      "claim": "Externally suppliedroot, canonicalcommitmentcontext, binding/extraction assumption links decodedinputrow tocallerbytes. This component doesnot prove enclosingrecursiveverifier producedthosebytes."
+    },
+    {
+      "name": "framing",
+      "claim": "75fixedheaderbytes verified foronecapturedcallconfiguration. General dynamic framing/partlength/callID constraints not implemented."
+    }
+  ],
+  "resource_accounting": {
+    "proof_including_roots_bytes": 796630,
+    "public_bytes": 352,
+    "external_receipt_json_bytes": 719,
+    "total_with_receipt": 797701,
+    "source_cells": 2696608,
+    "additional_source_cells": 10128,
+    "trace_only_extra_percent": 0.3769988981864745
+  },
+  "security": "No128bitPQ/QROMclaim; diagnosticQ8 andExt4, sampledcommitment/bus fingerprint conditions unresolved; semanticnewAIRproofpending."
+}

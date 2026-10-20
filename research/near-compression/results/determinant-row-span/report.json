@@ -1,0 +1,9 @@
+{
+  "row_permutation_checks": 400,
+  "singular_row_combinations": 329,
+  "singular_row_selections": 5648,
+  "constructed_row_inverses": 289,
+  "inverse_entries_checked": 2226,
+  "empty_identity_cases": 71,
+  "scope": "Lean determinant nonzeroness from a row inverse. The concrete Bezout matrix encoding/orientation and denominator budget integration remain open."
+}

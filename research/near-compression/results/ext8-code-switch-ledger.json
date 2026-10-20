@@ -1,0 +1,589 @@
+{
+  "status": "COUNTERFACTUAL_CODE_SWITCH_LEDGER",
+  "scope": "Reprices existing packing/group schedules; does NOT optimize schedules for changing rates. Rates step by2^(k-1), optionally capped256. Queries recomputed each stage with enough slots for both proofs; OOD samples>=1 chosen from source-formula list separation. SHA384 authentication, Ext8 intermediate values, quadratics, roots, and OOD answers charged. MCA/identity/mixing/OOD checks mirror pinned upstream formulas; no upstream theorem mapping, common candidate extraction, code-switch implementation, whole protocol/FS/QROM certificate or quantum conversion. Field/functional batching outside this hypothetical switch chain remains excluded. mca uses exact squared comparison; reported additive upper bound rounds sqrt(B) upward. Initial roots must be redesigned for selected layouts.",
+  "upstream_commit": "afec1fac27c1c8cc7331aa5668bc9800f104d92c",
+  "source_formulas": {
+    "regime.rs": "8b621e391eeb6f039d0f4aec14b717859111f126d07f2461ac1e8c8a5f24a70a",
+    "sumcheck.rs": "c18fd604bf466d194590a06935e981089671a07d80a0cda25044764084d96510",
+    "code_switch.rs": "731f461e450f0f06c74c0616c3909a9f2a2735a3952534b87eddbe7abb1df96d"
+  },
+  "records": [
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 4,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 1101797,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 4,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 1066853,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 4,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 752229,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 4,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 750341,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 16,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 1199749,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 16,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 1131805,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 16,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 603853,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 16,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 607597,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 64,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 1367861,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 64,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 1253637,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 64,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 556645,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 64,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 555685,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 256,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 1573085,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 256,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 1382093,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 256,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 517077,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 128,
+      "initial_blowup": 256,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 519413,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 4,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 1584517,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 4,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 1522693,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 4,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 1052821,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 4,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 1047237,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 16,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 1754725,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 16,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 1638149,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 16,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 860301,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 16,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 863725,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 64,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 2131373,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 64,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 1862557,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 64,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 785549,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 64,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 782749,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 256,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 2404189,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 256,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 2079629,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 256,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 732893,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "joint",
+      "target_bits": 220,
+      "initial_blowup": 256,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 732493,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 4,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 1010093,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 4,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 974557,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 4,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 671429,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 4,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 669541,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 16,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 1057669,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 16,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 989725,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 16,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 520013,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 16,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 523757,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 64,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 1219925,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 64,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 1058261,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 64,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 467437,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 64,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 470925,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 256,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 1333405,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 256,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 1122829,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 256,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 433469,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 128,
+      "initial_blowup": 256,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 439229,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 4,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 1476269,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 4,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 1413653,
+      "all_conditional_budget_pass": true
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 4,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 953845,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 4,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 948261,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 16,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 1557125,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 16,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 1440549,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 16,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 738397,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 16,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 740805,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 64,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 1836285,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 64,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 1567469,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 64,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 661165,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 64,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 654765,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 256,
+      "regime": "upstream_unique",
+      "mode": "stepping",
+      "min_bytes": 2042677,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 256,
+      "regime": "upstream_unique",
+      "mode": "capped256",
+      "min_bytes": 1685541,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 256,
+      "regime": "upstream_johnson",
+      "mode": "stepping",
+      "min_bytes": 601821,
+      "all_conditional_budget_pass": false
+    },
+    {
+      "source_layout": "pooled",
+      "target_bits": 220,
+      "initial_blowup": 256,
+      "regime": "upstream_johnson",
+      "mode": "capped256",
+      "min_bytes": 605997,
+      "all_conditional_budget_pass": false
+    }
+  ],
+  "full_ledger_sha256": "5d2e72927b2fd0df39ec38fbfaa54c498eb7d0f0463aba908214a00aaa74c6b5"
+}

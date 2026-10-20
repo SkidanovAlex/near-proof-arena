@@ -1,4 +1,4 @@
-# NEAR Proof Arena — handover (updated 2026-10-13)
+# NEAR Proof Arena — handover (updated 2026-10-17)
 
 This is for the next lead agent. Read it first. The raw working log for 2026-10-07 to 2026-10-09 (≈6,500 lines) now lives in `docs/logs/v3-progress-log-2026-10.md`. Use it only for evidence lookup.
 
@@ -18,7 +18,7 @@ User directives (binding):
 * **Proof size and verify time are first-class.** Proofs must be succinct.
 * **One challenge.** `near-chunk-v3` covers the whole chunk transition with coverage tiers D0a < D0 < D1 < D2 < D3α. Do not create one challenge per domain.
 * **The strategic value of ZK** is one proof across *all* shards, which standard validator hardware cannot re-execute. Single-proof capacity (`G_α`) is the key metric.
-* **Recursion: R5.** No proof composition and no bounded R1. Single-proof capacity is raised through the prover, table and verifier levers listed in `docs/requirements/D3_WASM_REQUIREMENTS.md` §2.4.
+* **Recursion: R5 for today's challenges; reopened for the long-term track** (user 2026-10-14, `docs/zk-formal/V3-D3A-STUDY.md` §D U-1…U-9: recursion allowed; PQ track SHA-384, proven bounds only, real-time PQ end to end, 0.5–1 MB target). Today's signed challenges: no proof composition and no bounded R1. Single-proof capacity is raised through the prover, table and verifier levers listed in `docs/requirements/D3_WASM_REQUIREMENTS.md` §2.4.
 * **Decisions already taken by the user:**
   * Price model: N_v = 50 validators **per shard**.
   * B0 = 2.0 MB for D0a.
@@ -35,6 +35,49 @@ User directives (binding):
   * Remote access is through `tailscale serve` only, never funnel. Everything binds to loopback.
   * Keys and secrets live outside the repo. Never print keys, env files or env vars.
   * Never modify signed challenges (`challenges/chl_*.json`), the frozen `oracle/v3`, or any pinned file. `make pin-check` must pass.
+
+## PQ direct-Wasm research handoff (2026-10-17)
+
+Read [the research handover](logs/direct-wasm-pq-handover-2026-10-17.md) before continuing this lane.
+Closed Lean proofs now connect the concrete byte-packed AIR family to supported prepared Wasm
+execution, conditional on semantic `HoldsP`, eligibility and fuel. Best measured 193-instruction
+transport is **357,069 bytes including request**. This is a limited straight-line slice, not a
+full NEAR transition or a certified post-quantum proof system. Native acceptance-to-`HoldsP`,
+concrete QROM bounds and the SHA-384/Ext12 recursive parent remain open. The handover records
+reproduction commands, dependency patches, boundary tests and the final gas-failure native run.
+
+## 0a. State at stop (2026-10-15, main after this commit)
+
+* **Signed + live (local operator key; registered on the live arena):**
+  `chl_56077279…` `near-chunk-validation-d0-stark` (D0a) and `chl_497bbbf1…` `near-chunk-v3`
+  (tiers D0a 0 / D0 1 / D1a 2 / D1 3 / D2 4 / D3a 5). Live release `13d2e653` (Firecracker FORMAL_CHECK
+  batched 64 runs/VM; `docs/logs/judge-fc-batch-2026-10.md`).
+* **D0a live run** `run_335e1cda…` (`np-udr-stark-v2`): **REJECTED 2026-10-15 08:19** on
+  CONFORMANCE_DIFFERENTIAL only (all formal gates, ADVERSARIAL, PROVER_RELIABILITY 86/86 and
+  RESOURCE_LIMITS PASS; max proof 5.69 MB, verify 4.0 s, 13.4 GiB). Counterexample: rejection case
+  `00-h10024-s3-w.applied_receipts_hash` — the request is byte-identical to the honest `00-h10024-s3`
+  (only the witness's applied-receipts hash is mutated), so the claim is TRUE and the certificate is not
+  contradicted; but the judge requires `prove` to refuse a supplied witness the reference rejects, and
+  `prove_v3` doesn't check that field. **Fix (candidate side):** `prove_v3` must validate the supplied
+  witness completely (all checks of `checkD0a`, incl. applied_receipts_hash) and exit 2 otherwise; run the
+  full arena-public-d0a rejection set locally (all 128) before resubmitting. Evidence:
+  `/data/illia/nearproof-deps/validation/d0a-live-run-20261015/`. Resubmit with the improved prover.
+* **Prover:** D0a 263–312 s / ≤ 12.6 GiB on 8 vCPU (`docs/logs/v3-prover-perf-2026-10.md`).
+* **D1a** (native Ed25519, interim): phase 1 done (first D1a proof Lean-accepted). R-5 option (B) (user):
+  `nearAirV3D1` = 33 tables (walk every tx key: `walkU`, `nmemV3`, `uvalV3`, `nodeD1`, `uniqD1`; `ridV3`
+  `l` range check); conformance 257 fixtures, AIR A7 = `unfoldBytesD1` incl. the R-5 counterexample.
+  Phase 2: views, receipt/Merkle copies (generator `zk-formal/scripts/rcpt_d1_copy.py`), links 65/113
+  copies + walk copies; NOT yet: `A7D1Step`, `LinkD1CoreStmt`, F1/R1/R2/A1. Next steps:
+  `docs/logs/v3-d1-a7b-2026-10.md`, `docs/logs/v3-d1-phase2-2026-10.md`, plan `docs/zk-formal/V3-D1-PHASE2.md`.
+  Untested: no fixture exercises a stub / `nmemV3` query yet; real D1a proof on the 33-table AIR not re-run.
+* **D3a / 1 Pgas / PQ:** study `docs/zk-formal/V3-D3A-STUDY.md`; performance design + CPU spikes
+  `docs/zk-formal/V3-PERF-DESIGN.md` (worst-case 1 Pgas ≈ 1.75–1.9 s after execution on 32 H200 if GPU
+  ≥ ~30 % of peak; decisions P-PERF-1…7, no code cap). PQ research: `research/hash-recursion/`,
+  `docs/research/recursive-compression.md` (also untracked copies in the main checkout by another agent —
+  a `git pull` there will refuse until they're removed).
+* **Open user decisions:** live guest-image upgrade for build/conformance/benchmark (SANDBOX_VIOLATION
+  detection missing there); H200 access; P-PERF-8 (early code-prep sub-proofs), final-layer rate,
+  research milestones M2/M3 next; when to resubmit D0a with the improved prover.
 
 ## 1. Host rules (the host OOM-crashed twice; follow these strictly)
 
@@ -185,7 +228,10 @@ sections in `run-v2.d/`; `PROVE_V3=1` adds the real proof). Logs: `docs/logs/v3-
   commitment `sha256:56e6f599…`, seed off-repo in `nearproof-deps/keys`, set in
   `nearproof-deps/heldout/near-chunk-validation-d0-stark`); candidate re-pinned. NOT yet registered
   or deployed (user: stop after signing). Hostile `near-v3-d3-lenient-codes` retired. near-chunk-v3
-  stays unsigned until the D1a re-freeze (user decision).
+  re-frozen with the D1a tier and **SIGNED 2026-10-14: `chl_497bbbf1a6a5abc5b3448e0bc1a56997`** (tree
+  `66bba27e` at `85adc6c0` in the live store; not registered/deployed). D0a was registered and deployed
+  2026-10-14 (release `9da1032a`); its first live FORMAL_CHECK hits the Firecracker per-module copy
+  overhead (lane judge-fc-batch is fixing the runner; see `docs/logs/v3-deploy-d0a-2026-10.md`).
   D1a spec is on `lane/v3-d1a-spec` — do NOT merge it before the D0a draft is signed (any new
   **Elaboration budget (2026-10-14, `d2f27096`):** proof-only `codec_fast` tactic, NearAirCheck g=2
   split, GWalk/GRows joint simp: serial elaboration 9,100 s → 5,953 s (−35%), lean4lean peak 13.6 →
@@ -275,9 +321,20 @@ took 1,800 s); slowest: `Candidates.HorizontalAuxCheck` 140 s, `Candidates.Verti
 
 ## 8. Smaller follow-ups
 
-* **Succinct badge:** 2 MiB / 50 ms, log-log growth test. Not implemented.
-* **Mainnet replay:** real class weights and a measured `G_α`.
+* ~~**Succinct badge**~~ DONE (lane/stream-a, 2026-10-16, `610427283`): contracts v1.8 additive —
+  `CoverageSpec.succinct` + §17 slope test recomputed by the control plane into the signed report
+  and the board (`SUCCINCT` badge, "succinct only" filter). No signed draft sets thresholds yet
+  (successor decision). Docs: `docs/logs/stream-a-2026-10.md`.
+* ~~**Mainnet replay**~~ DONE (same lane): `tools/mainnet-replay` measured 13,770 mainnet chunks
+  (1,378 consecutive blocks, PV 86): D3a family ≈ 60 % of chunks (`d3-maxgas` 30.9 % — FC gas
+  ≥ G_α/2), quiet ≈ 25 %, transfers ≈ 5.5 %, D2 ≈ 0.2 %. Measured G_α rows: FC-chunk median
+  0.71 × G_α, p90 3.9 ×, max 156.9 × — today's G_α = 3.45 Tgas is far below busy-shard traffic.
+  Artifacts `docs/e2e-results/mainnet-replay-2026-10/`; adoption is a versioned-successor/user
+  decision (CONTRACTS §11).
 * **Independence of the clean-room Python VM:** it was tuned against nearcore black-box runs.
+  Documented 2026-10-16 (lane/heldout-aggregate): what that means, what the difftests do and do
+  not constrain, and four follow-up options — `docs/research/python-vm-independence.md`.
+  Independence itself is **not** achieved.
 * **Future challenges:**
   * 1 Pgas as a single STARK, which needs Goldilocks, a distributed prover and precompiles;
   * a cross-shard whole-block proof (`BENCHMARK_SPEC.md` §14.11).
@@ -295,3 +352,4 @@ took 1,800 s); slowest: `Candidates.HorizontalAuxCheck` 140 s, `Candidates.Verti
 | ZK formalisation | `docs/zk-formal/` (DESIGN, V3-D0-DESIGN, STATUS-*) |
 | Lane status files | `STATUS-V3-AIR.md`, `STATUS-V3-D3.md` |
 | Raw log | `docs/logs/v3-progress-log-2026-10.md` |
+| Literature catalogue | `docs/research/literature/INDEX.md` (topic index, CATALOG, refs.bib); unexploited items ranked in `OPPORTUNITIES.md` |

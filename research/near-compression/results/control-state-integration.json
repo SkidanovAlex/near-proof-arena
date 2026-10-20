@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2254,
+  "audit_log": "/tmp/root-control-state-composition-audit.log",
+  "modules": {
+    "PreparedControlUntaken": {
+      "sha256": "18ec7043821d6ef241804f72d5de1fb51001450ce82fb32b02084695faa68c41",
+      "public_theorems": 3
+    },
+    "PreparedControlBlock": {
+      "sha256": "dafc61ae09f12948794e28dc1d1ea2209b3c30ea07899aa00b5fec0ad3e419d2",
+      "public_theorems": 4
+    },
+    "PreparedControlFrameStack": {
+      "sha256": "316f80e630fa5d573e5efc367e826283f80ce53d96d5e3a0e06192649551e4d6",
+      "public_theorems": 2
+    },
+    "PreparedControlState": {
+      "sha256": "0c32969107c42b8d9742ecf74b8924078e9c4e9bb42633e0d77c76262fe99cf7",
+      "public_theorems": 3
+    },
+    "PreparedControlChargedBranch": {
+      "sha256": "45c52c69b2a261c7e44f8f212964ac4a8b5648e12f93b65843b6edc8e7e029a1",
+      "public_theorems": 3
+    }
+  },
+  "new_theorems": 13,
+  "proved": [
+    "actual block and nested-end Wasm.step preserves decoded control state",
+    "block/end stack and SP preservation",
+    "untaken branch condition pop and SP decrement",
+    "affordable untaken stack/gas composition"
+  ],
+  "explicit_premises": [
+    "actual function/code/endOf provenance",
+    "PreparedWasmCharge and decoded fee equality",
+    "initial decoded state and frame labels",
+    "affordability"
+  ],
+  "remaining": [
+    "authenticate provenance premises",
+    "taken/untaken actual-step state composition",
+    "ordinary opcodes under changed control AIR",
+    "whole-run initial/final binding"
+  ]
+}

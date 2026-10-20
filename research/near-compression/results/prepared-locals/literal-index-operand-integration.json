@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "audit": 2515,
+  "audit_log": "/tmp/root-locals-operand-audit.log",
+  "source_sha256": {
+    "NearCompression/PreparedLocalsLiteral.lean": "ddedb519481766979853d6efe4851123fe2bd3a4ea61854ab4ccee9bef88d308",
+    "NearCompression/PreparedLocalsIndex.lean": "b02b0cd6460ee77e825d5ca4728461662251c61fba4ccf68cc1b0ef9667ba8b6",
+    "NearCompression/PreparedLocalsOperand.lean": "e528a2c19fb6c90c48de44088e28b01d9b7d20e8afda21328a9eb62cc0bf1422",
+    "PreparedLocalsLiteralExport.lean": "9f70096007b7e4873656c39a4f481afb672c786ac4425d61c9c3889f9160d9ac",
+    "airbender/direct-wasm/generate_prepared_locals_literal.py": "97a387fec7d7cf1595e94bcd3dde62e4d44cf17f5dde49bb777fb05fd3622109",
+    "airbender/direct-wasm/check_prepared_locals_literal.py": "20e590b187d1fe30f6cadf004656892f95e38944307d39216df683e61be881e2"
+  },
+  "exact_ast_parity": "literal-parity.json, all counts0..4",
+  "new_formal_result": "Actual local table constraints + active local opcode + PreparedLocalsState yield valid selected immediate and actual frame.locals lookup",
+  "remaining": [
+    "bit/natural-word and stack/local next-state refinement",
+    "PREP/CODE/local-count provenance",
+    "whole-run/public-output extension",
+    "cryptographic soundness and full NEAR coverage"
+  ]
+}

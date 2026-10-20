@@ -1,0 +1,8 @@
+{
+  "nonzero_monic_moduli": 48,
+  "representative_independence_pairs": 16578,
+  "quotient_law_triples": 398164,
+  "irreducible_nonzero_quotient_inverses": 295,
+  "reducible_nonunit_elements": 122,
+  "scope": "Actual Lean quotient and well-defined operations, selected ring laws and quotient inverse existence. Full field instance and root construction remain open."
+}

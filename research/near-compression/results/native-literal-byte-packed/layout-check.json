@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "columns": [
+    605,
+    198
+  ],
+  "bit_columns": 608,
+  "scope": "Exact Lean/generated layout equality; macro consistency kernel-proved, whole AIR implication still pending."
+}

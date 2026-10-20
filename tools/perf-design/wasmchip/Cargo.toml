@@ -10,7 +10,7 @@ edition = "2024"
 publish = false
 
 [dependencies]
-npudr = { package = "np-udr-stark", path = "../../../examples/np-udr-stark-v2/source" }
+npudr = { package = "np-udr-stark-forge", path = "../forge" }
 p3-field = { git = "https://github.com/Plonky3/Plonky3", rev = "3acc8b70e68d6c2afc03930700c26540bd47458d" }
 p3-matrix = { git = "https://github.com/Plonky3/Plonky3", rev = "3acc8b70e68d6c2afc03930700c26540bd47458d" }
 rayon = "1"

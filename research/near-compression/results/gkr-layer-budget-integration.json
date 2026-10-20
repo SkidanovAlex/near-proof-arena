@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "audit_checks": 2908,
+  "previous_checks": 2905,
+  "new_public_theorems": 3,
+  "module_sha256": "a4eb40ed1c1ef574ab630d51de6b7b3032e7793231302a70cd9f824b4f3fc2d3",
+  "audit_log": "/tmp/root-gkr-layer-budget-audit.log",
+  "theorem": "NearCompression.gkr_layer_repair_count",
+  "ideal_bound": "(4*m+1)/|S| for nonempty distinct uniform sample S",
+  "experiment": "Exact nested Cartesian count of m left challenges, m right challenges, and one fresh gamma; cross-multiplied statement also covers empty sample/m=0.",
+  "causality": "Left sent/claim depend only on preceding left prefix. Right strategies depend on complete left path and preceding right prefix. Both sent input evaluations depend on both axis paths but not fresh gamma. Initial values/gates fixed before the layer.",
+  "checks": [
+    "degree<3",
+    "endpoint sums",
+    "next-claim updates",
+    "axis reset claim equality",
+    "terminal wiring equality",
+    "next-layer claim equals honest input functional (repair event)"
+  ],
+  "remaining": [
+    "whole-circuit multi-layer adaptive count",
+    "terminal compiler and AIR rejection integration",
+    "commitment binding and Fiat-Shamir/QROM",
+    "PQ128 parameters and fullNEAR/1Pgas secure proof size"
+  ]
+}

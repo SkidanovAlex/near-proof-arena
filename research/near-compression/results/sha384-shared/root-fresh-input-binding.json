@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "underlying_complete_proof_accepts": true,
+  "original_external_receipt_rejects": true,
+  "proof_sha256": "78fd18e22f407bbe84f22dba44822b64f88b9d529a846b731cd07861a227c2ca",
+  "scope": "Fresh valid proof under alternate unused input-row commitment; original expected root remains binding. Diagnostic verification, not cryptographic security."
+}

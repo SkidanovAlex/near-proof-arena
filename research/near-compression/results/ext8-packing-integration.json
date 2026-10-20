@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "added_theorems": 4,
+  "integrated_theorems": 3504,
+  "source_sha256": "0c15b434d7d32adcd68ff824be8cbb571e98f7fa103368c32c08bc7753ecd15d",
+  "audit_log": "/tmp/root-ext8-packing-audit.log",
+  "audit_sha256": "23cedc0fa59901fc5e45afb9d0fe94711a1bdd17c32d68e2b9250b679615e53c",
+  "scope": "Certified Fp8 basis reconstruction, arbitrary weighted coordinate sum, column MLE identity and generic row/group/padding functional identity.",
+  "limits": [
+    "No new executable packed PCS profile; scalar Ext8 implementation remains separate.",
+    "No automatic migration of Ext4 GKR or hash circuits.",
+    "No cryptographic binding or total PQ128 security claim."
+  ]
+}

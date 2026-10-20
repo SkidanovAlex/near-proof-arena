@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3343,
+  "added_theorems": 12,
+  "sources": {
+    "PreparedTypedBranchState": "311f78037a8a7a497e7f0928efe17c6acc81a84fda05f8eea8b5773c4ced2d27",
+    "PreparedTypedControlContinue": "cf2b247d900461a178aeca7a2d3d86cdd86cc4d2dd3f69274b635f16bce76a38",
+    "PreparedTypedRun": "8b8afbbec82530faf92e290015bb646dee9e2a637448b8e742438a30a9d92cd0",
+    "PreparedTypedRunCall": "5cb38d34f986ac7a691aa915f5145486f5840017ddeb8450b60e567c6555a98e",
+    "PreparedTypedPublicRunCall": "1325e994b18ac9494f1f5c662f2be072de3830c98f274931af214e9dfe36bfe5",
+    "PreparedTypedTerminalStack": "be4bfdcbd009bb435a95841de310c759ceaf5648787f03f5e79f23440dc1d2de"
+  },
+  "audit_log": "/tmp/root-typed-run-audit.log",
+  "audit_sha256": "763c68940653ad4e03e7e5465dfa39dce0f1040d220ee92572953b48e9240622",
+  "scope": [
+    "Authenticated actual br_if successor for both paths, preserving mixed prefixes.",
+    "Concrete twelve-opcode fuel induction through actual Wasm.run, callEntry and runCall; no per-step execution contract remains.",
+    "Public DONE/FAIL and exact AIR gas snapshot linked to runCall.",
+    "Separate actual terminal success/exhaustion public-stack equalities and sync stack preservation."
+  ],
+  "limits": [
+    "Bounded prepared-typed-v1:8 stack slots,at most4 locals,single function/no arguments or results,single inner void label; no general memory/calls/loops/hosts.",
+    "Actual setup/entry verifier checks remain; PREP not proved inside AIR.",
+    "Final witness/public-stack combined theorem still pending.",
+    "Computed-source parity session68201 remains live; no runtime parity PASS claimed.",
+    "No fullNEAR1Pgas capacity, recursive aggregation, QROM128 or secure sub300KB proof."
+  ]
+}

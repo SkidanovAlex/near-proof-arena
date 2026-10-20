@@ -1,0 +1,499 @@
+{
+  "strategy": "Prover-led implementation; executable verifier and composable semantic contracts first; independent proof lanes in parallel.",
+  "authoritative_main": "9116a4da95f2d17cfddecc1618ccc0daaa9ba37d",
+  "untrusted_component": "Optimized prover; do not require a Rust-prover correctness theorem for verifier soundness. Prove honest-prover completeness mathematically and validate implementation conformance.",
+  "semantic_boundary": "ZkFormal.V2.HoldsP AP pub tr",
+  "d1_public_tape": "Udr.pubOf Fp (Public.preparedBytesD1 p (txOverhead h)); never overhead zero",
+  "freeze_before_expansion": [
+    "Canonical existing Expr/rowEnv semantics: cyclic next-row, pub getD0, first/last/transition selectors",
+    "Row/column/bit order, field embedding and canonical wire encoding",
+    "Statement/AIR/protocol identity; all root, point and claim handoffs derived from preceding checks",
+    "Transcript message order and challenge sampling; account for current modulo-sampling bias or replace with rejection sampling",
+    "PCS coherent committed-polynomial/adaptive-opening contract, not isolated pointwise validity",
+    "Exact natural bus multiplicities, public messages and bounded fingerprint/product bad events"
+  ],
+  "implementation_milestones": [
+    {
+      "gate": "G1",
+      "deliverable": "Generic source-AIR reference evaluator and differential fixtures using current/next/public/selectors/two tables/public buses",
+      "status": "PASS canonical Lean differential fixture:7cases42rows56negativechecks; reference evaluator only"
+    },
+    {
+      "gate": "G2",
+      "deliverable": "Generalized zerocheck + authenticated cyclic-next reduction + PCS openings for one real AIR table",
+      "status": "PASS canonical AIR table-local proof:degree16source\u2192degree17zerocheck\u2192cyclic-next reduction\u2192WHIR. Fixed8rows,variablewidth;66negatives. Heterogeneous heights remain."
+    },
+    {
+      "gate": "G3",
+      "deliverable": "Two-table bus proof, then actual 33-table D1 HoldsP witness proof",
+      "status": "Two complete33tableD1diagnosticproofs independentlyverify. Sharedbinary1,256,796/1,434,548bytes; nativev2generation39.02/51.01s after52.75/63.99spreparation. 1405Leanlemmasaudited,notfullprotocolrefinement.",
+      "next": "PreparedWasm authenticated execution slice; secureSHA384/field/challenges profile; scheduledsoundnesscomposition; recursivecompression."
+    },
+    {
+      "gate": "G4",
+      "deliverable": "SHA-384 end-to-end profile, concrete field/repetition/query parameters and proved interactive/QROM bounds",
+      "status": "pending; no PQ claim for BLAKE2s/BabyBearExt4 diagnostic"
+    },
+    {
+      "gate": "G5",
+      "deliverable": "Native D3 coverage, verifier-circuit recursion if justified, distributed proving, 1 Pgas and complete serialized-size benchmarks",
+      "status": "pending"
+    }
+  ],
+  "proof_lanes": [
+    {
+      "lane": "air-polynomial-lowering",
+      "interface": "AirPolynomialInputs K -> AirPolynomialAffine -> lower eval/degree preservation for full Expr",
+      "status": "9 theorems checked and integrated"
+    },
+    {
+      "lane": "sumcheck-round-bound",
+      "interface": "Field K, sent/honest degree <D, wrong Boolean sum -> agreement count+1<=D on distinct challenges",
+      "status": "3 theorems checked and integrated"
+    },
+    {
+      "lane": "root composition",
+      "interface": "affine weight * quadratic source expression supplies honest degree<4 to bad-round bound",
+      "status": "2 theorem integration checked; not full multi-round soundness"
+    },
+    {
+      "lane": "next algebra lanes",
+      "interface": "generic MLE and cyclic shift; random batching; adaptive rounds; exact bus reduction",
+      "status": "unassigned until G1 definitions fixed"
+    },
+    {
+      "lane": "security",
+      "interface": "coherent PCS, round-by-round error, explicit QROM constants and extraction/resource bounds",
+      "status": "open; reuse hash-recursion milestones, no classical admission substitution"
+    },
+    {
+      "lane": "generic row/shift",
+      "interface": "generic MLE Boolean trace semantics, exact shift-kernel DP Boolean expansion, subtract-one modulo index",
+      "status": "26theorems checked and integrated; off-cube full reduction and protocol soundness remain"
+    },
+    {
+      "lane": "bus algebra and coordinate reconstruction",
+      "interface": "gated equations -> accumulator recurrence -> full product; coordinate reconstruction commutes with current/cyclic-next MLE",
+      "status": "13 new theorems integrated; full 1332-theorem axiom audit PASS"
+    },
+    {
+      "lane": "bus polynomial degree",
+      "interface": "selected factors, first partial-product residual and accumulator gates: exact evaluation and Poly.DegLt bounds",
+      "status": "6 theorems integrated; full1338 axiom audit PASS"
+    },
+    {
+      "lane": "monomial tensor/RS bridge",
+      "interface": "little-endian coefficient tensor evaluated at repeated-square curve equals Poly.eval on identical coefficients",
+      "status": "5theorems integrated; full1343axiom audit PASS"
+    },
+    {
+      "lane": "prover partial folding",
+      "interface": "lowbitfold,arbitraryprefix,completefold,andmultiply-addformula preservegenericRowMLE",
+      "status": "4theorems integrated;1347auditPASS"
+    },
+    {
+      "lane": "padding preservation",
+      "interface": "actualExpr/cyclicnextlocalshrink + exactnaturalbuscounts + V2.HoldsP composition",
+      "status": "22theorems checked; concretetableinstantiationpending"
+    }
+  ],
+  "current_checked_composition": "generic_bus_product_of_gates and generic_air_round_bad_roots; full protocol composition pending",
+  "current_limitations": [
+    "Multi-round adaptive soundness, coherent PCS binding, transcript refinement and QROM security remain open",
+    "Generic field lemmas do not yet establish concrete field embedding or Montgomery codec correctness",
+    "No deterministic Verify=true implies HoldsP claim: cryptographic soundness requires bounded bad events",
+    "D1 completeness headerOk belongs to the old FRI backend; WHIR requires a separate admission theorem",
+    "Scheduled diagnostic supports actual D1 heights through log13 and two complete fixtures; full Wasm execution, 1 Pgas and recursive compression remain unproved.",
+    "Conservative WHIR theorem mapping and small-domain repetition conditions unresolved; eight-query diagnostic schedule is not a certified security profile."
+  ],
+  "validation": {
+    "clean_current_main_audit": 1267,
+    "integrated_parallel_audit": 1287,
+    "axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "public_binding_negative_tests": 31,
+    "earlier_combined_negative_tests": 127,
+    "integrated_generic_audit": 1369,
+    "generic_air_differential_cases": 7,
+    "cyclic_next_negative_tests": 222,
+    "generic_table_proof_negative_tests": 66,
+    "source_lean_table_comparisons": 168,
+    "bus_auxiliary": {
+      "lean_differential_cases": 3,
+      "residuals": 54,
+      "rejections": 52,
+      "extension_arithmetic_checks": 32
+    },
+    "bus_proof": {
+      "honest_proofs": 2,
+      "negative_tests": 190,
+      "lean_source_residuals": 416,
+      "bus_only_invalid_local_accepted_global_rejected": true
+    },
+    "bus_shape_and_binding_negative_tests": 105,
+    "heterogeneous_bus": {
+      "rows": [
+        8,
+        16
+      ],
+      "honest_proofs": 2,
+      "negative_checks": 316,
+      "source_residual_comparisons": 640
+    },
+    "variable_pcs": {
+      "tested_log_rows": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "negative_checks": 198
+    },
+    "partial_folding": "folded-prover-verified.json: exactproof/handoff parity and existingPCS accept",
+    "actual_d1_witness": "d1-real-integration.json",
+    "d1_height_reduction": "d1-height-integration.json",
+    "latest_integrated_audit": 1763
+  },
+  "performance_policy": "Measure end-to-end prover/verifier time, peak memory and complete wire bytes; optimize behind unchanged verifier interface. Avoid claiming tiny proof sizes as NEAR/PQ results.",
+  "parallel_development_policy": {
+    "sequence": [
+      "Freeze semantic types, transcript schedule and exact encodings",
+      "Write composition theorem signatures and identify every missing premise",
+      "Build the executable prover and independent verifier on small canonical fixtures",
+      "Prove independent algebra contracts in parallel",
+      "Integrate proofs and differential tests before expanding workloads"
+    ],
+    "prover_correctness": "Keep optimized prover outside soundness trusted boundary. Prove verifier soundness and honest-prover completeness; implementation conformance checked separately.",
+    "priority": "Complete two-table bus proof before broad instruction expansion or recursive optimization."
+  },
+  "prepared_function_progress": {
+    "status": "PASSdiagnostic",
+    "evidence": "prepared-function-integration.json",
+    "scope": "5actualpreparedcodefixturesproved;Wasm/PREPformalrefinementopen",
+    "formal_progress": "35 row/gas theorems integrated and audited. TableLocal plus exact source constraint decomposition and public CODE limb bounds imply exact subtraction and borrow iff insufficient gas; selected fee bound premise discharged. Exact source parity checked for455 expressions within523-constraint AIR. Full HoldsP-to-Wasm.step and PREP remain open.",
+    "operand_progress": {
+      "status": "5theorems audited",
+      "evidence": "prepared-operand-source-parity.json",
+      "scope": "Exact two-limb carry constraints plus selected stack operands imply actual Num.binop32 add. Full constraint extraction and stack/PC transition still open."
+    },
+    "transition_progress": {
+      "status": "11theorems integrated and audited",
+      "evidence": "prepared-transition-source-parity.json",
+      "scope": "Successful active add updates PC/SP and stack exactly; source34 expressions match frozen523 constraint table. Full TableLocal extraction/composition with gas, original PREP and complete Wasm frames remain open."
+    },
+    "tablelocal_add": {
+      "status": "10theorems integrated and audited",
+      "evidence": "prepared-tablelocal-source-parity.json",
+      "scope": "ActualTableLocal derives selected operands/noBorrow/fullsuccessfuladd updates, including nextgas andflags. SourceAST structure and publicCODE classification/fee bounds/sufficientgas remain explicit; PREP provenance/fullframes open."
+    },
+    "terminal_cases": {
+      "module": "PreparedTerminalCases",
+      "status": "8theorems audited; exactenddepthAST484 parityPASS",
+      "scope": "ActualTableLocal exhaustion andsuccessfulend status/gas/PC/SP/stackprojection. Exhaustionfastgasunchanged, actualsync/burnt-prepaid remainsseparate. Const/drop andfullPREP/frames open."
+    },
+    "stack_cases": {
+      "module": "PreparedStackCases",
+      "status": "5theorems audited",
+      "scope": "ActualTableLocal const/drop PC/SP/gas/status/stackprojection. Combinedwithpriorcasescovers4supportedopcodes+exhaustion. ActualWasm.step/state/PREPframebridge next."
+    },
+    "actual_step": {
+      "module": "PreparedWasmStep",
+      "status": "5theorems integrated and audited",
+      "scope": "TableLocal const/drop\u2192actualWasm.step exactsuccessorstate androw-state relation. Actualpreparedrangecharge optionalmetadata respected; publicfeesdischargebounds. Preparedcode/metadata provenance, add/terminalactualstep andrunCall remainopen."
+    },
+    "actual_terminal": {
+      "module": "PreparedWasmTerminal",
+      "evidence": "wasm-terminal-integration.json",
+      "status": "10theorems integrated and audited",
+      "scope": "Actual final-frame return/restored stackCharge; exact deferred gas sync; exhaustion overflow/limit/gas trap classification. Entry/PREP and whole-run composition remain."
+    },
+    "actual_execution": {
+      "evidence": "wasm-execution-integration.json",
+      "scope": "Concrete const/drop/add/end/exhaustion AIR certificates compose to actual fuelled run, exit sync and callEntry",
+      "remaining_assumptions": [
+        "Valid table-local AIR and exact source fragments",
+        "Finite execution certificate with consecutive rows",
+        "Actual per-row prepared function/code/charge binding",
+        "Actual enter equality after CallingWasm reset",
+        "Initial no-host gas context"
+      ]
+    },
+    "checked_actual_code": {
+      "evidence": "code-reachability-integration.json",
+      "runtime_cases": 5,
+      "negative_checks": 860,
+      "all216fields_match": true
+    },
+    "constructed_execution": {
+      "evidence": "wasm-construct-integration.json",
+      "scope": "ActualTableLocal+checkedrealpreparedcode constructs finiteexecution and proves realcallEntry, propagating livePC internally",
+      "remaining": [
+        "Exact sourcefragment membership and TableLocal",
+        "Real preparedfunction lookup/check and finalend",
+        "Host gas/stack eligibility",
+        "Initial AIRfastgas equals hostremaining minusprologue"
+      ]
+    },
+    "public_boundary_correction": {
+      "source": "airbender/direct-wasm/prepared_function_air.py",
+      "fact": "Initialgas andlastoutput24fields each boundvia publicreceive buses0/1, notlocalconstraints",
+      "required": "ActualHoldsP.balance andcanonical publiccount1; TableLocal alone insufficient"
+    }
+  },
+  "security_primitive_progress": {
+    "status": "PASSstandalone",
+    "evidence": "pq384-primitives-verified.json",
+    "scope": "SHA38412wordstate+exactrejectsamplingPython/Rust; noPCSor128bitcertification",
+    "rs_commitment": {
+      "status": "PASS encoding diagnostics",
+      "evidence": "pq384-rs-verified.json",
+      "scope": "Native SHA384 RS tree for actual 8192x544 D1 table; independent direct-MLE checks of three complete vector pairs, small full-root reconstructions. Not a PCS or security proof."
+    },
+    "rs_formal_progress": "7 pair representation lemmas integrated: invertible f(x),f(-x) encoding, even/odd decomposition, monomial-tensor correspondence and one-coordinate folding. Not native Rust refinement or proximity soundness.",
+    "small_terminal": {
+      "module": "ScalarRSTerminal",
+      "status": "8theorems audited",
+      "scope": "Deterministic complete-domain scalar checks give unique degree-bounded polynomial and residual equality, conditional on explicit oracle binding. Not yet executable PCS terminal integration.",
+      "runtime": {
+        "evidence": "pq384-terminal-verified.json",
+        "status": "Threeoracle shapes independently checked;237mutations rejected",
+        "scope": "NewSHA384Ext4stageencoding reconstructs complete scalar oracle from bounded coefficients and checks residual. Not wired into WHIR."
+      },
+      "formal_reconstruction": {
+        "module": "ScalarRSReconstructedTerminal",
+        "scope": "Acceptance implies typedtree/rootcollision OR exact disclosedboundedcodeword and residual; degree derivedfromcoefficientlength. RawSHA384collisionreduction and precedingproximity open."
+      }
+    },
+    "packed_claims": {
+      "module": "GenericPackedGridCounting",
+      "status": "8newtheorems integrated and audited",
+      "scope": "Fixed differing vectors have at most p*|S|^(p-1) agreeing tuples over independent uniform coordinates from Nodup finitealphabetS. This supplies sampler-matching counting contract. Actual transcript distribution/QROM and coherent PCS binding remain external."
+    },
+    "packed_composition": {
+      "module": "GenericPackedOpeningComposition",
+      "scope": "Packedidentity+fixedrowpoint+exactPCSevaluationcontract+independentcoordinatecount. Sourcecoefficientbinding,actualPCSsoundness andtranscriptordering external."
+    },
+    "fold_algebra": {
+      "module": "OneFoldScalarComposition",
+      "status": "9theorems audited",
+      "scope": "Exactquadratic/affinefold/scalarpair/residual/honestterminalcomposition. No sampledproximitysoundness; multi-roundledger andaffineparameter mapping pending."
+    },
+    "repeated_fold": {
+      "module": "RepeatedAffineFold",
+      "scope": "Arbitrarydepth honestcompleteness, exacthalving/shape, actualendpointchecks, claimledger, terminaldot/reconstruction. No sampledproximitysoundness."
+    },
+    "affine_mapping": {
+      "module": "GenericAffineFoldParameter",
+      "scope": "Bijection r/(1-r) onfieldexcluding1 tomonomialparameterexcluding-1, exactscaling andbadcounttransport. r=1 exceptionalexplicit; noWHIRapplicabilityclaim."
+    },
+    "lane_batching": {
+      "module": "GenericLaneBatching",
+      "status": "9theorems audited",
+      "scope": "Orderedpowerbatch commutes coefficient/scalareval/monomialtensor/affinefold; differingfixedlengthLvectors collide atmostL-1 distinct\u03b1. Fieldembedding,transcriptdistribution andPCSsoundness external."
+    }
+  },
+  "next_compression_experiment": {
+    "design": "Configurable column packing measured on SHA384 RS commitments; next connect packed slice claims to coherent PCS and measure complete proofs.",
+    "evidence": "pq384-packing-verified.json",
+    "status": "Encoding checks pass; complete proof integration open",
+    "formal_identity": "generic_packed_mle_identity with low row bits, high column bits, partial group zero padding",
+    "first_opening_bytes": {
+      "packing1": 5024,
+      "packing8": 1360,
+      "packing32": 1048,
+      "packing128": 1048
+    },
+    "limits": "Leaf+path only, excludes framing/root; not total proof bytes. Timing single-run shared host.",
+    "claim_handoff": {
+      "evidence": "packed-claim-handoff-verified.json",
+      "status": "SHA384 binds statement, parent branch, source root, row point and column vector before column challenges.84 mutated claims detected by full-witness diagnostic. Produces undischarged PCS obligations; no complete proof integration."
+    },
+    "small_pcs": {
+      "evidence": "packed-disclosure-verified.json",
+      "status": "4complete smallpackedpoint openings verified againstnativeSHA384roots;244negativechecks",
+      "scope": "Expectedshape forces degree<=64/lanes<=64; allcoefficients disclosed, oracle rebuilt, paddedBooleanvalueschecked and packedpointclaimchecked. Originalcolumnreduction probabilistic; no completeAIRintegration."
+    },
+    "one_fold": {
+      "evidence": "pq384-one-fold/verified.json",
+      "status": "Twoone-roundpackedopeningproofs independentlyverified in freshprocesses withoutrows;108negativechecks",
+      "scope": "D128\u2192D64, sourcepackedV2basefield root, freshExt4sumcheckchallenge,8authenticatedfoldqueries, exactSHA384terminal. No proximity/RBR/security theorem orcompleteAIRintegration.",
+      "strong_negative": "Freshrecommittedterminalpreservingresidual andauthenticnewquerypaths rejected specificallybyfoldconsistency."
+    },
+    "multi_fold": {
+      "evidence": "pq384-multi-fold/verified.json",
+      "status": "1/3/5rounds PASS plus3freshprocessverifications;154negativechecks",
+      "scope": "SinglelaneD128/512/2048\u2192D64; bothadjacentoracles authenticated, responses absorbedbeforelaterrounds. Ext4/Q8diagnostic; noRBR/proximity/QROMsecurityproof.",
+      "geometry": "7936indexmappings and32FFTpoints independentlychecked",
+      "attack": "Freshfirstfoldpolynomial preservesresidual; all laterrounds andpaths rebuilt; rejectedbyfoldconsistency."
+    },
+    "batched_fold": {
+      "evidence": "pq384-batched-fold/verified.json",
+      "status": "3casesPASS/nativeSHA384roots;156negativechecks;3freshprocessverifications",
+      "scope": "RealD1slices64x17pack2/64x68pack8/8x544pack32,9/9/17lanes. \u03b1powerbatch afterclaims, fullsourceleafauththencombinedfold, scalarintermediateoracles. NotfullD1proof/fullSHA_theight orsecureprofile.",
+      "next": "Formal lane batching bound, fullheight nativeprover performance, completeAIRhandoff integration."
+    },
+    "binary_codec": {
+      "evidence": "pq384-batched-fold/codec-verified.json",
+      "bytes": [
+        7718,
+        22758,
+        15366
+      ],
+      "status": "Exactroundtrip/fullverification,129malformedrejections,3semanticmutationrejections,3binaryfreshprocesschecks",
+      "scope": "Complete standaloneopening serialization; notfullAIR/NEAR proof andsecurityprofileunchanged."
+    }
+  },
+  "latest_integration": {
+    "evidence": "adaptive-terminal-optimized-integration.json",
+    "audited_theorems": 1763,
+    "status": "PASS",
+    "next": "TerminalGKR/inputfunctionalPCS; scalableCODE; indexed-domain foldcomposition"
+  },
+  "fullheight_shape_extension": {
+    "status": "PASS shape/codec regression; actual full-height opening pending",
+    "evidence": "pq384-fullheight-codec-shape.json",
+    "degree_limit": 262144,
+    "row_log_limit": 13,
+    "security": "Ext4/Q8 unchanged; no security certification"
+  },
+  "fullheight_opening": {
+    "status": "PASS actual source proof generated and independently verified",
+    "evidence": "pq384-fullheight-opening/integration.json",
+    "bytes": 128966,
+    "scope": "One packed source opening only; column claims and statement external; diagnosticExt4/Q8",
+    "next": "Integrate opening handoff with complete AIR proof; secure profile and recursion remain open"
+  },
+  "sha384_table_local_air": {
+    "status": "PASS root-worktree separate-process and10negativechecks",
+    "evidence": "pq384-table-air/integration.json",
+    "scope": "Single table canonical AIR constraints and cyclicshift linked to packedopening; no buses/security certification",
+    "next": "Fullheight native kernels with reference parity; source/aux bus schedule"
+  },
+  "d1_source_size_budget": {
+    "evidence": "pq384-d1-source-size-budget.json",
+    "source_openings_q8_bytes": 843910,
+    "source_claim_bytes": 56208,
+    "scope": "Exact currentformat arithmetic, not a generated33tableSHA384 proof",
+    "implication": "Independent packing insufficient for300000B; need aggregation/recursion or protocol change"
+  },
+  "sha384_fullheight_table_air": {
+    "status": "PASS native/reference parity, freshprocessfullheightverify and losslesscodec",
+    "evidence": "pq384-actual-table-air/report.json",
+    "codec_evidence": "pq384-actual-table-air/codec-verified.json",
+    "scope": "ActualD1table0 only, not all33tables/buses/security",
+    "next": "Global-chain theorem-aligned diagnostic fork; alltable bus schedule"
+  },
+  "shared_merkle_paths": {
+    "status": "PASS exact individual-path expansion",
+    "evidence": "pq384-multiproof-verified.json",
+    "scope": "Same SHA384 root/context/index/tree semantics; duplicates preserved; no query change",
+    "next": "Review then encode globalchain proof with shared paths perstage; formal exact expansion correspondence remains"
+  },
+  "global_chain_profile": {
+    "evidence": "pq384-global-chain-full/integration.json",
+    "status": "Fullheight18foldsto1PASS; small1/64checksPASS",
+    "formal_scope": "Monomial coefficient claim equals auxiliary multilinear coefficient-table innerproduct; affinefold and weight restriction correspondence",
+    "security_gaps": [
+      "Virtual batched oracle correspondence",
+      "Global domain/pair geometry formal mapping",
+      "Correlated candidate/proximity/RBR theorem",
+      "Field/embedding and QROM compiler concrete bounds"
+    ],
+    "fullheight_binding_rejections": 124,
+    "binding_evidence": "pq384-global-chain-full/binding-regressions.json",
+    "shared_codec": {
+      "evidence": "global-codec-geometry-integration.json",
+      "fullheight_bytes": 55814,
+      "scope": "Complete standaloneopening only; sameQ8profile and exact expandedproof"
+    }
+  },
+  "global_table_air": {
+    "evidence": "pq384-global-actual-table-air/integration.json",
+    "whole_binary_bytes": 83852,
+    "scope": "ActualsingleD1table, allpublicinputs, Q8diagnostic; noalltablebus/fullNEAR/securityclaim"
+  },
+  "recursion_work_inventory": {
+    "evidence": "pq384-verifier-work-inventory.json",
+    "expanded_sha384_blocks": 38478,
+    "binary_path_sha384_blocks": 70085,
+    "scope": "Measured reference verifier calls on actual single-table Q8profile; no circuit/gate/time claim",
+    "finding": "Repeated canonical fullAIRstatement hashing dominates transcript blocks",
+    "next": "New33tableprofile canonicalstatement digest once, fixedlength branch binding; retain allpublic/AIR/shape commitments and explicit collision assumption"
+  },
+  "sha384_all33_d1": {
+    "evidence": "pq384-global-bus-d1/integration.json",
+    "status": "PASS complete binary roundtrip, fresh verification and 24 codec negative checks",
+    "scope": "Complete33tablelocalAIR+randomizedbusfingerprint check, diagnosticQ8/Ext4; no naturalbalance/proximity/QROM certification",
+    "next": "Joint opening/claim reduction; measured recursion verifier work; no security certification",
+    "whole_binary_bytes": 1151130,
+    "size_breakdown": "pq384-global-bus-size-breakdown.json"
+  },
+  "all33_recursion_work_inventory": {
+    "evidence": "pq384-global-bus-verifier-work.json",
+    "expanded_sha384_blocks": 253918,
+    "binary_path_sha384_blocks": 343454,
+    "scope": "Reference diagnostic verifier operation counts; not circuit constraints or recursive proof generation",
+    "finding": "Canonical statement hashed once; Merkle authentication now dominates",
+    "next": "Joint opening reduction and authenticate shared multiproof DAG once in future recursive verifier"
+  },
+  "joint_source_cost": {
+    "evidence": "pq384-joint-source-cost.json",
+    "q8_expected_initial_authentication_bytes": 237497.53172766778,
+    "retained_prefix_bytes": 256416,
+    "conclusion": "Joint later-stage PCS alone cannot plausibly meet300000B with unchanged prefix; claim and source-root costs require further reduction",
+    "scope": "Expected cost, not security bound or deterministic lower bound"
+  },
+  "shared_authentication_work": {
+    "evidence": "pq384-shared-merkle-work.json",
+    "sha384_blocks": 68341,
+    "stages": 642,
+    "scope": "All actual shared Merkle DAGs authenticate once; unchanged full verifier also passes. Excludes non-Merkle verification. No optimized verifier/circuit integrated."
+  },
+  "shared_complete_verifier": {
+    "evidence": "pq384-shared-bus-work.json",
+    "sha384_blocks": 109925,
+    "reference_binary_sha384_blocks": 343454,
+    "branch_differential_rejections": 660,
+    "complete_binary_rejections": 22,
+    "scope": "Same binary/transcript, new mandatory shared authentication; no formal implementation equivalence or recursion circuit"
+  },
+  "joint_complete_diagnostic": {
+    "evidence": "pq384-joint-bus-d1/integration.json",
+    "whole_bytes": 522596,
+    "previous_whole_bytes": 1151130,
+    "scope": "Same33tableAIRprefix, new jointPCS with distinctpoints/heterogeneousdegrees; diagnosticQ8, unproved additional soundness obligations",
+    "next": "Current/next/final claim reduction and joint source layout cost"
+  },
+  "shared_joint_verifier": {
+    "evidence": "pq384-joint-verifier-work.json",
+    "sha384_blocks": 42972,
+    "reference_binary_sha384_blocks": 76228,
+    "scope": "Unchanged jointbinary and mandatorysharedstageauthentication, no recursioncircuit/formalequivalence/securityclaim"
+  },
+  "optimized_joint_diagnostic": {
+    "status": "PASS",
+    "whole_binary_bytes": 510836,
+    "previous_binary_bytes": 522596,
+    "actual_saving_bytes": 11760,
+    "expected_saving_bytes": 39990.71945863945,
+    "same_source_row_hashes": true,
+    "same_air_public_logs": true,
+    "source_commitments_reused": false,
+    "fresh_auxiliaries": true,
+    "root_reference_binary_verification": "PASS",
+    "root_shared_binary_verification": "PASS",
+    "exact_roundtrip": "PASS",
+    "binary_sha256": "188ca39b8b68e1fced30d9d999f6fa22afaf5c5e6c17df4f70471217d4e2428f",
+    "codec_evidence": "../pq384-optimized-joint-codec/report.json",
+    "limits": [
+      "Q8/Ext4 diagnostic; no secure parameter claim",
+      "Expected savings differ from one deterministic transcript realization; no selective retries",
+      "Not fullNEAR/1Pgas; packing does not establish new cryptographic soundness"
+    ]
+  }
+}

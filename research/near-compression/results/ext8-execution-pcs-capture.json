@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "fresh_python_verifier": true,
+  "capture": "/tmp/nearproof-ext8-weighted-execution",
+  "sha256": {
+    "proof.json": "b1cae622099fd1fa874cd2ee46deaed3dfc8a787e77ef4242da01631aa16b351",
+    "opening.json": "dd8cc0edd781c3a4b420cc3db26b6ebe89f2386167f88aac2cc32fbe3b153949",
+    "reduction.json": "0d775ff941123e762f8c276057a83471879c368f8fccb6ee10c93b15bb06ae4f"
+  },
+  "scope": "Executable diagnostic capture; no compact envelope/security certification."
+}

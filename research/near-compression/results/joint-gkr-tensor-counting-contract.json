@@ -1,0 +1,60 @@
+{
+  "status": "Nine coordinate-affinity/degree lemmas frozen and checked; full accepted-event inclusion not yet proved",
+  "module": "NearCompression.GKRWeightCoordinateDegree",
+  "check": {
+    "seconds": 0.21,
+    "exit_code": 0,
+    "warnings": 0
+  },
+  "proved": [
+    "rowEqualityWeight is affine in any coordinate of its point",
+    "genericRowMLE is affine in any evaluation coordinate",
+    "Any such affine identity supplies a concrete Poly with DegLt 2",
+    "Actual gkrUniversalTableWeight is affine separately in rowpoint, left GKR point, right GKR point and gamma",
+    "Actual gkrUniversalBeta is affine separately in all these variables and each PCS point coordinate",
+    "gkr_beta_coordinate_degree constructs exact degree<2 polynomial for each variable"
+  ],
+  "existing_count_theorem": {
+    "name": "tensor_far_success_count",
+    "source": "NearCompression/VectorTensorExtraction.lean",
+    "requires": [
+      "ONE source tensor K -> TensorCube q -> I -> K fixed before all q sampled coordinates",
+      "Independent with-replacement coordinates from the same Nodup sample",
+      "Distinct evaluation domain; cap B on fixed weights",
+      "2*sum(weights)+B*(D-1)<3*T",
+      "No parent joint tensor representative"
+    ],
+    "conclusion": "Successful adaptive terminal-candidate count <= tensorBadBound(|S|,max(N,2),q) = q*max(N,2)*|S|^(q-1)",
+    "compatibility": "Adaptive candidate polynomials and prover messages are allowed; variable or prover-selected source tensors are not."
+  },
+  "exact_event_inclusion_contract": {
+    "prefix": "Fix all original and auxiliary source oracles after auxiliary roots/finals are bound, before constraint row challenges. Source authentication/extraction belongs to a separate ideal-oracle reduction.",
+    "tensor": "For every Boolean joint parameter tuple b and domain x, F(x,b) = sum_j beta_j(b)*source_j(project_j(x)); source_j and projections are fixed at prefix. beta includes rowpoint, final-layer ru/rv/gamma and PCS u blocks in deterministic coordinate order.",
+    "identity": "Prove tensorEvaluate(q,F,z,x) equals the actual verifier initial virtual source oracle for every correctly shaped accepted transcript with selected challenges z. This requires full heterogeneous branches and sparse lift mapping; affine degrees alone are insufficient.",
+    "checked_fold_inclusion": "For a transcript outside the existing fold extraction-bad transitions, accepted queries are either bounded by the known seed survival term or its stage-0 oracle has a degree<D candidate with agreement >=T. Discarding residual yields tensorTerminalSuccess(F,z). This needs the literal binding identity, not a new arbitrary verifier-soundness assumption.",
+    "far_event": "no tensorRepresentative(F) AND accepted complete transcript. With the identity and causal sampling reduction, it lies in tensor terminal success OR fold extraction bad OR surviving inconsistent queries.",
+    "budget_form": "q*max(N,2)/|S| + sum_stage max(N_stage,2)/|S| + ((T-1)/N)^queries, for the FAR branch only, once all named identities/causal embeddings are proved. This is a symbolic contract, not a certified current implementation bound.",
+    "causal_sampling": "Unused randomness can be indexed by semantic phase/round and fixed as an auxiliary tape. Selected rowpoint, final-layer GKR and PCS coordinates must each be fresh uniform draws; aborts count as rejection. Variable-depth branches must not change selected coordinate dimensions or allow rejection/resampling. Establish a prefix-preserving embedding into a fixed product tape before applying tensor_far_success_count.",
+    "near_event": "A universal representative must determine a single source-lane tuple before row challenges. Universal slot/row separation proves at most one represented source table; extraction existence, sparse-lift image and full GKR/zerocheck reductions remain."
+  },
+  "minimal_fixed_envelope": {
+    "change": "New profile/config pins input_log=m. layer_circuit sets input_size=2^m after allocating constants and requires cursor+1<=2^m. Private_capacity and slot offsets unchanged; final zero slot is 2^m-1. All final GKR instances use exactly 2m row challenges.",
+    "bound": "Use trusted static maximum live-constant count derived from unoptimized AIR terminal program, or a declared checked resource cap. m must satisfy 2^m >= private_capacity+Cmax+1 for completeness. Runtime constant folding and all other layer topology can remain.",
+    "why_only_input": "Universal source coefficients depend on final input eq weights, private slot positions and terminal rowpoints; intermediate circuit topology affects adversarial proof messages but not that fixed family.",
+    "cost": "Increasing input_log by delta adds 2*delta final-layer quadratic rounds, 6*delta extension elements (96*delta raw bytes for current Ext4), and 2*delta tensor coordinates. Honest final-input buffer and MLE work grow with 2^m; no runtime estimate claimed."
+  },
+  "additional_obstructions": [
+    "Source roots are fixed but arbitrary Merkle words need not be low-degree or valid full RS encodings. Honest PackedSourceExecution does not discharge this.",
+    "Common-domain interpolation can produce degree<D candidates outside an original branch sparse-lift image; a separate adversarial image-recovery/uniqueness theorem is required before assigning original table dimensions.",
+    "Current GKR input_size depends on live constant count after challenge-dependent constant folding/deduplication, so it is not currently one fixed-dimensional joint tensor.",
+    "Near-branch soundness must use one representative before row challenges, not a separate family fixed only after GKR."
+  ],
+  "not_claimed": [
+    "Full tensor realization",
+    "Accepted-event inclusion for Python verifier",
+    "Interactive GKR soundness",
+    "Commitment extraction",
+    "Fiat-Shamir/QROM security",
+    "Numerical secure parameters"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "queries": 309,
+  "derived_parameters_match_retained": true,
+  "fresh_verifier": "PASS complete Ext8 local/GKR/PCS reduction; external spec/roots; diagnostic security only.",
+  "negative_cases": [
+    "bus-final",
+    "aux-root",
+    "local-round",
+    "gkr-input",
+    "table-count",
+    "final-count",
+    "prover-selected-claim",
+    "external-root",
+    "external-spec",
+    "opening-authentication",
+    "query-budget"
+  ],
+  "opening_bytes": 620632,
+  "source_rows_supplied": false,
+  "files": {
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/verify_ext8_execution.py": "b0a511853e418e01c0002ba09115cd304e79279a03eb04d96de5fee794f5a5c9",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_ext8_execution_verifier.py": "38558b7b45a80998e6b9a998a82b35856d3507bcb092cb6382e53b4248515a06",
+    "/tmp/nearproof-ext8-weighted-execution/reduction.json": "0d775ff941123e762f8c276057a83471879c368f8fccb6ee10c93b15bb06ae4f",
+    "/tmp/nearproof-ext8-weighted-execution/proof.bin": "53d9c1640d3358a1747eaff13fede82ee7f97c1a4761adaac37c3305012f3879",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/pq384-literal193-gkr-fixed13/statement.json": "10f3561d7d00bb24a853c802def9987f65c2ccd95eb0cab563ed62d2eb391d75"
+  },
+  "scope": "Full executable reduction replay on retained prepared Wasm, with externally fixed spec/roots and derived PCS weights/claim. Not an all-Ext8 SHA384 compression measurement or formal implementation/QROM certificate."
+}

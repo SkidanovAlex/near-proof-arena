@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "queries": 531,
+  "old_call_bytes": 205360,
+  "shared_call_bytes": 121360,
+  "saved_bytes": 84000,
+  "mixed_bundle_bytes": 248426,
+  "negative_cases": [
+    "truncated",
+    "trailing",
+    "shared-payload-old-version",
+    "authentication",
+    "shared-source-leaf",
+    "query-budget",
+    "decoded-opening-must-pass-full-pcs",
+    "distinct-branch-point-bound"
+  ],
+  "geometry_key_separation_cases": 5,
+  "canonical_roundtrip": true,
+  "fresh_verification": true,
+  "sha256": "d8388837c9eb3bdb50c21b9cdce460470970c79a2a5cda99f95f7d336381080f",
+  "scope": "Ext8 call proof with shared source authentication; accompanying compression remains Q8/Ext4. Not PQ128, full recursion, or full NEAR."
+}

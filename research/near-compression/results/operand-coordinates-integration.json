@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "added_theorems": 3,
+  "integrated_theorems": 3441,
+  "source_sha256": "49beee3b4776f47a9a7e2447d6ac319965e8aca5e5c4c351a2cf148dbaf1b243",
+  "audit_log": "/tmp/root-operand-coordinates-audit.log",
+  "audit_sha256": "8285a2470ca49184f76b472af5d906ed6733bdb6bdd91e546b5cdc8806a90c15",
+  "scope": "Flat four-coordinate reconstruction in certified Fp4 tower; movement of arbitrary extension weight into base-field lane weights; finite weighted functional equality.",
+  "remaining": [
+    "Executable row/group indexing and packing refinement.",
+    "PCS binding, full recursion and security composition."
+  ]
+}

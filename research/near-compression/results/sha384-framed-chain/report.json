@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "message_bytes": 376,
+  "compression_blocks": 4,
+  "rows_per_block": 128,
+  "width": 6944,
+  "all_canonical_lean_constraints_evaluated": true,
+  "source_compression_matches": true,
+  "hashlib_match": true,
+  "full_chain_verifier": "PASS: complete framed SHA384 relation from all compression proofs; not a full recursive verifier",
+  "chain_boundary_negative_checks": 9,
+  "individually_valid_blocks_reordered_truncated_duplicated_reject": true,
+  "total_compression_proof_binary_bytes": 1478464,
+  "byte_accounting": "sum of individually transported compression proofs including roots; excludes outer framing/statement/public message",
+  "seconds": 21.96297675417736,
+  "expected_digest_hex": "a81b5a577fb65764f0715910037f276598511e3d4caa31c529be18ce222c70cfa978f7f67065767e27a7eb0e8d868b5b",
+  "scope": "Full framed hash relation; external padding/state-link checks, no multiblock AIR bus or full recursive verifier",
+  "source_fullproof_sha256": "83d6e6e4946ffe9439c833d1bebde506e3edb0244e838ec0aed553948ce2de83"
+}

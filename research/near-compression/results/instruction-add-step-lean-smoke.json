@@ -1,0 +1,28 @@
+{
+  "kind": "actual Wasm addition step validation",
+  "synthetic_prepared_fixture": {
+    "successful_steps": 24,
+    "gas_failures": 2,
+    "malformed_fetches": 3,
+    "empty_frame_finish": true
+  },
+  "actual_prepare_module": {
+    "steps": 3,
+    "expected_result": 0,
+    "final_pc": 3,
+    "gas_decrement": 2468268,
+    "burnt_before_sync": 0,
+    "manually_constructed_execution_state": true
+  },
+  "full_audit_theorems": 900,
+  "command": "lake env lean --run InstructionAddStepSmoke.lean",
+  "source_sha256": {
+    "NearCompression/InstructionAddStep.lean": "35b7e154cd3adf58699a842d4835db607d1ac0a73d2d270f7a207810682611ac",
+    "NearCompression/InstructionAddRange.lean": "f5df5d974c939df2e5dab1534561bee6bdde310fdf3a453bf7580250b557c5e1",
+    "InstructionAddStepSmoke.lean": "ee1fddb4c882e2bdc7e7401caebef8c5cad87283de6ff08998a4987a4f587ef1"
+  },
+  "limitations": [
+    "Fetch, gas metadata and stack bindings remain explicit theorem premises, not enforced AIR relations.",
+    "No full chunk replay or proof generation."
+  ]
+}

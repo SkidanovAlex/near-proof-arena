@@ -1,0 +1,201 @@
+{
+  "status": "FULL_VERIFIER_STRUCTURED_STATE_PARITY",
+  "fresh_verifier_passed": true,
+  "events": [
+    {
+      "kind": "initial",
+      "degree": 262144,
+      "geometric_terms": 0,
+      "expanded_payload_bytes": 8388608,
+      "structured_scalar_payload_bytes": 608
+    },
+    {
+      "kind": "fold",
+      "degree": 131072,
+      "geometric_terms": 0,
+      "expanded_payload_bytes": 4194304,
+      "structured_scalar_payload_bytes": 576
+    },
+    {
+      "kind": "inject",
+      "degree": 131072,
+      "geometric_terms": 310,
+      "expanded_payload_bytes": 4194304,
+      "structured_scalar_payload_bytes": 20416
+    },
+    {
+      "kind": "fold",
+      "degree": 65536,
+      "geometric_terms": 310,
+      "expanded_payload_bytes": 2097152,
+      "structured_scalar_payload_bytes": 20384
+    },
+    {
+      "kind": "fold",
+      "degree": 32768,
+      "geometric_terms": 310,
+      "expanded_payload_bytes": 1048576,
+      "structured_scalar_payload_bytes": 20352
+    },
+    {
+      "kind": "fold",
+      "degree": 16384,
+      "geometric_terms": 310,
+      "expanded_payload_bytes": 524288,
+      "structured_scalar_payload_bytes": 20320
+    },
+    {
+      "kind": "inject",
+      "degree": 16384,
+      "geometric_terms": 620,
+      "expanded_payload_bytes": 524288,
+      "structured_scalar_payload_bytes": 40160
+    },
+    {
+      "kind": "fold",
+      "degree": 8192,
+      "geometric_terms": 620,
+      "expanded_payload_bytes": 262144,
+      "structured_scalar_payload_bytes": 40128
+    },
+    {
+      "kind": "fold",
+      "degree": 4096,
+      "geometric_terms": 620,
+      "expanded_payload_bytes": 131072,
+      "structured_scalar_payload_bytes": 40096
+    },
+    {
+      "kind": "fold",
+      "degree": 2048,
+      "geometric_terms": 620,
+      "expanded_payload_bytes": 65536,
+      "structured_scalar_payload_bytes": 40064
+    },
+    {
+      "kind": "inject",
+      "degree": 2048,
+      "geometric_terms": 930,
+      "expanded_payload_bytes": 65536,
+      "structured_scalar_payload_bytes": 59904
+    },
+    {
+      "kind": "fold",
+      "degree": 1024,
+      "geometric_terms": 930,
+      "expanded_payload_bytes": 32768,
+      "structured_scalar_payload_bytes": 59872
+    },
+    {
+      "kind": "fold",
+      "degree": 512,
+      "geometric_terms": 930,
+      "expanded_payload_bytes": 16384,
+      "structured_scalar_payload_bytes": 59840
+    },
+    {
+      "kind": "fold",
+      "degree": 256,
+      "geometric_terms": 930,
+      "expanded_payload_bytes": 8192,
+      "structured_scalar_payload_bytes": 59808
+    },
+    {
+      "kind": "inject",
+      "degree": 256,
+      "geometric_terms": 1240,
+      "expanded_payload_bytes": 8192,
+      "structured_scalar_payload_bytes": 79648
+    },
+    {
+      "kind": "fold",
+      "degree": 128,
+      "geometric_terms": 1240,
+      "expanded_payload_bytes": 4096,
+      "structured_scalar_payload_bytes": 79616
+    },
+    {
+      "kind": "fold",
+      "degree": 64,
+      "geometric_terms": 1240,
+      "expanded_payload_bytes": 2048,
+      "structured_scalar_payload_bytes": 79584
+    },
+    {
+      "kind": "fold",
+      "degree": 32,
+      "geometric_terms": 1240,
+      "expanded_payload_bytes": 1024,
+      "structured_scalar_payload_bytes": 79552
+    },
+    {
+      "kind": "inject",
+      "degree": 32,
+      "geometric_terms": 1550,
+      "expanded_payload_bytes": 1024,
+      "structured_scalar_payload_bytes": 99392
+    },
+    {
+      "kind": "fold",
+      "degree": 16,
+      "geometric_terms": 1550,
+      "expanded_payload_bytes": 512,
+      "structured_scalar_payload_bytes": 99360
+    },
+    {
+      "kind": "fold",
+      "degree": 8,
+      "geometric_terms": 1550,
+      "expanded_payload_bytes": 256,
+      "structured_scalar_payload_bytes": 99328
+    },
+    {
+      "kind": "fold",
+      "degree": 4,
+      "geometric_terms": 1550,
+      "expanded_payload_bytes": 128,
+      "structured_scalar_payload_bytes": 99296
+    },
+    {
+      "kind": "inject",
+      "degree": 4,
+      "geometric_terms": 1860,
+      "expanded_payload_bytes": 128,
+      "structured_scalar_payload_bytes": 119136
+    },
+    {
+      "kind": "fold",
+      "degree": 2,
+      "geometric_terms": 1860,
+      "expanded_payload_bytes": 64,
+      "structured_scalar_payload_bytes": 119104
+    },
+    {
+      "kind": "inject",
+      "degree": 2,
+      "geometric_terms": 2170,
+      "expanded_payload_bytes": 64,
+      "structured_scalar_payload_bytes": 138944
+    }
+  ],
+  "compared_ext8_coefficients": 674084,
+  "dense_injection_coefficient_terms": 46437380,
+  "structured_geometric_term_fold_updates": 15810,
+  "instrumented_seconds": 57.32411378668621,
+  "scope": "Original complete retained fixture verifies. All coefficients at initial state and all17fold/7injection transitions equal a structured shadow. Full expansion uses the existing native injection kernel on transformed geometric terms; independent Python at() checks three positions per state and small sequence tests cover full Python expansion. No transcript change, measured verifier speedup, complete compiler refinement, PQ128 or recursive proof. Structured state can exceed dense terminal size; a hybrid representation is appropriate.",
+  "input_sha256": {
+    "results/ext8-switch-execution-q309/compression.bin": "a656ad0f8d1314ff1b921cc2596a906aaa8f8c21215c5f687082b1ca78bcbd1d",
+    "results/ext8-switch-execution-q309/statement.json.gz": "f0739ebd3b97c3e83d1a354cfe8b054e0f33d22484c32a702474459de00bed98",
+    "results/ext8-switch-execution-q309/config.json": "f4e6a51810166f122181a875187b048cc76a34fb55ed0427fd672cb57dbe1cbd",
+    "results/ext8-affine-q309/receipt.json": "f33b113e4398a341af225ff0c0abe2dd0a6b3159b84f4e489434039c2358ee7b",
+    "results/ext8-linked-calls/calls.json": "6084f703978c43a4098d7e04e327d1eb2e1f6905db359d3b08b23c02da5dc996",
+    "results/call-ext8-shared-q309/proof.bin": "efafe27f4400aaf2407e1762153ea9c22ec1fe1652124cdf12b9031c5354ed1e"
+  },
+  "source_sha256": {
+    "airbender/direct-wasm/check_structured_verifier_states.py": "87f386f08be0051000a4db74ad549307d4c5a60d9f710c8ab0c4282d3356b393",
+    "airbender/direct-wasm/ext8_structured_functional.py": "0b4f4ca44930b8beb717cfe9f7fcf5056c36de160baf2d9fd278456952e25fd8",
+    "airbender/direct-wasm/pq384_ext8_native.py": "7580e46a27303d48023368312e7f0fcfd83f252aea86ba4d7ac58f23161a9fac",
+    "airbender/direct-wasm/ext8_switch_execution_codec.py": "1f71e6342cac9984188a4760d0fc904e577c11524b4892e5115ff3fba26234d9"
+  },
+  "native_library_sha256": "50495ed0a19e9f26eac6dfba4d1bca968929192fb60e8e8e8d781eaad7b8ab6c"
+}

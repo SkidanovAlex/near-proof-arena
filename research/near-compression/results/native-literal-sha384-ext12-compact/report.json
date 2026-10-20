@@ -1,0 +1,100 @@
+{
+  "status": "NATIVE_WASM_CHILD_SHA384_EXT12_VERIFIED",
+  "child_bytes": 740881,
+  "wire_census": {
+    "total": 740881,
+    "gkr": 20408,
+    "relations": 81248,
+    "stacking": 1936,
+    "whir": 617640,
+    "other": 19649
+  },
+  "public_fields": 4891,
+  "public_included": true,
+  "request_bytes": 919,
+  "total_child_plus_request_bytes": 741800,
+  "independent_Lean_runCall": {
+    "done": true,
+    "failed": false,
+    "gas": 999999447071257,
+    "stack": []
+  },
+  "eligibility": {
+    "code_length": 193,
+    "status": "PASS"
+  },
+  "public_mutations_rejected": 6,
+  "witness_independent_replay": true,
+  "transcript_oracle": {
+    "samples": 96,
+    "rejections": 5,
+    "draw_blocks": 13,
+    "final_state_equal": true,
+    "version": 4
+  },
+  "verifier_hash_cost": {
+    "tags": [
+      "leaf",
+      "node",
+      "init",
+      "observe_field",
+      "observe_commit",
+      "draw_block"
+    ],
+    "calls": [
+      4456,
+      14321,
+      1,
+      188,
+      7,
+      366
+    ],
+    "compression_blocks": [
+      4456,
+      14321,
+      1,
+      1297,
+      14,
+      366
+    ],
+    "total_compression_blocks": 20455,
+    "scope": "single engine.verify call; excludes keygen and decoding"
+  },
+  "security": {
+    "hash": "SHA-384",
+    "field": "BabyBear[X]/(X^12-31)",
+    "query_target_bits": 268,
+    "grinding_bits": 0,
+    "native_component_min_bits": 268.5252522711154,
+    "logup_bits": 342.88268715590135,
+    "proximity_bits": 322.9308746090754,
+    "query_bits": 268.5252522711154,
+    "certified": false
+  },
+  "backend_pin": "d667af5929d0ea9e5194adf639d6bddeb8c10f9a",
+  "exclusions": [
+    "custom transcript compiler/QROM applicability and concrete constants",
+    "recursive parent upgrade and knowledge composition",
+    "Lean field irreducibility and Rust refinement",
+    "cryptographic acceptance-to-execution Lean theorem",
+    "full NEAR1Pgas and performance target"
+  ],
+  "sha256": {
+    "Cargo.lock": "7a0e92b49ae35775174359c3f78eac06f30450fde00abb5752b3cbc98ac2a1ab",
+    "Cargo.toml": "517a141cee9d26e6f90d3afb0e053febafb54c7395d9ffc264bcaec8064dca48",
+    "backend.patch": "fc3f8ee331ed4d871ddb4e6b95b565cb52d5d8ce898a9e3886c7273b286a06ec",
+    "child.proof": "d5a07ef47d5a8150603d21579154d9adf8ffe9e437ae1d8fc31b4aed5679fca0",
+    "fixture.json": "f86142cae0e1df917444dbbf340920ffb34ba3c3a170e8ae7f1251ae9b2bcb80",
+    "literal.rs": "fbff218d8c7b73961937a2c6b55e8f7145d8d62a5a7bebdf6053ad92587f554b",
+    "main.rs": "8af13f54e96e604611062d3fbd8c77580c56e0ced968cac19eac16de8d5363dd",
+    "native_sha384_config.rs": "b35e6120783f61fa97290cbbb195d89252a467c6d4e49863da94fc607c7e18ca",
+    "plonky3-ext12.patch": "cd82dbb5f650b277146db19eecaa93fc133c4095de429e0db36f60c7c6d83c50",
+    "prove.log": "c995d9f099c147ac27ea3819eee580678a801df221065fb673c3028219c64f61",
+    "public.bin": "2214c301b99a881c039544a7235ff4ac867ad472f1ae93325f89381c0cc4d82a",
+    "replay.log": "8b2b1f2e8c6f56903a94e75061217c797ebf2126395970c7a639747446b70f42",
+    "rows-0.bin": "ab34e36616d070adfa36e613f552581973d1996b4f998ff22f21a17b4cb3db54",
+    "rows-1.bin": "6d3da5d8dd402dcbe025823b99d938c7ed4f9d232f2416cd02d1a471a3d07975",
+    "spec.json": "d5af1a689f6c8ba61c315c74ece9433ed5587056130c4c476c605a7eda420deb",
+    "transcript-vectors.log": "80fddab771dcdd52a5c1ec97a04d00b54e341ef5f976a7692b7d20778f963693"
+  }
+}

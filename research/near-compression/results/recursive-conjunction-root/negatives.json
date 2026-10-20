@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "all_residuals": 800,
+  "host_residual_evaluation_forbidden_during_successful_verification": true,
+  "false_residual_binding_alone_passes": true,
+  "fresh_commitment_changes_aggregation_point": true,
+  "fresh_point_detects_test_false_vector": true,
+  "negative_cases": [
+    "missing output before challenge",
+    "wrong prechallenge root",
+    "GKR quadratic mutation",
+    "GKR input functional mutation",
+    "missing GKR layer",
+    "false residual with fresh commitment/challenge rejects old proof"
+  ],
+  "seconds": 19.028764551039785,
+  "scope": "Diagnostic commit-before-challenge GKR reduction with disclosed input functional. No universal FS/QROM or quantum128 security claim."
+}

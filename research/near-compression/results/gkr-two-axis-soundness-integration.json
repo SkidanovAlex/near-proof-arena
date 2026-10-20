@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "audit_checks": 2905,
+  "previous_checks": 2902,
+  "new_public_theorems": 3,
+  "audit_log": "/tmp/root-gkr-two-axis-audit.log",
+  "module_sha256": {
+    "GKRAdaptiveRounds": "923d37a8b8b4ea500837ac9da5cee1ebe9ebf9e8dc683589af3af5a0bb62de26",
+    "GKRLayerSoundness": "d270be8d413210a6697b03fa685c747626551c974cde5308560167c294dde841"
+  },
+  "scope": "Actual two-axis checked execution transports a false weighted gate claim to a false terminal wiring claim outside explicit adaptive round bad events. Both sent input evaluations fixed before gamma; at most1 accepted gamma repairs the discrepancy. Axis union count exposed independently of initial wrongness.",
+  "remaining": "Unconditional complete-layer count adding both axis errors and gamma; multilayer/compiler/commitment/QROM composition. No fullNEAR/1Pgas or secure-size completion."
+}

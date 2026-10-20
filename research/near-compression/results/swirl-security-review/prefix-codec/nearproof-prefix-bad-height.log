@@ -1,0 +1,18 @@
+
+running 1 test
+test tests::nearproof_opening_free_prefix ... FAILED
+
+failures:
+
+failures:
+    tests::nearproof_opening_free_prefix
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 273 filtered out; finished in 0.19s
+
+    Finished `fast` profile [optimized + debuginfo] target(s) in 0.14s
+     Running unittests src/lib.rs (target/fast/deps/openvm_recursion_circuit-0e902e15daeda90d)
+
+thread 'tests::nearproof_opening_free_prefix' (3720626) panicked at crates/recursion/src/tests.rs:2343:14:
+called `Result::unwrap()` on an `Err` value: Custom { kind: Other, error: "trace height" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p openvm-recursion-circuit --lib`

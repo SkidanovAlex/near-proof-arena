@@ -1,0 +1,18 @@
+{
+  "scope": "Exact monic curve division, formal factor equivalence, nonzero quotient and weighted degree. No field-size premise. Repeated factor extraction and MCA exceptional set remain open.",
+  "cwd": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/test_bivariate_curve_division.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/NearCompression/BivariateCurveDivision.lean": "f12624ddf642f19dfff2f6f40fcad49e5ca601207dcb1030d61affba8d898b7b",
+    "research/near-compression/NearCompression/BivariateMultiplicity.lean": "dc7e00e3553cc08960d06fa16243fa1fdc6a0cda340d2fd0402f87994cfd7d5e",
+    "research/near-compression/NearCompression/BivariateWeightedDegree.lean": "ba816b1f219e23e3a97e2a32b3d45544bc845d0561272a0b721cf50278ea6aac",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_curve_division.py": "caa6f88b112bdf9ca03d6682425ce69918fbc238532bf8412005bd664e26a52b",
+    "research/near-compression/airbender/direct-wasm/test_bivariate_multiplicity.py": "db06fa513db79ed2f4fc6aa6723bac5a0b6a4ffa243144b01c51e7b47e030888",
+    "research/near-compression/airbender/direct-wasm/test_independent_constraint_mixing.py": "cdb75bb944093fa6d4d8354d57da11976e4e59833cb13c17d55ee5526e26fcc7",
+    "research/near-compression/results/bivariate-curve-division/report.json": "47ea6d5b606732eb9de5679bf9d4e3f7340e4a519e9242398810f0b7bc79e373",
+    "research/near-compression/results/bivariate-curve-division/lean-audit.log.gz": "77bf6de4e838ac84396361c109d8744e57f90b9febbb71ba28b46d227d39f111"
+  }
+}

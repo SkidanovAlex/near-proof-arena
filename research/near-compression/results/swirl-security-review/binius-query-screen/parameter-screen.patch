@@ -1,0 +1,28 @@
+--- a/crates/verifier/src/verify.rs
++++ b/crates/verifier/src/verify.rs
+@@ -370,6 +370,25 @@
+ 				log_inv_rate, n_test_queries, algebra, merkle, leaves, counted.proof_size());
+ 		}
+ 
++		if std::env::var_os("NEARPROOF_PARAMETER_SCREEN").is_some() {
++			for query_bits in [96usize, 128, 160, 256, 272] {
++				for rate_log in 1..=6 {
++					let queries = calculate_n_test_queries(query_bits, rate_log);
++					let candidate = BaseFoldVerifierCompiler::new(
++						&merkle_scheme, iop_compiler.oracle_specs().to_vec(), rate_log,
++						queries, &ConstantArityStrategy::new(fri_arity));
++					let mut counted = candidate.create_channel(
++						binius_iop::channel::size_tracking::SizeTrackingChannel::new(&merkle_scheme));
++					let inputs = vec![Word::ZERO; iop_verifier.constraint_system().n_inout];
++					let _ = iop_verifier.verify(&inputs, &mut counted)?;
++					let counted = counted.finish()?;
++					let (algebra, merkle, leaves) = counted.nearproof_components();
++					eprintln!("NEARPROOF_SCREEN query_bits={} rate_log={} queries={} algebra={} merkle={} leaves={} total={}",
++						query_bits, rate_log, queries, algebra, merkle, leaves, counted.proof_size());
++				}
++			}
++		}
++
+ 		Ok(Self {
+ 			iop_verifier,
+ 			iop_compiler,

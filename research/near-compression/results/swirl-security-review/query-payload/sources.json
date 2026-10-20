@@ -1,0 +1,17 @@
+{
+  "backend_revision": "d667af5929d0ea9e5194adf639d6bddeb8c10f9a",
+  "artifacts": [
+    {
+      "file": "calculator.rs.gz",
+      "raw_sha256": "4108efeb632bb55d1ca033b3ae852bc126c6e2715d9555eeb586ce545ae584fc"
+    },
+    {
+      "file": "config.rs.gz",
+      "raw_sha256": "da5d01c870b5f45a66ac0ec7c1e862aa01dac1e47a9f44d2cf24e4c24bfba286"
+    },
+    {
+      "file": "instrumented-tests.rs.gz",
+      "raw_sha256": "6f6c8b1959449aa7298489957f457c390188bbc70275e42c34883dd9c45eb6cc"
+    }
+  ]
+}

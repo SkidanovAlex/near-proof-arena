@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "canonical_cases": 187,
+  "accepted": 49,
+  "rejected": 138,
+  "raw_encoding_rejections": 20,
+  "statement_sha384": "76b9c46b1699ece6f509c92e224649f38ace46f5066ce1d02c273c7af4a9a0e68cd880945c1af35747b1adec9e10754c",
+  "scope": "Exact public syntax parity only; changed byte digests remain eligible. No proof acceptance or hash security claim."
+}

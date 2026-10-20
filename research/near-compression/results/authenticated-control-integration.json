@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2312,
+  "audit_log": "/tmp/root-authenticated-control-audit.log",
+  "modules": {
+    "PreparedControlAuthenticated": {
+      "sha256": "1afef47ec3b10498cf8fffc770d87fdd82f37baa11e3bf7e8c12d89bf356bdce",
+      "theorems": 4
+    },
+    "PreparedControlBranchState": {
+      "sha256": "8a44637234e108f880fca451e9ea7556844843cf727234081b9ff45c6c17e3b3",
+      "theorems": 1
+    },
+    "PreparedControlBranchBounds": {
+      "sha256": "872a74e34d8ebe61c8fed8ff4a30f663bd548f94e916a4e17bce49738a664510",
+      "theorems": 3
+    },
+    "PreparedControlTakenState": {
+      "sha256": "18d7e93f46e6f119ca4e92304863b7bcea17945fe957ed55780bfba4b9ae0359",
+      "theorems": 1
+    },
+    "PreparedControlBranchContinue": {
+      "sha256": "92f59513035b3810f5686b58d94a3f6645c7be0d97744b0e0731065c2f73d33d",
+      "theorems": 1
+    }
+  },
+  "new_theorems": 10,
+  "proved": [
+    "actual setup authenticates instructions/charges/targets",
+    "actual block and nested-end steps with authenticated provenance",
+    "actual untaken/taken branch successor states",
+    "bounded stack extraction and UInt32 condition decoding",
+    "unified br_if continuation preserving frame function index"
+  ],
+  "explicit_premises": [
+    "whole literal AIR HoldsP",
+    "accepted actual setup checker",
+    "initial decoded state with root label",
+    "frame function index equals resolved method",
+    "active row, selected opcode and affordability"
+  ],
+  "remaining": [
+    "ordinary opcode adapters for new AIR",
+    "gas exhaustion and root return",
+    "initial/final state binding and whole-run induction",
+    "full Wasm/NEAR coverage"
+  ]
+}

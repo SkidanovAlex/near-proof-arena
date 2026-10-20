@@ -1,0 +1,23 @@
+{
+  "status": "PROVED_COMPONENT",
+  "module": "NearCompression/BusNaturalFactor.lean",
+  "main_theorem": "NearCompression.bus_source_table_natural_product",
+  "established": [
+    "Actual allConstraints bit residuals imply Boolean multiplicity values",
+    "Auxiliary bit factor equals a power with the exact Interaction.multNat natural exponent",
+    "Per-row generated factor equals a product over replicated tagged messages",
+    "All-row source and auxiliary residuals imply each bound final is the product of natural-multiplicity powers",
+    "Selector and cyclic-next bindings are discharged using the actual trace row environment"
+  ],
+  "premises": [
+    "All source allConstraints vanish on the same trace",
+    "All generated auxiliary residuals vanish on that trace",
+    "Binding belongs to the constructed table layout"
+  ],
+  "remaining": [
+    "Global send/receive and public-product composition into busTraceMessages",
+    "Accepted sumcheck/PCS proof implies these residual premises on one committed trace",
+    "Implementation/parser refinement and executable Ext8 migration",
+    "Complete quantum soundness and secure sub300k total-input sizing"
+  ]
+}

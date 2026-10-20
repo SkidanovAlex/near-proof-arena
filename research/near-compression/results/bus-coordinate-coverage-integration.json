@@ -1,0 +1,42 @@
+{
+  "status": "COORDINATE_READ_COVERAGE_AND_METADATA_TYPING_COMPOSED",
+  "module": "NearCompression/BusCoordinateCoverage.lean",
+  "theorems": [
+    "bus_formula_sum_column_bound",
+    "bus_coordinate_column_coverage",
+    "bus_coordinate_formula_coverage",
+    "typed_joint_zip_recovered_base",
+    "metadata_typed_coordinate_formula"
+  ],
+  "proved": [
+    "Logical formula bound sourceWidth+auxCount implies physical lowered bound sourceWidth+8*auxCount.",
+    "Zipped recovered-lane provenance suffices for typed joint base descent without a distinct-lane/index premise.",
+    "Precompiler metadata-column provenance and physical auxiliary width discharge decoded coordinate typing for the bounded formula."
+  ],
+  "native_inspection": {
+    "files": [
+      "airbender/direct-wasm/check_bus_program_formulas.py:28",
+      "airbender/direct-wasm/heterogeneous_bus_whir.py:102"
+    ],
+    "finding": "Existing diagnostic native path reconstructs four coordinates per auxiliary using Ext4 BASIS and width+4*index+j; it is not an Ext8 implementation. It accumulates left-associated coordinate*basis terms, whereas formal lowering uses right-associated basis*coordinate terms; raw AST equality is not established."
+  },
+  "assumptions": [
+    "Logical formula read bound, metadata auxiliaryWidth=8*auxCount and precompiler decoded provenance.",
+    "Typed joint representative/domain/geometry premises; source authentication remains separate."
+  ],
+  "remaining": [
+    "Prove native-style accumulation equivalence and generated logical-formula bounds.",
+    "Provide an actual Ext8 generator/checker or parameterize and validate native profile.",
+    "Compose adaptive auxiliary-invalid and local/GKR/PCS/bus events; QROM, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4071,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; read-only native inspection and formal composition."
+  }
+}

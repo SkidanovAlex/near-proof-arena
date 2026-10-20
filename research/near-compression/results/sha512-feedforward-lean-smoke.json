@@ -1,0 +1,78 @@
+{
+  "kind": "SHA512 feed-forward AIR and actual single-block compression soundness",
+  "table": {
+    "columns": 6944,
+    "constraints": 10341,
+    "max_degree": 3,
+    "max_log": 7,
+    "forced_height": 128,
+    "compression_endpoint_row": 79
+  },
+  "formal_claims": [
+    "Eight constrained additions preserve the initial state across rows and bind each addend to the current round result.",
+    "Actual AIR satisfaction implies row79 output equals actual NearSpecV3.SHA512.compress of the decoded initial state and decoded block.",
+    "The decoded block has length128, parses to the initial sixteen-word window, and every decoded byte is below256."
+  ],
+  "validation": {
+    "honest_128_row_fixtures": 2,
+    "messages": [
+      "empty",
+      "abc"
+    ],
+    "coherent_operand_forgeries_rejected": 24,
+    "forgery_categories": {
+      "initial_word_substitutions": 8,
+      "middle_row_initial_word_drift": 8,
+      "endpoint_round_result_substitutions": 8
+    },
+    "forged_adders_locally_valid": true,
+    "independent_constraint_list_matches_formal_table": true,
+    "decoded_blocks_match_expected_padding": true,
+    "outputs_match_actual_specification": true,
+    "outputs_match_independent_python_hashlib": true
+  },
+  "new_theorems": 30,
+  "full_audit_theorems": 1140,
+  "commands": [
+    "lake build NearCompression.SHA512Compression",
+    "lake env lean --run SHA512FeedForwardSmoke.lean",
+    "python3 check.py"
+  ],
+  "logs": [
+    "/tmp/near-compression-target.log",
+    "/tmp/near-sha512-feedforward-smoke.log",
+    "/tmp/near-sha512-feedforward-audit.log"
+  ],
+  "source_sha256": {
+    "NearCompression/SHA512FeedForward.lean": "79d0e7fe1ff0042fc33c40466f4c46df209494e2e731604240576afae57bec58",
+    "NearCompression/SHA512WindowBounds.lean": "14e5496b3d6aaeb9f9b22e3d780a49b432a56375a0a5eb1bfaa7ed23b70f1117",
+    "NearCompression/SHA512BlockDecode.lean": "fecf80be1d0b2b33452c62075097ce53189b3deb42c1d15d32db7dd2fcaad753",
+    "NearCompression/SHA512Compression.lean": "161bbc810fc7d77a6fb3bb68cec81d055f0589e41ed5e2830609dfeb8ca5e3b4",
+    "SHA512FeedForwardSmoke.lean": "29364b8c0b914903a7f88d5e9c971bf670d3b9322ffc8cce8c5d9352c81282f1"
+  },
+  "limitations": [
+    "Public initial state/message and endpoint output binding is not implemented.",
+    "Padding correctness, digest serialization, block chaining and universal full-trace witness completeness remain.",
+    "Rows80..127 execute zero-key rounds; endpoint is row79.",
+    "No full NEAR state-transition proof,1Pgas capacity measurement,sub-300KB proof,or128-bit quantum-security proof."
+  ],
+  "next_step_design": {
+    "status": "unimplemented",
+    "public_encoding": "128 field elements, each representing a16-bit limb; four little-endian limbs per64-bit word",
+    "public_offsets": {
+      "initial_state": 0,
+      "message_words": 32,
+      "output_state": 96
+    },
+    "added_constraints": 128,
+    "added_columns": 0,
+    "proposed_total_constraints": 10469,
+    "binding_selectors": "96 first-row input bindings and32 phase79 output bindings",
+    "proof_obligation": "Derive canonical limb ranges and public equality from actual AIR satisfaction; compose with compression_sound.",
+    "canonical_encoding_requirements": [
+      "Require exactly128 public fields or equality to the canonical encoded public list; AIR Holds alone does not enforce list length and missing entries default to zero.",
+      "Use UInt64 inputs or explicit word bounds below2^64; conversion of unrestricted Nat into Fp is not injective.",
+      "Prove each public limb is below65536 from the constrained decomposition before using natural-number equality."
+    ]
+  }
+}

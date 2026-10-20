@@ -1,0 +1,41 @@
+{
+  "status": "CHRONOLOGICAL_HISTORY_DERIVES_COMMON_TABLE_ROWPOINTS",
+  "module": "NearCompression/HistoryDecodedEnvironment.lean",
+  "theorems": [
+    "gkr_table_history_point_length",
+    "gkr_table_history_lane_alignment",
+    "gkr_table_history_point_unpadded",
+    "history_decoded_environment",
+    "history_decoded_mixture",
+    "history_decoded_formula_outputs",
+    "history_decoded_regressions"
+  ],
+  "proved": [
+    "Source and auxiliary metadata lanes use the same table rowpoint extracted from chronological history, independently of packing/group.",
+    "Checked metadata plus complete history length ensures in-range coordinates are actual history entries, not default padding.",
+    "Selector-checked decoded environments and formula mixtures equal common-point row environments without an extra lane-alignment premise.",
+    "All decoded formula outputs transport to historyRowFormulaOutputs, preserving order, weights and claims."
+  ],
+  "assumptions": [
+    "History is supplied to the formal chronological model; actual transcript derivation remains external.",
+    "Checked selector products at the extracted table point.",
+    "Checked formulas and widths bounded by table columns.",
+    "No-padding result additionally requires metadata check and exact chronological history length."
+  ],
+  "remaining": [
+    "Connect executable replay metadata and terminal points to this chronological extraction.",
+    "Compose history row environments with decoded trace execution semantics and intended formula generation.",
+    "Align the full GKR/PCS experiment and derive global soundness, quantum security and secure full-NEAR size."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3906,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "kernel_regressions": "Offset-sensitive extraction, partial source and auxiliary lanes, padding on short histories and zero beyond lane dimension.",
+    "native_capture_execution": "Not rerun: no native adapter/prover changes."
+  }
+}

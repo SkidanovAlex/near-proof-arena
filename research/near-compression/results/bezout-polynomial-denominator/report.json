@@ -1,0 +1,10 @@
+{
+  "nonzero_polynomial_systems": 333,
+  "exact_coefficient_identities": 1815,
+  "safe_specializations": 2085,
+  "exceptional_points": 257,
+  "singular_systems": 27,
+  "empty_systems": 28,
+  "nowhere_safe_formal_denominators": 4,
+  "scope": "Source-degree common denominator, polynomial Cramer identity, and specialization root bound. Full useful-branch and protocol/QROM soundness remain open."
+}

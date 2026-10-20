@@ -1,0 +1,5 @@
+{
+  "airbender/direct-wasm/sha384_state_probe.c": "8c932c819810e6135d6c5550ef4e47d520bbcd1886e30e5c28ccb9bd80b28a51",
+  "airbender/direct-wasm/measure_sha384_block_dag.py": "ea4c0fbd593d78fc044cae7517935ef51fc2445dab4b34163f0a17a732108b51",
+  "airbender/direct-wasm/check_sha384_block_dag.py": "85a2942d85f0a43043f711fe9fe41a841429181321e34a160b7f13a748a37605"
+}

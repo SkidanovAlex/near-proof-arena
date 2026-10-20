@@ -1,0 +1,230 @@
+{
+  "status": "FULL_FIXTURE_VERIFIER_HASH_WORK_MEASURED",
+  "fresh_verifier_passed": true,
+  "compression_envelope_bytes": 1234992,
+  "call_proof_bytes": 103064,
+  "measurement": {
+    "tags": {
+      "near-sha384-call-link-ext8-pcs-v1": {
+        "calls": 3,
+        "blocks": 9819,
+        "unique_calls": 2,
+        "unique_blocks": 9409,
+        "candidate_blocks": 9819,
+        "candidate_unique_blocks": 9409
+      },
+      "transcript/init": {
+        "calls": 15,
+        "blocks": 15,
+        "unique_calls": 13,
+        "unique_blocks": 13,
+        "candidate_blocks": 15,
+        "candidate_unique_blocks": 13
+      },
+      "transcript/request": {
+        "calls": 5980,
+        "blocks": 11960,
+        "unique_calls": 5347,
+        "unique_blocks": 10694,
+        "candidate_blocks": 11960,
+        "candidate_unique_blocks": 10694
+      },
+      "transcript/squeeze": {
+        "calls": 6006,
+        "blocks": 12012,
+        "unique_calls": 5373,
+        "unique_blocks": 10746,
+        "candidate_blocks": 12012,
+        "candidate_unique_blocks": 10746
+      },
+      "transcript/ratchet": {
+        "calls": 6006,
+        "blocks": 12012,
+        "unique_calls": 5373,
+        "unique_blocks": 10746,
+        "candidate_blocks": 12012,
+        "candidate_unique_blocks": 10746
+      },
+      "transcript/draw-result": {
+        "calls": 5980,
+        "blocks": 11960,
+        "unique_calls": 5347,
+        "unique_blocks": 10694,
+        "candidate_blocks": 11960,
+        "candidate_unique_blocks": 10694
+      },
+      "near-pq384-ext8-terminal-gkr-diagnostic-v1": {
+        "calls": 4,
+        "blocks": 31080,
+        "unique_calls": 4,
+        "unique_blocks": 31080,
+        "candidate_blocks": 31080,
+        "candidate_unique_blocks": 31080
+      },
+      "transcript/commit": {
+        "calls": 738,
+        "blocks": 1548,
+        "unique_calls": 714,
+        "unique_blocks": 1486,
+        "candidate_blocks": 1548,
+        "candidate_unique_blocks": 1486
+      },
+      "near-pq384-ext8-weighted-joint-diagnostic-v1": {
+        "calls": 3,
+        "blocks": 921,
+        "unique_calls": 1,
+        "unique_blocks": 307,
+        "candidate_blocks": 921,
+        "candidate_unique_blocks": 307
+      },
+      "ext8-weighted-fold": {
+        "calls": 14,
+        "blocks": 28,
+        "unique_calls": 7,
+        "unique_blocks": 14,
+        "candidate_blocks": 28,
+        "candidate_unique_blocks": 14
+      },
+      "merkle/leaf": {
+        "calls": 8978,
+        "blocks": 32146,
+        "unique_calls": 3293,
+        "unique_blocks": 11957,
+        "candidate_blocks": 32146,
+        "candidate_unique_blocks": 11957
+      },
+      "merkle/node": {
+        "calls": 65498,
+        "blocks": 181188,
+        "unique_calls": 15209,
+        "unique_blocks": 43072,
+        "candidate_blocks": 181188,
+        "candidate_unique_blocks": 43072
+      },
+      "merkle/root": {
+        "calls": 5582,
+        "blocks": 12713,
+        "unique_calls": 17,
+        "unique_blocks": 37,
+        "candidate_blocks": 12713,
+        "candidate_unique_blocks": 37
+      },
+      "ext8-execution-phase-pooled-diagnostic-v1": {
+        "calls": 1,
+        "blocks": 10837,
+        "unique_calls": 1,
+        "unique_blocks": 10837,
+        "candidate_blocks": 10837,
+        "candidate_unique_blocks": 10837
+      },
+      "ext8-packed-auxiliary-roots": {
+        "calls": 1,
+        "blocks": 6,
+        "unique_calls": 1,
+        "unique_blocks": 6,
+        "candidate_blocks": 6,
+        "candidate_unique_blocks": 6
+      },
+      "ext8-after-gkr": {
+        "calls": 1,
+        "blocks": 806,
+        "unique_calls": 1,
+        "unique_blocks": 806,
+        "candidate_blocks": 806,
+        "candidate_unique_blocks": 806
+      },
+      "near-ext8-weighted-code-switch-diagnostic-v1": {
+        "calls": 1,
+        "blocks": 5,
+        "unique_calls": 1,
+        "unique_blocks": 5,
+        "candidate_blocks": 5,
+        "candidate_unique_blocks": 5
+      },
+      "near-pq384-ext8-pooled-weighted-diagnostic-v1": {
+        "calls": 1,
+        "blocks": 10165,
+        "unique_calls": 1,
+        "unique_blocks": 10165,
+        "candidate_blocks": 10165,
+        "candidate_unique_blocks": 10165
+      },
+      "weighted-code-switch/namespace": {
+        "calls": 1,
+        "blocks": 2,
+        "unique_calls": 1,
+        "unique_blocks": 2,
+        "candidate_blocks": 2,
+        "candidate_unique_blocks": 2
+      },
+      "transcript/commit/code-switch/source-responses": {
+        "calls": 7,
+        "blocks": 42840,
+        "unique_calls": 7,
+        "unique_blocks": 42840,
+        "candidate_blocks": 21157,
+        "candidate_unique_blocks": 21157
+      },
+      "near-ext8-code-switch-stage-diagnostic-v1": {
+        "calls": 6,
+        "blocks": 37479,
+        "unique_calls": 6,
+        "unique_blocks": 37479,
+        "candidate_blocks": 37479,
+        "candidate_unique_blocks": 37479
+      },
+      "ext8/code-switch/coset-context-v1": {
+        "calls": 13,
+        "blocks": 26,
+        "unique_calls": 7,
+        "unique_blocks": 14,
+        "candidate_blocks": 26,
+        "candidate_unique_blocks": 14
+      }
+    },
+    "totals": {
+      "calls": 104839,
+      "blocks": 419568,
+      "unique_calls": 40726,
+      "unique_blocks": 242409,
+      "candidate_blocks": 397885,
+      "candidate_unique_blocks": 220726,
+      "unique_blocks_saved": 21683
+    },
+    "lossless_response_roundtrips": 7,
+    "instrumented_seconds": 49.96591163892299,
+    "candidate_scope": "Frozen execution shadow: reencode response payloads only, keep original seeds and all other calls. A new protocol changes downstream challenges and needs fresh proofs. No measured proof-size or security improvement.",
+    "encoding_source_sha256": "18f9f9f3baa2a1ba416f3d09c9b69860461d73159ff2721278b598757801821f"
+  },
+  "current_gadget_accounting": {
+    "blocks": {
+      "compression_blocks": 419568,
+      "rows": 53704704,
+      "base_field_cells": 372925464576,
+      "dense_u32_bytes": 1491701858304,
+      "dense_u32_gib": 1389.255615234375
+    },
+    "unique_blocks": {
+      "compression_blocks": 242409,
+      "rows": 31028352,
+      "base_field_cells": 215460876288,
+      "dense_u32_bytes": 861843505152,
+      "dense_u32_gib": 802.6543121337891
+    }
+  },
+  "scope": "Actual latest switch fixture contract, call-link decoder and compression envelope decoder, including local/GKR and PCS verification. Counts pq384_primitives.hash_parts calls and their exact framing. Static statement/configuration are externally supplied. This is not full NEAR verification or a recursive proof. Unique sharing requires proved routing/equality constraints. Gadget dense bytes are arithmetic estimates, not measured RAM, runtime or outer proof size. No PQ128 certification.",
+  "input_sha256": {
+    "results/ext8-switch-execution-q309/compression.bin": "a656ad0f8d1314ff1b921cc2596a906aaa8f8c21215c5f687082b1ca78bcbd1d",
+    "results/ext8-switch-execution-q309/statement.json.gz": "f0739ebd3b97c3e83d1a354cfe8b054e0f33d22484c32a702474459de00bed98",
+    "results/ext8-switch-execution-q309/config.json": "f4e6a51810166f122181a875187b048cc76a34fb55ed0427fd672cb57dbe1cbd",
+    "results/ext8-affine-q309/receipt.json": "f33b113e4398a341af225ff0c0abe2dd0a6b3159b84f4e489434039c2358ee7b",
+    "results/ext8-linked-calls/calls.json": "6084f703978c43a4098d7e04e327d1eb2e1f6905db359d3b08b23c02da5dc996",
+    "results/call-ext8-shared-q309/proof.bin": "efafe27f4400aaf2407e1762153ea9c22ec1fe1652124cdf12b9031c5354ed1e"
+  },
+  "source_sha256": {
+    "airbender/direct-wasm/measure_switch_verifier_work.py": "a5ea8d1cede94853b87d6c0cec9c9f9a09378a6046b07e3174801365f9e33ca7",
+    "airbender/direct-wasm/measure_ext8_recursive_hash_work.py": "424ca5d94620cbae2969cc327b08a2656444d390a85a019696992cd70a6dd64e",
+    "results/sha384-compression-baseline/fixture-report.json": "03df30d7de341e811c47f512f1696f10a8e8f273603a78fbe6feefd8710e3767"
+  },
+  "native_library_sha256": "50585e33329b6088e002544fa3334f02ffea101934be6f497cbaa5afb442add2"
+}

@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "lossless_roundtrips": 3,
+  "negative_checks": 48,
+  "cases": [
+    {
+      "case": "small1",
+      "terminal_degree": 1,
+      "rounds": 7,
+      "bytes": 7078,
+      "header_and_terminal_bytes": 694,
+      "unique_leaf_bytes": 1344,
+      "shared_sibling_bytes": 5040,
+      "individual_path_upper_bytes": 16438
+    },
+    {
+      "case": "small64",
+      "terminal_degree": 64,
+      "rounds": 1,
+      "bytes": 3718,
+      "header_and_terminal_bytes": 1126,
+      "unique_leaf_bytes": 384,
+      "shared_sibling_bytes": 2208,
+      "individual_path_upper_bytes": 7270
+    },
+    {
+      "case": "full",
+      "terminal_degree": 1,
+      "rounds": 18,
+      "bytes": 55814,
+      "header_and_terminal_bytes": 1750,
+      "unique_leaf_bytes": 5248,
+      "shared_sibling_bytes": 48816,
+      "individual_path_upper_bytes": 80406
+    }
+  ],
+  "scope": "Unchanged diagnostic Q8 globalchain profile; codec adds no security theorem"
+}

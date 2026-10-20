@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "audit_checks": 2657,
+  "new_public_theorems": 35,
+  "modules": {
+    "SHA384SharedCompression": "c2ef014687f6b6c5f6d3b84f4b218cd93fa0897279dcbdd26973a48130050e1f",
+    "PreparedLocalsStack": "65cd8a1ae70a0da63f3ea996ff8416f68c8d562395f8131c5fc13d46cdce74e8",
+    "RecoveredProjectedEvaluation": "811e6a8714736b5e7e2b5e2af127f5f2b3d97a406af6abde0960e9f7ab1bbe54"
+  },
+  "scope": "Independent shared-node80round arithmetic from actual AIR constraints; locals physical stack limb/word updates; recovered polynomial exact sparse storage and all-point evaluation. Shared record/call routing, locals whole-call composition, cryptographic acceptance and128-bit QROM remain open."
+}

@@ -1,0 +1,25 @@
+{
+  "status": "COMPUTED_SOURCE_GKR_INTERPRETATION_PROVED_CRYPTO_BINDING_OPEN",
+  "module": "NearCompression/PackedComputedGKRTable.lean",
+  "proved": [
+    "Inverse table reconstruction of actual mutable source coefficients equals original padded source cells on bounded rows/columns.",
+    "Any polynomial with identical bounded coefficients reconstructs the same table.",
+    "Actual computed polynomial satisfies the GKR current/next slot coefficient functional without a supplied Mobius coefficient identity."
+  ],
+  "quantifier_scope": "Identities hold for arbitrary field tables, rowpoints and GKR left/right/gamma challenges. Each packed lane uses its actual group/width padding.",
+  "remaining": [
+    "Accepted PCS proof must yield common-source binding or a sound common representative; proximity alone is insufficient.",
+    "Compiler heterogeneous slot-layout correspondence and entire GKR/PCS/bus composition.",
+    "Native arithmetic/serialization refinement.",
+    "Quantum security and secure full-NEAR proof size."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3752,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

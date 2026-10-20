@@ -1,0 +1,73 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "local_count": 0,
+      "constraints": [
+        {
+          "user": 1276,
+          "automatic": 3
+        },
+        {
+          "user": 549,
+          "automatic": 26
+        }
+      ]
+    },
+    {
+      "local_count": 1,
+      "constraints": [
+        {
+          "user": 1243,
+          "automatic": 3
+        },
+        {
+          "user": 549,
+          "automatic": 26
+        }
+      ]
+    },
+    {
+      "local_count": 2,
+      "constraints": [
+        {
+          "user": 1210,
+          "automatic": 3
+        },
+        {
+          "user": 549,
+          "automatic": 26
+        }
+      ]
+    },
+    {
+      "local_count": 3,
+      "constraints": [
+        {
+          "user": 1177,
+          "automatic": 3
+        },
+        {
+          "user": 549,
+          "automatic": 26
+        }
+      ]
+    },
+    {
+      "local_count": 4,
+      "constraints": [
+        {
+          "user": 1144,
+          "automatic": 3
+        },
+        {
+          "user": 549,
+          "automatic": 26
+        }
+      ]
+    }
+  ],
+  "all_interactions_public_segments_equal": true,
+  "source_sha384": "7a1f9706a9d8837ca81b381c82d7d6e107ccfddad90bfbeabd40a6c731472d4f9ee9c66070e7599211d702fabb0c884f",
+  "scope": "Exact exported source parity; AIR-to-step semantic refinement remains separate."
+}

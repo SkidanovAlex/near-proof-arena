@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "audit_count": 3002,
+  "audit_log": "/tmp/root-chunk-use-audit.log",
+  "chunk_theorem": "NearCompression.sha384_chunk_declared_use_sound",
+  "typed_provenance_cases": 7,
+  "typed_provenance_rejections": 5614,
+  "literal_count_settings": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "full_typed_replay_status": "PASS",
+  "scope": "Configurable component semantics under actual HoldsP and explicit numeric bounds. No call-chain, external commitment binding, full NEAR or PQ128 claim. Full typed AIR-to-runCall theorem pending.",
+  "full_typed_replay_cases": 19,
+  "full_typed_replay_rejections": 747
+}

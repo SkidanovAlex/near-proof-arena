@@ -1642,6 +1642,11 @@
             "minimum": 0.0,
             "nullable": true
           },
+          "succinct": {
+            "description": "`succinct` badge evaluation (v1.9, additive; BENCHMARK_SPEC §17), recomputed by the control plane from the measurements and the challenge's thresholds. Serialized only when the challenge defines thresholds.",
+            "$ref": "#/components/schemas/SuccinctBadge",
+            "nullable": true
+          },
           "suite_revision": {
             "type": "string"
           }
@@ -2139,6 +2144,15 @@
             "minimum": 0.0,
             "nullable": true
           },
+          "gas_runs": {
+            "description": "Per measured run: Σ total gas of the batch's cases (v1.9, additive; empty when the oracle records no per-case gas). The x axis of the `succinct` badge's log-log slope test (BENCHMARK_SPEC §17).",
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          },
           "mad_ns": {
             "type": "integer",
             "format": "uint64",
@@ -2424,6 +2438,30 @@
           }
         }
       },
+      "CoveragePublic": {
+        "description": "The published form of [`CoverageReport`]: conformance in full (public fixtures and public workload classes), held-out aggregate-only.",
+        "type": "object",
+        "required": [
+          "conformance",
+          "tier"
+        ],
+        "properties": {
+          "conformance": {
+            "description": "Public fixtures and judge-sampled cases.",
+            "$ref": "#/components/schemas/CoverageSection"
+          },
+          "heldout": {
+            "description": "Committed held-out cases, aggregate only (absent when the worker ran none). CONTRACTS §11 covert-channel mitigation.",
+            "$ref": "#/components/schemas/HeldoutAggregate",
+            "nullable": true
+          },
+          "tier": {
+            "description": "The declared tier.",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "CoverageReport": {
         "description": "Report field `coverage` (CONTRACTS §11).",
         "type": "object",
@@ -2489,6 +2527,11 @@
           "statement_spec": {
             "description": "Lean declaration of the top `ChallengeSpec` (the statement every admitted verifier is sound for), e.g. `NearSpecV3.challengeSpecChunkTop`.",
             "type": "string"
+          },
+          "succinct": {
+            "description": "`succinct` badge thresholds (v1.9, BENCHMARK_SPEC §17). Serialized only when present, so ids of challenges without the badge are unchanged. Display-only: not a gate and not a score component.",
+            "$ref": "#/components/schemas/SuccinctSpec",
+            "nullable": true
           },
           "tiers": {
             "description": "Tiers in any order; `rank` is the total order (higher = larger domain).",
@@ -3128,6 +3171,42 @@
           }
         }
       },
+      "HeldoutAggregate": {
+        "description": "Held-out coverage as it may be **published** (CONTRACTS §11, covert channel): aggregate counts and the weight-averaged share only — never the per-class breakdown. Per-class held-out abstention counts are chosen by the candidate and would leak a few bits per class about the secret inputs.",
+        "type": "object",
+        "required": [
+          "abstained",
+          "cases",
+          "proven",
+          "share_ppm"
+        ],
+        "properties": {
+          "abstained": {
+            "description": "`prove` answered `UNSUPPORTED`.",
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          },
+          "cases": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          },
+          "proven": {
+            "description": "Accepted by `verify`.",
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          },
+          "share_ppm": {
+            "description": "Weight-averaged proven fraction over the held-out classes with cases, in parts per million (as stored; not recomputed here).",
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          }
+        },
+        "additionalProperties": false
+      },
       "InvalidateCacheRequest": {
         "type": "object",
         "required": [
@@ -3538,6 +3617,11 @@
           },
           "submitted_at": {
             "type": "string"
+          },
+          "succinct": {
+            "description": "`succinct` badge evaluation of the ranked run (v1.9, additive; BENCHMARK_SPEC §17): `granted` drives the board's \"succinct only\" filter. Display-only: not a gate, not a score component.",
+            "$ref": "#/components/schemas/SuccinctBadge",
+            "nullable": true
           },
           "superseded_by": {
             "description": "Set when the challenge has been superseded: the board is historical (frozen, closed for new submissions) and scores are not comparable with the successor's (additive, v1.4).",
@@ -4535,8 +4619,8 @@
             "nullable": true
           },
           "coverage": {
-            "description": "Coverage-tiered challenges: the declared tier and proven coverage (CONTRACTS §11).",
-            "$ref": "#/components/schemas/CoverageReport",
+            "description": "Coverage-tiered challenges: the declared tier and proven coverage (CONTRACTS §11). Held-out coverage is published aggregate-only (covert-channel mitigation); the per-class breakdown stays internal.",
+            "$ref": "#/components/schemas/CoveragePublic",
             "nullable": true
           },
           "created_at": {
@@ -4644,6 +4728,98 @@
           },
           "upload_digest": {
             "$ref": "#/components/schemas/Digest"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SuccinctBadge": {
+        "description": "One measured evaluation of the badge criteria (\"recorded per run\").",
+        "type": "object",
+        "required": [
+          "granted",
+          "max_proof_bytes",
+          "max_verify_ns"
+        ],
+        "properties": {
+          "bytes_exponent_ppm": {
+            "description": "Log-log slope of proof bytes against per-run batch gas, in ppm of the exponent (0.137 → 137_000). `None` without gas data or spread.",
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "bytes_ucb_ppm": {
+            "description": "95% upper confidence bound of the bytes exponent, ppm.",
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "denied": {
+            "description": "Why the badge was denied (empty when granted).",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "granted": {
+            "description": "Both the thresholds and both slope tests passed (fail-closed: a fit that cannot be computed denies the badge).",
+            "type": "boolean"
+          },
+          "max_proof_bytes": {
+            "description": "Largest proof over the measured runs (`ClassMeasurement.proof_bytes_max`).",
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "max_verify_ns": {
+            "description": "Largest per-run Σ verify wall ns of a class's batch over the measured runs (cost_v1's paid quantity; ≥ any single proof's verify wall).",
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "verify_exponent_ppm": {
+            "description": "Log-log slope of verify time against per-run batch gas, ppm.",
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "verify_ucb_ppm": {
+            "description": "95% upper confidence bound of the verify exponent, ppm.",
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        }
+      },
+      "SuccinctSpec": {
+        "description": "Thresholds of the `succinct` badge (BENCHMARK_SPEC §17; proposal for `near-chunk-v3`: 2 MiB and 50 ms).",
+        "type": "object",
+        "required": [
+          "max_proof_bytes",
+          "max_verify_ns"
+        ],
+        "properties": {
+          "exponent_bound_ppm": {
+            "description": "Log-log slope test (§17): fitted exponent of proof bytes and of verify time against the case's total gas must be ≤ 0.1 (`exponent_bound_ppm`), with a 95% upper confidence bound ≤ `ucb_bound_ppm` ppm of the same quantity (proposal: 0.25 = 250,000 ppm).",
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          },
+          "max_proof_bytes": {
+            "description": "Largest accepted proof over the conformance and held-out runs.",
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "max_verify_ns": {
+            "description": "Largest verify wall time over the conformance and held-out runs.",
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "ucb_bound_ppm": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
           }
         },
         "additionalProperties": false

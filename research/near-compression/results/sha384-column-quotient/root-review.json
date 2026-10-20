@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "fresh_binary_verification": "PASS",
+  "negative_checks": 6,
+  "original_spec": "results/sha384-multiblock/canonical-spec.json",
+  "original_spec_sha256": "98ff9ec0eb1355092636f7ef2325f1f55e00b32ddf7a85209cbbe0d1cd51de0e",
+  "proof_bytes": 1390406,
+  "proof_sha256": "9044fff40291d45f406423ffb8eb15a088716241f60c947ae7032b9939567fdc",
+  "lean_audit_at_quotient_integration": 2014,
+  "scope": "Root-reviewed generic constraint and exact natural bus refinement, SHA384 digest corollary; independently rerun binary verifier and six negative cases against root original AIR",
+  "limitations": [
+    "Q8 diagnostic, no 128-bit or QROM claim",
+    "Python AST quotient implementation matched by inspection; no verified Python compiler",
+    "Full recursive verifier remains unimplemented"
+  ]
+}

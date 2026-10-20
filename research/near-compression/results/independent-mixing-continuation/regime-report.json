@@ -1,0 +1,89 @@
+{
+  "stages": [
+    {
+      "degree": 131072,
+      "rate": 8,
+      "domain_size": 1048576,
+      "required_agreement": 388822,
+      "johnson_gap": 13744642788,
+      "proven_fixed_oracle_list_cap": 79,
+      "binary_fold_regime_holds": false,
+      "minimum_binary_fold_threshold": 742742,
+      "isolated_128bit_query_term_at_johnson_threshold": 90,
+      "isolated_128bit_query_term_at_binary_fold_threshold": 258
+    },
+    {
+      "degree": 16384,
+      "rate": 16,
+      "domain_size": 262144,
+      "required_agreement": 68733,
+      "johnson_gap": 429520137,
+      "proven_fixed_oracle_list_cap": 159,
+      "binary_fold_regime_holds": false,
+      "minimum_binary_fold_threshold": 180225,
+      "isolated_128bit_query_term_at_johnson_threshold": 67,
+      "isolated_128bit_query_term_at_binary_fold_threshold": 237
+    },
+    {
+      "degree": 2048,
+      "rate": 32,
+      "domain_size": 65536,
+      "required_agreement": 12149,
+      "johnson_gap": 13446009,
+      "proven_fixed_oracle_list_cap": 319,
+      "binary_fold_regime_holds": false,
+      "minimum_binary_fold_threshold": 44374,
+      "isolated_128bit_query_term_at_johnson_threshold": 53,
+      "isolated_128bit_query_term_at_binary_fold_threshold": 228
+    },
+    {
+      "degree": 256,
+      "rate": 64,
+      "domain_size": 16384,
+      "required_agreement": 2145,
+      "johnson_gap": 423105,
+      "proven_fixed_oracle_list_cap": 634,
+      "binary_fold_regime_holds": false,
+      "minimum_binary_fold_threshold": 11009,
+      "isolated_128bit_query_term_at_johnson_threshold": 44,
+      "isolated_128bit_query_term_at_binary_fold_threshold": 224
+    },
+    {
+      "degree": 32,
+      "rate": 128,
+      "domain_size": 4096,
+      "required_agreement": 375,
+      "johnson_gap": 13649,
+      "proven_fixed_oracle_list_cap": 1229,
+      "binary_fold_regime_holds": false,
+      "minimum_binary_fold_threshold": 2742,
+      "isolated_128bit_query_term_at_johnson_threshold": 38,
+      "isolated_128bit_query_term_at_binary_fold_threshold": 221
+    },
+    {
+      "degree": 4,
+      "rate": 256,
+      "domain_size": 1024,
+      "required_agreement": 60,
+      "johnson_gap": 528,
+      "proven_fixed_oracle_list_cap": 1985,
+      "binary_fold_regime_holds": false,
+      "minimum_binary_fold_threshold": 685,
+      "isolated_128bit_query_term_at_johnson_threshold": 32,
+      "isolated_128bit_query_term_at_binary_fold_threshold": 220
+    },
+    {
+      "degree": 2,
+      "rate": 256,
+      "domain_size": 512,
+      "required_agreement": 25,
+      "johnson_gap": 113,
+      "proven_fixed_oracle_list_cap": 2319,
+      "binary_fold_regime_holds": false,
+      "minimum_binary_fold_threshold": 343,
+      "isolated_128bit_query_term_at_johnson_threshold": 29,
+      "isolated_128bit_query_term_at_binary_fold_threshold": 220
+    }
+  ],
+  "scope": "The existing general_checked_interactive_fold_soundness theorem has a high-agreement premise. Its regime fails at every listed Johnson threshold. Query counts screen one ideal classical term only; neither column is an accepted code-switch/PQ128 parameter schedule. The binary fold continuation theorem is not a theorem for the implemented rate-changing chain."
+}

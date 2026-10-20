@@ -1,0 +1,4 @@
+'NearCompression.swirl_linear_summary_collision' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.swirl_product_not_function_of_linear_summary' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]

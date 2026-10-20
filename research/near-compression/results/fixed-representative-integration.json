@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3389,
+  "added_theorems": 4,
+  "source_sha256": "1ca4bbd1bf64a973401c32ea0eee349f60938e603b7f9bd4e7a22a9ff50745a6",
+  "audit_log": "/tmp/root-fixed-representative-audit.log",
+  "audit_sha256": "9f790c054ef96ecb127d01772bf3ed202968ec42f5f59cec07d62b8cf66738ce",
+  "limits": [
+    "Existence of a universal representative is assumed, not extracted from roots.",
+    "Explicit unique-decoding separation; parameter compatibility remains to be checked.",
+    "No actual acceptance-to-proximity or FS/QROM theorem."
+  ]
+}

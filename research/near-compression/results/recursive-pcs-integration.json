@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "negative_cases": 12,
+  "packing_coefficient_comparisons": 196608,
+  "files": {
+    "airbender/direct-wasm/recursive_configured_gkr_engine.py": "c94f628bad2c2d4cd150b6b960596e9cef94394a019b10c79834aa17624461f8",
+    "airbender/direct-wasm/recursive_pcs_conjunction.py": "01f88cc17c8a8c449085c547326b8f1e1c191bda724e0bd8db2e604074d32c6c",
+    "airbender/direct-wasm/test_recursive_pcs_conjunction.py": "307817f8d8856a12758871db025a786abefa744a9862faf4de12211ccecc697d"
+  },
+  "input_accounting": "results/recursive-pcs-root/input-accounting.json",
+  "limits": [
+    "Native root linkage requires full trace; core consumes caller-verified dependency.",
+    "No complete recursive proof or post-quantum parameter certification."
+  ]
+}

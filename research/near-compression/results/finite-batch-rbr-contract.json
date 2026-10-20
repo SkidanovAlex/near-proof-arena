@@ -1,0 +1,39 @@
+{
+  "status": "Typed candidate relations plus proved finite-family cancellation; actual correlated-agreement reduction remains unproved",
+  "lean_file": "NearCompression/FiniteBatchCandidates.lean",
+  "verified": "Root-environment one-file Lean check passed, no warnings, no sorry/custom axioms/native_decide",
+  "initial_state": {
+    "data": "FiniteBatchInstance contains a duplicate-free finite domain, fixed ordered arbitrary source functions, fixed claims with equal lane count, degree bound, concrete scalarRSResidual weights, and positive integer agreement threshold.",
+    "good": "A single degree-bounded polynomial tuple jointly agrees with all source lanes on at least threshold domain points, and every candidate's concrete weighted coefficient functional equals its fixed lane claim.",
+    "doomed": "No such tuple exists. This is an existential candidate-language predicate, not a premise that the source is honest or already polynomial."
+  },
+  "post_alpha_state": {
+    "good": "There exists one polynomial of the required degree agreeing with the deterministic virtual batched oracle on threshold points and satisfying the alpha-power-batched residual claim.",
+    "critical_obligation": "From initial doomed state, bound the number of alpha values whose post-alpha state is good. FiniteVirtualBatchRBRObligation defines precisely this implication; the file does NOT prove it or postulate it as an axiom.",
+    "why_existing_roots_do_not_suffice": "The candidate polynomial may depend on alpha. A root bound for one fixed false claim vector does not bound the union over an uncontrolled adaptive candidate family. Source-oracle authentication fixes oracle values, not decoded candidate polynomials."
+  },
+  "proved_component": {
+    "theorems": ["finite_candidate_union_count", "finite_candidate_claim_cancellation", "finite_polynomial_candidate_cancellation"],
+    "statement": "For any fixed finite family of T candidate tuples, each yielding an L-element claim vector differing from the target, at most T*(L-1) distinct alpha samples can make any candidate's batched claim match. Actual polynomial tuples use scalarRSResidual, not an abstract honest-value oracle.",
+    "scope": "No candidate existence, list bound or proximity result is assumed or manufactured. Family members may switch with alpha; the finite union count is proved explicitly.",
+    "needed_to_use_it": "A complete small family fixed before alpha, covering every successful post-alpha candidate through the relevant batching relation, and a proof that each family's tuple violates at least one fixed claim. These are not available from the scalar algebra modules.",
+    "enumeration_warning": "Enumerating all degree<D tuples gives roughly |K|^(D*L) possibilities; multiplying by L-1 yields no useful security. Enumerating separate per-lane nearby candidates also does not establish that every nearby batched candidate decomposes into one of those tuples."
+  },
+  "mandatory_external_math": {
+    "primary_source": "https://www.researchgate.net/publication/387601318_Basefold_in_the_List_Decoding_Regime",
+    "canonical_record": "https://eprint.iacr.org/2024/1571",
+    "revision": "Author-uploaded June13,2026 text; PDF bytes not archived, as documented in custom-fold-security-theorem-review.json",
+    "initial_batching": "Section5.1 Lemma1 uses constrained correlated agreement. Theorems2/3 give linear-subspace and weighted forms. Their common agreement conclusion is the substantive missing theorem for arbitrary virtual source oracles.",
+    "later_folds": "Section6.1 Lemma4 invokes Theorem4 for a degree-two challenge-dependent residual constraint. Weighted consistency measures and their denominator bounds must be represented explicitly; unweighted initial batching alone cannot establish the full RBR invariant.",
+    "regime": "The source states proved bounds at theta=1-sqrt(rho)*(1+1/(2m)), m>=3, and discusses unique-decoding specialization. This is not permission to import an unverified numerical formula or claim our implementation already matches the theorem."
+  },
+  "next_formal_work": [
+    "Choose the unique-decoding route first if it yields a manageable proof; formalize RS minimum distance directly from existing PolyRoots and a finite domain.",
+    "Prove uniqueness of a candidate above half-distance. This is useful but does not by itself prove correlated decoding of an alpha-batch.",
+    "Formalize a finite-domain correlated-agreement theorem with explicit degree, lane count, field sample and failure count. Prove it or import a separately audited theorem; do not replace it with an assumed candidate witness.",
+    "Connect its constrained code to scalarRSResidual via actual linearity and translate rational proximity thresholds to integer counts without off-by-one loss.",
+    "Define later-stage weighted chain-consistency candidate states, establish no prover repair and verifier escape bounds, then prove final global-query detection.",
+    "Only afterward compose RBR with commitment extraction and the appropriate QROM compiler."
+  ],
+  "not_established": ["A complete decoded candidate family", "A useful bound on its size", "FiniteVirtualBatchRBRObligation", "Full protocol RBR soundness", "A PQ security parameter set"]
+}

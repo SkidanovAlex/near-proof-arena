@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "rejections": 259,
+  "categories": {
+    "source_root": 33,
+    "current_evals": 33,
+    "next_evals": 33,
+    "column_claims": 33,
+    "public_value": 3,
+    "air_constraint": 1,
+    "bus_final": 1,
+    "sources_leaf": 66,
+    "folds_leaf": 18,
+    "reduction_quadratic": 18,
+    "rounds_quadratic": 18,
+    "terminal": 1,
+    "source_order": 1
+  },
+  "scope": "Mutation regressions on actual33table joint diagnostic; not a soundness bound."
+}

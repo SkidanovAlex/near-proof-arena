@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "main": "9116a4da95f2d17cfddecc1618ccc0daaa9ba37d",
+  "full_axiom_audit_theorems": 1287,
+  "new_theorems": 20,
+  "composition_theorem": "NearCompression.air_sumcheck_weighted_bad_roots",
+  "scope": "Algebraic compiler-degree/root-count composition and public binding; not full interactive or cryptographic soundness",
+  "log": "/tmp/near-parallel-composition-audit.log",
+  "sha256": {
+    "InstructionPublicBinding": "9e653a5abac44895f7d38d82b2db659deeb2235d6490e403e9b94a52ddfd21f7",
+    "AirPolynomialLowering": "0f167caadc6504ae524f3782aed9419693803441f458114f55ad8ebd64ebdc57",
+    "InstructionSumcheckSoundness": "67c40a022407667064f7e01dbf3e2abf59f2f2519fe80ea5eb877579188fe399",
+    "AirSumcheckComposition": "bad58b547011f357d2900886efbf990ca82d8b4a0a9ef2db815be69a47af70f2"
+  }
+}

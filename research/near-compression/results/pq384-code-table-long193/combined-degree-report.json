@@ -1,0 +1,83 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "table": 0,
+      "alpha": 0,
+      "source_residuals": 729,
+      "auxiliary_residuals": 9,
+      "source_degree": 6,
+      "auxiliary_degree": 4,
+      "verifier_residual_degree": 6,
+      "weighted_round_degree": 7,
+      "round_coefficients": 8,
+      "conditional_rounds_numerator": 56
+    },
+    {
+      "table": 0,
+      "alpha": 1,
+      "source_residuals": 729,
+      "auxiliary_residuals": 9,
+      "source_degree": 6,
+      "auxiliary_degree": 4,
+      "verifier_residual_degree": 6,
+      "weighted_round_degree": 7,
+      "round_coefficients": 8,
+      "conditional_rounds_numerator": 56
+    },
+    {
+      "table": 0,
+      "alpha": 7,
+      "source_residuals": 729,
+      "auxiliary_residuals": 9,
+      "source_degree": 6,
+      "auxiliary_degree": 4,
+      "verifier_residual_degree": 6,
+      "weighted_round_degree": 7,
+      "round_coefficients": 8,
+      "conditional_rounds_numerator": 56
+    },
+    {
+      "table": 1,
+      "alpha": 0,
+      "source_residuals": 499,
+      "auxiliary_residuals": 54,
+      "source_degree": 3,
+      "auxiliary_degree": 4,
+      "verifier_residual_degree": 4,
+      "weighted_round_degree": 5,
+      "round_coefficients": 6,
+      "conditional_rounds_numerator": 40
+    },
+    {
+      "table": 1,
+      "alpha": 1,
+      "source_residuals": 499,
+      "auxiliary_residuals": 54,
+      "source_degree": 3,
+      "auxiliary_degree": 4,
+      "verifier_residual_degree": 4,
+      "weighted_round_degree": 5,
+      "round_coefficients": 6,
+      "conditional_rounds_numerator": 40
+    },
+    {
+      "table": 1,
+      "alpha": 7,
+      "source_residuals": 499,
+      "auxiliary_residuals": 54,
+      "source_degree": 3,
+      "auxiliary_degree": 4,
+      "verifier_residual_degree": 4,
+      "weighted_round_degree": 5,
+      "round_coefficients": 6,
+      "conditional_rounds_numerator": 40
+    }
+  ],
+  "scope": "Actual literal source and generated auxiliary formula degrees",
+  "limits": [
+    "Computed AST bounds for retained fixture; no universal parser refinement",
+    "Affine coordinate-slice representation and terminal PCS authentication remain open",
+    "Conditional round numerators are not whole-protocol security"
+  ]
+}

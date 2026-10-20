@@ -1,0 +1,16 @@
+{
+  "scope": "Weighted transfer outside explicitly defined exact-support exception; its cardinality is NOT proved",
+  "cwd": "research/near-compression",
+  "paper_url": "https://www.math.toronto.edu/swastik/rs-proximity-gaps-2025.pdf",
+  "paper_sha256": "4added3e55b83c15fcc8a698fb57e137f5bd83e79ea25ce79382817c1ad26a46",
+  "replay": [
+    "python3 airbender/direct-wasm/test_support_preserving_agreement.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/NearCompression/SupportPreservingAgreement.lean": "a7946f78d7255cb4622debfb3350af1c18f0f52100cd69cfc8049857af0451a3",
+    "research/near-compression/airbender/direct-wasm/test_support_preserving_agreement.py": "18b4651041ba371fd0143ca9888036f90af2b4b8ac7a7c969182c55374fb7530",
+    "research/near-compression/results/support-preserving-agreement/report.json": "b5e3e2c5d69b03276eca5cb38821a086f89de9fdc966ea2c28f616fb5c04161c",
+    "research/near-compression/results/support-preserving-agreement/lean-audit.log.gz": "6a1acba782c9a9877befb818c4c7cb547585e1a32b764c91502362392c81fc36"
+  }
+}

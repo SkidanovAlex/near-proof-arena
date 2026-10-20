@@ -1,0 +1,29 @@
+{
+  "git_commit": "eff69b4a0e8ad3c581515031ca61afa540553ab2",
+  "files": {
+    "examples/np-udr-stark-fast2/source/src/air.rs": "892ace135979c17b2fbe4452b1a41de474d38fe3f2b39f6606051a864721301c",
+    "examples/np-udr-stark-fast2/source/src/aux.rs": "1df9ee41fa778f127b86f716c5661132304de729a98b63591f25d53e9fc86c19",
+    "examples/np-udr-stark-fast2/source/src/field.rs": "d198112c31600c6bd087e57421bdd1f80c14329a35f913aa77851a26952c6694",
+    "examples/np-udr-stark-fast2/source/src/hash.rs": "1792443fcbab50a2f9183f5604c64ce83492d66d9271606134962075943f7aa8",
+    "examples/np-udr-stark-fast2/source/src/mmcs.rs": "124f6450e5a092e6d2395476a5537c529f1b577541009c3d6d3c571551488810",
+    "examples/np-udr-stark-fast2/source/src/protocol.rs": "d6a189c131b894d94c142fae227c6e12c8f00cb02837dc79c662f8242fcbeb5b",
+    "examples/np-udr-stark-fast2/source/src/transcript.rs": "c429c2b8c18ae8640e19369d06b64115ec328988559c38e04bab7babc456d2d5",
+    "examples/np-udr-stark-fast2/source/src/verifier.rs": "2fab2cb1a4b0f548cee4b018ac44825a89688d27f84ced31a5b883831744dc59",
+    "tools/recursion/compress/methods/guest/Cargo.lock": "00110cf7ff8bed05896c60da94d16a2ddfcd1837dca5335a11bdc8ced642902f",
+    "tools/recursion/compress/Cargo.lock": "13ef9f555271ceb4a2f07f956d2ab26a785dd850d279adec7f7670a11734fc44",
+    "tools/recursion/compress/host/src/main.rs": "4c3efa222a018172a01b0f3cb6c1e30a40a8699a347a64d46dda3b17c124ec1c",
+    "tools/recursion/compress/methods/guest/src/main.rs": "917b2c00e34c4e10be6a089352d70fd5e984da6e9870e5e98c609221fef9b394",
+    "tools/recursion/compress/verifier/src/lib.rs": "4fc35d91171482b5478b903eb3bcd989eb298e2b48952552ebf10d9545ab4ca9",
+    "tools/recursion/compress/run.py": "acbbfb47df012609a9df853dca7f684140952fbf972a5a25ab27b555a4d9e1d0"
+  },
+  "guest_rustc": "rustc 1.97.0-dev (e638c6cfe 2026-07-15)",
+  "r0vm": {
+    "path": "/home/illia/.risc0/extensions/v3.0.6-cargo-risczero-x86_64-unknown-linux-gnu/r0vm",
+    "sha256": "751b9b188d341e8bec5e02060086b7b1dc3f7289e90f726c38589bb6735dd6d7",
+    "version": "risc0-r0vm 3.0.6"
+  },
+  "guest": {
+    "program_sha256": "f34d41ade8c3d8bd3257ee0961cb09662c0f8a1236aa191451b7fc868c907cc7",
+    "image_id": "bad2a498b4a10506f8b49151b08860d9e5d65eb6e725446aa41a6ec64869aa95"
+  }
+}

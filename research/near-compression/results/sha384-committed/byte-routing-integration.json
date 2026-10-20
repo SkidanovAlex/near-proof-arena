@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2400,
+  "audit_log": "/tmp/root-committed-byte-routing-audit.log",
+  "source_sha256": "a966283385d080a720e37424d0de7ec6a48dc2e6d95014948c287eae028616c3",
+  "new_theorems": 2,
+  "proved": [
+    "Only input table can send on bus6",
+    "Each existing selected real padding byte equals input row0 byte at128*block+offset"
+  ],
+  "explicit_bound": "declared message length<=P prevents field index aliasing",
+  "remaining": [
+    "Sufficient pad rows via global block routing",
+    "Core hash semantic refinement for committed AIR",
+    "Cryptographic root binding/recursive producer routing",
+    "128-bit quantum security/fullNEAR1Pgas"
+  ]
+}

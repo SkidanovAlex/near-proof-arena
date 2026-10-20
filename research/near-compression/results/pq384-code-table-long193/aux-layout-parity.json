@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "tables": {
+    "0": 9,
+    "1": 54
+  },
+  "alphas": [
+    0,
+    1,
+    7
+  ],
+  "cases": 54,
+  "residual_comparisons": 1701,
+  "scope": "Actual preparedLiteralAir(193) lowered and allocated in Lean; all auxiliary residuals versus Python",
+  "limits": [
+    "Finite parity evidence is not a proved Python/parser refinement",
+    "Base-field challenges and Ext4 values; no executable Ext8 certification",
+    "No commitment extraction or end-to-end soundness claim"
+  ]
+}

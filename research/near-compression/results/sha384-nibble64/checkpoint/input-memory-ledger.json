@@ -1,0 +1,10 @@
+{
+  "status": "PACKED_INPUT_STATE_PAYLOAD_ACCOUNTED",
+  "branches": 22,
+  "lanes": 834,
+  "simultaneous_scalars_per_vector": 28178816,
+  "coefficient_and_weight_payload_bytes": 1803444224,
+  "base_coefficient_payload_bytes": 112715264,
+  "hypothetical_deferred_base_expansion_saving_bytes": 789006848,
+  "scope": "Exact packed array payload arithmetic from checked opening descriptors. Excludes source caches, Python containers, native temporaries, GKR allocations, Merkle trees, and allocator retention; not total peak RSS or a proof-size prediction. Deferred-base saving is hypothetical and excludes first-fold transient buffers."
+}

@@ -1,0 +1,10 @@
+{
+  "taylor_cases": 4330,
+  "evaluation_identities": 20738,
+  "sequential_root_certificates": 933,
+  "characteristic_regressions": [
+    "ordinary derivatives miss X^p multiplicity boundary",
+    "repeated root evaluations without quotient are insufficient"
+  ],
+  "scope": "Univariate synthetic multiplicity foundations; multi-point Hasse equivalence, bivariate interpolation and MCA remain open."
+}

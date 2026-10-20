@@ -1,0 +1,49 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "rows": 4,
+      "width": 7,
+      "packing": 1,
+      "root_hex": "c15bd57ba93970a47c984501a2d832376b4de412f49371d0a1ce144179b73f837b32aaaac1f54c0c3ea67bcffdeacc4a",
+      "proof_json_bytes": 189,
+      "coefficient_bytes": 112,
+      "mutations_rejected": 68
+    },
+    {
+      "rows": 4,
+      "width": 7,
+      "packing": 2,
+      "root_hex": "e618d93f2019094fac27a0f0ed5395776fd437efcac86a67bf01d456653feb67d5c6666de54125f7efd7086411e2c169",
+      "proof_json_bytes": 218,
+      "coefficient_bytes": 128,
+      "mutations_rejected": 72
+    },
+    {
+      "rows": 4,
+      "width": 7,
+      "packing": 8,
+      "root_hex": "aee2424c6adc69bcc5837e7323d331fc025d41aa1fc83f333bb60da61537ad7a60516476b2e29d82e972cfd6bd2fee57",
+      "proof_json_bytes": 230,
+      "coefficient_bytes": 128,
+      "mutations_rejected": 72
+    },
+    {
+      "rows": 2,
+      "width": 3,
+      "packing": 2,
+      "root_hex": "f636a1129194b883e770d5298eb8be04cfab61269290485390e8bdd39c2811a61a48e26ca8f0d49bf9b03449a01d941d",
+      "proof_json_bytes": 115,
+      "coefficient_bytes": 32,
+      "mutations_rejected": 32
+    }
+  ],
+  "scope": "Complete small packed-point opening; verifier uses no external witness",
+  "limits": [
+    "Coefficient disclosure not zero knowledge",
+    "Original vector reduction remains probabilistic",
+    "No integration with complete AIR proof transcript yet",
+    "DiagnosticExt4 not128-bitPQ security",
+    "Bytes are standalone opening proof, not fullNEAR proof"
+  ]
+}

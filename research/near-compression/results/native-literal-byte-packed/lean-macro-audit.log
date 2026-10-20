@@ -1,0 +1,2 @@
+'NearCompression.packed_pair_bit' depends on axioms: [propext, Quot.sound]
+'NearCompression.packed_byte_macro_eval' depends on axioms: [propext, Classical.choice, Quot.sound]

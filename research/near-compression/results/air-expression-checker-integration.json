@@ -1,0 +1,40 @@
+{
+  "status": "LEAN_AIR_EXPRESSION_CHECKER_SOUNDNESS_PROVED",
+  "module": "NearCompression/AIRExpressionCheck.lean",
+  "theorems": [
+    "air_expression_checked",
+    "air_expression_checked_execution",
+    "air_expression_checked_compiled_table",
+    "air_expression_check_regressions"
+  ],
+  "proved": [
+    "Recursive AST/register checker derives AIRProgramRoute with exact opcode, operand and padding identity.",
+    "Source register bounds and column width are checked; negation requires a real zero register. Public reads retain the existing default-zero semantics.",
+    "Under checked source acyclicity, register execution equals AST evaluation. Together with a checked compiled table, emitted DAG root equals AST evaluation when that AST is the table source root."
+  ],
+  "kernel_regressions": [
+    "Nested add/mul/neg with distinct current and next columns",
+    "Natural and public/default constants",
+    "All three selector nodes",
+    "Changed public value rejected",
+    "Insufficient column width rejected",
+    "Current/next mismatch rejected",
+    "Missing zero register rejected",
+    "Nonzero negation anchor rejected",
+    "Nonzero padding rejected"
+  ],
+  "remaining": [
+    "Checked ordered weighted residual accumulator and auxiliary bus-formula connections. A compiled weighted table is not automatically a single checked AIR expression.",
+    "Execute AST/register checks on retained source compiler captures and bind them to expected AIR data.",
+    "Recovered input/environment identification, parser/transcript refinement, global soundness, quantum security and secure full-NEAR size."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3855,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "status": "Proved deterministic jointly-close-basin initial candidate reduction; far-source and weighted sumcheck bridges remain open",
+  "date": "2026-10-15",
+  "formal_module": "NearCompression/WeightedVirtualInitial.lean",
+  "validation": {
+    "command": "HEAVY_MEM=8G LEAN_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy lake env lean /data/illia/nearproof-wt/air-polynomial-lowering/research/near-compression/NearCompression/WeightedVirtualInitial.lean",
+    "environment": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression",
+    "result": "PASS; exit 0; no warnings; 0.158 seconds"
+  },
+  "implementation": [
+    {
+      "path": "airbender/direct-wasm/pq384_weighted_joint.py",
+      "symbols": [
+        "public",
+        "betas",
+        "prove",
+        "replay",
+        "verify"
+      ],
+      "observations": [
+        "public binds branch roots, row points, all current/next lane weights and aggregate claim before the reduction challenges.",
+        "betas derives arbitrary lane coefficients beta_j(u) from lane_weight_mle at the preceding quadratic sumcheck point u. They are not a fresh independent power sequence.",
+        "prove forms a sparse common-degree combination via old.branch_words; low coefficient indices are padded by zeros, giving f_j(X^(D/d_j)).",
+        "The second folding chain uses equality weights eq(u,b), so its initial scalar residual is the multilinear coefficient-table evaluation of the virtual weighted polynomial.",
+        "verify derives source pairs from authenticated wide lanes; smaller source degrees map both initial signs to the same projected source value. Merkle binding and projection refinement are separate from this theorem."
+      ]
+    },
+    {
+      "path": "airbender/direct-wasm/pq384_derived_weight_joint.py",
+      "symbols": [
+        "public"
+      ],
+      "observations": [
+        "The derived variant omits the lane weights from its own public digest. Its contract requires them to be a deterministic function of the externally bound verified GKR transcript. It is not sound as an API for independently supplied adaptive weights without this derivation contract."
+      ]
+    },
+    {
+      "path": "airbender/direct-wasm/pq384_seed_gkr_bus.py",
+      "symbols": [
+        "opening_arguments",
+        "opening_parent",
+        "verify_local",
+        "verify"
+      ],
+      "observations": [
+        "The caller invokes branch_lanes with private_weights and ties opening_parent to binding plus the GKR transcript seed. Formal correspondence from these derived weights and private_claim to the intended input functional is still required."
+      ]
+    }
+  ],
+  "proved": [
+    "weighted_lane_eval / weighted_lane_degree / weighted_lane_residual: arbitrary finite coefficient vector, polynomial lane combination, exact evaluation/degree/residual linearity.",
+    "weighted_virtual_joint_distance: arbitrary received lane oracles, any coefficients, scalar combination mismatch count at most the tuple joint mismatch count.",
+    "weighted_virtual_unique_candidate: jointly R-close fixed lane tuple and candidate agreement >= T force coefficientwise equality to that same weighted tuple when R+(N-T)+D<=N.",
+    "weighted_virtual_no_candidate: if the candidate residual differs from the fixed tuple weighted residual, no such candidate exists.",
+    "weighted_virtual_no_initial: exact indexedChainCandidate(..., stage=0) is false, composing the real initial consistency weight cap, mapped distinct root domain, and the preceding theorem."
+  ],
+  "quantifier_order": "Choose a fixed jointly-close tuple of lane polynomials before u. The deterministic theorem then holds for EVERY beta vector, residual weights and claim, even when these depend on u. Candidate choice is after beta. Obtaining the functional discrepancy with high probability requires a separate sumcheck argument. No L-1 independent power-batch collision bound is applied to beta(u).",
+  "threshold": {
+    "N": 524288,
+    "D": 131072,
+    "T": 393217,
+    "candidate_radius": 131071,
+    "largest_joint_radius_supported_by_uniqueness": 262145,
+    "formula": "R <= T-D, assuming T<=N",
+    "interpretation": "A jointly 3/4-agreeing tuple (R=131072) is compatible with the proven folding threshold. There is no threshold clash within that joint basin."
+  },
+  "remaining_obligations": [
+    "Existence of one fixed jointly-close polynomial tuple on the common lifted domain. Individual lane closeness does not imply the required joint agreement: disjoint lane error sets accumulate, and four sets each covering one quarter may cover the whole domain.",
+    "Far-source correlated agreement for the structured beta(u) family, or a protocol modification that supplies an independently checked joint proximity certificate. Do not assume committed source oracles are codewords.",
+    "Sparse-lift domain geometry and functional identity: combine f_j(X^(D/d_j)), padded coefficient MLEs, current/shifted row functionals, and beta_j(u) exactly.",
+    "Adaptive quadratic weighted sumcheck: a false original aggregate functional claim implies the terminal residual discrepancy except on a bounded set of challenge paths, for the same tuple fixed before those challenges.",
+    "Derived-weight provenance from verified GKR, canonical slot order, padding-zero conditions and parent transcript binding.",
+    "Source and folded-oracle commitment binding, exact field/sampler refinement, and QROM transfer; none is claimed here."
+  ],
+  "security_claim": null
+}

@@ -1,0 +1,113 @@
+No files changed, compilation skipped
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifierProduction.sol:589:40
+    │
+589 │                 if iszero(lt(c0, P)) { revert(0, 0) }
+    │                                        ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifier.sol:589:40
+    │
+589 │                 if iszero(lt(c0, P)) { revert(0, 0) }
+    │                                        ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifierProduction.sol:590:40
+    │
+590 │                 if iszero(lt(c1, P)) { revert(0, 0) }
+    │                                        ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifierProduction.sol:591:40
+    │
+591 │                 if iszero(lt(c2, P)) { revert(0, 0) }
+    │                                        ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifier.sol:590:40
+    │
+590 │                 if iszero(lt(c1, P)) { revert(0, 0) }
+    │                                        ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifier.sol:591:40
+    │
+591 │                 if iszero(lt(c2, P)) { revert(0, 0) }
+    │                                        ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifierProduction.sol:114:54
+    │
+114 │         function sink2(a, b) { if iszero(eq(a, b)) { revert(0, 0) } }
+    │                                                      ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifier.sol:114:54
+    │
+114 │         function sink2(a, b) { if iszero(eq(a, b)) { revert(0, 0) } }
+    │                                                      ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifierProduction.sol:424:43
+    │
+424 │             if iszero(lt(ood_value, P)) { revert(0, 0) }
+    │                                           ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifier.sol:424:43
+    │
+424 │             if iszero(lt(ood_value, P)) { revert(0, 0) }
+    │                                           ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifierProduction.sol:459:40
+    │
+459 │                 if iszero(lt(hi, P)) { revert(0, 0) }
+    │                                        ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifierProduction.sol:460:40
+    │
+460 │                 if iszero(lt(lo, P)) { revert(0, 0) }
+    │                                        ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifier.sol:459:40
+    │
+459 │                 if iszero(lt(hi, P)) { revert(0, 0) }
+    │                                        ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ src/WhirVerifier.sol:460:40
+    │
+460 │                 if iszero(lt(lo, P)) { revert(0, 0) }
+    │                                        ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+

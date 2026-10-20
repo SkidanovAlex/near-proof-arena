@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "source_leaves": 256,
+  "authenticated_source_paths": 16,
+  "unique_indices": 8,
+  "negative_paths": 5,
+  "canonical_words_equal_fixed_source": true,
+  "weighted_antipodal_pairs_match": true,
+  "source_root": "155656d5033f2996c935d8845c1addf3ee97d2d2e56f056c37ed9bda508ad89a6af28a6c756bc9f37d66915ddf5d1acc",
+  "fixture_sha256": "54e87708db8394828b0d608bb86d3053d88f221f90490dc737cbe25700747092",
+  "files": {
+    "airbender/direct-wasm/test_call_merkle_opening.py": "04b61e0bca2bd1c652280747909dc7a333779594f6632992f039cfcdcba19ad7",
+    "NearCompression/CallMerkleOpening.lean": "f9b133eca359cb73fa36efca0d599f8482222e177aaebc593d299a969f10ab67",
+    "SHA384MerklePathFixture.lean": "fe3efbd8259f0560e5813e5ec5e73e6f5579ffac6843203384d34ee2ca653762",
+    "airbender/direct-wasm/verify_sha384_linked_calls.py": "09884dbb68b9c281952399a67683ad2cfb53bfb10be763a5c55bb39aad55ebc5"
+  },
+  "scope": "Actual source openings match a fixed tree reconstructed from diagnostic rows and pass Lean SHA384 path verification. Formal disagreement implies a hash collision; no collision probability or extraction of a low-degree representative from an adversarial root is proved. PCS proximity, adaptive soundness and QROM remain open."
+}

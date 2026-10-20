@@ -1,0 +1,78 @@
+{
+  "rows": [
+    {
+      "profile": "native-literal-sha384-ext12",
+      "report_sha256": "9ee054187798552f53a0c782af2d440c172b240a2bda0c043469e0e97d38db21",
+      "proof_bytes": 740881,
+      "transmitted_bytes": 741800,
+      "calls": [
+        4456,
+        14321,
+        1,
+        31283,
+        7,
+        374
+      ],
+      "blocks": [
+        4456,
+        28642,
+        1,
+        31283,
+        14,
+        374
+      ],
+      "total_blocks": 64770
+    },
+    {
+      "profile": "native-literal-sha384-ext12-batched",
+      "report_sha256": "11d13a39f8fba2e52cdbb92944cc47ff532d061d150337511ca8b7568a424b6d",
+      "proof_bytes": 740881,
+      "transmitted_bytes": 741800,
+      "calls": [
+        4456,
+        14321,
+        1,
+        188,
+        7,
+        359
+      ],
+      "blocks": [
+        4456,
+        28642,
+        1,
+        1297,
+        14,
+        359
+      ],
+      "total_blocks": 34769
+    },
+    {
+      "profile": "native-literal-sha384-ext12-compact",
+      "report_sha256": "a4d345d330cf27dd26d84878219156952d7558eb80c9aba765d2a0ca0f5e491d",
+      "proof_bytes": 740881,
+      "transmitted_bytes": 741800,
+      "calls": [
+        4456,
+        14321,
+        1,
+        188,
+        7,
+        366
+      ],
+      "blocks": [
+        4456,
+        14321,
+        1,
+        1297,
+        14,
+        366
+      ],
+      "total_blocks": 20455
+    }
+  ],
+  "compression_blocks_saved": 44315,
+  "fraction_saved": 0.6841902115176779,
+  "scope": "Counts from actual standalone engine.verify calls; not timings or recursive AIR costs. Versioned transcripts have different challenges.",
+  "unchanged_proof_size": true,
+  "security_certified": false
+}

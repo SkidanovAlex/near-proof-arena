@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "bit_lengths": [
+    0,
+    1,
+    2,
+    25
+  ],
+  "cases": 48,
+  "residual_comparisons": 744,
+  "scope": "Lean-generated interaction chain and boundary residuals; arbitrary selectors, nonboolean bits, zero fingerprint",
+  "limits": [
+    "Single interaction; table allocation/order and fingerprint lowering remain",
+    "JSON parity test is not a proved Python/parser refinement",
+    "Executable uses Ext4; generic field theorem does not certify executable Ext8"
+  ]
+}

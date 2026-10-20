@@ -1,0 +1,28 @@
+{
+  "scope": "local source inspection; not a proof-system security audit",
+  "existing_sha_air": {
+    "algorithm": "SHA-256",
+    "columns": 544,
+    "rows_per_message_formula": "1 + 17 * padded_block_count",
+    "source_proofs": "present in ZkFormal/Sha; not newly audited here"
+  },
+  "sha512": {
+    "executable_spec": "spec/lean/v3/NearSpecV3/SHA512.lean",
+    "source_status": "comment records differential tests and digest-length proofs, not general FIPS equivalence",
+    "air_search": "rg -l sha512|SHA512|SHA-512 zk-formal/ZkFormal returned no matching files",
+    "needed_for_stack_commitment": [
+      "64-bit modular arithmetic AIR",
+      "64-bit rotations, XOR, choice, majority constraints",
+      "message schedule,80 rounds,feed-forward",
+      "padding,length,byte encoding and digest binding",
+      "connect stack codec and public root to hash AIR"
+    ]
+  },
+  "source_sha256": {
+    "zk-formal/ZkFormal/Sha/Table.lean": "291edc455d1d4e39b09952f4a732c720349bde130ec8f8f6d0ff279e362139d7",
+    "zk-formal/ZkFormal/Sha/Layout.lean": "2548034afd1aa1bc65c0438db45860585afb729a0f6fff4de4913bce3f6404f0",
+    "zk-formal/ZkFormal/Sha/Spec.lean": "8d76ff9b9f6acbc7a59f09249b4388f013119324db1f04284bc53e7811dc8f69",
+    "spec/lean/v3/NearSpecV3/SHA512.lean": "96083372eb24d51b79e864fd240b1647859043241c9123840f9cc0d4124857a3"
+  },
+  "security": "No128-bit quantum soundness claim or bound established."
+}

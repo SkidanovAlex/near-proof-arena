@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "audit_checks": 2902,
+  "previous_checks": 2882,
+  "new_public_theorems": 20,
+  "audit_log": "/tmp/root-gkr-history-audit.log",
+  "modules": {
+    "GKRRoundState": {
+      "sha256": "bd48b1ed55ba48bbd5266238b23b304f72f12172ffc7b6592d2b4af98b2f088f",
+      "public_theorems": 6
+    },
+    "GKRAdaptiveRounds": {
+      "sha256": "e2f741de9776b2dc1f4bcd9a24162a8a64e2ec6388df841a2ee5f020d1734c16",
+      "public_theorems": 4
+    },
+    "GKRAxisExecution": {
+      "sha256": "d02ed79f7b23cbcc2a894fee1edfcb1b1640e25c989f23c18d52071bd0f904b4",
+      "public_theorems": 7
+    },
+    "GKRAxisHistory": {
+      "sha256": "a29ba36a2320c613d28fcbc1ae2add94363c7a65fe29a1dff1c4d66ba08cf5d4",
+      "public_theorems": 3
+    }
+  },
+  "proven": [
+    "Actual index-halving/folded-input/gate-weight update preserves honest round evaluation",
+    "Prefix-adaptive sent polynomial and claim strategy: checked wrong-to-correct terminal event bounded by2*r/|S| for indexed bit rounds under distinct ideal uniform samples",
+    "Complete axis fold equals MLE, gate weights equal equality-basis factors, axis reset preserves honest claim, terminal expression equals verifier wiring",
+    "Exact little-endian list-history bridge between adaptive rounds and both axis identities"
+  ],
+  "remaining": [
+    "Combine two axis budgets and gamma transition into complete causal layer bound",
+    "Compose layers and terminal compiler/AIR rejection",
+    "Bind recovered assignment to commitments and Fiat-Shamir/QROM",
+    "FullNEAR/1Pgas and secure sub300000B proof"
+  ]
+}

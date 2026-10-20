@@ -1,0 +1,165 @@
+{
+  "status": "PASS",
+  "captures": [
+    {
+      "profile": "near-pq384-gkr-bus-v1",
+      "capture": "/tmp/near-pq384-gkr-bus-full",
+      "nodes": 81268,
+      "layers": 41,
+      "counts": {
+        "initial": 16738,
+        "computed": 64438,
+        "relayed": 71389,
+        "padding": 59630
+      },
+      "rejected": [
+        {
+          "label": "zero-relay",
+          "reason": "zero relay"
+        },
+        {
+          "label": "root-position",
+          "reason": "root route"
+        },
+        {
+          "label": "source-live-missing-root",
+          "reason": "source live closure"
+        },
+        {
+          "label": "initial-position",
+          "reason": "initial bounds"
+        },
+        {
+          "label": "layer-live-missing-root",
+          "reason": "unaccounted nonzero gate"
+        },
+        {
+          "label": "live-position",
+          "reason": "live placement bounds"
+        },
+        {
+          "label": "layer-omitted",
+          "reason": "layer count"
+        },
+        {
+          "label": "nonzero-relay-operand",
+          "reason": "computed/relay route"
+        },
+        {
+          "label": "relay-source-not-live",
+          "reason": "computed/relay route"
+        }
+      ],
+      "artifact": "results/terminal-dag-certificates/near-pq384-gkr-bus-full-certificate.json",
+      "sha256": "a7855dcccc85041c3989ce651dbe89e680f913f6f430e43b9e7fd7b3dacc81ed",
+      "seconds": 3.8291032360866666
+    },
+    {
+      "profile": "near-pq384-seed-gkr-bus-v1",
+      "capture": "/tmp/near-pq384-seed-gkr-bus-full",
+      "nodes": 81268,
+      "layers": 41,
+      "counts": {
+        "initial": 16738,
+        "computed": 64438,
+        "relayed": 71389,
+        "padding": 59630
+      },
+      "rejected": [
+        {
+          "label": "zero-relay",
+          "reason": "zero relay"
+        },
+        {
+          "label": "root-position",
+          "reason": "root route"
+        },
+        {
+          "label": "source-live-missing-root",
+          "reason": "source live closure"
+        },
+        {
+          "label": "initial-position",
+          "reason": "initial bounds"
+        },
+        {
+          "label": "layer-live-missing-root",
+          "reason": "unaccounted nonzero gate"
+        },
+        {
+          "label": "live-position",
+          "reason": "live placement bounds"
+        },
+        {
+          "label": "layer-omitted",
+          "reason": "layer count"
+        },
+        {
+          "label": "nonzero-relay-operand",
+          "reason": "computed/relay route"
+        },
+        {
+          "label": "relay-source-not-live",
+          "reason": "computed/relay route"
+        }
+      ],
+      "artifact": "results/terminal-dag-certificates/near-pq384-seed-gkr-bus-full-certificate.json",
+      "sha256": "af131b24d1d6097832640bcc6f918ef2bd6cf9a3707453f07d895bd3c7d79d51",
+      "seconds": 3.961059540975839
+    },
+    {
+      "profile": "near-pq384-gkr-bus-v1",
+      "capture": "/tmp/near-sha384-family267-proof",
+      "nodes": 99201,
+      "layers": 59,
+      "counts": {
+        "initial": 22274,
+        "computed": 76894,
+        "relayed": 180982,
+        "padding": 106587
+      },
+      "rejected": [
+        {
+          "label": "zero-relay",
+          "reason": "zero relay"
+        },
+        {
+          "label": "root-position",
+          "reason": "root route"
+        },
+        {
+          "label": "source-live-missing-root",
+          "reason": "source live closure"
+        },
+        {
+          "label": "initial-position",
+          "reason": "initial bounds"
+        },
+        {
+          "label": "layer-live-missing-root",
+          "reason": "unaccounted nonzero gate"
+        },
+        {
+          "label": "live-position",
+          "reason": "live placement bounds"
+        },
+        {
+          "label": "layer-omitted",
+          "reason": "layer count"
+        },
+        {
+          "label": "nonzero-relay-operand",
+          "reason": "computed/relay route"
+        },
+        {
+          "label": "relay-source-not-live",
+          "reason": "computed/relay route"
+        }
+      ],
+      "artifact": "results/terminal-dag-certificates/near-sha384-family267-proof-certificate.json",
+      "sha256": "a4e9d8962ab68d7e7fd8081b2e47712929f1497f4c0b7fbbaadc71609f1043ef",
+      "seconds": 5.892673033755273
+    }
+  ],
+  "scope": "Python structural premise validation, not a kernel proof for captures or emitter/AIR refinement."
+}

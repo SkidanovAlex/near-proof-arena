@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "layers": 14,
+  "accepted_paths": 1,
+  "rejected_cases": [
+    "gamma",
+    "next-claim",
+    "next-gate-order",
+    "layer-wiring",
+    "missing-layer",
+    "extra-layer",
+    "empty-path",
+    "wrong-output-slot",
+    "wrong-root-bit",
+    "nonzero-root-claim",
+    "wrong-root-weight"
+  ],
+  "fixture_sha256": "40a4cab2988a56a9f730ed27b5bd4473d107cde2a831bd5229f7d147e23bfee9",
+  "files": {
+    "airbender/direct-wasm/test_call_gkr_path.py": "ddba1cdfbfc7d662476d868eea0fa5c7749123cc5353cbb015fa74b668bfbedc",
+    "CheckGKRPath.lean": "787650899cf7f2cdca3f52f41d74e26175e9e4bd4754462784aabec280d0ef1f",
+    "NearCompression/GKRPathMessageCheck.lean": "3c05e5c170d559ec4e00c68f322c6f2680e72e2dfad3ba234e39163577050175",
+    "NearCompression/GKRRootMessageCheck.lean": "fd77de6c8f48e53fb074489cbdd697538bfd8e702703179a7cf3ebd28eb2cbf0",
+    "results/call-gkr-messages/messages.json.gz": "501eb1ec4921e1c9a4341deb47b1d7b5f1bbe669bb84e6314933763e536a1f3f",
+    "results/call-layer-certificates/case-0.json.gz": "e8dfdc16ae193d2e93411b8cb3c0a4fff804a055808e9feedf940c7c50c3f1ea"
+  },
+  "scope": "The retained 14-layer path passes the proved Lean checker, including the zero root claim, Boolean output-slot query, adjacent query weights, claim links and circuit-depth alignment. Theorem yields evaluated verifier path for supplied history-indexed functions. Tape replay establishes one finite path, not causal transcript/Fiat-Shamir behavior across sampled paths or PCS/QROM soundness. Root-slot provenance still comes from the checked compiler layout."
+}

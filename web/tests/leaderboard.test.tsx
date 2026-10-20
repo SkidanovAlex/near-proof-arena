@@ -1,4 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { benchmark, challengeRecord, demoDataset, makeDefinition, makeSub, type Dataset } from '../mock/fixtures';
 import { renderApp } from './helpers';
@@ -113,5 +114,47 @@ describe('leaderboard', () => {
     expect(screen.getByText('312.500 ± 3.750')).toBeInTheDocument();
     expect(screen.getByText('Full chunk transition')).toBeInTheDocument();
     expect(screen.getByText('block_finality')).toBeInTheDocument();
+  });
+
+  it('filters the board to succinct-badge entries', async () => {
+    const user = userEvent.setup();
+    const c = challengeRecord(makeDefinition({ name: 'DEMO FIXTURE succinct', tier: 'formal' }));
+    const badge = { granted: true, max_proof_bytes: 180_000, max_verify_ns: 2_100_000 };
+    const base = {
+      agent: 'demo-fixture-agent',
+      backend_family: 'x',
+      tier: 'formal' as const,
+      decision: 'ADMITTED' as const,
+      accepted: true,
+      hardware_profile: 'hw',
+      scope: 's',
+      security_profile: 'p',
+      submitted_at: '2026-09-01T00:00:00Z',
+      revoked: false,
+      challenge_id: c.id,
+      protocol_version: c.definition.protocol_version,
+      superseded_by: null,
+    };
+    const ds: Dataset = {
+      challenges: [c],
+      submissions: [],
+      leaderboards: {
+        [c.id]: [
+          { ...base, rank: 1, submission_id: 'sub_s', candidate_name: 'DEMO FIXTURE succinct prover', score_milli: 300_000, succinct: badge },
+          { ...base, rank: 2, submission_id: 'sub_p', candidate_name: 'DEMO FIXTURE plain prover', score_milli: 200_000 },
+        ],
+      },
+    };
+    renderApp(`/challenges/${c.id}`, ds);
+    await screen.findByRole('heading', { name: /Official ranking/ });
+    const official = section(/Official ranking/);
+    expect(within(official).getAllByRole('row')).toHaveLength(3);
+    expect(screen.getByText('SUCCINCT')).toBeInTheDocument();
+    const box = screen.getByRole('checkbox', { name: /succinct only/ }) as HTMLInputElement;
+    expect(box.disabled).toBe(false);
+    await user.click(box);
+    expect(within(official).getAllByRole('row')).toHaveLength(2);
+    expect(within(official).getByText(/succinct prover/)).toBeInTheDocument();
+    expect(within(official).queryByText(/plain prover/)).toBeNull();
   });
 });

@@ -1,0 +1,37 @@
+{
+  "status": "CONCRETE_SELECTOR_INSTANTIATES_PREPARED_HISTORY_BUDGET",
+  "module": "NearCompression/PreparedCheckedHistoryBudget.lean",
+  "theorems": [
+    "table_local_all_constraints_zero",
+    "prepared_checked_history_budget"
+  ],
+  "proved": [
+    "TableLocal implies zero allConstraints, including generated multiplicity-bit constraints.",
+    "The prepared-Wasm acceptance bound now uses twoTableAuxiliaryBranch on earlier fixed coordinate traces and actual formula lists.",
+    "The valid-auxiliary branch derives bus residual validity from exact formula checks, source bounds/TableLocal, and covered coordinate/source binding; it is no longer an assumed decoded witness property.",
+    "Disjoint invalid-table branches retain one shared accepted failure budget."
+  ],
+  "bound": "accepted_count*S <= busTraceErrorBudget*S*continuations.length*S + localBudget(false) + localBudget(true) + pcsBudget",
+  "assumptions": [
+    "Prepared execution/public fit, wrong output, sufficient fuel and local validity of the fixed source.",
+    "Matching source widths, expression bounds, exact formula checks and physical column coverage.",
+    "Accepted continuations either fail downstream or admit decoded coordinates bound to both the fixed source and earlier fixed coordinate trace, with equal claimed final side products.",
+    "Finals/formulas/fixed trace are earlier-pair-indexed; authenticated derivation remains open.",
+    "Actual restricted invalid-table budgets and the joint PCS error budget are still supplied."
+  ],
+  "remaining": [
+    "Instantiate both invalid-table budgets using selected_auxiliary_decoded_witness and adaptive local/GKR/PCS bounds in the same chronological experiment.",
+    "Derive witness/source/coordinate/final bindings from native verifier checks and commitments.",
+    "Combine locally invalid fixed-source cases; full native Ext8, global acceptance, QROM, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4097,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal-only composition."
+  }
+}

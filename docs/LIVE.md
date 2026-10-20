@@ -183,7 +183,11 @@ secret:
 * `server.env`: listeners, paths, quotas, lease length.
 * `worker.env`: **`ARENA_FC_DEPS`** (the Firecracker kernel, rootfs and
   fc-runner set; currently `/data/illia/nearproof-deps/firecracker-rc`, the
-  steps-mode-capable images), the toolchain and lean-checker image pins, the
+  steps-mode-capable images), **`ARENA_FORMAL_FC_DEPS`** (FORMAL_CHECK only:
+  `/data/illia/nearproof-deps/firecracker-fcbatch`, same kernel and fc-runner,
+  rootfs built from the repo whose init runs read-write dirs in steps mode, so
+  the formal checker batches its per-module runs; added by `install` when the
+  set exists; docs/logs/judge-fc-batch-2026-10.md), the toolchain and lean-checker image pins, the
   oracle and `npai-verify` paths, and the conformance sample count.
 * `worker.env` also names the judge inputs that live outside the repo.
   The repo holds only their paths:

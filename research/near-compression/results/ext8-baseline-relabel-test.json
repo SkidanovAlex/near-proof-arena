@@ -1,0 +1,5 @@
+{
+  "status": "PASS",
+  "case": "baseline envelope relabelled as affine-v1",
+  "reason": "endpoint"
+}

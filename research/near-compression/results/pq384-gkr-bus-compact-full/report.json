@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "whole_proof_bytes": 298961,
+  "baseline_bytes": 318996,
+  "saving_bytes": 20035,
+  "source_commitments_included": 1584,
+  "exact_original_proof_roundtrip": true,
+  "unchanged_roots_transcript_queries": true,
+  "omitted_linear_coefficients": 954,
+  "bitcodec_roundtrips": 80,
+  "bitcodec_negative_checks": 3,
+  "proof_negative_checks": 2,
+  "fresh_process_verification": "PASS: exact original GKR-bus proof reconstructed and verified; diagnostic security only",
+  "test_seconds": 49.303438883740455,
+  "scope": "Lossless codec of SAME diagnostic proof; no stronger soundness or query selection"
+}

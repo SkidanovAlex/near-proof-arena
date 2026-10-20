@@ -1,0 +1,21 @@
+{
+  "unique_records": 27538,
+  "unique_hash_inputs": 12762,
+  "unique_input_compressions": 39701,
+  "total_observed_compressions": 177186,
+  "unique_edges": 20862,
+  "observed_graph_acyclic": true,
+  "status": "PASS",
+  "negative_tests": [
+    "input-state",
+    "block-byte",
+    "output-state",
+    "negative-node",
+    "out-of-range-node",
+    "digest",
+    "duplicate-record",
+    "partial-record"
+  ],
+  "records_sha256": "e21c9f26b4af74cc315f5f4f2a3ecccf80f7363a872eadc9ee04b3ba36e0a99e",
+  "scope": "All captured frames independently replayed to exact state/block/output records; capture frequency provenance still comes from source verifier execution, not this checker."
+}

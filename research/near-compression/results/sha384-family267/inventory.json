@@ -1,0 +1,1553 @@
+{
+  "status": "PASS",
+  "source_proof_sha256": "83d6e6e4946ffe9439c833d1bebde506e3edb0244e838ec0aed553948ce2de83",
+  "source_statement_sha256": "83dca46ee650f6d96a3a1da51ec2434450ac658cd0315e1eecb7bde077d2402a",
+  "source_profile": "near-pq384-seed-gkr-bus-v1",
+  "source_verifier_accepts": true,
+  "totals": {
+    "calls": 13698,
+    "unique_calls": 11181,
+    "total_blocks": 41542,
+    "unique_blocks": 32587
+  },
+  "families": [
+    {
+      "tag": "merkle/node",
+      "part_lengths": [
+        197,
+        8,
+        48,
+        48
+      ],
+      "message_bytes": 376,
+      "compression_blocks": 4,
+      "calls": 5632,
+      "unique_calls": 4100,
+      "capture": "family-000.json",
+      "total_blocks": 22528,
+      "unique_blocks": 16400
+    },
+    {
+      "tag": "merkle/node",
+      "part_lengths": [
+        88,
+        8,
+        48,
+        48
+      ],
+      "message_bytes": 267,
+      "compression_blocks": 3,
+      "calls": 1216,
+      "unique_calls": 875,
+      "capture": "family-001.json",
+      "total_blocks": 3648,
+      "unique_blocks": 2625
+    },
+    {
+      "tag": "transcript/squeeze",
+      "part_lengths": [
+        48,
+        13,
+        8
+      ],
+      "message_bytes": 143,
+      "compression_blocks": 2,
+      "calls": 757,
+      "unique_calls": 757,
+      "capture": "family-002.json",
+      "total_blocks": 1514,
+      "unique_blocks": 1514
+    },
+    {
+      "tag": "transcript/request",
+      "part_lengths": [
+        48,
+        13,
+        8,
+        8
+      ],
+      "message_bytes": 159,
+      "compression_blocks": 2,
+      "calls": 757,
+      "unique_calls": 757,
+      "capture": "family-003.json",
+      "total_blocks": 1514,
+      "unique_blocks": 1514
+    },
+    {
+      "tag": "transcript/draw-result",
+      "part_lengths": [
+        48,
+        13,
+        8,
+        8,
+        8
+      ],
+      "message_bytes": 179,
+      "compression_blocks": 2,
+      "calls": 757,
+      "unique_calls": 757,
+      "capture": "family-004.json",
+      "total_blocks": 1514,
+      "unique_blocks": 1514
+    },
+    {
+      "tag": "transcript/ratchet",
+      "part_lengths": [
+        48,
+        13,
+        48
+      ],
+      "message_bytes": 183,
+      "compression_blocks": 2,
+      "calls": 757,
+      "unique_calls": 757,
+      "capture": "family-005.json",
+      "total_blocks": 1514,
+      "unique_blocks": 1514
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        10,
+        56
+      ],
+      "message_bytes": 187,
+      "compression_blocks": 2,
+      "calls": 716,
+      "unique_calls": 716,
+      "capture": "family-006.json",
+      "total_blocks": 1432,
+      "unique_blocks": 1432
+    },
+    {
+      "tag": "merkle/root",
+      "part_lengths": [
+        197,
+        8,
+        48
+      ],
+      "message_bytes": 320,
+      "compression_blocks": 3,
+      "calls": 528,
+      "unique_calls": 63,
+      "capture": "family-007.json",
+      "total_blocks": 1584,
+      "unique_blocks": 189
+    },
+    {
+      "tag": "transcript/squeeze",
+      "part_lengths": [
+        48,
+        21,
+        8
+      ],
+      "message_bytes": 151,
+      "compression_blocks": 2,
+      "calls": 330,
+      "unique_calls": 330,
+      "capture": "family-008.json",
+      "total_blocks": 660,
+      "unique_blocks": 660
+    },
+    {
+      "tag": "transcript/ratchet",
+      "part_lengths": [
+        48,
+        21,
+        48
+      ],
+      "message_bytes": 191,
+      "compression_blocks": 2,
+      "calls": 330,
+      "unique_calls": 330,
+      "capture": "family-009.json",
+      "total_blocks": 660,
+      "unique_blocks": 660
+    },
+    {
+      "tag": "transcript/request",
+      "part_lengths": [
+        48,
+        21,
+        8,
+        8
+      ],
+      "message_bytes": 167,
+      "compression_blocks": 2,
+      "calls": 273,
+      "unique_calls": 273,
+      "capture": "family-010.json",
+      "total_blocks": 546,
+      "unique_blocks": 546
+    },
+    {
+      "tag": "transcript/draw-result",
+      "part_lengths": [
+        48,
+        21,
+        8,
+        8,
+        8
+      ],
+      "message_bytes": 187,
+      "compression_blocks": 2,
+      "calls": 273,
+      "unique_calls": 273,
+      "capture": "family-011.json",
+      "total_blocks": 546,
+      "unique_blocks": 546
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        20,
+        104
+      ],
+      "message_bytes": 245,
+      "compression_blocks": 3,
+      "calls": 135,
+      "unique_calls": 135,
+      "capture": "family-012.json",
+      "total_blocks": 405,
+      "unique_blocks": 405
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        88,
+        8,
+        32
+      ],
+      "message_bytes": 195,
+      "compression_blocks": 2,
+      "calls": 128,
+      "unique_calls": 114,
+      "capture": "family-013.json",
+      "total_blocks": 256,
+      "unique_blocks": 228
+    },
+    {
+      "tag": "merkle/root",
+      "part_lengths": [
+        88,
+        8,
+        48
+      ],
+      "message_bytes": 211,
+      "compression_blocks": 2,
+      "calls": 128,
+      "unique_calls": 16,
+      "capture": "family-014.json",
+      "total_blocks": 256,
+      "unique_blocks": 32
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        8
+      ],
+      "message_bytes": 280,
+      "compression_blocks": 3,
+      "calls": 120,
+      "unique_calls": 92,
+      "capture": "family-015.json",
+      "total_blocks": 360,
+      "unique_blocks": 276
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        64
+      ],
+      "message_bytes": 336,
+      "compression_blocks": 3,
+      "calls": 88,
+      "unique_calls": 88,
+      "capture": "family-016.json",
+      "total_blocks": 264,
+      "unique_blocks": 264
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        72
+      ],
+      "message_bytes": 344,
+      "compression_blocks": 3,
+      "calls": 80,
+      "unique_calls": 80,
+      "capture": "family-017.json",
+      "total_blocks": 240,
+      "unique_blocks": 240
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        20,
+        120
+      ],
+      "message_bytes": 261,
+      "compression_blocks": 3,
+      "calls": 65,
+      "unique_calls": 65,
+      "capture": "family-018.json",
+      "total_blocks": 195,
+      "unique_blocks": 195
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        56
+      ],
+      "message_bytes": 328,
+      "compression_blocks": 3,
+      "calls": 48,
+      "unique_calls": 48,
+      "capture": "family-019.json",
+      "total_blocks": 144,
+      "unique_blocks": 144
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        10,
+        40
+      ],
+      "message_bytes": 171,
+      "compression_blocks": 2,
+      "calls": 41,
+      "unique_calls": 41,
+      "capture": "family-020.json",
+      "total_blocks": 82,
+      "unique_blocks": 82
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        80
+      ],
+      "message_bytes": 352,
+      "compression_blocks": 3,
+      "calls": 40,
+      "unique_calls": 40,
+      "capture": "family-021.json",
+      "total_blocks": 120,
+      "unique_blocks": 120
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        96
+      ],
+      "message_bytes": 368,
+      "compression_blocks": 4,
+      "calls": 40,
+      "unique_calls": 40,
+      "capture": "family-022.json",
+      "total_blocks": 160,
+      "unique_blocks": 160
+    },
+    {
+      "tag": "transcript/squeeze",
+      "part_lengths": [
+        48,
+        14,
+        8
+      ],
+      "message_bytes": 144,
+      "compression_blocks": 2,
+      "calls": 34,
+      "unique_calls": 34,
+      "capture": "family-023.json",
+      "total_blocks": 68,
+      "unique_blocks": 68
+    },
+    {
+      "tag": "transcript/request",
+      "part_lengths": [
+        48,
+        14,
+        8,
+        8
+      ],
+      "message_bytes": 160,
+      "compression_blocks": 2,
+      "calls": 34,
+      "unique_calls": 34,
+      "capture": "family-024.json",
+      "total_blocks": 68,
+      "unique_blocks": 68
+    },
+    {
+      "tag": "transcript/draw-result",
+      "part_lengths": [
+        48,
+        14,
+        8,
+        8,
+        8
+      ],
+      "message_bytes": 180,
+      "compression_blocks": 2,
+      "calls": 34,
+      "unique_calls": 34,
+      "capture": "family-025.json",
+      "total_blocks": 68,
+      "unique_blocks": 68
+    },
+    {
+      "tag": "transcript/ratchet",
+      "part_lengths": [
+        48,
+        14,
+        48
+      ],
+      "message_bytes": 184,
+      "compression_blocks": 2,
+      "calls": 34,
+      "unique_calls": 34,
+      "capture": "family-026.json",
+      "total_blocks": 68,
+      "unique_blocks": 68
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        18,
+        56
+      ],
+      "message_bytes": 195,
+      "compression_blocks": 2,
+      "calls": 34,
+      "unique_calls": 34,
+      "capture": "family-027.json",
+      "total_blocks": 68,
+      "unique_blocks": 68
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        16
+      ],
+      "message_bytes": 159,
+      "compression_blocks": 2,
+      "calls": 33,
+      "unique_calls": 33,
+      "capture": "family-028.json",
+      "total_blocks": 66,
+      "unique_blocks": 66
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        16
+      ],
+      "message_bytes": 288,
+      "compression_blocks": 3,
+      "calls": 24,
+      "unique_calls": 24,
+      "capture": "family-029.json",
+      "total_blocks": 72,
+      "unique_blocks": 72
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        32
+      ],
+      "message_bytes": 304,
+      "compression_blocks": 3,
+      "calls": 24,
+      "unique_calls": 24,
+      "capture": "family-030.json",
+      "total_blocks": 72,
+      "unique_blocks": 72
+    },
+    {
+      "tag": "weighted-joint-stage-v1",
+      "part_lengths": [
+        48
+      ],
+      "message_bytes": 111,
+      "compression_blocks": 1,
+      "calls": 18,
+      "unique_calls": 17,
+      "capture": "family-031.json",
+      "total_blocks": 18,
+      "unique_blocks": 17
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        24,
+        48
+      ],
+      "message_bytes": 193,
+      "compression_blocks": 2,
+      "calls": 17,
+      "unique_calls": 17,
+      "capture": "family-032.json",
+      "total_blocks": 34,
+      "unique_blocks": 34
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        24
+      ],
+      "message_bytes": 296,
+      "compression_blocks": 3,
+      "calls": 16,
+      "unique_calls": 16,
+      "capture": "family-033.json",
+      "total_blocks": 48,
+      "unique_blocks": 48
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        104
+      ],
+      "message_bytes": 376,
+      "compression_blocks": 4,
+      "calls": 16,
+      "unique_calls": 16,
+      "capture": "family-034.json",
+      "total_blocks": 64,
+      "unique_blocks": 64
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        168,
+        8,
+        32
+      ],
+      "message_bytes": 275,
+      "compression_blocks": 3,
+      "calls": 10,
+      "unique_calls": 2,
+      "capture": "family-035.json",
+      "total_blocks": 30,
+      "unique_blocks": 6
+    },
+    {
+      "tag": "merkle/root",
+      "part_lengths": [
+        168,
+        8,
+        48
+      ],
+      "message_bytes": 291,
+      "compression_blocks": 3,
+      "calls": 9,
+      "unique_calls": 1,
+      "capture": "family-036.json",
+      "total_blocks": 27,
+      "unique_blocks": 3
+    },
+    {
+      "tag": "merkle/node",
+      "part_lengths": [
+        168,
+        8,
+        48,
+        48
+      ],
+      "message_bytes": 347,
+      "compression_blocks": 3,
+      "calls": 9,
+      "unique_calls": 1,
+      "capture": "family-037.json",
+      "total_blocks": 27,
+      "unique_blocks": 3
+    },
+    {
+      "tag": "transcript/squeeze",
+      "part_lengths": [
+        48,
+        25,
+        8
+      ],
+      "message_bytes": 155,
+      "compression_blocks": 2,
+      "calls": 8,
+      "unique_calls": 8,
+      "capture": "family-038.json",
+      "total_blocks": 16,
+      "unique_blocks": 16
+    },
+    {
+      "tag": "transcript/request",
+      "part_lengths": [
+        48,
+        25,
+        8,
+        8
+      ],
+      "message_bytes": 171,
+      "compression_blocks": 2,
+      "calls": 8,
+      "unique_calls": 8,
+      "capture": "family-039.json",
+      "total_blocks": 16,
+      "unique_blocks": 16
+    },
+    {
+      "tag": "transcript/draw-result",
+      "part_lengths": [
+        48,
+        25,
+        8,
+        8,
+        8
+      ],
+      "message_bytes": 191,
+      "compression_blocks": 2,
+      "calls": 8,
+      "unique_calls": 8,
+      "capture": "family-040.json",
+      "total_blocks": 16,
+      "unique_blocks": 16
+    },
+    {
+      "tag": "transcript/ratchet",
+      "part_lengths": [
+        48,
+        25,
+        48
+      ],
+      "message_bytes": 195,
+      "compression_blocks": 2,
+      "calls": 8,
+      "unique_calls": 8,
+      "capture": "family-041.json",
+      "total_blocks": 16,
+      "unique_blocks": 16
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        40
+      ],
+      "message_bytes": 312,
+      "compression_blocks": 3,
+      "calls": 8,
+      "unique_calls": 8,
+      "capture": "family-042.json",
+      "total_blocks": 24,
+      "unique_blocks": 24
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        48
+      ],
+      "message_bytes": 320,
+      "compression_blocks": 3,
+      "calls": 8,
+      "unique_calls": 8,
+      "capture": "family-043.json",
+      "total_blocks": 24,
+      "unique_blocks": 24
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        88
+      ],
+      "message_bytes": 360,
+      "compression_blocks": 3,
+      "calls": 8,
+      "unique_calls": 8,
+      "capture": "family-044.json",
+      "total_blocks": 24,
+      "unique_blocks": 24
+    },
+    {
+      "tag": "merkle/leaf",
+      "part_lengths": [
+        197,
+        8,
+        272
+      ],
+      "message_bytes": 544,
+      "compression_blocks": 5,
+      "calls": 8,
+      "unique_calls": 8,
+      "capture": "family-045.json",
+      "total_blocks": 40,
+      "unique_blocks": 40
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        72
+      ],
+      "message_bytes": 215,
+      "compression_blocks": 2,
+      "calls": 5,
+      "unique_calls": 5,
+      "capture": "family-046.json",
+      "total_blocks": 10,
+      "unique_blocks": 10
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        20,
+        136
+      ],
+      "message_bytes": 277,
+      "compression_blocks": 3,
+      "calls": 4,
+      "unique_calls": 4,
+      "capture": "family-047.json",
+      "total_blocks": 12,
+      "unique_blocks": 12
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        152
+      ],
+      "message_bytes": 295,
+      "compression_blocks": 3,
+      "calls": 4,
+      "unique_calls": 4,
+      "capture": "family-048.json",
+      "total_blocks": 12,
+      "unique_blocks": 12
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        40
+      ],
+      "message_bytes": 183,
+      "compression_blocks": 2,
+      "calls": 3,
+      "unique_calls": 3,
+      "capture": "family-049.json",
+      "total_blocks": 6,
+      "unique_blocks": 6
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        56
+      ],
+      "message_bytes": 199,
+      "compression_blocks": 2,
+      "calls": 3,
+      "unique_calls": 3,
+      "capture": "family-050.json",
+      "total_blocks": 6,
+      "unique_blocks": 6
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        88
+      ],
+      "message_bytes": 231,
+      "compression_blocks": 2,
+      "calls": 3,
+      "unique_calls": 3,
+      "capture": "family-051.json",
+      "total_blocks": 6,
+      "unique_blocks": 6
+    },
+    {
+      "tag": "transcript/init",
+      "part_lengths": [
+        48
+      ],
+      "message_bytes": 103,
+      "compression_blocks": 1,
+      "calls": 2,
+      "unique_calls": 2,
+      "capture": "family-052.json",
+      "total_blocks": 2,
+      "unique_blocks": 2
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        104
+      ],
+      "message_bytes": 247,
+      "compression_blocks": 3,
+      "calls": 2,
+      "unique_calls": 2,
+      "capture": "family-053.json",
+      "total_blocks": 6,
+      "unique_blocks": 6
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        232
+      ],
+      "message_bytes": 375,
+      "compression_blocks": 4,
+      "calls": 2,
+      "unique_calls": 2,
+      "capture": "family-054.json",
+      "total_blocks": 8,
+      "unique_blocks": 8
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        296
+      ],
+      "message_bytes": 439,
+      "compression_blocks": 4,
+      "calls": 2,
+      "unique_calls": 2,
+      "capture": "family-055.json",
+      "total_blocks": 8,
+      "unique_blocks": 8
+    },
+    {
+      "tag": "gkr-after-all-constraints",
+      "part_lengths": [
+        48
+      ],
+      "message_bytes": 113,
+      "compression_blocks": 2,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-056.json",
+      "total_blocks": 2,
+      "unique_blocks": 2
+    },
+    {
+      "tag": "transcript/init",
+      "part_lengths": [
+        82
+      ],
+      "message_bytes": 137,
+      "compression_blocks": 2,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-057.json",
+      "total_blocks": 2,
+      "unique_blocks": 2
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        30,
+        8
+      ],
+      "message_bytes": 159,
+      "compression_blocks": 2,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-058.json",
+      "total_blocks": 2,
+      "unique_blocks": 2
+    },
+    {
+      "tag": "weighted-pcs-after-seed-gkr",
+      "part_lengths": [
+        48,
+        48
+      ],
+      "message_bytes": 171,
+      "compression_blocks": 2,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-059.json",
+      "total_blocks": 2,
+      "unique_blocks": 2
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        33,
+        32
+      ],
+      "message_bytes": 186,
+      "compression_blocks": 2,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-060.json",
+      "total_blocks": 2,
+      "unique_blocks": 2
+    },
+    {
+      "tag": "near-pq384-seed-gkr-v1",
+      "part_lengths": [
+        104,
+        48,
+        24
+      ],
+      "message_bytes": 254,
+      "compression_blocks": 3,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-061.json",
+      "total_blocks": 3,
+      "unique_blocks": 3
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        120
+      ],
+      "message_bytes": 263,
+      "compression_blocks": 3,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-062.json",
+      "total_blocks": 3,
+      "unique_blocks": 3
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        136
+      ],
+      "message_bytes": 279,
+      "compression_blocks": 3,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-063.json",
+      "total_blocks": 3,
+      "unique_blocks": 3
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        168
+      ],
+      "message_bytes": 311,
+      "compression_blocks": 3,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-064.json",
+      "total_blocks": 3,
+      "unique_blocks": 3
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        184
+      ],
+      "message_bytes": 327,
+      "compression_blocks": 3,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-065.json",
+      "total_blocks": 3,
+      "unique_blocks": 3
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        200
+      ],
+      "message_bytes": 343,
+      "compression_blocks": 3,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-066.json",
+      "total_blocks": 3,
+      "unique_blocks": 3
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        280
+      ],
+      "message_bytes": 423,
+      "compression_blocks": 4,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-067.json",
+      "total_blocks": 4,
+      "unique_blocks": 4
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        312
+      ],
+      "message_bytes": 455,
+      "compression_blocks": 4,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-068.json",
+      "total_blocks": 4,
+      "unique_blocks": 4
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        328
+      ],
+      "message_bytes": 471,
+      "compression_blocks": 4,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-069.json",
+      "total_blocks": 4,
+      "unique_blocks": 4
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        440
+      ],
+      "message_bytes": 583,
+      "compression_blocks": 5,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-070.json",
+      "total_blocks": 5,
+      "unique_blocks": 5
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        22,
+        1592
+      ],
+      "message_bytes": 1735,
+      "compression_blocks": 14,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-071.json",
+      "total_blocks": 14,
+      "unique_blocks": 14
+    },
+    {
+      "tag": "transcript/commit",
+      "part_lengths": [
+        48,
+        25,
+        1592
+      ],
+      "message_bytes": 1738,
+      "compression_blocks": 14,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-072.json",
+      "total_blocks": 14,
+      "unique_blocks": 14
+    },
+    {
+      "tag": "derived-weight-joint-public-v1",
+      "part_lengths": [
+        48,
+        48,
+        11808,
+        24
+      ],
+      "message_bytes": 12022,
+      "compression_blocks": 95,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-073.json",
+      "total_blocks": 95,
+      "unique_blocks": 95
+    },
+    {
+      "tag": "near-pq384-seed-gkr-bus-v1",
+      "part_lengths": [
+        48,
+        8,
+        22308,
+        8,
+        792,
+        8
+      ],
+      "message_bytes": 23278,
+      "compression_blocks": 182,
+      "calls": 1,
+      "unique_calls": 1,
+      "capture": "family-074.json",
+      "total_blocks": 182,
+      "unique_blocks": 182
+    }
+  ],
+  "lengths": {
+    "103": {
+      "calls": 2,
+      "unique_calls": 2,
+      "total_blocks": 2,
+      "unique_blocks": 2
+    },
+    "111": {
+      "calls": 18,
+      "unique_calls": 17,
+      "total_blocks": 18,
+      "unique_blocks": 17
+    },
+    "113": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 2,
+      "unique_blocks": 2
+    },
+    "137": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 2,
+      "unique_blocks": 2
+    },
+    "143": {
+      "calls": 757,
+      "unique_calls": 757,
+      "total_blocks": 1514,
+      "unique_blocks": 1514
+    },
+    "144": {
+      "calls": 34,
+      "unique_calls": 34,
+      "total_blocks": 68,
+      "unique_blocks": 68
+    },
+    "151": {
+      "calls": 330,
+      "unique_calls": 330,
+      "total_blocks": 660,
+      "unique_blocks": 660
+    },
+    "155": {
+      "calls": 8,
+      "unique_calls": 8,
+      "total_blocks": 16,
+      "unique_blocks": 16
+    },
+    "159": {
+      "calls": 791,
+      "unique_calls": 791,
+      "total_blocks": 1582,
+      "unique_blocks": 1582
+    },
+    "160": {
+      "calls": 34,
+      "unique_calls": 34,
+      "total_blocks": 68,
+      "unique_blocks": 68
+    },
+    "167": {
+      "calls": 273,
+      "unique_calls": 273,
+      "total_blocks": 546,
+      "unique_blocks": 546
+    },
+    "171": {
+      "calls": 50,
+      "unique_calls": 50,
+      "total_blocks": 100,
+      "unique_blocks": 100
+    },
+    "179": {
+      "calls": 757,
+      "unique_calls": 757,
+      "total_blocks": 1514,
+      "unique_blocks": 1514
+    },
+    "180": {
+      "calls": 34,
+      "unique_calls": 34,
+      "total_blocks": 68,
+      "unique_blocks": 68
+    },
+    "183": {
+      "calls": 760,
+      "unique_calls": 760,
+      "total_blocks": 1520,
+      "unique_blocks": 1520
+    },
+    "184": {
+      "calls": 34,
+      "unique_calls": 34,
+      "total_blocks": 68,
+      "unique_blocks": 68
+    },
+    "186": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 2,
+      "unique_blocks": 2
+    },
+    "187": {
+      "calls": 989,
+      "unique_calls": 989,
+      "total_blocks": 1978,
+      "unique_blocks": 1978
+    },
+    "191": {
+      "calls": 338,
+      "unique_calls": 338,
+      "total_blocks": 676,
+      "unique_blocks": 676
+    },
+    "193": {
+      "calls": 17,
+      "unique_calls": 17,
+      "total_blocks": 34,
+      "unique_blocks": 34
+    },
+    "195": {
+      "calls": 170,
+      "unique_calls": 156,
+      "total_blocks": 340,
+      "unique_blocks": 312
+    },
+    "199": {
+      "calls": 3,
+      "unique_calls": 3,
+      "total_blocks": 6,
+      "unique_blocks": 6
+    },
+    "211": {
+      "calls": 128,
+      "unique_calls": 16,
+      "total_blocks": 256,
+      "unique_blocks": 32
+    },
+    "215": {
+      "calls": 5,
+      "unique_calls": 5,
+      "total_blocks": 10,
+      "unique_blocks": 10
+    },
+    "231": {
+      "calls": 3,
+      "unique_calls": 3,
+      "total_blocks": 6,
+      "unique_blocks": 6
+    },
+    "245": {
+      "calls": 135,
+      "unique_calls": 135,
+      "total_blocks": 405,
+      "unique_blocks": 405
+    },
+    "247": {
+      "calls": 2,
+      "unique_calls": 2,
+      "total_blocks": 6,
+      "unique_blocks": 6
+    },
+    "254": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 3,
+      "unique_blocks": 3
+    },
+    "261": {
+      "calls": 65,
+      "unique_calls": 65,
+      "total_blocks": 195,
+      "unique_blocks": 195
+    },
+    "263": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 3,
+      "unique_blocks": 3
+    },
+    "267": {
+      "calls": 1216,
+      "unique_calls": 875,
+      "total_blocks": 3648,
+      "unique_blocks": 2625
+    },
+    "275": {
+      "calls": 10,
+      "unique_calls": 2,
+      "total_blocks": 30,
+      "unique_blocks": 6
+    },
+    "277": {
+      "calls": 4,
+      "unique_calls": 4,
+      "total_blocks": 12,
+      "unique_blocks": 12
+    },
+    "279": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 3,
+      "unique_blocks": 3
+    },
+    "280": {
+      "calls": 120,
+      "unique_calls": 92,
+      "total_blocks": 360,
+      "unique_blocks": 276
+    },
+    "288": {
+      "calls": 24,
+      "unique_calls": 24,
+      "total_blocks": 72,
+      "unique_blocks": 72
+    },
+    "291": {
+      "calls": 9,
+      "unique_calls": 1,
+      "total_blocks": 27,
+      "unique_blocks": 3
+    },
+    "295": {
+      "calls": 4,
+      "unique_calls": 4,
+      "total_blocks": 12,
+      "unique_blocks": 12
+    },
+    "296": {
+      "calls": 16,
+      "unique_calls": 16,
+      "total_blocks": 48,
+      "unique_blocks": 48
+    },
+    "304": {
+      "calls": 24,
+      "unique_calls": 24,
+      "total_blocks": 72,
+      "unique_blocks": 72
+    },
+    "311": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 3,
+      "unique_blocks": 3
+    },
+    "312": {
+      "calls": 8,
+      "unique_calls": 8,
+      "total_blocks": 24,
+      "unique_blocks": 24
+    },
+    "320": {
+      "calls": 536,
+      "unique_calls": 71,
+      "total_blocks": 1608,
+      "unique_blocks": 213
+    },
+    "327": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 3,
+      "unique_blocks": 3
+    },
+    "328": {
+      "calls": 48,
+      "unique_calls": 48,
+      "total_blocks": 144,
+      "unique_blocks": 144
+    },
+    "336": {
+      "calls": 88,
+      "unique_calls": 88,
+      "total_blocks": 264,
+      "unique_blocks": 264
+    },
+    "343": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 3,
+      "unique_blocks": 3
+    },
+    "344": {
+      "calls": 80,
+      "unique_calls": 80,
+      "total_blocks": 240,
+      "unique_blocks": 240
+    },
+    "347": {
+      "calls": 9,
+      "unique_calls": 1,
+      "total_blocks": 27,
+      "unique_blocks": 3
+    },
+    "352": {
+      "calls": 40,
+      "unique_calls": 40,
+      "total_blocks": 120,
+      "unique_blocks": 120
+    },
+    "360": {
+      "calls": 8,
+      "unique_calls": 8,
+      "total_blocks": 24,
+      "unique_blocks": 24
+    },
+    "368": {
+      "calls": 40,
+      "unique_calls": 40,
+      "total_blocks": 160,
+      "unique_blocks": 160
+    },
+    "375": {
+      "calls": 2,
+      "unique_calls": 2,
+      "total_blocks": 8,
+      "unique_blocks": 8
+    },
+    "376": {
+      "calls": 5648,
+      "unique_calls": 4116,
+      "total_blocks": 22592,
+      "unique_blocks": 16464
+    },
+    "423": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 4,
+      "unique_blocks": 4
+    },
+    "439": {
+      "calls": 2,
+      "unique_calls": 2,
+      "total_blocks": 8,
+      "unique_blocks": 8
+    },
+    "455": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 4,
+      "unique_blocks": 4
+    },
+    "471": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 4,
+      "unique_blocks": 4
+    },
+    "544": {
+      "calls": 8,
+      "unique_calls": 8,
+      "total_blocks": 40,
+      "unique_blocks": 40
+    },
+    "583": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 5,
+      "unique_blocks": 5
+    },
+    "1735": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 14,
+      "unique_blocks": 14
+    },
+    "1738": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 14,
+      "unique_blocks": 14
+    },
+    "12022": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 95,
+      "unique_blocks": 95
+    },
+    "23278": {
+      "calls": 1,
+      "unique_calls": 1,
+      "total_blocks": 182,
+      "unique_blocks": 182
+    }
+  },
+  "selected_next_family": {
+    "tag": "merkle/node",
+    "part_lengths": [
+      88,
+      8,
+      48,
+      48
+    ],
+    "message_bytes": 267,
+    "compression_blocks": 3,
+    "calls": 1216,
+    "unique_calls": 875,
+    "capture": "family-001.json",
+    "total_blocks": 3648,
+    "unique_blocks": 2625
+  },
+  "scope": "Trusted configuration setup excluded; exact actual input families, not recursive circuit coverage or security certification. Fixed-length AIR specialization must separately bind framing bytes and external root."
+}

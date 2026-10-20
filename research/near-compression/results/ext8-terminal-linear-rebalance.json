@@ -1,0 +1,49 @@
+{
+  "status": "PASS",
+  "baseline": {
+    "nodes": 84338,
+    "live_nodes": 84332,
+    "layers": 58,
+    "gates": 323178,
+    "sumcheck_rounds": 1124,
+    "gkr_scalar_bytes": 111616
+  },
+  "optimized": {
+    "nodes": 89475,
+    "live_nodes": 89474,
+    "layers": 20,
+    "gates": 149506,
+    "sumcheck_rounds": 384,
+    "gkr_scalar_bytes": 38144
+  },
+  "rewrite_seconds": 0.40863834833726287,
+  "region_stats": {
+    "regions": 9928,
+    "largest_region": 31842,
+    "root_depth": 20
+  },
+  "layer_certificate": {
+    "initial": 21188,
+    "computed": 68286,
+    "relayed": 45244,
+    "padding": 35956
+  },
+  "semantic_certificate": {
+    "status": "PASS",
+    "forms": 133099,
+    "atoms": 26272,
+    "largest_form_terms": 10877,
+    "method": "Exact affine normalization with opaque normalized nonlinear products",
+    "scope": "Universal input equality checked by Python field arithmetic; checker and field implementation are not Lean-refined",
+    "seconds": 1.188187045045197
+  },
+  "differential_vectors": [
+    "zero",
+    "one",
+    "random_ext8"
+  ],
+  "gkr_scalar_bytes_saved": 73472,
+  "scope": "Prototype rewrite of the actual verifier-derived compression terminal DAG. Exact symbolic affine equivalence, three differential input vectors and structural layer certificate pass. No actual new GKR/PCS proof, accepted compiler change, universal semantic theorem or full-proof size claim.",
+  "source_sha256": "e6f63acfdfd48c37a55de4990e14d70454558bf06f8bfd4c600c1fc7d68e5206",
+  "source_kind": "reduction"
+}

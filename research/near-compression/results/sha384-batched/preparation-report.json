@@ -1,0 +1,94 @@
+{
+  "scope": "Diagnostic derived-public profile; full reset/routing semantic refinement pending",
+  "status": "PASS",
+  "source_sha256": [
+    "e5eba5524e499a54dcf476eb63e915592ae17f4129ca47b904bd83fc4e045f3a",
+    "f1429877cab5c8df85d40ab76fa5bffca93df785bab99efc88ee357fdb8cb183",
+    "eeae263392545a0347c49311e611d18c557a82b5c3f40d6104b8193afd417aac",
+    "d332b378e386b3f0a8e9d3ba275875d96075ebc2148e5d307f2b51281370ba06"
+  ],
+  "message_sha256": "a9a5c4cd9753afd390d90789c4adcbf69a8b6bc8e4a9f0a527e676a21ce0e81c",
+  "blocks": 4,
+  "active_core_rows": 320,
+  "core_rows": 512,
+  "endpoint_rows": 4,
+  "old_endpoint_cells": 2710032,
+  "new_cells": 2686480,
+  "public_field_elements": 724,
+  "additional_public_elements": 296,
+  "additional_public_fixed_width_bytes": 1184,
+  "packing_effects": [
+    {
+      "blocks": 4,
+      "active_rows": 320,
+      "core_rows": 512,
+      "old_cells": 2710032,
+      "new_cells": 2686480,
+      "saving_percent": 0.86906722872645,
+      "additional_public_bytes": 1184
+    },
+    {
+      "blocks": 5,
+      "active_rows": 400,
+      "core_rows": 512,
+      "old_cells": 3392544,
+      "new_cells": 2693152,
+      "saving_percent": 20.61556165520624,
+      "additional_public_bytes": 1440
+    },
+    {
+      "blocks": 6,
+      "active_rows": 480,
+      "core_rows": 512,
+      "old_cells": 4068384,
+      "new_cells": 2693152,
+      "saving_percent": 33.80290552710855,
+      "additional_public_bytes": 1696
+    },
+    {
+      "blocks": 8,
+      "active_rows": 640,
+      "core_rows": 1024,
+      "old_cells": 5420064,
+      "new_cells": 5372960,
+      "saving_percent": 0.86906722872645,
+      "additional_public_bytes": 2208
+    },
+    {
+      "blocks": 12,
+      "active_rows": 960,
+      "core_rows": 1024,
+      "old_cells": 8136768,
+      "new_cells": 5386304,
+      "saving_percent": 33.80290552710855,
+      "additional_public_bytes": 3232
+    },
+    {
+      "blocks": 16,
+      "active_rows": 1280,
+      "core_rows": 2048,
+      "old_cells": 10840128,
+      "new_cells": 10745920,
+      "saving_percent": 0.86906722872645,
+      "additional_public_bytes": 4256
+    },
+    {
+      "blocks": 24,
+      "active_rows": 1920,
+      "core_rows": 2048,
+      "old_cells": 16273536,
+      "new_cells": 10772608,
+      "saving_percent": 33.80290552710855,
+      "additional_public_bytes": 6304
+    },
+    {
+      "blocks": 32,
+      "active_rows": 2560,
+      "core_rows": 4096,
+      "old_cells": 21680256,
+      "new_cells": 21491840,
+      "saving_percent": 0.86906722872645,
+      "additional_public_bytes": 8352
+    }
+  ]
+}

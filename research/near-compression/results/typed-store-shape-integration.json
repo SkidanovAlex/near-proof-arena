@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3288,
+  "added_theorems": 9,
+  "sources": {
+    "PreparedTypedLocalStoreState": "cdb05a6e94148a4b1171c7c6e319d1bb10f590abba26196961d9235b588573ce",
+    "PreparedTypedLocalStoreAuthenticated": "4837e303e330ad6f76da58d89f9667d34303097615cdd9e0f081202576736ac9",
+    "PreparedTypedExecutionShape": "e11a07805247072952aab295c775d1a97961696b8711c772bc8844c5eb5ff019"
+  },
+  "audit_log": "/tmp/root-store-shape-audit.log",
+  "audit_sha256": "008ef1193dbde926a0e1932e0f78f281934e83f8bb639f04ac92ca8847fc8eed",
+  "scope": [
+    "Authenticated actual local.set and local.tee successors including selected local, type-preserving writes, stack pop/preservation, PC, gas and labels.",
+    "Literal AIR implies exactly one of twelve opcode flags and excludes an active last row."
+  ],
+  "remaining": [
+    "mixed control successors and complete whole-call induction",
+    "full NEAR semantics and 1Petagas capacity",
+    "recursive aggregation and quantum security bounds for sub300KB"
+  ]
+}

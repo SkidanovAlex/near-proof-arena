@@ -1,0 +1,28 @@
+   Compiling openvm-recursion-circuit v2.1.0 (/tmp/nearproof-openvm/crates/recursion)
+    Finished `fast` profile [optimized + debuginfo] target(s) in 14.68s
+     Running unittests src/lib.rs (target/fast/deps/openvm_recursion_circuit-0e902e15daeda90d)
+
+running 1 test
+NEARPROOF_HASH_SOURCE source=merkle raw=13789 distinct=10776 exclusive=10776
+NEARPROOF_HASH_SOURCE source=initial raw=3776 distinct=3776 exclusive=3776
+NEARPROOF_HASH_SOURCE source=continuation raw=2640 distinct=2640 exclusive=2640
+NEARPROOF_HASH_SOURCE source=transcript raw=2449 distinct=2449 exclusive=2449
+NEARPROOF_HASH_SOURCE source=external raw=0 distinct=0 exclusive=0
+NEARPROOF_HASH_UNION distinct=19641
+NEARPROOF_HASH raw_perm=6225 raw_compress=16429 distinct=19641 padded=32768
+
+thread 'tests::nearproof_reconstruct_internal_witness' (3496836) panicked at crates/recursion/src/tests.rs:1619:5:
+assertion `left == right` failed: reconstructed common commitment differs
+  left: [406624227, 1886105399, 734671695, 1302527338, 1882661120, 1846310371, 1700098216, 1217094228]
+ right: [1838937126, 1164957995, 1980904389, 1018116446, 1163559455, 1414156595, 1589383092, 1281892399]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test tests::nearproof_reconstruct_internal_witness ... FAILED
+
+failures:
+
+failures:
+    tests::nearproof_reconstruct_internal_witness
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 269 filtered out; finished in 11.04s
+
+error: test failed, to rerun pass `-p openvm-recursion-circuit --lib`

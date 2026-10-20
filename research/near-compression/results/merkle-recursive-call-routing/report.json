@@ -1,0 +1,503 @@
+{
+  "status": "ROUTING_PARITY_PASS_NOT_RECURSIVE_PROOF",
+  "actual_path_cases": 360,
+  "routing_equations_checked": 555456,
+  "flat_vector_equations_checked": 555456,
+  "mutation_and_shape_rejections": 822,
+  "compression_air_necessity_counterexamples": 48,
+  "growth_shapes": [
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 0,
+      "depth": 1,
+      "calls": 3,
+      "compression_blocks": 5,
+      "use_rows": 8,
+      "linear_equations": 504,
+      "private_sibling_limbs": 24
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 0,
+      "depth": 2,
+      "calls": 4,
+      "compression_blocks": 7,
+      "use_rows": 8,
+      "linear_equations": 672,
+      "private_sibling_limbs": 48
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 0,
+      "depth": 3,
+      "calls": 5,
+      "compression_blocks": 9,
+      "use_rows": 16,
+      "linear_equations": 840,
+      "private_sibling_limbs": 72
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 0,
+      "depth": 4,
+      "calls": 6,
+      "compression_blocks": 11,
+      "use_rows": 16,
+      "linear_equations": 1008,
+      "private_sibling_limbs": 96
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 2,
+      "depth": 1,
+      "calls": 3,
+      "compression_blocks": 5,
+      "use_rows": 8,
+      "linear_equations": 504,
+      "private_sibling_limbs": 24
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 2,
+      "depth": 2,
+      "calls": 4,
+      "compression_blocks": 7,
+      "use_rows": 8,
+      "linear_equations": 672,
+      "private_sibling_limbs": 48
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 2,
+      "depth": 3,
+      "calls": 5,
+      "compression_blocks": 9,
+      "use_rows": 16,
+      "linear_equations": 840,
+      "private_sibling_limbs": 72
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 2,
+      "depth": 4,
+      "calls": 6,
+      "compression_blocks": 11,
+      "use_rows": 16,
+      "linear_equations": 1008,
+      "private_sibling_limbs": 96
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 8,
+      "depth": 1,
+      "calls": 3,
+      "compression_blocks": 5,
+      "use_rows": 8,
+      "linear_equations": 504,
+      "private_sibling_limbs": 24
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 8,
+      "depth": 2,
+      "calls": 4,
+      "compression_blocks": 7,
+      "use_rows": 8,
+      "linear_equations": 672,
+      "private_sibling_limbs": 48
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 8,
+      "depth": 3,
+      "calls": 5,
+      "compression_blocks": 9,
+      "use_rows": 16,
+      "linear_equations": 840,
+      "private_sibling_limbs": 72
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 8,
+      "depth": 4,
+      "calls": 6,
+      "compression_blocks": 11,
+      "use_rows": 16,
+      "linear_equations": 1008,
+      "private_sibling_limbs": 96
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 64,
+      "depth": 1,
+      "calls": 3,
+      "compression_blocks": 6,
+      "use_rows": 8,
+      "linear_equations": 600,
+      "private_sibling_limbs": 24
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 64,
+      "depth": 2,
+      "calls": 4,
+      "compression_blocks": 8,
+      "use_rows": 16,
+      "linear_equations": 768,
+      "private_sibling_limbs": 48
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 64,
+      "depth": 3,
+      "calls": 5,
+      "compression_blocks": 10,
+      "use_rows": 16,
+      "linear_equations": 936,
+      "private_sibling_limbs": 72
+    },
+    {
+      "context_bytes": 1,
+      "leaf_bytes": 64,
+      "depth": 4,
+      "calls": 6,
+      "compression_blocks": 12,
+      "use_rows": 16,
+      "linear_equations": 1104,
+      "private_sibling_limbs": 96
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 0,
+      "depth": 1,
+      "calls": 3,
+      "compression_blocks": 10,
+      "use_rows": 16,
+      "linear_equations": 984,
+      "private_sibling_limbs": 24
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 0,
+      "depth": 2,
+      "calls": 4,
+      "compression_blocks": 14,
+      "use_rows": 16,
+      "linear_equations": 1344,
+      "private_sibling_limbs": 48
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 0,
+      "depth": 3,
+      "calls": 5,
+      "compression_blocks": 18,
+      "use_rows": 32,
+      "linear_equations": 1704,
+      "private_sibling_limbs": 72
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 0,
+      "depth": 4,
+      "calls": 6,
+      "compression_blocks": 22,
+      "use_rows": 32,
+      "linear_equations": 2064,
+      "private_sibling_limbs": 96
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 2,
+      "depth": 1,
+      "calls": 3,
+      "compression_blocks": 10,
+      "use_rows": 16,
+      "linear_equations": 984,
+      "private_sibling_limbs": 24
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 2,
+      "depth": 2,
+      "calls": 4,
+      "compression_blocks": 14,
+      "use_rows": 16,
+      "linear_equations": 1344,
+      "private_sibling_limbs": 48
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 2,
+      "depth": 3,
+      "calls": 5,
+      "compression_blocks": 18,
+      "use_rows": 32,
+      "linear_equations": 1704,
+      "private_sibling_limbs": 72
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 2,
+      "depth": 4,
+      "calls": 6,
+      "compression_blocks": 22,
+      "use_rows": 32,
+      "linear_equations": 2064,
+      "private_sibling_limbs": 96
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 8,
+      "depth": 1,
+      "calls": 3,
+      "compression_blocks": 10,
+      "use_rows": 16,
+      "linear_equations": 984,
+      "private_sibling_limbs": 24
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 8,
+      "depth": 2,
+      "calls": 4,
+      "compression_blocks": 14,
+      "use_rows": 16,
+      "linear_equations": 1344,
+      "private_sibling_limbs": 48
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 8,
+      "depth": 3,
+      "calls": 5,
+      "compression_blocks": 18,
+      "use_rows": 32,
+      "linear_equations": 1704,
+      "private_sibling_limbs": 72
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 8,
+      "depth": 4,
+      "calls": 6,
+      "compression_blocks": 22,
+      "use_rows": 32,
+      "linear_equations": 2064,
+      "private_sibling_limbs": 96
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 64,
+      "depth": 1,
+      "calls": 3,
+      "compression_blocks": 10,
+      "use_rows": 16,
+      "linear_equations": 984,
+      "private_sibling_limbs": 24
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 64,
+      "depth": 2,
+      "calls": 4,
+      "compression_blocks": 14,
+      "use_rows": 16,
+      "linear_equations": 1344,
+      "private_sibling_limbs": 48
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 64,
+      "depth": 3,
+      "calls": 5,
+      "compression_blocks": 18,
+      "use_rows": 32,
+      "linear_equations": 1704,
+      "private_sibling_limbs": 72
+    },
+    {
+      "context_bytes": 197,
+      "leaf_bytes": 64,
+      "depth": 4,
+      "calls": 6,
+      "compression_blocks": 22,
+      "use_rows": 32,
+      "linear_equations": 2064,
+      "private_sibling_limbs": 96
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 0,
+      "depth": 1,
+      "calls": 3,
+      "compression_blocks": 11,
+      "use_rows": 16,
+      "linear_equations": 1080,
+      "private_sibling_limbs": 24
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 0,
+      "depth": 2,
+      "calls": 4,
+      "compression_blocks": 15,
+      "use_rows": 16,
+      "linear_equations": 1440,
+      "private_sibling_limbs": 48
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 0,
+      "depth": 3,
+      "calls": 5,
+      "compression_blocks": 19,
+      "use_rows": 32,
+      "linear_equations": 1800,
+      "private_sibling_limbs": 72
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 0,
+      "depth": 4,
+      "calls": 6,
+      "compression_blocks": 23,
+      "use_rows": 32,
+      "linear_equations": 2160,
+      "private_sibling_limbs": 96
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 2,
+      "depth": 1,
+      "calls": 3,
+      "compression_blocks": 11,
+      "use_rows": 16,
+      "linear_equations": 1080,
+      "private_sibling_limbs": 24
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 2,
+      "depth": 2,
+      "calls": 4,
+      "compression_blocks": 15,
+      "use_rows": 16,
+      "linear_equations": 1440,
+      "private_sibling_limbs": 48
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 2,
+      "depth": 3,
+      "calls": 5,
+      "compression_blocks": 19,
+      "use_rows": 32,
+      "linear_equations": 1800,
+      "private_sibling_limbs": 72
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 2,
+      "depth": 4,
+      "calls": 6,
+      "compression_blocks": 23,
+      "use_rows": 32,
+      "linear_equations": 2160,
+      "private_sibling_limbs": 96
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 8,
+      "depth": 1,
+      "calls": 3,
+      "compression_blocks": 11,
+      "use_rows": 16,
+      "linear_equations": 1080,
+      "private_sibling_limbs": 24
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 8,
+      "depth": 2,
+      "calls": 4,
+      "compression_blocks": 15,
+      "use_rows": 16,
+      "linear_equations": 1440,
+      "private_sibling_limbs": 48
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 8,
+      "depth": 3,
+      "calls": 5,
+      "compression_blocks": 19,
+      "use_rows": 32,
+      "linear_equations": 1800,
+      "private_sibling_limbs": 72
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 8,
+      "depth": 4,
+      "calls": 6,
+      "compression_blocks": 23,
+      "use_rows": 32,
+      "linear_equations": 2160,
+      "private_sibling_limbs": 96
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 64,
+      "depth": 1,
+      "calls": 3,
+      "compression_blocks": 12,
+      "use_rows": 16,
+      "linear_equations": 1176,
+      "private_sibling_limbs": 24
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 64,
+      "depth": 2,
+      "calls": 4,
+      "compression_blocks": 16,
+      "use_rows": 32,
+      "linear_equations": 1536,
+      "private_sibling_limbs": 48
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 64,
+      "depth": 3,
+      "calls": 5,
+      "compression_blocks": 20,
+      "use_rows": 32,
+      "linear_equations": 1896,
+      "private_sibling_limbs": 72
+    },
+    {
+      "context_bytes": 255,
+      "leaf_bytes": 64,
+      "depth": 4,
+      "calls": 6,
+      "compression_blocks": 24,
+      "use_rows": 32,
+      "linear_equations": 2256,
+      "private_sibling_limbs": 96
+    }
+  ],
+  "complete_recursive_proof": false,
+  "public_inputs": [
+    "root",
+    "context",
+    "leaf_count",
+    "index",
+    "claimed_leaf"
+  ],
+  "private_inputs": [
+    "sibling_message_limbs",
+    "SHA384 compression/use witness"
+  ],
+  "scope": "Actual source context plus boundary contexts; all positions at depths1..4. Public-only route compiler binds IV, full chaining state, framing, padding, digest-to-message limbs and root. Tests use native SHA384 states checked against hashlib. Routing is not compression correctness or a PCS proof. Next: same-root GKR/PCS and actual compression AIR acceptance; no outer bytes, PQ128, or full NEAR claim."
+}

@@ -1,0 +1,58 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "8-15,24-31",
+    "/data/illia/nearproof-deps/bin/heavy",
+    "/usr/bin/time",
+    "-v",
+    "timeout",
+    "--kill-after=10s",
+    "180",
+    "/data/illia/nearproof/target/recursion-compress/release/compression-host",
+    "execute",
+    "target/recursion-compression-inputs/tiny/air.json",
+    "target/recursion-compression-inputs/tiny/pub.bin",
+    "target/recursion-compression-inputs/tiny/claim.bin",
+    "target/recursion-compression-inputs/tiny/proof.bin",
+    "tools/recursion/compress/results/2026-10-14/tiny-execute/receipt.bin"
+  ],
+  "inputs": {
+    "air.json": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/tiny/air.json",
+      "bytes": 762,
+      "sha256": "59e06dc402c04c4b2635a240b03b9da10d55f2f8f5a7d4f9cd10c4d071869440"
+    },
+    "pub.bin": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/tiny/pub.bin",
+      "bytes": 11,
+      "sha256": "c1156e54d87767c570e51310d9d9bfe92dd83e9df8be73bf066f57e772908052"
+    },
+    "claim.bin": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/tiny/claim.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proof.bin": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/tiny/proof.bin",
+      "bytes": 73942,
+      "sha256": "8e56d3a1444b3673aab26b196737d4ebd4965e0bbb24de31dc847cea53aaee90"
+    }
+  },
+  "exit_code": 0,
+  "binary_sha256": "6b15ae8c684c85301845f25409ece04bbcd8608ff77bf96b95cfa29dd3f0a078",
+  "status": "PASS",
+  "result": {
+    "action": "execute",
+    "execute_seconds": 0.55375818,
+    "image_id": "bad2a498b4a10506f8b49151b08860d9e5d65eb6e725446aa41a6ec64869aa95",
+    "inner_proof_bytes": 73942,
+    "inner_proof_sha256": "8e56d3a1444b3673aab26b196737d4ebd4965e0bbb24de31dc847cea53aaee90",
+    "journal_hex": "6e65617270726f6f662d636f6d7072657373696f6e2d76310059e06dc402c04c4b2635a240b03b9da10d55f2f8f5a7d4f9cd10c4d071869440c1156e54d87767c570e51310d9d9bfe92dd83e9df8be73bf066f57e772908052e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native_verify_seconds": 0.001531551,
+    "padded_cycles": 31981568,
+    "segments": 31,
+    "user_cycles": 29583270
+  },
+  "peak_rss_kib": 66192
+}

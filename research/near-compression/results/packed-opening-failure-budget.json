@@ -1,0 +1,27 @@
+{
+  "status": "COMPOSITION_PROVED_PCS_FAILURE_UNBOUNDED",
+  "module": "NearCompression/PackedOpeningFailureBudget.lean",
+  "bound": "wrong-vector acceptance count <= p*Q^(p-1)*R + PCS failure count on the same Q^p*R experiment",
+  "fixed_before_packing": [
+    "source table",
+    "row point",
+    "sent claim vector"
+  ],
+  "adaptive_after_packing": "Opening acceptance may depend on packing coordinates and subsequent challenge data; no independence of packing collision and PCS failure is assumed.",
+  "not_proved": [
+    "A numerical PCS failure bound",
+    "Cryptographic extraction of one common committed trace",
+    "Fiat-Shamir/QROM applicability",
+    "Executable sampler correspondence"
+  ],
+  "next_connection": "The checked fold theorem bounds no-candidate acceptance, not fixed-source incorrect openings. A candidate-coherence/common-source argument is still required before using that theorem to bound this PCS failure event.",
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3734,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

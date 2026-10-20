@@ -1,0 +1,35 @@
+{
+  "status": "BATCH_CANCELLATION_COMPOSED_WITH_EVALUATED_GKR_REPAIR",
+  "module": "NearCompression/BatchedEvaluatedGKR.lean",
+  "theorems": [
+    "evaluated_gkr_zero_root_wrong",
+    "batched_evaluated_gkr_budget"
+  ],
+  "proved": [
+    "Boolean root query plus zero transmitted claim and nonzero finite circuit output derive the first GKR wrong-claim predicate using computed layer values.",
+    "Terminal batching cancellation composes with evaluated GKR continuation error on one fixed round-envelope experiment.",
+    "Circuits, inputs and adaptive strategies may depend on rho, while the semantic output/claim list precedes rho.",
+    "Only the accepted terminal mismatch count remains as a downstream numerical budget; the GKR repair term is instantiated."
+  ],
+  "assumptions": [
+    "Fixed mismatched output/claim list, distinct challenge sample and per-rho compiler output identity.",
+    "Root query/wiring/slot bounds, initial zero claim and accepted structural GKR path checks.",
+    "Fixed GKR round envelope and continuation sample list across rho.",
+    "Explicit bound pcsBudget on accepted terminal mismatch on that exact GKR-path/continuation experiment."
+  ],
+  "remaining": [
+    "Discharge pcsBudget by matching the merged near/far PCS coordinate experiment; cannot substitute its number without that match.",
+    "Instantiate root and path checks from executable verifier, plus transcript/specification binding.",
+    "Commitment extraction, quantum Fiat-Shamir, secure parameters and full-NEAR sub300000-byte feasibility."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3923,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun: formal composition only."
+  }
+}

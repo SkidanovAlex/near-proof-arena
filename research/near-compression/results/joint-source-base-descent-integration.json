@@ -1,0 +1,38 @@
+{
+  "status": "JOINT_REPRESENTATIVE_DESCENT_FOR_TYPED_BASE_SOURCE_ORACLES",
+  "module": "NearCompression/JointSourceBaseDescent.lean",
+  "theorems": [
+    "fp8_joint_representative_base",
+    "fp8_typed_joint_recovered_base",
+    "fp8_natural_domain_base"
+  ],
+  "proved": [
+    "Joint representative lane radius and agreement partition supply scalar agreement needed for coefficient descent when D<=T<=domain length.",
+    "Typed Fp-valued source functions embedded in Fp8 discharge full-domain base-valuedness, yielding base-valued recovered cells from the same joint tuple.",
+    "Powers of an embedded base-field root form a base-valued natural RS domain."
+  ],
+  "native_evidence": [
+    "pq384_weighted_joint.verify invokes check_opening with first=True for source branches.",
+    "pq384_batched_fold.check_opening checks source leaf shape and field_words, then applies base() to each scalar before extension weighting; folded leaves have a distinct extension format."
+  ],
+  "limitations": [
+    "Inspected native path is the current diagnostic Ext4 implementation; the descent instantiation is Fp8 and is not a claim of a new implemented Ext8 profile.",
+    "Typed full-domain oracle must still be linked to fixed authenticated source bytes under the commitment model.",
+    "No extraction of unknown Merkle preimages or computational/QROM theorem is supplied."
+  ],
+  "remaining": [
+    "Construct matching base execution trace from the preselected decoded family.",
+    "Discharge typed source authentication/native refinement and global soundness composition.",
+    "Secure full-NEAR size remains open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4012,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; source decoding inspected read-only, formal descent composition only."
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "original_widths": [
+    6944,
+    6944,
+    6944,
+    6944
+  ],
+  "quotient_widths": [
+    6336,
+    6336,
+    6336,
+    6336
+  ],
+  "removed_columns": [
+    608,
+    608,
+    608,
+    608
+  ],
+  "exact_witness_cells_checked": 3555328,
+  "arbitrary_witness_expression_parity_checks": 84332,
+  "invalid_witness_projection_rejections": 4,
+  "seconds": 0.6552375168539584,
+  "original_spec_sha256": "98ff9ec0eb1355092636f7ef2325f1f55e00b32ddf7a85209cbbe0d1cd51de0e",
+  "constraints_removed": 0,
+  "degree_increase": 0,
+  "scope": "Column substitution refinement; independent proof of reduced AIR still required"
+}

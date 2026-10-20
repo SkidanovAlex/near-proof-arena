@@ -1,0 +1,83 @@
+{
+  "status": "CLOSED_HYBRID_VERIFIER_PARITY",
+  "degree": 1024,
+  "queries": 31,
+  "events": [
+    {
+      "kind": "fold",
+      "degree": 1024,
+      "structured": true
+    },
+    {
+      "kind": "inject",
+      "degree": 512,
+      "points": 32,
+      "structured": true
+    },
+    {
+      "kind": "fold",
+      "degree": 512,
+      "structured": true
+    },
+    {
+      "kind": "fold",
+      "degree": 256,
+      "structured": true
+    },
+    {
+      "kind": "inject",
+      "degree": 128,
+      "points": 32,
+      "structured": true
+    },
+    {
+      "kind": "materialize",
+      "degree": 128,
+      "terms": 64
+    },
+    {
+      "kind": "fold",
+      "degree": 128,
+      "structured": false
+    },
+    {
+      "kind": "inject",
+      "degree": 64,
+      "points": 32,
+      "structured": false
+    }
+  ],
+  "hash_census": {
+    "calls": 3029,
+    "blocks": 7752,
+    "unique_calls": 2472,
+    "unique_blocks": 6308
+  },
+  "exact_hash_census_match": true,
+  "exact_ordered_hash_preimages_match": true,
+  "compared_transition_coefficients": 765,
+  "negative_cases": [
+    "terminal",
+    "ood",
+    "tail",
+    "source",
+    "external-claim",
+    "injected-weights"
+  ],
+  "fresh_verifier_passed": true,
+  "scope": "One generated degree1024 closed-profile proof verified by dense and hybrid implementations with identical hash census and fresh pure-Python hybrid verification. Additional transition equality checks cover zero/one/random folds and zero/base/extension points. No full NEAR, formal Python refinement, PQ128 certificate, full-size proof or verifier speedup claim.",
+  "sha256": {
+    "airbender/direct-wasm/test_ext8_closed_hybrid.py": "e4cf472d0dbe17eb32c0d8ada1a848d5b78ade745cde238b7ffe92a46f02fcb7",
+    "airbender/direct-wasm/ext8_closed_hybrid_verify.py": "722bd00f892d048cf5527eb72e93b6db98b46c6f0e9db6377c45128ace0f64e6",
+    "airbender/direct-wasm/ext8_closed_derived_switch.py": "2b2d4a3813105f82164a358d9e9c11d7fcf34f62d8f6396690c8f401d0080c3d",
+    "airbender/direct-wasm/ext8_structured_functional.py": "0b4f4ca44930b8beb717cfe9f7fcf5056c36de160baf2d9fd278456952e25fd8",
+    "airbender/direct-wasm/pq384_ext8_native.py": "7580e46a27303d48023368312e7f0fcfd83f252aea86ba4d7ac58f23161a9fac",
+    "airbender/direct-wasm/ext8_code_switch_stage.py": "c00cdf46b021bb283508683bfde7847164872c6012cdc92b48b0a3e3694854e1",
+    "airbender/direct-wasm/ext8_weighted_code_switch.py": "f037e20f06941e3061a7e1f38aba935058ec0301f34e4d9e3a4d70dbe60b793b",
+    "airbender/direct-wasm/pq384_ext8_reference.py": "3646602c3ef14d81bd01dad7e3816df4e3d0c55dfa4277c112d0c3e57d29372a",
+    "airbender/direct-wasm/ext8_code_switch_functional.py": "f672709cc8268b65f01e20dff68bcd060cb185c7b7e6cbc4da58b962714db09c",
+    "results/closed-hybrid-verifier/proof.json": "7e6c46e82a66d3e5a7cc2bd6514c6bc4ed123d249458e3795f7a04c53f71920a",
+    "results/closed-hybrid-verifier/statement.json": "413eb8a9acb9d7502f1a42b449ea06a50a93422ae6f2ce05a0f7a1aa63fa4a36",
+    "results/closed-hybrid-verifier/fresh-verifier.log": "5419bd62a2421db3ad25d34f1e12e7add0a84c46c647cc72192d76a7647aac15"
+  }
+}

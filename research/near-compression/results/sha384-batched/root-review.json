@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "review": "Root reviewed frozen core, exporter, preparation and tests; source hashes matched handoff.",
+  "canonical_lean_export_matches": true,
+  "fresh_binary_verification": "PASS",
+  "root_rerun_reference_checks": 134688,
+  "root_rerun_negative_tests": 14,
+  "integrated_axiom_audit": 2143,
+  "audit_log": "/tmp/root-batched-integration-audit.log",
+  "proof_sha256": "4c46270564d18b43bd611944123672e82463e2f7b8e11c07a8b5930946e38de8",
+  "proof_bytes": 406974,
+  "additional_derived_public_bytes": 1184,
+  "total_public_field_elements": 724,
+  "scope": "Q8 diagnostic only. Batched phase/reset semantic refinement, internal recursive input routing and cryptographic security remain open."
+}

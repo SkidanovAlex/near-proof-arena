@@ -1,0 +1,60 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "8-15,24-31",
+    "/data/illia/nearproof-deps/bin/heavy",
+    "/usr/bin/time",
+    "-v",
+    "timeout",
+    "--kill-after=10s",
+    "180",
+    "/data/illia/nearproof/target/recursion-compress/release/compression-host",
+    "execute",
+    "target/recursion-compression-inputs/segment/air.json",
+    "target/recursion-compression-inputs/segment/pub.bin",
+    "target/recursion-compression-inputs/segment/claim.bin",
+    "target/recursion-compression-inputs/segment/proof.bin",
+    "tools/recursion/compress/results/2026-10-14/segment-execute-4g/receipt.bin"
+  ],
+  "inputs": {
+    "air.json": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/segment/air.json",
+      "bytes": 23358,
+      "sha256": "5df92438e378405a97a84853b5ec113649466dbfd27e54f5481e3f155df6dbaf"
+    },
+    "pub.bin": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/segment/pub.bin",
+      "bytes": 11,
+      "sha256": "c1156e54d87767c570e51310d9d9bfe92dd83e9df8be73bf066f57e772908052"
+    },
+    "claim.bin": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/segment/claim.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proof.bin": {
+      "path": "/data/illia/nearproof/target/recursion-compression-inputs/segment/proof.bin",
+      "bytes": 844173,
+      "sha256": "f430850f8ada33dba05493b3ead3b9a8746178f1e80eae236363dd6ba075593e"
+    }
+  },
+  "exit_code": 0,
+  "binary_sha256": "e53bc4d783bac430d16ab66d6f117f50766612044e0a772f51e8ff403989f538",
+  "status": "PASS",
+  "cycle_limit": 4294967296,
+  "result": {
+    "action": "execute",
+    "cycle_limit": 4294967296,
+    "execute_seconds": 6.692929319,
+    "image_id": "bad2a498b4a10506f8b49151b08860d9e5d65eb6e725446aa41a6ec64869aa95",
+    "inner_proof_bytes": 844173,
+    "inner_proof_sha256": "f430850f8ada33dba05493b3ead3b9a8746178f1e80eae236363dd6ba075593e",
+    "journal_hex": "6e65617270726f6f662d636f6d7072657373696f6e2d7631005df92438e378405a97a84853b5ec113649466dbfd27e54f5481e3f155df6dbafc1156e54d87767c570e51310d9d9bfe92dd83e9df8be73bf066f57e772908052e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native_verify_seconds": 0.030397313,
+    "padded_cycles": 328466432,
+    "segments": 314,
+    "user_cycles": 304434317
+  },
+  "peak_rss_kib": 57224
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "shape": "64x17",
+    "status": "PASS",
+    "output": "PASS: diagnostic batched multi-round opening; no security-level certification"
+  },
+  {
+    "shape": "64x68",
+    "status": "PASS",
+    "output": "PASS: diagnostic batched multi-round opening; no security-level certification"
+  },
+  {
+    "shape": "8x544",
+    "status": "PASS",
+    "output": "PASS: diagnostic batched multi-round opening; no security-level certification"
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "root_fresh_process_verification": true,
+  "log": "/tmp/root-committed-gkr-verify.log",
+  "source_hashes_checked": 3,
+  "statement_and_receipt_byte_identical_to_original": true,
+  "proof_bytes": 123145,
+  "public_bytes": 352,
+  "receipt_bytes": 719,
+  "total_transport_bytes": 124216,
+  "static_canonical_air_json_bytes_excluded": 1758033,
+  "proof_sha256": "e136ea6089b574c95878ca37e20fc280f15f717374bdba381f85ff45b7d0070a",
+  "negative_tests": "Agent suite still running; not yet integrated",
+  "security": "Q8/Ext4 diagnostic only; no128-bit quantum security claim",
+  "scope": "One captured376B hash component,not fullNEAR or a complete recursive verifier"
+}

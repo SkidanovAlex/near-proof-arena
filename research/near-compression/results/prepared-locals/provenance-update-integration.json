@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "audit": 2547,
+  "audit_log": "/tmp/root-locals-provenance-update-audit.log",
+  "modules": {
+    "PreparedLocalsProvenance": "494c11f4f89a8c9840e27690e99b6415060c2c7026e6f25e770d632d609b73f4",
+    "PreparedLocalsUpdate": "58a2956c4539dc6abd54cf978ac95602713d3070bbb54222f9f908c714cbd397"
+  },
+  "proved": [
+    "Actual32field natural bus fetch and prepared-code checker yield actualpf instruction/charge/local-index bounds/blocktarget",
+    "All817Boolean columns derived from literal source constraints",
+    "Eight exact local-write equations with actual transition selector",
+    "Local/stack16bitlimb bounds from Boolean decomposition"
+  ],
+  "remaining": [
+    "selected operand and local-array next-state composition",
+    "full stack/gas/control state-step refinement",
+    "whole-run public-output theorem",
+    "cryptographic acceptance-to-HoldsP/full NEAR/QROM security"
+  ]
+}

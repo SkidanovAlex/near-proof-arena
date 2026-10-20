@@ -1,0 +1,136 @@
+--- a/crates/examples/src/main.rs
++++ b/crates/examples/src/main.rs
+@@ -59,6 +59,7 @@
+ 			"Circuit verifying knowledge of a valid OpenID Connect login",
+ 		)
+ 		.circuit::<circuits::nearproof_sha384::NearproofSha384>("nearproof_sha384", "Diagnostic SHA384 transcript message")
++		.circuit::<circuits::nearproof_gkr_slice::GkrSlice>("nearproof_gkr_slice", "Diagnostic fixed GKR arithmetic slice")
+ 		.circuit::<circuits::nearproof_ext4::Ext4>("nearproof_ext4", "Diagnostic fused Ext4 multiplication")
+ 		.circuit::<circuits::nearproof_babybear::BabyBear>("nearproof_babybear", "Diagnostic canonical BabyBear multiplication")
+ 		.circuit::<circuits::nearproof_hash_graph::NearproofHashGraph>("nearproof_hash_graph", "Diagnostic connected SHA384 graph")
+--- a/crates/examples/src/circuits/mod.rs
++++ b/crates/examples/src/circuits/mod.rs
+@@ -28,3 +28,5 @@
+ pub mod nearproof_babybear;
+ 
+ pub mod nearproof_ext4;
++
++pub mod nearproof_gkr_slice;
+--- a/crates/examples/src/circuits/nearproof_ext4.rs
++++ b/crates/examples/src/circuits/nearproof_ext4.rs
+@@ -14,7 +14,7 @@
+     b.assert_false("wide high carry overflow",overflow1);
+     (hi,lo)
+ }
+-fn constrain(b:&CircuitBuilder,a:[Wire;4],c:[Wire;4],q:[Wire;4],r:[Wire;4]) {
++pub(super) fn constrain(b:&CircuitBuilder,a:[Wire;4],c:[Wire;4],q:[Wire;4],r:[Wire;4]) {
+     let prime=b.add_constant_64(P);let zero=b.add_constant_64(0);let eleven=b.add_constant_64(11);
+     for &word in a.iter().chain(c.iter()).chain(r.iter()) {b.assert_true("canonical coefficient",b.icmp_ult(word,prime));}
+     let mut terms:[Vec<Wide>;4]=std::array::from_fn(|_|Vec::new());
+@@ -32,7 +32,7 @@
+         b.assert_eq("coefficient identity low",sum.1,reconstructed.1);
+     }
+ }
+-fn quotient_remainder(a:[u64;4],b:[u64;4])->([u64;4],[u64;4]) {
++pub(super) fn quotient_remainder(a:[u64;4],b:[u64;4])->([u64;4],[u64;4]) {
+     let mut acc=[0u128;4];
+     for i in 0..4 {for j in 0..4 {acc[(i+j)%4]+=a[i] as u128*b[j] as u128*if i+j>=4 {11} else {1};}}
+     (acc.map(|v|(v/P as u128) as u64),acc.map(|v|(v%P as u128) as u64))
+diff --git a/crates/examples/src/circuits/nearproof_gkr_slice.rs b/crates/examples/src/circuits/nearproof_gkr_slice.rs
+new file mode 100644
+index 0000000..676bd75
+--- /dev/null
++++ b/crates/examples/src/circuits/nearproof_gkr_slice.rs
+@@ -0,0 +1,92 @@
++//! Fixed arithmetic DAG slice. Public inputs remain external obligations.
++use std::{collections::BTreeMap,path::PathBuf};
++use anyhow::{ensure,Result};
++use binius_core::word::Word;
++use binius_frontend::{CircuitBuilder,Wire,WitnessFiller};
++use clap::Args;
++use serde_json::Value;
++use crate::ExampleCircuit;
++use super::nearproof_ext4::{constrain,quotient_remainder};
++const P:u64=2013265921;
++#[derive(Args,Debug,Clone)]
++pub struct Params {#[arg(long)] pub fixture:PathBuf}
++#[derive(Args,Debug,Clone)]
++pub struct Instance {}
++pub struct GkrSlice {graph:Value,inputs:BTreeMap<String,[Wire;4]>,products:Vec<(usize,[Wire;4],[Wire;4])>}
++impl ExampleCircuit for GkrSlice {
++    type Params=Params;type Instance=Instance;
++    fn build(params:Params,b:&mut CircuitBuilder)->Result<Self> {
++        let graph:Value=serde_json::from_slice(&std::fs::read(params.fixture)?)?;
++        let mut inputs=BTreeMap::new();let mut products=Vec::new();let mut values:Vec<[Wire;4]>=Vec::new();
++        let prime=b.add_constant_64(P);let zero=b.add_constant_64(0);
++        for (index,node) in graph["nodes"].as_array().unwrap().iter().enumerate() {
++            let op=node[0].as_str().unwrap();
++            let wires=match op {
++                "const"=>{
++                    ensure!(node.as_array().unwrap().len()==5,"constant width");
++                    let mut w=[zero;4];for j in 0..4 {let v=node[j+1].as_u64().unwrap();ensure!(v<P,"constant range");w[j]=b.add_constant_64(v);}w
++                },
++                "input"=>{
++                    let name=node[1].as_str().unwrap();ensure!(!inputs.contains_key(name),"duplicate input");
++                    let w=std::array::from_fn(|_|b.add_inout());
++                    for &x in &w {b.assert_true("canonical input",b.icmp_ult(x,prime));}
++                    inputs.insert(name.to_owned(),w);w
++                },
++                "add"|"sub"|"mul"=>{
++                    let ai=node[1].as_u64().unwrap() as usize;let bi=node[2].as_u64().unwrap() as usize;
++                    ensure!(ai<index && bi<index,"non-topological DAG");let a=values[ai];let c=values[bi];
++                    if op=="mul" {
++                        let q=std::array::from_fn(|_|b.add_witness());let r=std::array::from_fn(|_|b.add_witness());
++                        constrain(b,a,c,q,r);products.push((index,q,r));r
++                    } else {std::array::from_fn(|j| {
++                        if op=="add" {
++                            let (sum,carry)=b.iadd(a[j],c[j]);b.assert_false("add overflow",carry);
++                            let (reduced,_)=b.isub_bin_bout(sum,prime,zero);
++                            b.select(b.icmp_ult(sum,prime),sum,reduced)
++                        } else {
++                            let (raw,_)=b.isub_bin_bout(a[j],c[j],zero);
++                            let (shifted,carry)=b.iadd(a[j],prime);b.assert_false("sub pre-add overflow",carry);
++                            let (adjusted,borrow)=b.isub_bin_bout(shifted,c[j],zero);b.assert_false("sub adjusted borrow",borrow);
++                            b.select(b.icmp_ult(a[j],c[j]),adjusted,raw)
++                        }
++                    })}
++                },_=>anyhow::bail!("unknown operation")
++            };values.push(wires);
++        }
++        for check in graph["checks"].as_array().unwrap() {
++            let i=check.as_u64().unwrap() as usize;ensure!(i<values.len(),"check index");
++            for &v in &values[i] {b.assert_zero("GKR equality",v);}
++        }
++        Ok(Self{graph,inputs,products})
++    }
++    fn populate_witness(&self,_:Instance,w:&mut WitnessFiller<'_>)->Result<()> {
++        let mut supplied=BTreeMap::new();
++        for (name,v) in self.graph["inputs"].as_object().unwrap() {
++            let values:[u64;4]=std::array::from_fn(|j|v[j].as_u64().unwrap());
++            ensure!(values.iter().all(|&x|x<P),"input range");supplied.insert(name.clone(),values);
++        }
++        if std::env::var_os("NEARPROOF_GKR_BAD_INPUT").is_some() {
++            let v=supplied.values_mut().next().unwrap();v[0]=(v[0]+1)%P;
++        }
++        for (name,wires) in &self.inputs {for (wire,value) in wires.iter().zip(supplied[name]) {w[*wire]=Word(value);}}
++        let mut vals:Vec<[u64;4]>=Vec::new();let mut product_cursor=0;
++        for (index,node) in self.graph["nodes"].as_array().unwrap().iter().enumerate() {
++            let op=node[0].as_str().unwrap();
++            let value=match op {
++                "const"=>std::array::from_fn(|j|node[j+1].as_u64().unwrap()),
++                "input"=>supplied[node[1].as_str().unwrap()],
++                _=>{
++                    let a=vals[node[1].as_u64().unwrap() as usize];let c=vals[node[2].as_u64().unwrap() as usize];
++                    match op {
++                        "add"=>std::array::from_fn(|j|(a[j]+c[j])%P),
++                        "sub"=>std::array::from_fn(|j|(a[j]+P-c[j])%P),
++                        "mul"=>{
++                            let (q,r)=quotient_remainder(a,c);let (i,qw,rw)=self.products[product_cursor];ensure!(i==index,"product route");product_cursor+=1;
++                            for j in 0..4 {w[qw[j]]=Word(q[j]);w[rw[j]]=Word(r[j]);}r
++                        },_=>unreachable!()
++                    }
++                }
++            };vals.push(value);
++        }Ok(())
++    }
++}

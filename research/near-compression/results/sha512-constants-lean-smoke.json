@@ -1,0 +1,50 @@
+{
+  "kind": "fixed SHA512 round constants and 80-round endpoint AIR",
+  "table": {
+    "columns": 5280,
+    "constraints": 7109,
+    "phase_columns": 128,
+    "max_degree": 3,
+    "max_log": 7,
+    "forced_height": 128
+  },
+  "formal_claims": [
+    "The phase constraints force the unique phase at each row and exactly128rows.",
+    "Every decoded round key equals K.getD row 0.",
+    "Row79 equals actual SHA512.rounds with the fixed80constant list and the decoded initial state/window."
+  ],
+  "validation": {
+    "honest_trace_rows": 128,
+    "fully_recomputed_wrong_constant_traces_rejected": 5,
+    "wrong_constant_rows": [
+      0,
+      1,
+      79,
+      80,
+      127
+    ],
+    "phase_forgeries_rejected": 5,
+    "premature_64_row_endpoint_rejected": true,
+    "wrong_constant_traces_still_satisfy_old_combined_AIR": true,
+    "independent_and_formal_constraint_field_evaluations_match": true,
+    "endpoint_matches_actual_specification": true
+  },
+  "new_theorems": 13,
+  "full_audit_theorems": 1110,
+  "commands": [
+    "lake build NearCompression.SHA512Constants",
+    "lake env lean --run SHA512ConstantsSmoke.lean",
+    "python3 check.py"
+  ],
+  "source_sha256": {
+    "NearCompression/SHA512Constants.lean": "c5bcb316a61834ac609f1cafcb40cd6c5898d786c91a22f3943bad4a828b63c1",
+    "SHA512ConstantsSmoke.lean": "1069d5dfdbdc5e88c273aa8c946ca9df7132c6214d23a351e8b0543c036745aa"
+  },
+  "limitations": [
+    "One compression-instance table with exactly128rows; rows80..127 execute zero-key rounds rather than padding/no-op rows.",
+    "The compression endpoint is row79; it still needs binding to the proof public output.",
+    "Initial message/state binding, feed-forward, padding, digest and block chaining remain.",
+    "Universal honest combined/constant trace completeness remains.",
+    "No full NEAR state-transition proof, 1 Pgas capacity measurement, sub-300 KB proof or 128-bit quantum-security proof."
+  ]
+}

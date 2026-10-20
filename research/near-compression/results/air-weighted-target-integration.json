@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "audited_theorems": 3616,
+  "audit_log": "/tmp/root-weighted-target-audit.log",
+  "source_sha256": "0a172fbb2b2aaeeca0724f94d52239cc17ea3c88b3ccede9d22806049a809df9",
+  "established": [
+    "Equality-weighted Boolean sum reproduces row MLE",
+    "Boolean-only evaluator agreement suffices; no off-cube nonlinear/MLE commutation",
+    "Initial error bound transfers to weighted sumcheck target"
+  ],
+  "validation": "18 actual weighted-evaluator checks across both literal tables on synthetic invalid traces",
+  "remaining": [
+    "Formal concrete evaluator Boolean-row correspondence",
+    "Adaptive sumcheck and terminal source/PCS binding",
+    "Full quantum soundness and secure proof-size target"
+  ]
+}

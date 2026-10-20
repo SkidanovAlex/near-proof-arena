@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2234,
+  "audit_log": "/tmp/root-batch-payload-index-audit.log",
+  "module_sha256": "e12c42debe75e6c536f511d6f1711607246523ca0214bbe344c6cc9dd9b12619",
+  "theorems": 4,
+  "proved": [
+    "fixed-width flatMap indexing",
+    "padded message limb indexing",
+    "initial IV limb indexing",
+    "exact public payload offset message.length+52+64*block+4*word+limb"
+  ],
+  "remaining": [
+    "field cast and limb bounds",
+    "word reconstruction",
+    "natural payload bus match",
+    "batched digest composition"
+  ]
+}

@@ -1,0 +1,191 @@
+import NearCompression.GKRAllSlotCertificate
+open NearCompression
+def capturedLayout : GKRJointLayout := { rowCoordinates := 11, inputLog := 16, commonLog := 15, privateCapacity := 32768 }
+def capturedTables : List GKRTableMetadata := [{ rowLog := 8, rowOffset := 0, blockOffset := 0, columnCapacity := 8192, sourceWidth := 5234, auxiliaryWidth := 20, sourcePackingLog := 7, auxiliaryPackingLog := 0 },
+{ rowLog := 2, rowOffset := 8, blockOffset := 24576, columnCapacity := 2048, sourceWidth := 1668, auxiliaryWidth := 16, sourcePackingLog := 5, auxiliaryPackingLog := 5 },
+{ rowLog := 1, rowOffset := 10, blockOffset := 16384, columnCapacity := 4096, sourceWidth := 2136, auxiliaryWidth := 12, sourcePackingLog := 6, auxiliaryPackingLog := 6 }]
+def capturedLanes : List GKRSourceLane := [{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 0 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 1 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 2 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 3 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 4 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 5 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 6 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 7 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 8 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 9 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 10 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 11 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 12 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 13 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 14 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 15 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 16 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 17 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 18 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 19 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 20 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 21 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 22 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 23 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 24 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 25 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 26 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 27 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 28 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 29 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 30 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 31 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 32 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 33 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 34 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 35 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 36 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 37 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 38 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 39 },
+{ rowLog := 8, packingLog := 7, rowOffset := 0, inputStart := 0, nextOffset := 8192, width := 5234, group := 40 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 0 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 1 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 2 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 3 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 4 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 5 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 6 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 7 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 8 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 9 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 10 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 11 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 12 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 13 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 14 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 15 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 16 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 17 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 18 },
+{ rowLog := 8, packingLog := 0, rowOffset := 0, inputStart := 5234, nextOffset := 8192, width := 20, group := 19 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 0 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 1 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 2 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 3 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 4 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 5 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 6 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 7 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 8 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 9 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 10 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 11 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 12 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 13 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 14 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 15 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 16 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 17 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 18 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 19 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 20 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 21 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 22 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 23 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 24 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 25 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 26 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 27 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 28 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 29 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 30 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 31 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 32 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 33 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 34 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 35 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 36 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 37 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 38 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 39 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 40 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 41 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 42 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 43 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 44 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 45 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 46 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 47 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 48 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 49 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 50 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 51 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 24576, nextOffset := 2048, width := 1668, group := 52 },
+{ rowLog := 2, packingLog := 5, rowOffset := 8, inputStart := 26244, nextOffset := 2048, width := 16, group := 0 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 0 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 1 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 2 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 3 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 4 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 5 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 6 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 7 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 8 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 9 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 10 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 11 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 12 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 13 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 14 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 15 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 16 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 17 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 18 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 19 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 20 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 21 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 22 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 23 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 24 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 25 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 26 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 27 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 28 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 29 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 30 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 31 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 32 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 16384, nextOffset := 4096, width := 2136, group := 33 },
+{ rowLog := 1, packingLog := 6, rowOffset := 10, inputStart := 18520, nextOffset := 4096, width := 12, group := 0 }]
+def main : IO Unit := do
+  let lanes := capturedTables.flatMap gkrMetadataLanes
+  if !(capturedTables.all (gkrTableMetadataCheck capturedLayout)) then
+    throw (IO.userError "table metadata rejected")
+  -- Compare all seven lane fields, not just the number of lanes.
+  let encode := fun (x : GKRSourceLane) => [x.rowLog,x.packingLog,x.rowOffset,x.inputStart,x.nextOffset,x.width,x.group]
+  if lanes.map encode != capturedLanes.map encode then
+    throw (IO.userError "canonical lane enumeration mismatch")
+  if !(gkrLaneSelectorsCheck capturedLayout lanes) then
+    throw (IO.userError "lane selectors rejected")
+  let first := gkrLaneAt lanes 0
+  let variants := [lanes ++ [first], { first with nextOffset := 0 } :: lanes.drop 1,
+    { first with width := 0 } :: lanes.drop 1]
+  for bad in variants do
+    if gkrLaneSelectorsCheck capturedLayout bad then
+      throw (IO.userError "invalid geometry accepted")
+  if gkrLaneSelectorsCheck { capturedLayout with inputLog := 0 } lanes then
+    throw (IO.userError "invalid envelope accepted")
+  IO.println s!"PASS {lanes.length} canonical lanes; 4 malformed geometries rejected"
+  if !(gkrAllSlotsDisjointCheck lanes) then
+    throw (IO.userError "overlapping canonical support")
+  let overlaps := [lanes ++ [first], { first with nextOffset := 0 } :: lanes.drop 1,
+    { first with nextOffset := 1 } :: lanes.drop 1,
+    lanes ++ [{ first with inputStart := first.inputStart+1 }]]
+  for bad in overlaps do
+    if gkrAllSlotsDisjointCheck bad then
+      throw (IO.userError "overlap accepted")
+  -- The old first-slot condition alone misses this interior overlap.
+  let interior : GKRSourceLane := { rowLog := 0, packingLog := 3, rowOffset := 0, inputStart := 0, nextOffset := 7, width := 8, group := 0 }
+  let small : GKRJointLayout := { rowCoordinates := 0, inputLog := 4, commonLog := 3, privateCapacity := 16 }
+  if !(gkrLaneSelectorsCheck small [interior]) then
+    throw (IO.userError "interior counterexample failed old check")
+  if gkrAllSlotsDisjointCheck [interior] then
+    throw (IO.userError "interior overlap accepted")
+  IO.println s!"PASS {lanes.length} canonical lanes; full supports disjoint; 5 overlap geometries rejected"

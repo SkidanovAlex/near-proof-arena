@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "honest_cases": 7,
+  "total_cases": 26,
+  "rejected": 16,
+  "zero_scale_terminal_mutations_accepted": 3,
+  "limits": [
+    "Scripted challenge tape isolates actual round_start arithmetic; hash/FS sampling is not claimed.",
+    "Zero equality scale intentionally permits any terminal constant in the residual test; root and query checks remain necessary.",
+    "No acceptance-to-proximity conclusion without bounding extraction events and query sampling."
+  ],
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_weighted_pcs_replay.py",
+      "sha256": "c1b9723cb7132b7462e700b7094c50de01df0d9441e5f8d69a74a562d9d8ca10"
+    },
+    {
+      "path": "WeightedPCSReplayFixture.lean",
+      "sha256": "eda97b1e871ccd5bd4c0941eaac349b0ea71cbc516fd9e9f486898e7706b51be"
+    },
+    {
+      "path": "results/weighted-pcs-replay/inputs.json",
+      "sha256": "f2a26f5724fa78642063c47c45814b6df4b81c25eddb57fa82138318f0628879"
+    },
+    {
+      "path": "results/weighted-pcs-replay/lean-results.json",
+      "sha256": "772c87687cd89d1b2cd5be6283fb93c21f15687e695cf28ef5db145f04cf8a64"
+    },
+    {
+      "path": "airbender/direct-wasm/pq384_global_chain.py",
+      "sha256": "da7d3f4e652621fd2cc08f1fc796daba4cd69330571debaa3b6c656a32940092"
+    },
+    {
+      "path": "airbender/direct-wasm/pq384_joint_opening.py",
+      "sha256": "4516eab2ce5ec24cfcd080081043fcf0a122323d40cb9686b86479cb19948c46"
+    }
+  ]
+}

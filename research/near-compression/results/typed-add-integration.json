@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3223,
+  "added_theorems": 15,
+  "sources": {
+    "PreparedTypedAddOperands": "441cd323e35fdb1549b0500982b27f2a5e56bad85e69697df0c9f9a83f4b36fe",
+    "PreparedTypedAddArithmetic": "a3e527d7e4e7c21195d5a3722635180439bd81d8613b89c2c4e8e28b737c8ca6",
+    "PreparedTypedAddStack": "125f35c13fde3b0968a986133c84322a6d0372888fddd3b1705f861b8a233536",
+    "PreparedTypedAddDepth": "558ae41abffe7f5ea5a29e87219132a9d48cfeb310c5c2f1733608c8f6d7a5e4",
+    "PreparedTypedAddState": "34957973c4376e962ea5a8588df999b4b66f53a7b4e2800d73d1ca21d2cc5b80",
+    "PreparedTypedAddAuthenticated": "5c0ec3cb59280d48e224a1c4c372034b30ce673f4154489d7d8bbf8d1364c912"
+  },
+  "audit_log": "/tmp/root-typed-add-audit.log",
+  "audit_sha256": "5a00e4ec2b784ae12a71bb7c5be649b89b3c75da95bfaffc26658cffaae7bb2d",
+  "scope": "Authenticated actual i64.add successor: two typed operands, no-wrap16-bit limb equations, modular64 sum, depth decrement, stack writes, PC/gas and local/label preservation.",
+  "limits": [
+    "Bounded prepared-typed-v1, not general Wasm or NEAR1Pgas",
+    "Current-state relation and affordable execution remain explicit",
+    "Cryptographic proof authentication and quantum soundness separate"
+  ]
+}

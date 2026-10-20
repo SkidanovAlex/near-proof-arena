@@ -1,0 +1,36 @@
+{
+  "status": "JOINT_NEAR_FAR_GKR_FAILURE_ACCEPTANCE_BOUND_PROVED",
+  "module": "NearCompression/GKRJointFailureAcceptance.lean",
+  "theorem": "gkr_joint_failure_acceptance_count",
+  "counted_event": "Checked weighted sumcheck and folding acceptance AND (no common prechallenge source representative OR wrong full recovered GKR input for the chosen representative).",
+  "improvement": "There is no representative-existence premise. The proof splits on existence for the fixed source family, uses chosen_gkr_history_acceptance_count in the near branch, and gkr_history_far_acceptance_count in the far branch on exactly the same joint sample space.",
+  "budget": "Maximum of the full integer-scaled near and far budgets; no sum/union penalty because representative existence is fixed before the sampled coordinates.",
+  "coordinate_connection": "Row/GKR history is take(gkrHistoryLength); PCS is drop(gkrHistoryLength). gkr_joint_split_oracle derives the far initial-source identity from the same near weighted source, and gkr_pcs_point_eq_drop aligns opening points on sampled vectors.",
+  "supporting_changes": [
+    "General far theorem now requires initial-oracle identity and terminal authentication only for sampled outer vectors, matching the events actually counted.",
+    "uniform_tuple_member_length is exposed and audited to establish joint-vector shape.",
+    "Concrete history row/left/right/gamma accessors keep the full GKR failure event on the declared coordinate blocks."
+  ],
+  "explicit_assumptions": [
+    "Fixed valid canonical metadata and sources, with actual projected-source identities and shape.",
+    "Source values bound to the weighted virtual oracle; terminal oracle authentication.",
+    "Correct sequential known-constant subtraction into the initial PCS claim.",
+    "Independent ideal challenges, natural-domain root order, valid folding geometry, interpolation threshold and strict unique-decoding regime."
+  ],
+  "not_claimed": [
+    "Computational extraction of source words or polynomials from a Merkle root.",
+    "Executable parser/compiler/transcript refinement or complete GKR/AIR/bus-to-Wasm soundness.",
+    "Quantum random-oracle compilation, 128-bit security, or secure full-NEAR proof-size feasibility."
+  ],
+  "next": "Compose upstream GKR/AIR failure propagation with this representative-existence-or-input-error event, and discharge the concrete commitment/oracle premises.",
+  "validation": {
+    "module_check": "PASS",
+    "full_check": "PASS",
+    "registered_results": 3795,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

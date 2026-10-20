@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "parent_revision": "9ac2714a8",
+  "lean_audit": 4238,
+  "working_directory": "research/near-compression",
+  "replay": "python3 airbender/direct-wasm/ext8_code_switch_stage.py --proof results/ext8-code-switch-stage/proof.json --statement results/ext8-code-switch-stage/statement.json",
+  "test": "python3 airbender/direct-wasm/test_ext8_code_switch_stage.py --output /tmp/ext8-code-switch-stage-replay",
+  "files": {
+    "research/near-compression/results/ext8-code-switch-stage/statement.json": "23518d7ebfdabba491689a428c6ccee82e00d215311376e415da6c1f881ac8c4",
+    "research/near-compression/results/ext8-code-switch-stage/proof.json": "c12ea7361b871f2d59489b5bab39b1905fa440bb191b51269688412103d368ca",
+    "research/near-compression/results/ext8-code-switch-stage/lean-audit.log.gz": "a5a1d858ad7acdda3e8f060e4d23dc0f252d780bf181460328d21a561d8b7996",
+    "research/near-compression/results/ext8-code-switch-stage/report.json": "d2a53fb4196cecf950de3f8edd5b58978d35445093ac098bbb45c6c18cccddcb",
+    "research/near-compression/results/ext8-code-switch-stage/fresh-verifier.log": "e03bcd785ce08e2eab5003ae671e7913ac2c1954a99a859d30af3250bb9f53bc",
+    "research/near-compression/airbender/direct-wasm/ext8_code_switch_stage.py": "1dcd60ea6bd44dab963c6a4170de19e49bd78c621c25fe1b45a9fe6dcec2c72e",
+    "research/near-compression/airbender/direct-wasm/test_ext8_code_switch_stage.py": "cde08f887ea3a67dc299887570f621e011603f7bd1c84ba264085e6001d2d086",
+    "research/near-compression/airbender/direct-wasm/ext8_code_switch_functional.py": "f672709cc8268b65f01e20dff68bcd060cb185c7b7e6cbc4da58b962714db09c",
+    "research/near-compression/NearCompression/CodeSwitchStage.lean": "a5d5aad4b10cb4288c2bd04f6d748111609342822382c2aec08220f18d73bd97"
+  },
+  "scope": "Experimental scalar chain, full terminal disclosure; no weighted multi-source adapter, packed binary envelope, source extraction/proximity, PQ128/QROM, or full NEAR1Pgas certificate."
+}

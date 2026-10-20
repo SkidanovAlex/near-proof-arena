@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "constants": 1,
+      "old_input_size": 4,
+      "new_input_size": 16,
+      "final_input_rounds": 8
+    },
+    {
+      "constants": 2,
+      "old_input_size": 8,
+      "new_input_size": 16,
+      "final_input_rounds": 8
+    },
+    {
+      "constants": 5,
+      "old_input_size": 8,
+      "new_input_size": 16,
+      "final_input_rounds": 8
+    }
+  ],
+  "scope": "Standalone fixed-input GKR; not integrated AIR/PCS or security proof"
+}

@@ -1,0 +1,42 @@
+{
+  "status": "IDEAL_COMPONENT_BOUND_ONLY",
+  "equations": 2880,
+  "batching_dimension": 12,
+  "layers": 14,
+  "input_logs_output_to_input": [
+    2,
+    2,
+    3,
+    4,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    14
+  ],
+  "gkr_degree_numerator": 402,
+  "batching_degree_numerator": 12,
+  "union_numerator": 414,
+  "field_size": "16428751811598850197311699254593454081",
+  "ideal_component_bound": "414/16428751811598850197311699254593454081",
+  "negative_log2_ideal_component_bound": 114.93407542780112,
+  "terminal_opening_error": "EXPLICIT_UNBOUNDED_TERM",
+  "assumptions": [
+    "Uniform independent ideal field challenges",
+    "Fixed source residuals before batching",
+    "Checked compiler structure and exact root-query/zero-claim binding",
+    "GKR evaluated verifier path refinement",
+    "Each challenge has the existing quadratic/linear degree bound"
+  ],
+  "scope": "Parameter instantiation of batching and GKR terms only. Not total soundness, not a lower bound on actual attack probability, not Fiat-Shamir/QROM or PQ128 certification. PCS/commitment errors and sampling/hash reductions are excluded. The union combines conditional component bounds; a complete outer-batching-to-GKR transcript theorem remains open.",
+  "source_sha256": {
+    "results/call-layer-certificates/case-0.json.gz": "e8dfdc16ae193d2e93411b8cb3c0a4fff804a055808e9feedf940c7c50c3f1ea",
+    "NearCompression/CallGKRRoot.lean": "4acd47d04341a125d0468fcf7a1eed4dbab7267fe3051d3bb959155f127904c1",
+    "NearCompression/CallPadding.lean": "718467234027d6aefda46633afc0d8ba01083a18614a65d686e9f52bf39d6143"
+  }
+}

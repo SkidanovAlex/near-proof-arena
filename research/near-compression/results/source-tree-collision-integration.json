@@ -1,0 +1,28 @@
+{
+  "status": "BYTE_TREE_COLLISION_REDUCED_TO_SUPPORTED_HASH_COLLISION",
+  "module": "NearCompression/SHA384MerkleSource.lean",
+  "theorem": "sha384_source_tree_collision",
+  "proved": "Two distinct byte-leaf trees of the same positive power-of-two size with equal constructed roots yield a differing leaf index and two unequal byte messages with equal hash outputs. Each message belongs to a constructed path-query list for that index.",
+  "interface": "Uses the existing sha384SourceRoot, sha384TreePath and framed merkle/leaf, merkle/node, merkle/root encodings. Hash is an arbitrary 48-byte-output function; collision resistance is not assumed in the theorem.",
+  "scope": [
+    "Both full trees are supplied; this is not extraction from an arbitrary root.",
+    "Context and leaf sizes have explicit u64 bounds.",
+    "Each selected path has depth+2 hash inputs by sha384_merkle_path_query_count; this is a witness-support count, not the total adversarial hashing cost."
+  ],
+  "terminal_application": "The current four-scalar terminal has two pair leaves and depth1. Once typed pair serialization is injectively refined, its distinct-tree/equal-root event can be charged to the displayed concrete hash collision.",
+  "remaining": [
+    "Canonical typed field/pair-to-byte serialization bridge.",
+    "Quantitative quantum hash-binding and Fiat-Shamir reductions.",
+    "Common-source near-case AIR/GKR/bus/execution composition.",
+    "Full NEAR 1 Pgas and secure sub300000-byte feasibility."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3759,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

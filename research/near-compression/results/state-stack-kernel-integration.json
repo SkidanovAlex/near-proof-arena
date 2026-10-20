@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 1879,
+  "new_theorems": 13,
+  "modules": {
+    "PreparedExecState": "b4e7cb2b8de3da107c0fae4a8464a3ab59fdf970243dbf572b4d8a195a981bdf",
+    "PreparedExecStack": "b0f3dc3f83b0d3ca9ad26cef3fb3cfdedd88a5c545a5e74550c0b2c2bf4cdf67",
+    "StructuredBatchKernel": "fe357127782b9822b9fce4a805a95331bb195faf5eb4b60b95364ddd4db5fd37"
+  },
+  "actual_reproduction": "results/structured-batch-kernel/root-review.json",
+  "remaining": [
+    "Post-state stack-pointer and DONE closure",
+    "Terminal/exhaustion and whole-call refinement",
+    "Formal source-certificate construction for actual exported tables",
+    "Shared-assignment structured extraction, cryptographic binding, QROM",
+    "Full NEAR 1 Pgas and secure compact recursive proof"
+  ]
+}

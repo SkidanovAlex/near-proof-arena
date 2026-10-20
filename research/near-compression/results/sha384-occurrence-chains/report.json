@@ -1,0 +1,69 @@
+{
+  "status": "PASS",
+  "unique_calls": 11181,
+  "actual_occurrences": 13698,
+  "actual_steps": 41542,
+  "full_state_bits": 512,
+  "digest_bytes": 48,
+  "negative_cases": [
+    "nonstandard IV",
+    "message byte",
+    "encoded padding length",
+    "chaining input",
+    "hidden chaining output",
+    "terminal digest",
+    "omitted block",
+    "reordered blocks",
+    "duplicate block",
+    "wrong declared length",
+    "wrong final digest"
+  ],
+  "files": [
+    {
+      "path": "/tmp/near-sha384-block-dag/hash-call-map.json",
+      "sha256": "f92c84f2c47d0bbfb22da68992a0e5e80b875605cb757c839380c3bb4cc2de7a"
+    },
+    {
+      "path": "/tmp/near-sha384-block-dag/compression-records.bin",
+      "sha256": "c2c2653ead19eaa8b0176a95239ffff471a0016e067051ba8b3d955564800db4"
+    },
+    {
+      "path": "results/sha384-occurrence-order/occurrence-call-ids.json",
+      "sha256": "d295a93a65b8e995739df4a2793dc9c75c043f1067fafd142344d32211a99741"
+    },
+    {
+      "path": "results/sha384-occurrence-order/ordered-occurrence-uses.json",
+      "sha256": "1d88cb2957d258e6d22ee88a6c4cad914c33b243c71a9cac00b327869666ff29"
+    },
+    {
+      "path": "/tmp/libsha384_state_probe.so",
+      "sha256": "46554c952f28a62f14f11adb263e8c671f2c108b666452348d59f36715e56511"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/certify_sha384_occurrence_chains.py",
+      "sha256": "d33b8481347db75b20bd5050c97085221f2d1838cf5e2c86a63c17a16a3de189"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/measure_sha384_block_dag.py",
+      "sha256": "ea4c0fbd593d78fc044cae7517935ef51fc2445dab4b34163f0a17a732108b51"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/check_sha384_occurrence_order.py",
+      "sha256": "e9f9e7e5d08f55755d7e6675d865da0fd143b86e5ec06bb11c3249d12ce649fe"
+    },
+    {
+      "path": "results/sha384-occurrence-chains/call-chain-certificates.json",
+      "sha256": "90d8415e4300ccab78d979af6e4565e8881d5f6abf07e1d446b16eafd68e7f59"
+    },
+    {
+      "path": "results/sha384-occurrence-chains/occurrence-chain-map.json",
+      "sha256": "0c15df8ee2090c13477e90c0286a287b75ee6ca99517db9b45bef45f0fd90810"
+    }
+  ],
+  "scope": [
+    "Every unique call checked against canonical framing/padding, standard IV, full-state links, final digest and independent OpenSSL compression states.",
+    "Every observed chronological occurrence maps to its complete ordered block path; no deduplication of occurrence ordinals.",
+    "Replay provenance supplies chronology; this certificate alone does not authenticate event order.",
+    "No new proof, commitment binding, recursive-verifier proof, or quantum security claim."
+  ]
+}

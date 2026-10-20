@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2426,
+  "audit_log": "/tmp/root-control-public-audit.log",
+  "new_theorems": 11,
+  "source_sha256": {
+    "PreparedControlQuiet": "4b66600c3851fbd83bcadc6c626b100424f22d6beb08cc0a97779ba6d018cc4f",
+    "PreparedControlPadding": "933ad4ef55a66e4ff6ffba92dc24f4e898788af452cba89404c526f0fe3da196",
+    "PreparedControlPublicOutput": "0dd76e9614349be42edc9d5577cb4bacc641743f5bf875d965989bf3c091859c",
+    "PreparedControlFinalRow": "94445272a10d949d941188d8314aaf502a20d14463c12072436ba48423fde93b"
+  },
+  "final_theorem": "prepared_control_public_run_call",
+  "conclusion": "Actual outer runCall .done with authenticated public status,fast gas,live i32 stack",
+  "premises": [
+    "Full literal control HoldsP",
+    "Executable setup/CODE/entry checker acceptance",
+    "Fuel>=trace height"
+  ],
+  "limits": [
+    "One defined function,stack8,one nested void block",
+    "PREP computed by verifier",
+    "No proofacceptance->HoldsP,fullNEAR or quantum security claim"
+  ]
+}

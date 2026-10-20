@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "captured_unique_calls": 11181,
+  "additional_cases": 5,
+  "framed_bytes": 2987143,
+  "negative_cases": [
+    "tag bytearray",
+    "tag string",
+    "part bytearray",
+    "part string",
+    "u64 -1",
+    "u64 True",
+    "u64 18446744073709551616"
+  ],
+  "files": [
+    {
+      "path": "/tmp/near-sha384-block-dag/hash-call-map.json",
+      "sha256": "f92c84f2c47d0bbfb22da68992a0e5e80b875605cb757c839380c3bb4cc2de7a"
+    },
+    {
+      "path": "SHA384HashFramingFixture.lean",
+      "sha256": "cfeccfb5beb257dddeae68fc804bc392d80e75f8c3c035a5e41addf955e7039d"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_sha384_hash_framing.py",
+      "sha256": "f0c578209e6251c77ca7c23d27869194765852a8aeeb8043bc4b0cbc6f91d303"
+    },
+    {
+      "path": "airbender/direct-wasm/pq384_primitives.py",
+      "sha256": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/sha384-hash-framing/lean-frames.bin",
+      "sha256": "18c9a384df1bb30ac0ef1a0e323d556d74a9540ab47beb6b6a769dc35307173e"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/sha384-hash-framing/lean-lengths.json",
+      "sha256": "09d388a055d096a7ca87772d40f31fa6772dcb932866e40a8d5a0e977412ce8b"
+    }
+  ],
+  "limits": [
+    "Actual immutable bytes enforced by Python; Lean List UInt8 enforces byte range by type.",
+    "u32/u64 fit theorems prohibit truncation; huge Python containers are not allocated for overflow tests.",
+    "Byte-format parity does not establish verifier operand provenance, commitment binding or cryptographic soundness."
+  ]
+}

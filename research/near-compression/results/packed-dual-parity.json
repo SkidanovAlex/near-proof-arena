@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "cases": 48,
+  "packed_coefficient_positions": 675,
+  "lean_export_sha256": "13bc5fb01215b7618244504ebbfc10b399f4937eb071e78bd24f2c6335372799",
+  "scope": "Actual Python lane_weights/lane_weight_mle vs executable Lean packed weights and functional, partial zero-padded lanes and base-field embedded challenges. Not native commitment refinement or quantum security."
+}

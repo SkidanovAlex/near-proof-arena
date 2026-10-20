@@ -1,0 +1,22 @@
+{
+  "status": "PROVED_COMPONENT",
+  "module": "NearCompression/ShiftReductionPolynomial.lean",
+  "established": [
+    "Ordinary borrow DP equals the cyclic-predecessor row-weight MLE at arbitrary field points",
+    "Zipped target/evaluation coordinates preserve that identity under equal lengths",
+    "Current equality plus alpha^width times shift kernel has a constructed affine coordinate polynomial",
+    "Batched actual source-column MLE times the kernel has a constructed quadratic coordinate polynomial with exact evaluation"
+  ],
+  "executable_reference": "airbender/direct-wasm/pq384_shift.py:shift_kernel/kernel/verify",
+  "premises": [
+    "Equal target/evaluation dimension",
+    "Common trace for current-column MLEs",
+    "Column batch width and alpha fixed before shift rounds"
+  ],
+  "remaining": [
+    "Prove Boolean cube sum equals the batched current/cyclic-next claim vector",
+    "Compose vector batching error and adaptive shift sumcheck",
+    "Authenticate final original-column evaluations through PCS",
+    "Full local/bus/commitment/transcript quantum composition"
+  ]
+}

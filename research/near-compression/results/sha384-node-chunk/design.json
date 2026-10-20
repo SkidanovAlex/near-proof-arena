@@ -1,0 +1,40 @@
+{
+  "component": "configurable globally tagged compression certificates",
+  "canonical_source": "/data/illia/nearproof-wt/generic-air-reference/research/near-compression/SHA384NodeChunkFixture.lean",
+  "limits": {
+    "node_count": [
+      1,
+      25
+    ],
+    "fanout_bits": [
+      1,
+      13
+    ],
+    "declared_use_count": [
+      1,
+      8191
+    ],
+    "global_id": "base+local < BabyBear prime",
+    "all_tables": "strict padding row after active prefix"
+  },
+  "four_tables": [
+    "80-round segments with phase/reset and local ordinal; global bus tag base+ordinal",
+    "feedforward endpoints with local ordinal; global bus tag base+ordinal",
+    "unique local ordinal records, Boolean natural fanout, full A32/M64/C32/D48",
+    "ordered uses with exact index/active prefix; globalID+A32/M64/C32/D48 received"
+  ],
+  "external_binding": "caller-fixed use root/context and canonical AIR digest required; contract() alone is not proof verification; verify() also invokes complete diagnostic compact codec",
+  "exact_natural_relation": "Each active use consumes one complete full-state node record; fanout bits supply its exact natural count. Each node has two A consumers, one M consumer, one endpoint C/D producer. Full512-bit A and C retained.",
+  "missing_composition": [
+    "Original verifier-request occurrences to deduplicated calls with multiplicities",
+    "Call IDs and exact ordered block positions to per-chunk ordered use roots",
+    "Canonical message/framing/padding/IV and inter-block full512-bit state links",
+    "Final SHA384 truncated digest to original verifier check",
+    "Disjoint global intervals and complete node/use coverage across chunks",
+    "Commitment-binding and randomized proof-system soundness; Q8 remains diagnostic",
+    "No aggregation or recursion of899 chunks; no complete private-input or zero-knowledge claim"
+  ],
+  "comparison": "source cells only, all four new tables including padding versus independent core+endpoint baseline; input traces/aux/FFT/proof excluded; old routing excluded conservatively",
+  "measured_profile": "11nodes/15uses across5 actual unique hash calls (frequency1 each); max25-node variant not yet witness-tested",
+  "manifest": "source-files.json"
+}

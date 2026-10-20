@@ -1,0 +1,40 @@
+{
+  "status": "CHOSEN_GKR_INPUT_TO_CHECKED_FOLD_ACCEPTANCE_BOUND_PROVED",
+  "module": "NearCompression/ChosenGKRFoldAcceptance.lean",
+  "theorem": "chosen_gkr_terminal_acceptance_count",
+  "proved": "A wrong full GKR input functional of the prechallenge chosen joint source tuple bounds checked weighted sumcheck and adaptive folding acceptance. Derives sparse recovery, shared functional agreement and actual sequential constant subtraction from existing geometry and joint representative premises.",
+  "normalized_interpretation": {
+    "bound": "2*n/Q + sum_i(max(sizes(i+1),2))/Q + ((T-1)/N)^queries",
+    "scope": "Integer-scaled counting theorem; normalization requires nonempty sample. n=layout.commonLog, N=4*2^n, initial degree=2^n, Q=sample.length."
+  },
+  "chronology": "The chosen polynomial tuple depends only on layout, metadata, domain, sources, degree and threshold. It has no rowpoint, GKR point or PCS challenge argument. Earlier history may select fixed rowpoints and GKR weights; folding provers may depend on the full weighted-sumcheck path and adapt to fold prefixes.",
+  "derived_in_this_composition": [
+    "Sparse coefficients from source projection and natural-domain geometry.",
+    "Shared representative for the actual heterogeneous weight tables.",
+    "Wrong coefficient-table functional from wrong full GKR input through sequential known-constant subtraction.",
+    "Checked sumcheck and folding acceptance bound, rather than only existence of a close residual candidate."
+  ],
+  "explicit_remaining_assumptions": [
+    "Existence of a joint source representative; no extraction from commitments or acceptance is asserted.",
+    "Valid canonical lane geometry and actual projected source identities.",
+    "Every initial folding source value equals the corresponding weighted virtual oracle.",
+    "Distinct ideal challenge samples, fold/root geometry, unique separation and strict 2*N+D<3*T regime.",
+    "Terminal authentication; no collision probability or quantum query budget is supplied."
+  ],
+  "remaining": [
+    "Compose far and near events with full GKR/AIR/bus on one recovered trace and correct auxiliary chronology.",
+    "Refine executable compiler, parser and transcript into these formal events.",
+    "Discharge source-oracle binding and terminal authentication with concrete commitment accounting.",
+    "Quantum Fiat-Shamir reduction, secure parameters, and full NEAR 1Pgas proof below 300000 bytes."
+  ],
+  "validation": {
+    "module_check": "PASS",
+    "full_check": "PASS",
+    "registered_results": 3781,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2436,
+  "audit_log": "/tmp/root-common-direct-audit.log",
+  "new_theorems": 10,
+  "source_sha256": {
+    "GKRCommonInputBoundary": "72038d041ef82c895bdfb14601f5528594d95c921227843fb7134ff6219dfcea",
+    "SHA384DirectInput": "4b9da18ea1d69681eaff7881327ab5ef360bf382d728a434231c3974d3f2825c",
+    "SHA384DirectSemantics": "9f0b3016100f4f3ff5615a8e040c5aa0a4dca46f69b4dfe6333b21b1bf1f920c"
+  },
+  "proved": [
+    "Universal GKR final-weight family separates one fixed input vector",
+    "Challenge-dependent kernel example invalidates quantifier exchange;not PCS attack",
+    "Direct committed input expressions equal canonical padded bytes/limbs",
+    "Direct input AIR implies decoded message bytes<256"
+  ],
+  "open_security": [
+    "Randomized shared-witness extraction before GKR",
+    "Same polynomial family fixed before zerocheck row challenges",
+    "Challenge-dependent circuit layout prevents silently assuming fixed dimension",
+    "QROM and128-bit quantum security"
+  ],
+  "open_direct_component": [
+    "Core routing/hash semantics",
+    "Executable proof measurement/negative tests"
+  ]
+}

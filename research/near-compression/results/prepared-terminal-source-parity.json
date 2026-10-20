@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "source_index": 484,
+  "formal_json_sha256": "6380311700e75ffcdeb2c1f84a03fd95078dabc23b456a77fe38f6a6813e27db",
+  "scope": "Exact source AST; actual gas burn/sync and Wasm call boundary remain separate"
+}

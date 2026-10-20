@@ -1,0 +1,130 @@
+⚠ [23/101] Replayed NearSpecV3.Wasm.Host
+warning: NearSpecV3/Wasm/Host.lean:225:88: `List.asString` has been deprecated: Use `String.ofList` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.asString` to `String.ofList x`).
+⚠ [30/101] Replayed ZkFormal.Algebra.Fp
+warning: ZkFormal/Algebra/Fp.lean:38:6: exponent 1006632960 exceeds the threshold 256, exponentiation operation was not evaluated, use `set_option exponentiation.threshold <num>` to set a new threshold
+⚠ [32/101] Replayed NearCompression.InstructionAddRange
+warning: NearCompression/InstructionAddRange.lean:139:43: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/InstructionAddRange.lean:148:43: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAddRange.lean:164:72: `if_true` has been deprecated: Use `ite_true` instead
+warning: NearCompression/InstructionAddRange.lean:164:72: `if_true` has been deprecated: Use `ite_true` instead
+warning: NearCompression/InstructionAddRange.lean:164:72: `if_true` has been deprecated: Use `ite_true` instead
+warning: NearCompression/InstructionAddRange.lean:164:72: `if_true` has been deprecated: Use `ite_true` instead
+⚠ [33/101] Replayed NearCompression.PreparedFunctionRow
+warning: NearCompression/PreparedFunctionRow.lean:119:16: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/PreparedFunctionRow.lean:120:8: `if_neg` has been deprecated: Use `ite_eq_right` instead
+⚠ [36/101] Replayed NearCompression.PreparedAddTransition
+warning: NearCompression/PreparedAddTransition.lean:76:33: Variable name `hn` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hn
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: NearCompression/PreparedAddTransition.lean:157:10: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/PreparedAddTransition.lean:162:10: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/PreparedAddTransition.lean:178:17: This simp argument is unused:
+  b
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [a, ite_true, ite_false] at h ⊢
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: NearCompression/PreparedAddTransition.lean:178:28: This simp argument is unused:
+  ite_false
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [a, b, ite_true] at h ⊢
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: NearCompression/PreparedAddTransition.lean:181:17: This simp argument is unused:
+  a
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [b, ite_true, ite_false] at h ⊢
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: NearCompression/PreparedAddTransition.lean:181:30: This simp argument is unused:
+  ite_false
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [a, b, ite_true] at h ⊢
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: NearCompression/PreparedAddTransition.lean:182:21: This simp argument is unused:
+  ite_true
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [a, b, ite_false] at h ⊢
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: NearCompression/PreparedAddTransition.lean:211:17: This simp argument is unused:
+  a
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [b, ne, ite_false, ite_true]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [62/101] Replayed ZkFormal.Near.Tables.Dsl
+warning: ZkFormal/Near/Tables/Dsl.lean:44:13: Variable name `len` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _len
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [75/101] Replayed NearCompression.PreparedAddTableLocal
+warning: NearCompression/PreparedAddTableLocal.lean:40:28: `if_neg` has been deprecated: Use `ite_eq_right` instead
+⚠ [76/101] Replayed NearCompression.PreparedCodeOrder
+warning: NearCompression/PreparedCodeOrder.lean:64:4: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/PreparedCodeOrder.lean:86:6: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/PreparedCodeOrder.lean:86:6: `if_neg` has been deprecated: Use `ite_eq_right` instead
+⚠ [77/101] Replayed ZkFormal.V2.Air
+warning: ZkFormal/V2/Air.lean:138:0: automatically included section variable(s) unused in theorem `ZkFormal.V2.pubMsgs_nil`:
+  [DecidableEq F]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq F] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+⚠ [78/101] Replayed ZkFormal.Chacha.Bus
+warning: ZkFormal/Chacha/Bus.lean:37:10: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: ZkFormal/Chacha/Bus.lean:42:10: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: ZkFormal/Chacha/Bus.lean:77:8: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: ZkFormal/Chacha/Bus.lean:80:8: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: ZkFormal/Chacha/Bus.lean:91:6: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: ZkFormal/Chacha/Bus.lean:125:0: automatically included section variable(s) unused in theorem `ZkFormal.Chacha.count_flatMap_rows`:
+  [Lean.Grind.CommRing F]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Lean.Grind.CommRing F] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+⚠ [87/101] Replayed NearCompression.PreparedCodeBus
+warning: NearCompression/PreparedCodeBus.lean:44:33: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/PreparedCodeBus.lean:84:80: This simp argument is unused:
+  Bool.false_eq_true
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [ZkFormal.Chacha.rowTraffic, List.flatMap_cons, List.flatMap_nil, preparedCodeFetch,
+    preparedCodeReceive, preparedCodePublish, Nat.reduceEqDiff, Bool.true_eq_false, and_false, ite_false, and_true,
+    ite_true, List.nil_append, List.append_nil]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: NearCompression/PreparedCodeBus.lean:85:42: This simp argument is unused:
+  List.nil_append
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [ZkFormal.Chacha.rowTraffic, List.flatMap_cons, List.flatMap_nil, preparedCodeFetch,
+    preparedCodeReceive, preparedCodePublish, Nat.reduceEqDiff, Bool.true_eq_false, Bool.false_eq_true, and_false,
+    ite_false, and_true, ite_true, List.append_nil]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: NearCompression/PreparedCodeBus.lean:130:34: This simp argument is unused:
+  List.nil_append
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [ZkFormal.Chacha.rowTraffic, List.flatMap_cons, List.flatMap_nil, preparedCodeFetch,
+    preparedCodeReceive, preparedCodePublish, Nat.reduceEqDiff, Bool.true_eq_false, and_false, false_and, ite_false,
+    List.append_nil]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+✔ [101/101] Built NearCompression.PackedLiteralCertificate (5.9s)
+Build completed successfully (101 jobs).

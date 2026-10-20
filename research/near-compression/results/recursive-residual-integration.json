@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3403,
+  "added_theorems": 2,
+  "source_sha256": "0af00de053bd770a9ed42ae620fcb70c0f6fdb0de0064284583b8515d9cd5117",
+  "audit_log": "/tmp/root-residual-conjunction-audit.log",
+  "audit_sha256": "121e9ed7028406e1130318eb84d032e254e49fa688d18ee8df69760dc1bb3a19",
+  "scope": [
+    "Fixed complete residual vector padded by zero: all-zero completeness.",
+    "Any nonzero in-range residual gives independent-coordinate false-zero count at most dimension*sample_size^(dimension-1).",
+    "For800 residuals padded1024 this specializes to10 coordinates."
+  ],
+  "limits": [
+    "Does not prove executable compiler refinement to this modeled MLE.",
+    "Independent ideal samples only; commitment binding/GKR/FS/QROM losses separate.",
+    "No total proof-size or full verifier soundness claim."
+  ]
+}

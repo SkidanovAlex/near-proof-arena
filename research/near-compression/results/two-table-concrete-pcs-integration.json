@@ -1,0 +1,35 @@
+{
+  "status": "ACTUAL_MERGED_PCS_BOUND_LIFTED_TO_TWO_TABLE_EXPERIMENT",
+  "module": "NearCompression/TwoTableConcretePCS.lean",
+  "theorems": [
+    "two_table_concrete_pcs_failure_budget"
+  ],
+  "proved": [
+    "Invokes concrete_gkr_accepted_failure_budget for each pair of local initial challenges, batching challenge and earlier GKR path, then two_table_gkr_pcs_joint_budget.",
+    "The resulting numerical error bound is the actual max(nearBudget,farBudget) with exact initial/batching/GKR multiplicities.",
+    "Event inclusion explicitly permits absent joint representatives as well as accepted evaluated-GKR terminal mismatch.",
+    "Both rowpoint vectors stay jointly sampled, with source oracles fixed across the sampled contexts."
+  ],
+  "assumptions": [
+    "Ideal source oracle projection, well-formed/disjoint geometry, root order, proximity thresholds, fold geometry and terminal authentication.",
+    "Context-indexed PCS/GKR strategies and claims with actual initial weighted oracle equality.",
+    "Whole recovered-input binding and accepted evaluated-GKR plus PCS checks.",
+    "Chosen downstream event is included in accepted absent-representative or terminal-mismatch failure."
+  ],
+  "remaining": [
+    "Use this bound in the table acceptance branches with the same event and source/decoded bindings.",
+    "Compose absent-representative handling, table selection and bus averaging.",
+    "Replace ideal oracle/authentication premises with native commitment refinement and QROM reduction.",
+    "Secure-size feasibility and full 1 Pgas execution remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4047,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}

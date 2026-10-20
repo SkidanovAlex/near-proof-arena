@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2326,
+  "audit_log": "/tmp/root-control-legacy-projection-audit.log",
+  "source_sha256": {
+    "PreparedControlLegacyAdapter": "89ac8afd7ad802f5a06cbf185035e36227e29e7449a297489af8da018dc0d2eb",
+    "PreparedControlLegacyProjection": "a7755b6b8d0ad606fc18d8e344d7d41186e993d1d90530a14f7fae69048e751a"
+  },
+  "new_theorems": 10,
+  "proved": "Exact control constraints specialize to existing arithmetic/stack interfaces under no current br_if; authenticated ordinary instruction derives that condition.",
+  "remaining": [
+    "ordinary actual-state composition",
+    "root return and gas failure",
+    "whole-run induction and boundaries"
+  ]
+}

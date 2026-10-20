@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "native_degree_boundary": 262144,
+  "native_constraints_boundary": 4096,
+  "accepted_geometry_domain": 4194304,
+  "negative_cases": [
+    "degree-cap",
+    "domain-cap",
+    "stage-degree-cap"
+  ],
+  "fresh_native_verifiers": [
+    "PASS experimental code-switch chain; no extraction/proximity/QROM certificate.",
+    "PASS experimental packed-root code-switch adapter; no proximity/QROM certificate."
+  ],
+  "scope": "Exact boundary checks and retained proof replay. Geometry acceptance is not a full4M encoding or full-slice prover run."
+}

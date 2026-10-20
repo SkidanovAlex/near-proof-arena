@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "lean_audit": 4223,
+  "files": {
+    "research/near-compression/NearCompression/PooledRowFunctional.lean": "3f4ead6a30fcb4656f7a63c58d8968aa142379bd592336c5cf1535ac40b4e721",
+    "research/near-compression/airbender/direct-wasm/ext8_pooled_weights.py": "540af90ec87f2ec949a484d48babd5b32115e984dee443c03ec8908dfccfabeb",
+    "research/near-compression/airbender/direct-wasm/test_ext8_pooled_weights.py": "b95b092c18315e359eed2eb1de056899f7750837fa64e6b9b4e02bbf0bb8b7cf",
+    "research/near-compression/airbender/direct-wasm/test_ext8_pooled_seam.py": "49442e396fb6230b360eaa2169fcc9e7191ac19796b9cf74e901cdcbd00560fb",
+    "research/near-compression/results/ext8-pooled-weights.json": "b35229d59e4ae39f95734f28fc15c2ddc997ae079fd9a7aba2d15777c200792e",
+    "research/near-compression/results/ext8-pooled-seam.json": "d3e0cb22a9a580a1fa391432564639fcf5c06a882f00a129e24da0b5d311394e"
+  },
+  "scope": "Row projection and coefficient-functional foundation only. No pooled commitment/PCS/transcript integration or new complete size/security measurement."
+}

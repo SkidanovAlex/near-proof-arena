@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "legacy_commit": "a7918ecbc036bc6f86e5e8a39f77306ef096f013",
+  "legacy_source_sha256": "97b5b82d0759143c776810a5b2aec7ed428c99bad54a24e25b88b288113f5807",
+  "exact_formula_cases": 40,
+  "scope": "Default Ext4 exact synthetic AST/layout equivalence; no full prover claim."
+}

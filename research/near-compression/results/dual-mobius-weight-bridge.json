@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-15",
+  "module": "NearCompression/DualMobiusWeights.lean",
+  "public_theorems": [
+    "cube_sum_split",
+    "lower_zeta_add",
+    "upper_zeta_add",
+    "dual_zeta_dot",
+    "lower_zeta_mobius",
+    "dual_mobius_dot",
+    "row_equality_dot",
+    "current_dual_mobius",
+    "cyclic_sum_successor",
+    "cyclic_predecessor_dot",
+    "next_dual_mobius",
+    "current_next_dual_mobius",
+    "current_next_coefficient_functional"
+  ],
+  "status": "frozen, checked against current root dependencies; no axioms or sorry",
+  "field": "generic Lean.Grind.Field K",
+  "definitions": {
+    "lowerZeta": "little-endian coefficient-to-Boolean evaluation transform",
+    "upperZeta": "transpose transform, zero-bit branch sums even and odd weights",
+    "mobiusCoefficients": "inverse lower transform, odd coefficients are odd minus even evaluation values",
+    "rowEqualityWeight": "product of eq(point_bit,row_bit)",
+    "cyclicRowWeight": "rowEqualityWeight(point,(row+2^n-1) mod2^n)"
+  },
+  "main_identity": "coefficientTableFunctional n [a*upperZeta(eq(point))+b*upperZeta(eq(point,row-1))] [p] = a*genericRowMLE n values point+b*genericRowNextMLE n values point",
+  "assumptions": [
+    "For all i<2^n, p.coeff i=mobiusCoefficients n values i. No requirement on coefficients beyond this range.",
+    "Both current and next queries use the same original Boolean table."
+  ],
+  "proven": [
+    "upper/lower transpose dot identity",
+    "inverse Mobius reconstructs every bounded original evaluation",
+    "row equality dot equals existing genericRowMLE",
+    "exact cyclic finite-sum reindexing and actual genericRowNextMLE, including n=0",
+    "direct one-lane coefficientTableFunctional current/next bridge"
+  ],
+  "remaining": [
+    "Column/row tensor packing with upper-zeta transformed current/next column slots",
+    "In-place Python upper_zeta loop equals recursive upperZeta; can first test parity but formal refinement needed",
+    "Optimized row_weight_mles borrow DP equals upperZeta cyclic weight MLE; semantic table identity is proved but DP refinement is separate",
+    "branch_lanes concrete offsets and source/aux table layout match GKR slot order",
+    "Commitment and source coefficient extraction relation, pre-GKR shared witness, QROM"
+  ],
+  "compile": {
+    "exit_code": 0,
+    "warnings": 0,
+    "seconds": 0.332
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "status": "LEAN_SIGNED_EXPANSION_CHECKER_SOUNDNESS_PROVED",
+  "module": "NearCompression/TerminalExpansionCheck.lean",
+  "theorems": [
+    "terminal_expansion_checked",
+    "terminal_expansion_checked_bounds",
+    "terminal_expansion_checked_value",
+    "terminal_expansion_check_regressions"
+  ],
+  "proved": [
+    "Recursive Boolean check derives TerminalSignedExpansion for the exact tree root, sign and ordered leaves.",
+    "Accepted root and every retained leaf are bounded by the source DAG length.",
+    "Together with checked DAG acyclicity, acceptance implies signed leaf sum equals independently executed root value."
+  ],
+  "kernel_regressions": [
+    "Nested subtraction expansion accepted with exact leaf order and signs",
+    "Retained internal register accepted",
+    "Negative root subtraction accepted",
+    "Wrong subtraction sign rejected",
+    "Swapped dependencies rejected",
+    "Multiplication expansion rejected",
+    "Missing leaf rejected",
+    "Missing branch root rejected"
+  ],
+  "remaining": [
+    "Balanced reduction checker and recursive reconstruction/input binding checker still needed to discharge TerminalRebuildRoute.",
+    "No concrete retained JSON expansion certificate or parser refinement is established here.",
+    "Global execution, GKR/PCS composition, commitment binding, quantum security and secure size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3827,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

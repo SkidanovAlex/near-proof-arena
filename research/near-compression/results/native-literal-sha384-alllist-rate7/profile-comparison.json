@@ -1,0 +1,95 @@
+{
+  "rows": [
+    {
+      "profile": "native-literal-sha384-ext12-compact",
+      "parameters": {
+        "n_stack": 16,
+        "k": 3,
+        "log_blowup": 5,
+        "all_list": 0
+      },
+      "native_bytes": 740881,
+      "whir_bytes": 617640,
+      "native_min_component_bits": 268.5252522711154,
+      "verification_sha384_blocks": 20455,
+      "report_sha256": "a4d345d330cf27dd26d84878219156952d7558eb80c9aba765d2a0ca0f5e491d"
+    },
+    {
+      "profile": "native-literal-sha384-rate7",
+      "parameters": {
+        "n_stack": 16,
+        "k": 3,
+        "log_blowup": 7,
+        "all_list": 0,
+        "queries": [
+          272,
+          63,
+          51,
+          43,
+          37,
+          33
+        ]
+      },
+      "native_bytes": 719329,
+      "whir_bytes": 596088,
+      "native_min_component_bits": 268.94618633298313,
+      "verification_sha384_blocks": 19529,
+      "report_sha256": "b2d1ad8214321b7d668d4a0d565a16dd70d5d8ded3fc570acca0db6f9fb74a39"
+    },
+    {
+      "profile": "native-literal-sha384-alllist",
+      "parameters": {
+        "n_stack": 16,
+        "k": 3,
+        "log_blowup": 5,
+        "all_list": 1,
+        "queries": [
+          118,
+          82,
+          63,
+          51,
+          43,
+          37
+        ]
+      },
+      "native_bytes": 579185,
+      "whir_bytes": 455944,
+      "native_min_component_bits": 268.75769395685745,
+      "verification_sha384_blocks": 14735,
+      "report_sha256": "2b17e980a926e9fc472c2b9b1968abd507a25874f210bb04efa04da377a240ec"
+    },
+    {
+      "profile": "native-literal-sha384-alllist-rate7",
+      "parameters": {
+        "n_stack": 16,
+        "k": 3,
+        "log_blowup": 7,
+        "all_list": 1,
+        "queries": [
+          82,
+          63,
+          51,
+          43,
+          37,
+          33
+        ]
+      },
+      "native_bytes": 512609,
+      "whir_bytes": 389368,
+      "native_min_component_bits": 268.7638209393418,
+      "verification_sha384_blocks": 12474,
+      "report_sha256": "e24d27c641c4246fdd61343f6dcbdfb80699d677221ce0974de5c2d162cf71e4"
+    }
+  ],
+  "best_tested_dictionary_bytes": 450302,
+  "best_tested_transmitted_bytes": 451221,
+  "strict_sub300000_pass": false,
+  "security_certified": false,
+  "decision": "Retain all-list/blowup128 candidate; next investigate shared Merkle openings, not a broad parameter sweep.",
+  "limits": [
+    "finite profiles, not global optimum",
+    "native estimates not a concrete QROM certificate",
+    "no controlled latency/memory benchmark",
+    "direct bounded Wasm child, not recursive or full NEAR"
+  ]
+}

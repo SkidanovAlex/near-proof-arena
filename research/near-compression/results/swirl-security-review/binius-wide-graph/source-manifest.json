@@ -1,0 +1,10 @@
+{
+  "crates/math/src/multilinear/sparse.rs": {
+    "sha256": "680e90b7cf5e3bdac76c3ecf4aa348ef64e09142b703e1f2e859c623e2dd1878",
+    "snapshot": "crates__math__src__multilinear__sparse.rs.gz"
+  },
+  "crates/verifier/src/protocols/shift/wiring.rs": {
+    "sha256": "83efefa3499b294fb424ec5f63e8d95639f79cb609f2ce357eece2f9693328b7",
+    "snapshot": "crates__verifier__src__protocols__shift__wiring.rs.gz"
+  }
+}

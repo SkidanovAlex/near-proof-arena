@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1645,
+  "audit_log": "/tmp/near-code-entry-audit.log",
+  "modules": [
+    "PreparedCodeBinding",
+    "PreparedWasmEntry"
+  ],
+  "theorems_added": 14,
+  "contract": [
+    "Executable actual-PFunc/publicCODE checker implies actual live-PC instruction/charge binding and canonical fee/immediate limbs",
+    "Actual enter after reset derived from function lookup,stackbudget and prologue bounds",
+    "Checked callEntry composition no longer assumes enter equation"
+  ],
+  "remaining": [
+    "Selected PC must be within actual code, not padded synthetic end records",
+    "Execution certificate existence from AIR and initial state",
+    "Original PREP and whole-host/runCall provenance",
+    "Unsupported Wasm/host coverage"
+  ]
+}

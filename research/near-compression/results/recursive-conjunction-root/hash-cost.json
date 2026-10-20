@@ -1,0 +1,59 @@
+{
+  "status": "PASS",
+  "scope": "Isolated outer GKR verify only; provenance/transcript/header binding and disclosed functional check excluded, never claimed free",
+  "layout_json_bytes": 2225289,
+  "layout_digest_compression_blocks": 17386,
+  "outer_gkr": {
+    "hash_tags": {
+      "near-pq384-terminal-gkr-v1": {
+        "calls": 2,
+        "framed_input_bytes": 2225557,
+        "compression_blocks": 17388
+      },
+      "transcript/commit": {
+        "calls": 1417,
+        "framed_input_bytes": 263875,
+        "compression_blocks": 2834
+      },
+      "transcript/draw-result": {
+        "calls": 1417,
+        "framed_input_bytes": 253643,
+        "compression_blocks": 2834
+      },
+      "transcript/init": {
+        "calls": 1,
+        "framed_input_bytes": 103,
+        "compression_blocks": 1
+      },
+      "transcript/ratchet": {
+        "calls": 1417,
+        "framed_input_bytes": 259311,
+        "compression_blocks": 2834
+      },
+      "transcript/request": {
+        "calls": 1417,
+        "framed_input_bytes": 225303,
+        "compression_blocks": 2834
+      },
+      "transcript/squeeze": {
+        "calls": 1417,
+        "framed_input_bytes": 202631,
+        "compression_blocks": 2834
+      }
+    },
+    "total_hash_calls": 7088,
+    "total_sha384_compression_blocks": 31559,
+    "ext4_operation_calls": {
+      "sub": 751470,
+      "mul": 2355868,
+      "add": 690931
+    }
+  },
+  "counterfactual_blocks_without_layout_hash": 14173,
+  "seed_requirements": [
+    "New profile/version, never relabel old proof",
+    "Bind full operand/provenance root and exact residual-DAG/compiler configuration before output point",
+    "Derive exact complete layout, constants and weights from these bound dependencies; no proof-selected layout",
+    "Prove/verify fresh GKR transcript; account compiler configuration digest separately"
+  ]
+}

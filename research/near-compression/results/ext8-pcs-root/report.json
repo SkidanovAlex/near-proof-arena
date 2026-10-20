@@ -1,0 +1,66 @@
+{
+  "status": "PASS",
+  "profile": "near-pq384-ext8-scalar-equality-fold-v1",
+  "degree": 32,
+  "queries": 314,
+  "extension": 8,
+  "source_encoding": "2base-u32/leaf",
+  "fold_encoding": "2x8u32/leaf",
+  "proof_json_bytes": 1526534,
+  "whole_envelope_json_bytes": 1527170,
+  "root_bytes": 48,
+  "canonical_config_bytes": 338,
+  "verify_hash_calls": 18568,
+  "verify_sha384_blocks": 37140,
+  "prove_seconds": 0.009438859764486551,
+  "verify_seconds": 0.06905179563909769,
+  "negative_count": 26,
+  "negatives": [
+    "wrong root",
+    "config profile",
+    "config queries",
+    "config degree",
+    "config statement",
+    "config claim",
+    "config point",
+    "quadratic 0",
+    "fold root 0",
+    "quadratic 1",
+    "fold root 1",
+    "quadratic 2",
+    "fold root 2",
+    "quadratic 3",
+    "fold root 3",
+    "quadratic 4",
+    "fold root 4",
+    "profile",
+    "terminal",
+    "noncanonical ext",
+    "boolean ext",
+    "source leaf",
+    "path",
+    "missing query",
+    "reordered query",
+    "fresh changed source fixed root"
+  ],
+  "fresh_process": "PASS fresh process",
+  "limitation": "Scalar coefficient-MLE source; not complete packed joint/AIR profile. Ideal replay bound only; root extraction, FS/QROM and upstream composition open.",
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_pq384_ext8_pcs.py",
+      "sha256": "2df848092dcf6204c82875446749cbbb1891d7eb1d3685f7ecf18ea9808fdb4d"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_ext8_pcs.py",
+      "sha256": "b60d76db0d9fc13055b0d8e92f723f897d3e43faf928bc8974161beca4cdad6a"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_ext8_reference.py",
+      "sha256": "3646602c3ef14d81bd01dad7e3816df4e3d0c55dfa4277c112d0c3e57d29372a"
+    },
+    {
+      "path": "/tmp/root-ext8-pcs/proof.json",
+      "sha256": "513a4366ee9ed06cb870ccac7fbbda10f0f7fec986f380894190e0238fcc16b4"
+    }
+  ]
+}

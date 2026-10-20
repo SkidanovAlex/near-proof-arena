@@ -1,0 +1,14 @@
+{
+  "scope": "Unconditional univariate synthetic multiplicity foundations, not MCA or protocol soundness",
+  "cwd": "research/near-compression",
+  "replay": [
+    "python3 airbender/direct-wasm/test_synthetic_multiplicity.py",
+    "HEAVY_MEM=8G LEAN_NUM_THREADS=2 RAYON_NUM_THREADS=2 taskset -c 8-15,24-31 /data/illia/nearproof-deps/bin/heavy python3 check.py"
+  ],
+  "sha256": {
+    "research/near-compression/NearCompression/SyntheticMultiplicity.lean": "af4620db94eef8b8a327d544ef8f37f73be36771e654df1861aec00a39f33289",
+    "research/near-compression/airbender/direct-wasm/test_synthetic_multiplicity.py": "a61b2cdb7a9e6d2b81098a94de13be3d17a4eabca9bbd0f56996cc651a56f684",
+    "research/near-compression/results/synthetic-multiplicity/report.json": "9acd35370f0ace579169a52e617e625cce18545976352b2ad7d1f9fa9baf6e4d",
+    "research/near-compression/results/synthetic-multiplicity/lean-audit.log.gz": "62177bd1a0b4457c1c2a86a27a03d45a3014fcbd9be62097c4071d74c0eb59e8"
+  }
+}

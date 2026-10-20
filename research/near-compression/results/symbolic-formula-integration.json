@@ -1,0 +1,40 @@
+{
+  "status": "UNIVERSAL_CHECKED_AIR_BUS_FORMULA_TO_FINITE_CIRCUIT_IDENTITY",
+  "module": "NearCompression/SymbolicFormulaCheck.lean",
+  "theorems": [
+    "symbolic_program_acyclic_check",
+    "symbolic_formula_table_value",
+    "symbolic_formula_compiler_value",
+    "symbolic_formula_recovered_value",
+    "symbolic_formula_check_regressions"
+  ],
+  "proved": [
+    "Acyclicity is invariant under symbolic versus value-specialized source leaves.",
+    "One input-independent predicate composes formula routes, ordered accumulation, symbolic reconstruction, final batching and finite layout.",
+    "Acceptance identifies finite circuit output with the batched mixed AIR/bus formula sums for every private assignment and for the existing recovered GKR input construction under support separation."
+  ],
+  "native": {
+    "report": "results/lean-rebuild-captures.json",
+    "combined_formula_checker": true,
+    "programs": 2,
+    "reconstruction_records": 9152,
+    "accumulator_residuals": 1291,
+    "auxiliary_formulas": 63,
+    "diagnostic_assignments": 2,
+    "malformed_rejections": 24
+  },
+  "remaining": [
+    "Formally identify the supplied formula lists, metadata and expected values with intended AIR/bus specification and transcript.",
+    "Relate recovered column environments to the fixed decoded tables and compose global GKR/PCS sampling/error bounds.",
+    "Commitment extraction, parser/transcript refinement, global/PQ soundness and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3883,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

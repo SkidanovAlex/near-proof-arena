@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "audited_theorems": 3606,
+  "audit_log": "/tmp/root-bus-mass-audit.log",
+  "source_sha256": "6eeb318baa68ee213b398ac732603332470b5ddcd4d840a1a99c1016ff58da69",
+  "literal_lean_budget": {
+    "numerator": 8589975831,
+    "receive_mass": 8589934531,
+    "send_mass": 1024,
+    "support": 1475
+  },
+  "established": [
+    "Natural multiplicity at most2^bitcount-1 without honest-witness or booleanity premise",
+    "Expanded message length bounded by row heights and side-specific descriptor multiplicity limits plus public records",
+    "Budget composed into actual-trace Ext8 joint bound",
+    "Literal AIR Lean budget agrees with independent Python descriptor budget"
+  ],
+  "remaining": [
+    "Concrete literal source/public width and tag bounds",
+    "Committed common trace extraction and auxiliary/global product correspondence",
+    "Other local/PCS/commitment/transcript/QROM errors"
+  ]
+}

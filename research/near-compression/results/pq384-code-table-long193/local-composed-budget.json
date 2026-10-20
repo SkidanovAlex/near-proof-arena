@@ -1,0 +1,34 @@
+{
+  "status": "CONDITIONAL_COMPONENT_BOUND",
+  "theorem": "NearCompression.air_local_invalid_trace_count",
+  "tables": [
+    {
+      "table": 0,
+      "residuals": 738,
+      "rounds": 8,
+      "initial_numerator": 745,
+      "adaptive_numerator": 56,
+      "composed_numerator": 801
+    },
+    {
+      "table": 1,
+      "residuals": 553,
+      "rounds": 8,
+      "initial_numerator": 560,
+      "adaptive_numerator": 40,
+      "composed_numerator": 600
+    }
+  ],
+  "formula": "(residual_count-1+row_log+round_degree*row_log)/field_size",
+  "premises": [
+    "One fixed invalid source/auxiliary trace before mixing and equality-point challenges",
+    "Initial claim zero, checked degree/endpoint/update messages",
+    "Terminal equality to the actual trace evaluator",
+    "Independent ideal challenges from a distinct sample"
+  ],
+  "exclusions": [
+    "Terminal PCS authentication and common-trace extraction",
+    "Global bus and multi-table transcript composition",
+    "Fiat-Shamir/quantum security and total secure proof bytes"
+  ]
+}

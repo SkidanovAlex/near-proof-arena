@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "session": 32321,
+  "log": "/tmp/root-direct-seed-prover.log",
+  "output": "/tmp/near-sha384-direct-seed",
+  "files": {
+    "airbender/direct-wasm/verify_sha384_direct_seed.py": "2ffdca5dab7fb183258f1124d776c0cd272a75b0920ac31f20ce22e0eabc78fe",
+    "airbender/direct-wasm/test_sha384_direct_seed.py": "ea80401f2a322bb68d8b8e596e51359943968cb0bf53c826a9b945a77bdcbd86",
+    "results/sha384-direct-seed/source-spec.json": "e22d898ada3133cdcf9b9f53d66fadd5c6241660e1cf5399a48f8812e35c498e"
+  },
+  "next": [
+    "Poll the same session; do not restart while live.",
+    "After successful prover completion run test_sha384_direct_seed.py against results/sha384-direct and /tmp/near-sha384-direct-seed.",
+    "Measure configured verifier including setup separately; compare same component, not full33 table fixture."
+  ],
+  "limits": [
+    "No completed new proof or mutation PASS yet."
+  ],
+  "prover_exit_code": 0,
+  "validation_session": 49271,
+  "profile_session": 77539,
+  "validation_exit_code": 0,
+  "profile_exit_code": 0,
+  "old_profile_session": 23088,
+  "old_profile_log": "/tmp/root-direct-old-profile.log",
+  "old_profile_exit_code": 0
+}

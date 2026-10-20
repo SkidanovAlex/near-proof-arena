@@ -1,0 +1,50 @@
+{
+  "packing": {
+    "code_count_column": 88,
+    "tables": [
+      {
+        "table": 0,
+        "packed_bit_columns": 512,
+        "byte_columns": 64,
+        "remaining_width": 157,
+        "retained_source_constraints": 214,
+        "range_interactions": 64
+      },
+      {
+        "table": 1,
+        "packed_bit_columns": 96,
+        "byte_columns": 12,
+        "remaining_width": 114,
+        "retained_source_constraints": 281,
+        "range_interactions": 12
+      }
+    ],
+    "range_rows": 256,
+    "range_lookups": 19456,
+    "max_range_multiplicity": 15578,
+    "formal_refinement_proved": false
+  },
+  "all_honest_row_constraints_pass": true,
+  "all_honest_integer_buses_balance": true,
+  "invalid_byte": 2013265665,
+  "preserved_all_polynomial_constraints": true,
+  "only_bus4_unbalanced": true,
+  "invalid_range_bus_residuals": [
+    {
+      "value": 0,
+      "count": -2
+    },
+    {
+      "value": 1,
+      "count": 1
+    },
+    {
+      "value": 2013265665,
+      "count": 1
+    }
+  ],
+  "invalid_prover_rejected": "LogupZerocheck(NonZeroRootSum)",
+  "invalid_proof_generated": false,
+  "formal_refinement_proved": false,
+  "scope": "Concrete transformation/witness checks, not universal AIR soundness or Rust refinement."
+}

@@ -1,0 +1,494 @@
+   Compiling prover v0.1.0 (/data/illia/nearproof-deps/airbender-prime-review-20261015/prover)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.88s
+     Running `target/debug/examples/near_scheduled_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-source-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-source-0-commitment.json`
+[timing] base commit part: 2 cols 2^3, lde 4, 2 values/leaf -> LDE 17.022µs, tree 119.615µs
+exported 2-column, 8-row RS commitment and 16 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running `target/debug/examples/near_scheduled_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-source-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-source-1-commitment.json`
+[timing] base commit part: 2 cols 2^4, lde 4, 2 values/leaf -> LDE 18.705µs, tree 138.240µs
+exported 2-column, 16-row RS commitment and 32 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running `target/debug/examples/near_scheduled_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-aux-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-aux-0-commitment.json`
+[timing] base commit part: 12 cols 2^3, lde 4, 2 values/leaf -> LDE 28.083µs, tree 154.641µs
+exported 12-column, 8-row RS commitment and 16 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target/debug/examples/near_scheduled_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-aux-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-aux-1-commitment.json`
+[timing] base commit part: 16 cols 2^4, lde 4, 2 values/leaf -> LDE 70.513µs, tree 266.472µs
+exported 16-column, 16-row RS commitment and 32 openings
+   Compiling prover v0.1.0 (/data/illia/nearproof-deps/airbender-prime-review-20261015/prover)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.08s
+     Running `target/debug/examples/near_scheduled_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-source-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-opening-0-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-handoff-0-0.json`
+[timing] base commit part: 2 cols 2^3, lde 4, 2 values/leaf -> LDE 114.135µs, tree 581.815µs
+  [timing] initial eq-poly build: 80.451µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 31.089µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 188.415µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 382.560µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^2, lde 4 -> LDE 82.525µs, tree 623.294µs, built in 725.686µs
+  [timing] OOD evaluation: 70.002µs
+  [timing] PoW grind (0 bits): 84.439µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 73.348µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 75.031µs
+  [timing] initial round total: 2.174ms
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 431.682µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 78.458µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 34.435µs
+  [timing] final round total: 732.790µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running `target/debug/examples/near_scheduled_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-aux-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-opening-0-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-handoff-0-1.json`
+[timing] base commit part: 12 cols 2^3, lde 4, 2 values/leaf -> LDE 44.284µs, tree 200.758µs
+  [timing] initial eq-poly build: 15.539µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 11.242µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 48.802µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 94.288µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^2, lde 4 -> LDE 13.235µs, tree 120.868µs, built in 137.439µs
+  [timing] OOD evaluation: 18.014µs
+  [timing] PoW grind (0 bits): 18.525µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 22.503µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 18.314µs
+  [timing] initial round total: 449.386µs
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 117.421µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 17.904µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 6.512µs
+  [timing] final round total: 189.136µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running `target/debug/examples/near_scheduled_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-source-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-opening-1-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-handoff-1-0.json`
+[timing] base commit part: 2 cols 2^4, lde 4, 2 values/leaf -> LDE 27.331µs, tree 204.325µs
+  [timing] initial eq-poly build: 18.224µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 10.139µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 46.898µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 107.312µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^3, lde 4 -> LDE 14.968µs, tree 153.199µs, built in 171.343µs
+  [timing] OOD evaluation: 21.190µs
+  [timing] PoW grind (0 bits): 18.254µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 15.489µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 21.350µs
+  [timing] initial round total: 487.077µs
+Initial queries and folding are complete, now can proceed into 1 internal rounds
+Internal round 0: fold by 2, 8 queries, pow 0
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 120.868µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 1: poly 2^2, lde 4 -> LDE 14.938µs, tree 70.884µs, built in 88.727µs
+  [timing] OOD evaluation: 15.930µs
+  [timing] PoW grind (0 bits): 17.643µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round 1 queries (8) served in 9.979µs
+  [timing] eq-poly update: 13.506µs
+  [timing] internal round 0 total: 335.531µs
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 107.252µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 11.812µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 3.938µs
+  [timing] final round total: 171.192µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.16s
+     Running `target/debug/examples/near_scheduled_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-aux-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-opening-1-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-handoff-1-1.json`
+[timing] base commit part: 16 cols 2^4, lde 4, 2 values/leaf -> LDE 98.776µs, tree 403.249µs
+  [timing] initial eq-poly build: 29.385µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 17.573µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 104.697µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 207.570µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^3, lde 4 -> LDE 41.558µs, tree 249.850µs, built in 299.033µs
+  [timing] OOD evaluation: 35.046µs
+  [timing] PoW grind (0 bits): 35.396µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 37.842µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 37.821µs
+  [timing] initial round total: 948.114µs
+Initial queries and folding are complete, now can proceed into 1 internal rounds
+Internal round 0: fold by 2, 8 queries, pow 0
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 235.383µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 1: poly 2^2, lde 4 -> LDE 44.433µs, tree 151.476µs, built in 200.567µs
+  [timing] OOD evaluation: 31.981µs
+  [timing] PoW grind (0 bits): 32.912µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round 1 queries (8) served in 8.196µs
+  [timing] eq-poly update: 26.520µs
+  [timing] internal round 0 total: 670.112µs
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 236.004µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 32.060µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 14.287µs
+  [timing] final round total: 360.869µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running `target/debug/examples/near_scheduled_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-source-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-source-0-commitment.json`
+[timing] base commit part: 2 cols 2^3, lde 4, 2 values/leaf -> LDE 17.092µs, tree 109.376µs
+exported 2-column, 8-row RS commitment and 16 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.21s
+     Running `target/debug/examples/near_scheduled_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-source-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-source-1-commitment.json`
+[timing] base commit part: 2 cols 2^4, lde 4, 2 values/leaf -> LDE 19.236µs, tree 158.127µs
+exported 2-column, 16-row RS commitment and 32 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running `target/debug/examples/near_scheduled_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-aux-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-aux-0-commitment.json`
+[timing] base commit part: 12 cols 2^3, lde 4, 2 values/leaf -> LDE 78.298µs, tree 252.365µs
+exported 12-column, 8-row RS commitment and 16 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/examples/near_scheduled_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-aux-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-aux-1-commitment.json`
+[timing] base commit part: 16 cols 2^4, lde 4, 2 values/leaf -> LDE 70.272µs, tree 264.638µs
+exported 16-column, 16-row RS commitment and 32 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running `target/debug/examples/near_scheduled_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-source-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-opening-0-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-handoff-0-0.json`
+[timing] base commit part: 2 cols 2^3, lde 4, 2 values/leaf -> LDE 24.657µs, tree 179.408µs
+  [timing] initial eq-poly build: 18.445µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 11.231µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 50.755µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 120.878µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^2, lde 4 -> LDE 15.629µs, tree 133.522µs, built in 153.439µs
+  [timing] OOD evaluation: 25.839µs
+  [timing] PoW grind (0 bits): 23.134µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 17.994µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 20.328µs
+  [timing] initial round total: 524.047µs
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 133.541µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 23.865µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 7.714µs
+  [timing] final round total: 209.764µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.17s
+     Running `target/debug/examples/near_scheduled_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-aux-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-opening-0-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-handoff-0-1.json`
+[timing] base commit part: 12 cols 2^3, lde 4, 2 values/leaf -> LDE 207.851µs, tree 1.054ms
+  [timing] initial eq-poly build: 88.106µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 40.196µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 268.416µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 436.492µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^2, lde 4 -> LDE 92.414µs, tree 731.657µs, built in 846.394µs
+  [timing] OOD evaluation: 76.845µs
+  [timing] PoW grind (0 bits): 94.047µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 118.964µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 91.222µs
+  [timing] initial round total: 2.525ms
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 428.005µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 83.056µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 34.144µs
+  [timing] final round total: 759.861µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running `target/debug/examples/near_scheduled_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-source-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-opening-1-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-handoff-1-0.json`
+[timing] base commit part: 2 cols 2^4, lde 4, 2 values/leaf -> LDE 41.137µs, tree 289.064µs
+  [timing] initial eq-poly build: 25.969µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 15.038µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 75.372µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 188.615µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^3, lde 4 -> LDE 19.206µs, tree 209.875µs, built in 236.605µs
+  [timing] OOD evaluation: 36.178µs
+  [timing] PoW grind (0 bits): 40.265µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 19.246µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 33.503µs
+  [timing] initial round total: 770.420µs
+Initial queries and folding are complete, now can proceed into 1 internal rounds
+Internal round 0: fold by 2, 8 queries, pow 0
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 201.840µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 1: poly 2^2, lde 4 -> LDE 22.963µs, tree 153.680µs, built in 181.411µs
+  [timing] OOD evaluation: 32.190µs
+  [timing] PoW grind (0 bits): 30.517µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round 1 queries (8) served in 13.375µs
+  [timing] eq-poly update: 23.925µs
+  [timing] internal round 0 total: 632.340µs
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 196.560µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 41.729µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 6.102µs
+  [timing] final round total: 305.414µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.21s
+     Running `target/debug/examples/near_scheduled_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-aux-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-opening-1-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-invalid-handoff-1-1.json`
+[timing] base commit part: 16 cols 2^4, lde 4, 2 values/leaf -> LDE 71.274µs, tree 245.832µs
+  [timing] initial eq-poly build: 13.615µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 9.638µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 51.978µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 93.887µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^3, lde 4 -> LDE 11.873µs, tree 155.633µs, built in 172.224µs
+  [timing] OOD evaluation: 29.135µs
+  [timing] PoW grind (0 bits): 27.973µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 28.784µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 30.387µs
+  [timing] initial round total: 557.179µs
+Initial queries and folding are complete, now can proceed into 1 internal rounds
+Internal round 0: fold by 2, 8 queries, pow 0
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 169.258µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 1: poly 2^2, lde 4 -> LDE 18.976µs, tree 116.549µs, built in 138.611µs
+  [timing] OOD evaluation: 23.574µs
+  [timing] PoW grind (0 bits): 26.109µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round 1 queries (8) served in 7.845µs
+  [timing] eq-poly update: 22.302µs
+  [timing] internal round 0 total: 493.178µs
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 155.433µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 37.521µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 9.498µs
+  [timing] final round total: 256.343µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running `target/debug/examples/near_scheduled_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-source-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-source-0-commitment.json`
+[timing] base commit part: 2 cols 2^3, lde 4, 2 values/leaf -> LDE 17.192µs, tree 112.302µs
+exported 2-column, 8-row RS commitment and 16 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running `target/debug/examples/near_scheduled_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-source-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-source-1-commitment.json`
+[timing] base commit part: 2 cols 2^4, lde 4, 2 values/leaf -> LDE 18.424µs, tree 137.088µs
+exported 2-column, 16-row RS commitment and 32 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running `target/debug/examples/near_scheduled_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-aux-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-aux-0-commitment.json`
+[timing] base commit part: 12 cols 2^3, lde 4, 2 values/leaf -> LDE 27.892µs, tree 149.281µs
+exported 12-column, 8-row RS commitment and 16 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running `target/debug/examples/near_scheduled_commitment /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-aux-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-aux-1-commitment.json`
+[timing] base commit part: 16 cols 2^4, lde 4, 2 values/leaf -> LDE 47.991µs, tree 181.141µs
+exported 16-column, 16-row RS commitment and 32 openings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running `target/debug/examples/near_scheduled_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-source-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-opening-0-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-handoff-0-0.json`
+[timing] base commit part: 2 cols 2^3, lde 4, 2 values/leaf -> LDE 19.948µs, tree 138.039µs
+  [timing] initial eq-poly build: 13.996µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 8.817µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 37.291µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 100.749µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^2, lde 4 -> LDE 11.211µs, tree 106.761µs, built in 120.517µs
+  [timing] OOD evaluation: 20.359µs
+  [timing] PoW grind (0 bits): 18.295µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 10.911µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 17.052µs
+  [timing] initial round total: 395.545µs
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 95.740µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 14.858µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 4.619µs
+  [timing] final round total: 151.926µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running `target/debug/examples/near_scheduled_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-aux-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-opening-0-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-handoff-0-1.json`
+[timing] base commit part: 12 cols 2^3, lde 4, 2 values/leaf -> LDE 49.132µs, tree 219.093µs
+  [timing] initial eq-poly build: 13.406µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 9.257µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 49.183µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 100.860µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^2, lde 4 -> LDE 12.894µs, tree 143.120µs, built in 160.312µs
+  [timing] OOD evaluation: 21.971µs
+  [timing] PoW grind (0 bits): 21.330µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 19.166µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 20.349µs
+  [timing] initial round total: 490.783µs
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 115.808µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 18.545µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 5.010µs
+  [timing] final round total: 172.515µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running `target/debug/examples/near_scheduled_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-source-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-opening-1-0.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-handoff-1-0.json`
+[timing] base commit part: 2 cols 2^4, lde 4, 2 values/leaf -> LDE 23.083µs, tree 156.415µs
+  [timing] initial eq-poly build: 14.718µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 8.235µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 39.815µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 100.699µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^3, lde 4 -> LDE 27.892µs, tree 252.706µs, built in 285.457µs
+  [timing] OOD evaluation: 22.142µs
+  [timing] PoW grind (0 bits): 23.504µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 12.413µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 21.761µs
+  [timing] initial round total: 594.128µs
+Initial queries and folding are complete, now can proceed into 1 internal rounds
+Internal round 0: fold by 2, 8 queries, pow 0
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 115.718µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 1: poly 2^2, lde 4 -> LDE 10.109µs, tree 104.938µs, built in 119.465µs
+  [timing] OOD evaluation: 18.946µs
+  [timing] PoW grind (0 bits): 16.842µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round 1 queries (8) served in 9.267µs
+  [timing] eq-poly update: 12.774µs
+  [timing] internal round 0 total: 361.751µs
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 91.793µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 5.119µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 2.434µs
+  [timing] final round total: 128.321µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running `target/debug/examples/near_scheduled_whir /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-aux-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-opening-1-1.json /data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/scheduled-bus-alternate-handoff-1-1.json`
+[timing] base commit part: 16 cols 2^4, lde 4, 2 values/leaf -> LDE 72.827µs, tree 264.417µs
+  [timing] initial eq-poly build: 13.205µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 9.017µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 51.166µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 96.872µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^3, lde 4 -> LDE 12.624µs, tree 162.546µs, built in 178.456µs
+  [timing] OOD evaluation: 19.607µs
+  [timing] PoW grind (0 bits): 20.408µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 19.046µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 19.897µs
+  [timing] initial round total: 491.325µs
+Initial queries and folding are complete, now can proceed into 1 internal rounds
+Internal round 0: fold by 2, 8 queries, pow 0
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 108.795µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 1: poly 2^2, lde 4 -> LDE 17.703µs, tree 73.078µs, built in 92.995µs
+  [timing] OOD evaluation: 15.800µs
+  [timing] PoW grind (0 bits): 13.566µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round 1 queries (8) served in 4.638µs
+  [timing] eq-poly update: 8.746µs
+  [timing] internal round 0 total: 300.686µs
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 79.109µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 5.010µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 5.701µs
+  [timing] final round total: 120.287µs
+Fresh WHIR opening generated; verification still required

@@ -1,0 +1,400 @@
+{
+  "status": "PASS",
+  "proof_sha256": "64d0cb90bd45adb52bea0bd1f889e78ab91740617a9b96a920ec30ac3419a9c4",
+  "negative_checks": 98,
+  "cases": [
+    {
+      "case": "statement",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "parent_binding",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "expected_root",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "column 0",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "column 271",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "column 543",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "point 0",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "point 6",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "point 12",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "round0/quadratic",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "round0/root",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round0/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round0/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round0/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round0/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round0/query_order",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round1/quadratic",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "round1/root",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round1/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round1/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round1/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round1/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round1/query_order",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round2/quadratic",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "round2/root",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round2/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round2/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round2/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round2/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round2/query_order",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round3/quadratic",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "round3/root",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round3/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round3/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round3/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round3/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round3/query_order",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round4/quadratic",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "round4/root",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round4/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round4/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round4/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round4/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round4/query_order",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round5/quadratic",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "round5/root",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round5/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round5/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round5/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round5/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round5/query_order",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round6/quadratic",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "round6/root",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round6/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round6/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round6/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round6/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round6/query_order",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round7/quadratic",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "round7/root",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round7/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round7/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round7/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round7/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round7/query_order",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round8/quadratic",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "round8/root",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round8/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round8/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round8/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round8/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round8/query_order",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round9/quadratic",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "round9/root",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round9/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round9/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round9/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round9/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round9/query_order",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round10/quadratic",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "round10/root",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round10/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round10/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round10/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round10/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round10/query_order",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round11/quadratic",
+      "reason": "sumcheck endpoints"
+    },
+    {
+      "case": "round11/root",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round11/source_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round11/source_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round11/next_leaf",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round11/next_path",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "round11/query_order",
+      "reason": "Merkle root mismatch"
+    },
+    {
+      "case": "terminal0",
+      "reason": "terminal oracle root mismatch"
+    },
+    {
+      "case": "terminal31",
+      "reason": "terminal oracle root mismatch"
+    },
+    {
+      "case": "terminal63",
+      "reason": "terminal oracle root mismatch"
+    },
+    {
+      "case": "missing round",
+      "reason": "round count"
+    },
+    {
+      "case": "extra round",
+      "reason": "round count"
+    }
+  ],
+  "scope": "Fixed actual full-height proof mutation tests, not adaptive forgery soundness or security certification"
+}

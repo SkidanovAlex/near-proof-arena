@@ -124,6 +124,7 @@ fn v3_env(f: &mut Fixture) -> Option<()> {
         trusted_trees: Some(store),
         configs_dir: repo().join("runners/formal-checker/challenges"),
         images_dir: None,
+        sandbox: None,
     });
     f.exec.ctx.bench_batch_cap = Some(2);
     f.exec.ctx.conformance_samples = 3;

@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3426,
+  "added_theorems": 10,
+  "sources": {
+    "WeightedPCSReplay": "25f5762029c42c686ec52beb0879ff15da51f32be6f3b5fde43820c7076aab1e",
+    "RateFourFoldThreshold": "1beb95501c5a58b5173695e2f34be8fee6d3b1c4d6aa7a267933178add59ae32"
+  },
+  "audit_log": "/tmp/root-weighted-replay-audit.log",
+  "audit_sha256": "59beb6227e011fe99e1ba9a9aca5a8d1ae4634f31467ae2bafb4c710fbbd04c9",
+  "parity_report": "results/weighted-pcs-replay/report.json",
+  "regime_report": "results/weighted-pcs-replay/fold-regime.json",
+  "scope": [
+    "Concrete endpoint/terminal Boolean checks derive the folding transcript algebraic certificate.",
+    "Replay yields an initial candidate, fewer than T passing full-domain seeds, or a specific nonlinear extraction bad event; no close-candidate premise.",
+    "Exact combined rate-four regime threshold is3D+1."
+  ],
+  "limits": [
+    "Authenticated full terminal oracle, fixed root oracles and domain geometry remain explicit.",
+    "Query sampling and extraction-event probability must still be composed.",
+    "No adaptive FS/QROM or quantum128 certification."
+  ]
+}

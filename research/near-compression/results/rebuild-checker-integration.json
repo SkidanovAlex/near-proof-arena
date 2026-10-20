@@ -1,0 +1,42 @@
+{
+  "status": "LEAN_REBUILD_CHECKER_COMPOSED_TO_FINITE_PROGRAM_EXECUTION",
+  "module": "NearCompression/TerminalRebuildCheck.lean",
+  "theorems": [
+    "terminal_rebuild_record_checked",
+    "terminal_rebuild_records_checked",
+    "terminal_program_rebuild_checked_value",
+    "terminal_rebuild_check_regressions"
+  ],
+  "proved": [
+    "Record acceptance derives constant/input/binary/expanded reconstruction routes from previously checked mappings.",
+    "Expanded records compose signed expansion and balance checks, bind exact mapped terms, and require every retained source leaf to have an earlier checked mapping.",
+    "Checking records from an empty mapping context derives the requested root route without an assumed TerminalRebuildRoute.",
+    "Checked source acyclicity, reconstruction records and finite bundle imply finite GKR circuit output equals independent source program execution."
+  ],
+  "qualification": "Input binding is checked for the explicit input assignment and evaluated source environment. No universal static symbolic input correspondence or commitment extraction follows from one accepted assignment.",
+  "kernel_regressions": [
+    "Complete constant/input/binary/expanded reconstruction accepted",
+    "Wrong input assignment rejected",
+    "Unavailable binary dependencies rejected",
+    "Wrong final root mapping rejected",
+    "Truncated expansion mapping rejected",
+    "Unavailable expansion leaf rejected",
+    "Forged constant rejected",
+    "Out-of-range default nodes rejected",
+    "Empty records cannot prove a root"
+  ],
+  "remaining": [
+    "Translate retained compiler JSON certificates into these typed records and execute the composed check on actual captures.",
+    "Parser/emitter refinement and concrete kernel instances remain open.",
+    "Connect source AIR compilation, sampled committed assignments and full GKR/PCS soundness; global execution/PQ security and secure size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3836,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "audit_checks": 2594,
+  "module_sha256": "326015409fa0c1d86877d3e7367bf1c835baff162825ddfa15594f5186183d43",
+  "scope": "Same fixed joint representative yields lane proximity and sparse original-degree recovery. Explicit domain distinctness, rotation closure, exact root order, projection equality and unique-decoding inequality remain. No cryptographic or QROM certification."
+}

@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "instructions": 193,
+  "rows": [
+    256,
+    256
+  ],
+  "proof_bytes": 121982,
+  "public_elements": 4891,
+  "public_u32_bytes": 19564,
+  "statement_json_bytes": 223788,
+  "proof_sha256": "7d993a7b3a817b0114ea3a87588e5e0997ca5c96cbe333d9c77739ca5ebb13cc",
+  "fixture_regenerated_from_actual_lean": true,
+  "roundtrip": true,
+  "shared_verifier": true,
+  "negative_verifications": 18,
+  "fresh_verifier": "PASS: complete AIR and randomized bus-fingerprint binary diagnostic",
+  "limits": [
+    "Q8 Ext4 diagnostic, no certified128-bit or quantum security",
+    "Stack8 and const/add/drop/end only; no full NEAR or1Pgas execution",
+    "Public CODE grows linearly and is excluded from proof bytes",
+    "New CODE-table Lean semantic refinement pending"
+  ]
+}

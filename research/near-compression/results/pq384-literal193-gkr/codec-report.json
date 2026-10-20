@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "whole_proof_bytes": 52921,
+  "baseline_bytes": 121982,
+  "saving_bytes": 69061,
+  "source_commitments_included": 96,
+  "exact_original_proof_roundtrip": true,
+  "unchanged_roots_transcript_queries": true,
+  "omitted_linear_coefficients": 514,
+  "bitcodec_roundtrips": 80,
+  "bitcodec_negative_checks": 3,
+  "proof_negative_checks": 2,
+  "fresh_process_verification": "PASS: exact original GKR-bus proof reconstructed and verified; diagnostic security only",
+  "test_seconds": 6.3553327601403,
+  "scope": "Lossless codec of SAME diagnostic proof; no stronger soundness or query selection",
+  "baseline_comparison": "121982 bytes is the separate global-bus literal slice proof, not a same-proof codec baseline."
+}

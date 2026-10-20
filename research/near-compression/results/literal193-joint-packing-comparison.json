@@ -1,0 +1,55 @@
+{
+  "status": "FRESH_DIAGNOSTIC_PROOF_AND_COUNTERFACTUAL_QUERY_REPLAY",
+  "packings_before": [
+    16,
+    1,
+    4,
+    4
+  ],
+  "packings_after": [
+    16,
+    1,
+    16,
+    16
+  ],
+  "max_degree_unchanged": 4096,
+  "same_air_public_rows_and_request": true,
+  "cases": [
+    {
+      "queries": 8,
+      "before_bytes": 52921,
+      "after_bytes": 52445,
+      "saving_bytes": 476
+    },
+    {
+      "queries": 128,
+      "before_bytes": 283053,
+      "after_bytes": 272290,
+      "saving_bytes": 10763
+    },
+    {
+      "queries": 239,
+      "before_bytes": 432188,
+      "after_bytes": 392955,
+      "saving_bytes": 39233
+    },
+    {
+      "queries": 309,
+      "before_bytes": 504163,
+      "after_bytes": 457064,
+      "saving_bytes": 47099
+    },
+    {
+      "queries": 463,
+      "before_bytes": 640745,
+      "after_bytes": 572709,
+      "saving_bytes": 68036
+    }
+  ],
+  "limits": [
+    "Only Q8 proofs are generated and verified.",
+    "Queries above8 are authenticated-tree size replays, not secure profiles.",
+    "Same logical slice, different source CODE root and challenge-dependent auxiliaries/transcript.",
+    "No secure sub300000 or full NEAR claim."
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "source_bundle_revision": "a040b5381",
+  "decoded_pcs_proof_identical": true,
+  "changed": "Transport only: NP8WMP03 reconstructs omitted fold scalars; no new prover run, transcript or query-budget change.",
+  "replay_transport": "python3 airbender/direct-wasm/test_ext8_derived_codec.py --capture /tmp/ext8-affine-q309 --output /tmp/ext8-derived-codec-report.json",
+  "prover_option": "--derived-fold-transport (opt-in; old default transport remains available)",
+  "lean_audit": 4218,
+  "files": {
+    "research/near-compression/results/ext8-affine-derived-q309/compression.bin": "ff42a773b9f2d5236295c28a09f4a0415b9826ed78b5b270fd194f843258bbe2",
+    "research/near-compression/results/ext8-affine-derived-q309/reduction.json.gz": "1f4306122af14d84825404a766e1ce98ab9cac190cd38e171dd2e40cb1ba5944",
+    "research/near-compression/results/ext8-affine-derived-q309/codec-test.log": "73bcc5fd1129fd6b3cc108b81bf26035e362522720bdfe8e09e9fea3607788cd",
+    "research/near-compression/results/ext8-affine-derived-q309/transport-report.json": "42456ee908986c8753c31a7b2e0eb02501885e4daa5f0de347e7ceadc033a26b",
+    "research/near-compression/results/ext8-affine-derived-q309/report.json": "6f0ad41c4e5eb6f8df8c79927344bb26edbf8d8828a6c23533b2eb2a9d1129b6",
+    "research/near-compression/results/ext8-affine-derived-q309/prover-report.json.gz": "da56d911326aa7d2c8dd1ecea0df6410514ef2ad97834d1f78af9c682946f216",
+    "research/near-compression/results/ext8-affine-derived-q309/fresh-verifier.log": "f7ed72442c06a4091ddd341c6a4b0063dd1542236fd75527fcac486b31eeb78f",
+    "research/near-compression/results/ext8-affine-derived-q309/transport-test.log": "42456ee908986c8753c31a7b2e0eb02501885e4daa5f0de347e7ceadc033a26b",
+    "research/near-compression/results/ext8-affine-derived-q309/codec-report.json": "73bcc5fd1129fd6b3cc108b81bf26035e362522720bdfe8e09e9fea3607788cd",
+    "research/near-compression/results/ext8-affine-derived-q309/statement.json.gz": "63359e5a690f7c3ae04c222b15eccedaa26f6e3e15c654c23bc38f0028e3981e",
+    "research/near-compression/airbender/direct-wasm/pq384_ext8_derived_codec.py": "c27afa0e908f7df20245c52c66adea8ff3250a9449177352129f52da3a5dc77d",
+    "research/near-compression/airbender/direct-wasm/pq384_ext8_weighted_codec.py": "14190343b2eec1067007b9a26ce02a0c9ad3aaa0d4eed50e38e2873dd388f504",
+    "research/near-compression/airbender/direct-wasm/test_ext8_derived_codec.py": "566f132443169d71f53a66d99f6b2cba6626b1c6b1d8dc72816bc93386380dce",
+    "research/near-compression/airbender/direct-wasm/measure_ext8_compression_envelope.py": "0c83f834a2781849b192bfcd25cd7840fd57d79c6c98b5b03fd5744733c05dff",
+    "research/near-compression/NearCompression/DerivedFoldTransport.lean": "e307ada040841b602e7d0b3ecff11a960958c23c338f24beb6096add992ca6d1",
+    "research/near-compression/results/ext8-affine-q309/receipt.json": "f33b113e4398a341af225ff0c0abe2dd0a6b3159b84f4e489434039c2358ee7b",
+    "research/near-compression/results/call-ext8-shared-q309/proof.bin": "efafe27f4400aaf2407e1762153ea9c22ec1fe1652124cdf12b9031c5354ed1e",
+    "research/near-compression/results/ext8-linked-calls/calls.json": "6084f703978c43a4098d7e04e327d1eb2e1f6905db359d3b08b23c02da5dc996"
+  },
+  "scope": "Same q309 diagnostic proof. No full NEAR, PQ128/QROM, proximity or byte-decoder refinement certification."
+}

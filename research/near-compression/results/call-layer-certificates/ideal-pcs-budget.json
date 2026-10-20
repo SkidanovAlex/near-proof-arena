@@ -1,0 +1,41 @@
+{
+  "status": "DIAGNOSTIC_QUERY_TERM_DOES_NOT_CERTIFY_TARGET",
+  "source_degree": 128,
+  "source_domain": 512,
+  "folds": 7,
+  "queries": 8,
+  "min_threshold": 385,
+  "max_surviving_queries": 384,
+  "agreement_fraction": "3/4",
+  "query_term_exact": "6561/65536",
+  "query_term": 0.1001129150390625,
+  "query_term_negative_log2": 3.3202999942307505,
+  "fold_numerator": 508,
+  "ideal_near_conditional_bound": 0.1001129150390625,
+  "minimal_queries_for_isolated_query_term": {
+    "128": 309,
+    "198": 478,
+    "220": 531
+  },
+  "far_outer_degree_numerator": 3584,
+  "assumptions": [
+    "Ideal independent uniform fold challenges and source query indices",
+    "Verified local fold/terminal checks and fixed prior snapshots, weights and claims",
+    "Near branch: fixed jointly-close source tuple, separation and wrong functional",
+    "Far branch: separate multiaffine source-batching hypotheses"
+  ],
+  "excluded": [
+    "Functional reduction error",
+    "Hash/commitment extraction error",
+    "Fiat-Shamir/QROM reduction",
+    "Full recursive verifier and NEAR execution"
+  ],
+  "scope": "Exact instantiation of existing conditional ideal bounds, not an attack success lower bound. Raising query count alone cannot establish a target: the Ext4 field term is already too large for128bits. 198/220 are component-budget examples, not asserted quantum-security conversions. No complete proof-size projection or security certificate.",
+  "files": {
+    "airbender/direct-wasm/measure_call_pcs_budget.py": "7f3e819d3ebee383b77e900a5a531e60b736f3ad09b6cf71ba3ca27ce9028f68",
+    "results/ext8-call-pcs/proof.json.gz": "0328b5af62732190ec1b1b5f3b23926d9a4604b5eb4639e81ccaacc692459e6a",
+    "results/ext8-linked-calls/statement.json.gz": "50fb4f476aae7b10479c30d64b0176323c9476313cdb910734e9ec3f3d9a0c5e",
+    "NearCompression/CheckedHistoryNear.lean": "e423249c67b60df23ff0af5771213f49ff193b9632fddbefd347d633ebeac5cb",
+    "NearCompression/CheckedHistorySource.lean": "a128e881f7c6082d263c1c56eb4ac15f4e1a40af678fd1db5e6a8618e5028198"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "status": "EARLIER_GKR_COUNT_REARRANGEMENT_PRESERVES_JOINT_ROWPOINT_AVERAGING",
+  "module": "NearCompression/GKREarlierJointCount.lean",
+  "theorems": [
+    "gkr_finite_sample_exchange",
+    "gkr_earlier_joint_event_count",
+    "gkr_earlier_joint_event_budget"
+  ],
+  "proved": [
+    "Finite nested sample counts commute while retaining the same continuation lists and event dependencies.",
+    "Rows-first full GKR/PCS event count equals the sum, over earlier GKR block sequences, of joint PCS coordinate event counts.",
+    "A uniform joint-event bound for each earlier sequence lifts with exactly the number of earlier challenge paths."
+  ],
+  "assumptions": [
+    "Fixed sample lists, GKR round envelope and continuation list.",
+    "For the budget theorem, the joint PCS bound holds for every earlier sequence; rows remain sampled within each count.",
+    "The event retains earlier blocks and all assembled joint coordinates; this does not change adaptive protocol message order."
+  ],
+  "remaining": [
+    "Construct the merged PCS sent/claim/prover families from each fixed earlier GKR sequence and match accepted events.",
+    "Discharge source geometry and authentication in the executable verifier contract.",
+    "Global computational soundness, quantum Fiat-Shamir and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3937,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; generic finite-count rearrangement only."
+  }
+}

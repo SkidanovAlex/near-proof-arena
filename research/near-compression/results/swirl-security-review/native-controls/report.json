@@ -1,0 +1,91 @@
+{
+  "status": "NATIVE_TERMINAL_SCALAR_REPLAY_PASS",
+  "captures": [
+    {
+      "capture": 0,
+      "airs": 39,
+      "nodes": 15066
+    },
+    {
+      "capture": 1,
+      "airs": 39,
+      "nodes": 15516
+    },
+    {
+      "capture": 2,
+      "airs": 39,
+      "nodes": 15504
+    }
+  ],
+  "matches": [
+    {
+      "capture": 1,
+      "trace_air_order": [
+        36,
+        0,
+        14,
+        5,
+        15,
+        38,
+        34,
+        10,
+        11,
+        13,
+        28,
+        32,
+        33,
+        23,
+        26,
+        35,
+        31,
+        18,
+        21,
+        2,
+        3,
+        9,
+        1,
+        16,
+        4,
+        20,
+        24,
+        25,
+        37,
+        6,
+        7,
+        12,
+        30,
+        8,
+        27,
+        29,
+        17,
+        19,
+        22
+      ],
+      "negative_checks": 2,
+      "arithmetic_selector_nodes_checked": 13213,
+      "scalar": [
+        941997310,
+        1041078624,
+        1976683812,
+        467589941
+      ],
+      "constant_offset": [
+        758533995,
+        651709240,
+        178776021,
+        669461642
+      ]
+    }
+  ],
+  "sha256": {
+    "results/swirl-security-review/dag-export/dag.jsonl.gz": "78a24241e778d287a3bc05c694bc1fb0101107abd1e22fa7a3f69427b0043e96",
+    "results/swirl-security-review/native-controls/capture.jsonl.gz": "550825b7b4e693a71c9699d9a5ec93a508056f095e9dd8fcb756bd70c0ed7d6a",
+    "airbender/direct-wasm/check_swirl_native_controls.py": "a3e62ffd4e25a7cb6db68835b4f680f21880a4ea8a9e3419601e785581508677"
+  },
+  "limitations": [
+    "Variable values read from native node evaluation; source column/rotation extraction not yet cross-checked.",
+    "Native proof still discloses column openings and uses its original transcript.",
+    "No GKR-in-native-verifier, replacement PCS or QROM/PQ128 theorem.",
+    "Generic recursive fixture, not full NEAR."
+  ]
+}

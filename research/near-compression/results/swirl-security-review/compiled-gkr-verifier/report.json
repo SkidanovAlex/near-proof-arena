@@ -1,0 +1,36 @@
+{
+  "status": "FIXED_GKR_ARITHMETIC_PARITY",
+  "nodes": 820866,
+  "operations": {
+    "const": 600,
+    "input": 5983,
+    "add": 185453,
+    "sub": 875,
+    "mul": 627955
+  },
+  "max_depth": 34,
+  "inputs": 5983,
+  "equality_checks": 437,
+  "pcs_coordinates": 2603,
+  "challenge_inputs": 437,
+  "negative_checks": [
+    "claim",
+    "proof/0/round/0/0",
+    "proof/0/input/0",
+    "challenge/0/0"
+  ],
+  "known_mutation_changes_residual": true,
+  "circuit_sha256": "23f38dde6c449c5592294120bb42fe8825825fbc3837728bc33ba15e97c28f8d",
+  "limitations": [
+    "Ext4 arithmetic DAG, not generated recursive proof or base-field AIR.",
+    "Transcript challenge derivation/hash binding remains external.",
+    "Known input derivation, prefix verification and weighted PCS remain external.",
+    "No Lean compiler refinement, soundness composition, PQ128 or full NEAR claim."
+  ],
+  "sha256": {
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/compile_swirl_gkr_verifier.py": "0dffb312a0afcf9f2e20853f6bda27c050009b67ece4a4ddd31e723f7c1c99aa",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_terminal_gkr.py": "58c32cabd696c89aee5003b64062c4a4297fd0f809d720a6a9499e7f4f9d4cbc",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/swirl-security-review/root-split-public-gkr/proof.json.gz": "a071b58b44ac1859188b5976523334735b029537fef6f31df15ec6842b102f4b",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/results/swirl-security-review/root-split-witness/public-controls.json": "15d07eba6b34827561930bfc55b331e3765e3ae11db05b1f05d2c6a3e9f601c5"
+  }
+}

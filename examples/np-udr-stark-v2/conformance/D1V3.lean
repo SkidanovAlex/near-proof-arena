@@ -12,7 +12,14 @@ import ZkFormal.NearV3.D1.PrepD1
   instrumented replay of `processTxs` (RuntimeD1.lean: the spec's own `readKey`,
   `decodeSigner`, `decodeAccessKey`, `txCost`, `verifyAndCharge`, `PTrie.set`) and of the
   local receipts (`TransferV1.applyReceipt`), as JSON `{tx, akm}` with the Rust entry field
-  names (compare with `npudr v3d1prove --dump`'s `tx.json` / `akm.json`).
+  names (compare with `npudr v3d1prove --dump`'s `tx.json` / `akm.json`).  Value ids are
+  ordinals in `checkD1`'s main pre trie `tMain` (over `mainKeys ++ txKeys`: lane v3-d1-a7b, the
+  AIR's pre trie).  Also `unread` (plan §5 R-5 → (B)): for every `txKeys` entry the terminal
+  of its `walkU` walk on `tMain` (`val vid`, `absent`, or `stub n I z` where a child or value
+  is not revealed), the stub windows with their use counts and hashes, the `nmemV3` mode of
+  each stub hash among the store digests of `tMain` (`0` between, `1` below all, `2` above
+  all), and the `uvalV3` values (`txKeys` entries no reader reads whose value `tMain`
+  reveals) — compare with `unread.json`.
 -/
 
 open NearSpec NearSpec.TransferV1 NearSpecV3 ZkFormal.NearV3.D1
@@ -143,6 +150,55 @@ def stepLocals (ctx : ApplyCtx) : RS × Acc → List Receipt → Except String (
     let some acc' := applyReceipt ⟨ctx.height, ctx.gasPrice⟩ acc r | throw "local receipt fails"
     stepLocals ctx ({ s with ops := s.ops ++ [op], acctT := put s.acctT akey time }, acc') rs
 
+/-! ## Unread-key walks (`walkU`, lane v3-d1-a7b) -/
+
+/-- The terminal of an unread walk on the AIR's pre trie (`n`: occurrence index in pre-order,
+`vid`: value ordinal, as the node / value records). -/
+inductive UTerm where
+  | val (vid : Nat)
+  | absent
+  | stub (n i z : Nat) (h : Bytes)
+
+def tsizeT (t : PTrie) : Nat := (NearSpecV3.occs t).length
+def valsLenT (t : PTrie) : Nat := (NearSpecV3.valsOf t).length
+
+mutual
+def uterm : Nat → Nat → PTrie → List Nat → UTerm
+  | _, _, .hash _, _ => .absent
+  | n, v, .leaf k s _, key =>
+    if k == key then
+      match s with
+      | .val _ => .val v
+      | .ref _ h => .stub n k.length 16 h
+    else .absent
+  | n, v, .ext k c _, key =>
+    if isPrefix k key then
+      match c with
+      | .hash h => .stub n k.length 19 h
+      | .leaf a b m => uterm (n + 1) v (.leaf a b m) (key.drop k.length)
+      | .ext a b m => uterm (n + 1) v (.ext a b m) (key.drop k.length)
+      | .branch a b m => uterm (n + 1) v (.branch a b m) (key.drop k.length)
+    else .absent
+  | n, v, .branch val _ _, [] =>
+    match val with
+    | none => .absent
+    | some (.val _) => .val v
+    | some (.ref _ h) => .stub n 0 16 h
+  | n, v, .branch val cs _, x :: xs =>
+    ukids n x (n + 1) (v + (NearSpecV3.optSlotVal val).length) cs x xs
+def ukids (parent sym : Nat) : Nat → Nat → Kids → Nat → List Nat → UTerm
+  | _, _, .nil, _, _ => .absent
+  | _, _, .none _, 0, _ => .absent
+  | _, _, .some (.hash h) _, 0, _ => .stub parent 0 sym h
+  | n, v, .some (.leaf a b m) _, 0, key => uterm n v (.leaf a b m) key
+  | n, v, .some (.ext a b m) _, 0, key => uterm n v (.ext a b m) key
+  | n, v, .some (.branch a b m) _, 0, key => uterm n v (.branch a b m) key
+  | n, v, .none r, j + 1, key => ukids parent sym n v r j key
+  | n, v, .some c r, j + 1, key => ukids parent sym (n + tsizeT c) (v + valsLenT c) r j key
+end
+
+def ltLE (a b : Bytes) : Bool := decide (a.reverse.map (·.toNat) < b.reverse.map (·.toNat))
+
 def jsonNat (n : Nat) : String := toString n
 def jsonArr (l : List String) : String := "[" ++ ", ".intercalate l ++ "]"
 def jsonBytes (b : Bytes) : String := jsonArr (b.map fun x => toString x.toNat)
@@ -161,7 +217,8 @@ def entries (cb wb : Bytes) : Except String String := do
   let tMain := partialTrie w.main.values root (mainKeys receipts bshards ++ txKeys w.txs)
   let s ← stepTxs ctx { trie := tMain } (w.txs.zip (k.c.txValid.map (· != 0)))
   let (s, acc) ← stepLocals ctx (s, ⟨s.trie, [], [], 0, s.tokens⟩) s.locals
-  let tAir := partialTrie w.main.values root (mainKeys receipts bshards ++ s.reads)
+  -- the AIR's pre trie is `checkD1`'s `tMain` (every `txKeys` entry walked, lane v3-d1-a7b)
+  let tAir := tMain
   let vid (key : List Nat) : Nat := (vIdx tAir key).getD 0
   let txj := s.ops.map fun o =>
     "{" ++ ", ".intercalate
@@ -180,7 +237,33 @@ def entries (cb wb : Bytes) : Except String String := do
     "{" ++ ", ".intercalate
       [s!"\"vid\": {vid key}", s!"\"bytes\": {jsonBytes bytes}", s!"\"tlast\": {lk? s.akT key}",
        s!"\"post\": {jsonBytes (post.take 8)}", s!"\"U\": {u}"] ++ "}"
-  pure ("{\"tx\": " ++ jsonArr txj ++ ", \"akm\": " ++ jsonArr akmj ++ "}")
+  -- unread-key walks: every `txKeys` entry
+  let ukeys := txKeys w.txs
+  let terms := ukeys.map (uterm 0 0 tMain)
+  let termj := terms.map fun
+    | .val v => s!"[\"val\", {v}]"
+    | .absent => "[\"absent\"]"
+    | .stub n i z _ => s!"[\"stub\", {n}, {i}, {z}]"
+  let stubs : List (Nat × Nat × Nat × Bytes) := terms.filterMap fun
+    | .stub n i z h => some (n, i, z, h) | _ => none
+  let distinct := stubs.foldl (fun acc x => if acc.contains x then acc else acc ++ [x]) []
+  let stubj := distinct.map fun (n, i, z, h) =>
+    jsonArr [toString n, toString i, toString z, toString (stubs.count (n, i, z, h)), jsonBytes h]
+  let digs := ((NearSpecV3.occs tMain).map fun o => sha256 (NearSpecV3.nodeEnc o)) ++
+    (NearSpecV3.valsOf tMain).map sha256
+  let nmemj := distinct.map fun (_, _, _, h) =>
+    let below := digs.any fun d => ltLE d h
+    let above := digs.any fun d => ltLE h d
+    jsonArr [jsonBytes h, toString (if below && above then 0 else if above then 1 else 2)]
+  let airKeys := mainKeys receipts bshards ++ s.reads
+  let uvk := (ukeys.filter fun key => !airKeys.contains key &&
+    (match tMain.find key with | some (some _) => true | _ => false)).foldl
+    (fun acc x => if acc.contains x then acc else acc ++ [x]) []
+  let uvalj := uvk.map fun key => jsonArr [toString (vid key), jsonBytes ((tMain.get key).getD [])]
+  let unreadj := "{\"terms\": " ++ jsonArr termj ++ ", \"stubs\": " ++ jsonArr stubj ++
+    ", \"nmem\": " ++ jsonArr nmemj ++ ", \"uval\": " ++ jsonArr uvalj ++ "}"
+  pure ("{\"tx\": " ++ jsonArr txj ++ ", \"akm\": " ++ jsonArr akmj ++ ", \"unread\": " ++
+    unreadj ++ "}")
 
 def readB (p : String) : IO Bytes := do return (← IO.FS.readBinFile p).toList
 

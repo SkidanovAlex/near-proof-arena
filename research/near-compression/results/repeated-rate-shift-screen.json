@@ -1,0 +1,2167 @@
+{
+  "status": "CONDITIONAL_DESIGN_SCREEN_NOT_PROTOCOL_PROOF",
+  "rows": [
+    {
+      "degree": 1024,
+      "terminal_degree_cap": null,
+      "expected_bytes": 4152.0,
+      "min_bytes": 4152,
+      "max_bytes": 4152,
+      "scalar_disclosure_bytes": 4152,
+      "conditional_ideal_error": 0.0,
+      "path": [],
+      "trials": [
+        {
+          "bytes": 4152,
+          "terminal_degree": 1024,
+          "terminal_bytes": 4096,
+          "stages": []
+        },
+        {
+          "bytes": 4152,
+          "terminal_degree": 1024,
+          "terminal_bytes": 4096,
+          "stages": []
+        },
+        {
+          "bytes": 4152,
+          "terminal_degree": 1024,
+          "terminal_bytes": 4096,
+          "stages": []
+        },
+        {
+          "bytes": 4152,
+          "terminal_degree": 1024,
+          "terminal_bytes": 4096,
+          "stages": []
+        },
+        {
+          "bytes": 4152,
+          "terminal_degree": 1024,
+          "terminal_bytes": 4096,
+          "stages": []
+        },
+        {
+          "bytes": 4152,
+          "terminal_degree": 1024,
+          "terminal_bytes": 4096,
+          "stages": []
+        },
+        {
+          "bytes": 4152,
+          "terminal_degree": 1024,
+          "terminal_bytes": 4096,
+          "stages": []
+        },
+        {
+          "bytes": 4152,
+          "terminal_degree": 1024,
+          "terminal_bytes": 4096,
+          "stages": []
+        }
+      ]
+    },
+    {
+      "degree": 1024,
+      "terminal_degree_cap": 64,
+      "expected_bytes": 17416.000072462317,
+      "min_bytes": 17416,
+      "max_bytes": 17416,
+      "scalar_disclosure_bytes": 4152,
+      "conditional_ideal_error": 4.4135502495392375e-41,
+      "path": [
+        {
+          "degree": 1024,
+          "rate": 4,
+          "skipped": 8,
+          "scalar": true,
+          "next_rate": 2
+        }
+      ],
+      "trials": [
+        {
+          "bytes": 17416,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1024,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 16384,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 17416,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1024,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 16384,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 17416,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1024,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 16384,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 17416,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1024,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 16384,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 17416,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1024,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 16384,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 17416,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1024,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 16384,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 17416,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1024,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 16384,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 17416,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1024,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 16384,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "terminal_degree_cap": null,
+      "expected_bytes": 32824.0,
+      "min_bytes": 32824,
+      "max_bytes": 32824,
+      "scalar_disclosure_bytes": 32824,
+      "conditional_ideal_error": 0.0,
+      "path": [],
+      "trials": [
+        {
+          "bytes": 32824,
+          "terminal_degree": 8192,
+          "terminal_bytes": 32768,
+          "stages": []
+        },
+        {
+          "bytes": 32824,
+          "terminal_degree": 8192,
+          "terminal_bytes": 32768,
+          "stages": []
+        },
+        {
+          "bytes": 32824,
+          "terminal_degree": 8192,
+          "terminal_bytes": 32768,
+          "stages": []
+        },
+        {
+          "bytes": 32824,
+          "terminal_degree": 8192,
+          "terminal_bytes": 32768,
+          "stages": []
+        },
+        {
+          "bytes": 32824,
+          "terminal_degree": 8192,
+          "terminal_bytes": 32768,
+          "stages": []
+        },
+        {
+          "bytes": 32824,
+          "terminal_degree": 8192,
+          "terminal_bytes": 32768,
+          "stages": []
+        },
+        {
+          "bytes": 32824,
+          "terminal_degree": 8192,
+          "terminal_bytes": 32768,
+          "stages": []
+        },
+        {
+          "bytes": 32824,
+          "terminal_degree": 8192,
+          "terminal_bytes": 32768,
+          "stages": []
+        }
+      ]
+    },
+    {
+      "degree": 8192,
+      "terminal_degree_cap": 64,
+      "expected_bytes": 182594.62460331115,
+      "min_bytes": 172936,
+      "max_bytes": 219016,
+      "scalar_disclosure_bytes": 32824,
+      "conditional_ideal_error": 4.4135502495392375e-41,
+      "path": [
+        {
+          "degree": 8192,
+          "rate": 4,
+          "skipped": 8,
+          "scalar": true,
+          "next_rate": 2
+        }
+      ],
+      "trials": [
+        {
+          "bytes": 219016,
+          "terminal_degree": 32,
+          "terminal_bytes": 1024,
+          "stages": [
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 112640,
+              "hash_bytes": 104448,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 182152,
+          "terminal_degree": 32,
+          "terminal_bytes": 1024,
+          "stages": [
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 118784,
+              "hash_bytes": 61440,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 173960,
+          "terminal_degree": 32,
+          "terminal_bytes": 1024,
+          "stages": [
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 122880,
+              "hash_bytes": 49152,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 188296,
+          "terminal_degree": 32,
+          "terminal_bytes": 1024,
+          "stages": [
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 118784,
+              "hash_bytes": 67584,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 194440,
+          "terminal_degree": 32,
+          "terminal_bytes": 1024,
+          "stages": [
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 118784,
+              "hash_bytes": 73728,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 203656,
+          "terminal_degree": 32,
+          "terminal_bytes": 1024,
+          "stages": [
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 115712,
+              "hash_bytes": 86016,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 178056,
+          "terminal_degree": 32,
+          "terminal_bytes": 1024,
+          "stages": [
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 120832,
+              "hash_bytes": 55296,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 172936,
+          "terminal_degree": 32,
+          "terminal_bytes": 1024,
+          "stages": [
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 121856,
+              "hash_bytes": 49152,
+              "header_bytes": 848
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "terminal_degree_cap": null,
+      "expected_bytes": 524344.0,
+      "min_bytes": 524344,
+      "max_bytes": 524344,
+      "scalar_disclosure_bytes": 524344,
+      "conditional_ideal_error": 0.0,
+      "path": [],
+      "trials": [
+        {
+          "bytes": 524344,
+          "terminal_degree": 131072,
+          "terminal_bytes": 524288,
+          "stages": []
+        },
+        {
+          "bytes": 524344,
+          "terminal_degree": 131072,
+          "terminal_bytes": 524288,
+          "stages": []
+        },
+        {
+          "bytes": 524344,
+          "terminal_degree": 131072,
+          "terminal_bytes": 524288,
+          "stages": []
+        },
+        {
+          "bytes": 524344,
+          "terminal_degree": 131072,
+          "terminal_bytes": 524288,
+          "stages": []
+        },
+        {
+          "bytes": 524344,
+          "terminal_degree": 131072,
+          "terminal_bytes": 524288,
+          "stages": []
+        },
+        {
+          "bytes": 524344,
+          "terminal_degree": 131072,
+          "terminal_bytes": 524288,
+          "stages": []
+        },
+        {
+          "bytes": 524344,
+          "terminal_degree": 131072,
+          "terminal_bytes": 524288,
+          "stages": []
+        },
+        {
+          "bytes": 524344,
+          "terminal_degree": 131072,
+          "terminal_bytes": 524288,
+          "stages": []
+        }
+      ]
+    },
+    {
+      "degree": 131072,
+      "terminal_degree_cap": 64,
+      "expected_bytes": 747082.0537086109,
+      "min_bytes": 743000,
+      "max_bytes": 754776,
+      "scalar_disclosure_bytes": 524344,
+      "conditional_ideal_error": 2.09767492873545e-40,
+      "path": [
+        {
+          "degree": 131072,
+          "rate": 4,
+          "skipped": 2,
+          "scalar": true,
+          "next_rate": 8
+        },
+        {
+          "degree": 32768,
+          "rate": 8,
+          "skipped": 2,
+          "scalar": false,
+          "next_rate": 4
+        },
+        {
+          "degree": 8192,
+          "rate": 4,
+          "skipped": 2,
+          "scalar": false,
+          "next_rate": 2
+        },
+        {
+          "degree": 2048,
+          "rate": 2,
+          "skipped": 2,
+          "scalar": false,
+          "next_rate": 2
+        },
+        {
+          "degree": 512,
+          "rate": 2,
+          "skipped": 7,
+          "scalar": false,
+          "next_rate": 2
+        }
+      ],
+      "trials": [
+        {
+          "bytes": 743000,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 131072,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 239040,
+              "header_bytes": 272
+            },
+            {
+              "degree": 32768,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34176,
+              "hash_bytes": 184032,
+              "header_bytes": 272
+            },
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 40448,
+              "hash_bytes": 119616,
+              "header_bytes": 272
+            },
+            {
+              "degree": 2048,
+              "rate": 2,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 509,
+              "scalar_source": false,
+              "leaf_bytes": 49920,
+              "hash_bytes": 35808,
+              "header_bytes": 272
+            },
+            {
+              "degree": 512,
+              "rate": 2,
+              "skipped": 7,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 32768,
+              "hash_bytes": 0,
+              "header_bytes": 752
+            }
+          ]
+        },
+        {
+          "bytes": 747240,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 131072,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5152,
+              "hash_bytes": 241536,
+              "header_bytes": 272
+            },
+            {
+              "degree": 32768,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 181824,
+              "header_bytes": 272
+            },
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 40576,
+              "hash_bytes": 119136,
+              "header_bytes": 272
+            },
+            {
+              "degree": 2048,
+              "rate": 2,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 509,
+              "scalar_source": false,
+              "leaf_bytes": 51840,
+              "hash_bytes": 37824,
+              "header_bytes": 272
+            },
+            {
+              "degree": 512,
+              "rate": 2,
+              "skipped": 7,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 32768,
+              "hash_bytes": 0,
+              "header_bytes": 752
+            }
+          ]
+        },
+        {
+          "bytes": 750392,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 131072,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 240864,
+              "header_bytes": 272
+            },
+            {
+              "degree": 32768,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34432,
+              "hash_bytes": 180672,
+              "header_bytes": 272
+            },
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 40832,
+              "hash_bytes": 123456,
+              "header_bytes": 272
+            },
+            {
+              "degree": 2048,
+              "rate": 2,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 509,
+              "scalar_source": false,
+              "leaf_bytes": 52736,
+              "hash_bytes": 37440,
+              "header_bytes": 272
+            },
+            {
+              "degree": 512,
+              "rate": 2,
+              "skipped": 7,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 32768,
+              "hash_bytes": 0,
+              "header_bytes": 752
+            }
+          ]
+        },
+        {
+          "bytes": 749528,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 131072,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 239424,
+              "header_bytes": 272
+            },
+            {
+              "degree": 32768,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 183648,
+              "header_bytes": 272
+            },
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 40832,
+              "hash_bytes": 122016,
+              "header_bytes": 272
+            },
+            {
+              "degree": 2048,
+              "rate": 2,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 509,
+              "scalar_source": false,
+              "leaf_bytes": 51840,
+              "hash_bytes": 37248,
+              "header_bytes": 272
+            },
+            {
+              "degree": 512,
+              "rate": 2,
+              "skipped": 7,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 32768,
+              "hash_bytes": 0,
+              "header_bytes": 752
+            }
+          ]
+        },
+        {
+          "bytes": 754776,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 131072,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 244608,
+              "header_bytes": 272
+            },
+            {
+              "degree": 32768,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 182784,
+              "header_bytes": 272
+            },
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 40704,
+              "hash_bytes": 119520,
+              "header_bytes": 272
+            },
+            {
+              "degree": 2048,
+              "rate": 2,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 509,
+              "scalar_source": false,
+              "leaf_bytes": 52992,
+              "hash_bytes": 39648,
+              "header_bytes": 272
+            },
+            {
+              "degree": 512,
+              "rate": 2,
+              "skipped": 7,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 32768,
+              "hash_bytes": 0,
+              "header_bytes": 752
+            }
+          ]
+        },
+        {
+          "bytes": 749448,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 131072,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5152,
+              "hash_bytes": 240288,
+              "header_bytes": 272
+            },
+            {
+              "degree": 32768,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34304,
+              "hash_bytes": 184608,
+              "header_bytes": 272
+            },
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 40448,
+              "hash_bytes": 119712,
+              "header_bytes": 272
+            },
+            {
+              "degree": 2048,
+              "rate": 2,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 509,
+              "scalar_source": false,
+              "leaf_bytes": 51072,
+              "hash_bytes": 39072,
+              "header_bytes": 272
+            },
+            {
+              "degree": 512,
+              "rate": 2,
+              "skipped": 7,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 32768,
+              "hash_bytes": 0,
+              "header_bytes": 752
+            }
+          ]
+        },
+        {
+          "bytes": 752024,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 131072,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 242496,
+              "header_bytes": 272
+            },
+            {
+              "degree": 32768,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 185664,
+              "header_bytes": 272
+            },
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 40576,
+              "hash_bytes": 117024,
+              "header_bytes": 272
+            },
+            {
+              "degree": 2048,
+              "rate": 2,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 509,
+              "scalar_source": false,
+              "leaf_bytes": 52480,
+              "hash_bytes": 39264,
+              "header_bytes": 272
+            },
+            {
+              "degree": 512,
+              "rate": 2,
+              "skipped": 7,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 32768,
+              "hash_bytes": 0,
+              "header_bytes": 752
+            }
+          ]
+        },
+        {
+          "bytes": 744696,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 131072,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 240000,
+              "header_bytes": 272
+            },
+            {
+              "degree": 32768,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34304,
+              "hash_bytes": 181440,
+              "header_bytes": 272
+            },
+            {
+              "degree": 8192,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 40960,
+              "hash_bytes": 120672,
+              "header_bytes": 272
+            },
+            {
+              "degree": 2048,
+              "rate": 2,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 509,
+              "scalar_source": false,
+              "leaf_bytes": 50304,
+              "hash_bytes": 37056,
+              "header_bytes": 272
+            },
+            {
+              "degree": 512,
+              "rate": 2,
+              "skipped": 7,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 32768,
+              "hash_bytes": 0,
+              "header_bytes": 752
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "terminal_degree_cap": null,
+      "expected_bytes": 1199124.5337738025,
+      "min_bytes": 1196712,
+      "max_bytes": 1205672,
+      "scalar_disclosure_bytes": 4194360,
+      "conditional_ideal_error": 1.6149903862315364e-40,
+      "path": [
+        {
+          "degree": 1048576,
+          "rate": 4,
+          "skipped": 2,
+          "scalar": true,
+          "next_rate": 8
+        },
+        {
+          "degree": 262144,
+          "rate": 8,
+          "skipped": 2,
+          "scalar": false,
+          "next_rate": 8
+        },
+        {
+          "degree": 65536,
+          "rate": 8,
+          "skipped": 2,
+          "scalar": false,
+          "next_rate": 4
+        },
+        {
+          "degree": 16384,
+          "rate": 4,
+          "skipped": 2,
+          "scalar": false,
+          "next_rate": 2
+        }
+      ],
+      "trials": [
+        {
+          "bytes": 1197352,
+          "terminal_degree": 4096,
+          "terminal_bytes": 131072,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 332064,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 261120,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 209952,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41216,
+              "hash_bytes": 146496,
+              "header_bytes": 272
+            }
+          ]
+        },
+        {
+          "bytes": 1196712,
+          "terminal_degree": 4096,
+          "terminal_bytes": 131072,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 334368,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 259584,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34432,
+              "hash_bytes": 209760,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41088,
+              "hash_bytes": 145536,
+              "header_bytes": 272
+            }
+          ]
+        },
+        {
+          "bytes": 1205608,
+          "terminal_degree": 4096,
+          "terminal_bytes": 131072,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 333888,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 258240,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34432,
+              "hash_bytes": 213696,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41344,
+              "hash_bytes": 152064,
+              "header_bytes": 272
+            }
+          ]
+        },
+        {
+          "bytes": 1201224,
+          "terminal_degree": 4096,
+          "terminal_bytes": 131072,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 332448,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 261408,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 210720,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41344,
+              "hash_bytes": 148800,
+              "header_bytes": 272
+            }
+          ]
+        },
+        {
+          "bytes": 1205672,
+          "terminal_degree": 4096,
+          "terminal_bytes": 131072,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 337632,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 260544,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 208608,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41088,
+              "hash_bytes": 151296,
+              "header_bytes": 272
+            }
+          ]
+        },
+        {
+          "bytes": 1202600,
+          "terminal_degree": 4096,
+          "terminal_bytes": 131072,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 333120,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 261600,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 210624,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41088,
+              "hash_bytes": 149664,
+              "header_bytes": 272
+            }
+          ]
+        },
+        {
+          "bytes": 1201352,
+          "terminal_degree": 4096,
+          "terminal_bytes": 131072,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 335520,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 263424,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 207264,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 40320,
+              "hash_bytes": 148320,
+              "header_bytes": 272
+            }
+          ]
+        },
+        {
+          "bytes": 1201672,
+          "terminal_degree": 4096,
+          "terminal_bytes": 131072,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 333024,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 258720,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 212160,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41216,
+              "hash_bytes": 150048,
+              "header_bytes": 272
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "degree": 1048576,
+      "terminal_degree_cap": 64,
+      "expected_bytes": 1264283.3473321039,
+      "min_bytes": 1259752,
+      "max_bytes": 1273320,
+      "scalar_disclosure_bytes": 4194360,
+      "conditional_ideal_error": 2.4977004361393837e-40,
+      "path": [
+        {
+          "degree": 1048576,
+          "rate": 4,
+          "skipped": 2,
+          "scalar": true,
+          "next_rate": 8
+        },
+        {
+          "degree": 262144,
+          "rate": 8,
+          "skipped": 2,
+          "scalar": false,
+          "next_rate": 8
+        },
+        {
+          "degree": 65536,
+          "rate": 8,
+          "skipped": 2,
+          "scalar": false,
+          "next_rate": 4
+        },
+        {
+          "degree": 16384,
+          "rate": 4,
+          "skipped": 2,
+          "scalar": false,
+          "next_rate": 4
+        },
+        {
+          "degree": 4096,
+          "rate": 4,
+          "skipped": 2,
+          "scalar": false,
+          "next_rate": 2
+        },
+        {
+          "degree": 1024,
+          "rate": 2,
+          "skipped": 8,
+          "scalar": false,
+          "next_rate": 2
+        }
+      ],
+      "trials": [
+        {
+          "bytes": 1259752,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 332064,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 261120,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 209952,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41216,
+              "hash_bytes": 146496,
+              "header_bytes": 272
+            },
+            {
+              "degree": 4096,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 39424,
+              "hash_bytes": 87264,
+              "header_bytes": 272
+            },
+            {
+              "degree": 1024,
+              "rate": 2,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 65536,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 1262888,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 334368,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 259584,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34432,
+              "hash_bytes": 209760,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41088,
+              "hash_bytes": 145536,
+              "header_bytes": 272
+            },
+            {
+              "degree": 4096,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 39936,
+              "hash_bytes": 90528,
+              "header_bytes": 272
+            },
+            {
+              "degree": 1024,
+              "rate": 2,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 65536,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 1273320,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 333888,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 258240,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34432,
+              "hash_bytes": 213696,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41344,
+              "hash_bytes": 152064,
+              "header_bytes": 272
+            },
+            {
+              "degree": 4096,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 40320,
+              "hash_bytes": 91680,
+              "header_bytes": 272
+            },
+            {
+              "degree": 1024,
+              "rate": 2,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 65536,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 1267016,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 332448,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 261408,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 210720,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41344,
+              "hash_bytes": 148800,
+              "header_bytes": 272
+            },
+            {
+              "degree": 4096,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 39936,
+              "hash_bytes": 90144,
+              "header_bytes": 272
+            },
+            {
+              "degree": 1024,
+              "rate": 2,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 65536,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 1271240,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 337632,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 260544,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 208608,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41088,
+              "hash_bytes": 151296,
+              "header_bytes": 272
+            },
+            {
+              "degree": 4096,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 39808,
+              "hash_bytes": 90048,
+              "header_bytes": 272
+            },
+            {
+              "degree": 1024,
+              "rate": 2,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 65536,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 1270024,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 333120,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 261600,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 210624,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41088,
+              "hash_bytes": 149664,
+              "header_bytes": 272
+            },
+            {
+              "degree": 4096,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 40320,
+              "hash_bytes": 91392,
+              "header_bytes": 272
+            },
+            {
+              "degree": 1024,
+              "rate": 2,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 65536,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 1265896,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 335520,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 263424,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 207264,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 40320,
+              "hash_bytes": 148320,
+              "header_bytes": 272
+            },
+            {
+              "degree": 4096,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 39552,
+              "hash_bytes": 89280,
+              "header_bytes": 272
+            },
+            {
+              "degree": 1024,
+              "rate": 2,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 65536,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        },
+        {
+          "bytes": 1264264,
+          "terminal_degree": 4,
+          "terminal_bytes": 128,
+          "stages": [
+            {
+              "degree": 1048576,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 323,
+              "scalar_source": true,
+              "leaf_bytes": 5168,
+              "hash_bytes": 333024,
+              "header_bytes": 272
+            },
+            {
+              "degree": 262144,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 8,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 258720,
+              "header_bytes": 272
+            },
+            {
+              "degree": 65536,
+              "rate": 8,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 270,
+              "scalar_source": false,
+              "leaf_bytes": 34560,
+              "hash_bytes": 212160,
+              "header_bytes": 272
+            },
+            {
+              "degree": 16384,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 4,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 41216,
+              "hash_bytes": 150048,
+              "header_bytes": 272
+            },
+            {
+              "degree": 4096,
+              "rate": 4,
+              "skipped": 2,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 39040,
+              "hash_bytes": 87840,
+              "header_bytes": 272
+            },
+            {
+              "degree": 1024,
+              "rate": 2,
+              "skipped": 8,
+              "next_rate": 2,
+              "queries": 323,
+              "scalar_source": false,
+              "leaf_bytes": 65536,
+              "hash_bytes": 0,
+              "header_bytes": 848
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "exhaustive_expectation_cases": 12,
+  "coset_replication_checks": 654,
+  "rates": [
+    2,
+    4,
+    8,
+    16,
+    32
+  ],
+  "maximum_skipped_folds": 8,
+  "per_tail_bits": 134,
+  "cache_states": 208,
+  "composition_obligation": "Prove a rate-shift step preserves absence of a candidate outside its bad event, then induct over adaptively chosen prefix transcripts. Existing CheckedRateShiftComposition ends in a plain fold continuation, not another rate shift.",
+  "limitations": [
+    "Exact expected geometry under independent uniform ideal sampling; eight simulations of selected schedule.",
+    "Every post-first-stage leaf is priced as 64 bytes (paired Ext8).",
+    "Terminal coefficient disclosure entails source-size verifier reconstruction, not a succinct-verifier claim.",
+    "Schedule is selected by minimum expectation over this finite grid, not a protocol lower bound.",
+    "External configuration, recursive GKR, NEAR state transitions, commitment/QROM costs excluded.",
+    "Ideal error sum is conditional on the still-unproved repeated-step composition and correct transcript binding."
+  ],
+  "source_sha256": "0c1d380381cdc05293351af7fb915a01a92de52a3365c9e3b45d62816a19eeba"
+}

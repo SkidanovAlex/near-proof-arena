@@ -1,0 +1,40 @@
+{
+  "status": "DECODED_COMPILER_MIXTURE_LINKED_TO_AIR_TRACE_AND_INITIAL_ZERO_COUNT",
+  "module": "NearCompression/DecodedTraceSemantics.lean",
+  "theorems": [
+    "decoded_air_row_environment",
+    "decoded_bus_row_environment",
+    "mixed_formula_power_batch",
+    "decoded_combined_residual_values",
+    "decoded_combined_mixture",
+    "decoded_combined_mixture_boolean",
+    "decoded_mixture_weighted_zero_count"
+  ],
+  "proved": [
+    "Decoded columns construct a total AIR Trace table without assuming row validity.",
+    "Common-point decoded environments equal AIR row MLE environments and bus MLE environments.",
+    "Compiler power accumulation equals the ordered lanePowerBatch; register labels do not affect evaluation.",
+    "Given exact source-then-auxiliary formula order, decoded mixtures equal combined point residuals and, at Boolean points, actual row residual batches.",
+    "For a nonzero row residual, the existing ideal finite-sample initial zerocheck bound applies directly to the decoded compiler accumulator."
+  ],
+  "assumptions": [
+    "Residual formula list equals the supplied source-then-auxiliary lists; these lists still need identification with intended protocol formulas.",
+    "Point length matches row dimension; Boolean-row equality additionally requires Boolean coordinates.",
+    "Counting bound requires distinct finite sample, nonempty residual family, bounded offending row and nonzero offending residual; decoded columns/formulas are fixed before samples."
+  ],
+  "remaining": [
+    "Intended formula/specification binding and decoded execution semantics beyond constraint evaluation.",
+    "Complete accepted-proof propagation through chronological GKR/PCS and commitment extraction.",
+    "Fiat-Shamir/QROM soundness, secure parameters and full-NEAR sub300000-byte feasibility."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3913,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun: formal identities and finite counting composition only, no native code changes."
+  }
+}

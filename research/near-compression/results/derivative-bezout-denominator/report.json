@@ -1,0 +1,8 @@
+{
+  "eisenstein_families": 240,
+  "exact_certificate_coefficients": 1278,
+  "safe_smooth_roots": 1303,
+  "denominator_exception_points": 192,
+  "characteristic_degree_counterexamples": 4,
+  "scope": "Derivative common denominator and bounded certificate for irreducible small-degree rational-function polynomials. General safe-specialization/Hensel composition and full protocol soundness remain open."
+}

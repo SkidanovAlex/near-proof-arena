@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3467,
+  "added_theorems": 8,
+  "source_sha256": "3e698e319c5dbec7db40e3c9792bfde22478b04344719d10f15d607a668237f1",
+  "audit_log": "/tmp/root-operand-packing-audit.log",
+  "audit_sha256": "6a1571fc3543e5db1aed3da60bc5534544874835df2c8d1d5754484a90e55399",
+  "scope": "Exact 4096-row,4-group,4-base-coordinate functional equals scaled padded input MLE including arbitrary high-zero bits. No division or nonzero challenge premise.",
+  "limits": [
+    "Algebraic mapping, not full Python compiler refinement.",
+    "Cryptographic PCS/GKR/FS composition remains separate."
+  ]
+}

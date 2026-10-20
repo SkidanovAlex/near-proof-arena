@@ -1,0 +1,3 @@
+'NearCompression.packedLiteralFamilyCertificate' depends on axioms: [propext, Quot.sound]
+'NearCompression.packed_literal_family_holds' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.packed_literal_family_public_run_call' depends on axioms: [propext, Classical.choice, Quot.sound]

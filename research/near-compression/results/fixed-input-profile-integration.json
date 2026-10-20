@@ -1,0 +1,31 @@
+{
+  "status": "FRESH_FIXED_INPUT_COMPACT_PREPARED_SLICE_VERIFIED_DIAGNOSTIC_ONLY",
+  "profile": "near-pq384-gkr-fixed-input-bus-v1",
+  "trusted_input_log": 13,
+  "trusted_input_slots": 8192,
+  "configuration": "Explicit caller keyword or CLI --input-log; not read from proof or statement JSON. Separate profile and u64 cap bound in statement digest before bus challenges.",
+  "artifact": "results/pq384-literal193-gkr-fixed13",
+  "same_source_roots": true,
+  "fresh_auxiliaries": true,
+  "validation": {
+    "independent_verifier": "PASS",
+    "profile_negative_checks": 11,
+    "old_prepared_compact_frontend": "PASS with15 rejections",
+    "full_lean_audit": "PASS",
+    "registered_results": 3780,
+    "fixed_compact_and_prepared_frontend": "PASS; exact roundtrip, fresh process and14 negatives",
+    "old_complete_envelope": "PASS with14 negatives"
+  },
+  "remaining": [
+    "Formal transcript/profile implementation refinement and cap sufficiency across workloads.",
+    "Common-source near/far AIR/GKR/bus/execution composition.",
+    "QROM/hash quantum security and secure full NEAR1Pgas sub300000-byte feasibility."
+  ],
+  "size_note": "Actual Q8/Ext4 fixed-profile compact proof47846 bytes; complete envelope67888 bytes including caller-cap byte. Different transcript/auxiliaries than the baseline, so size delta is not isolated padding cost. No secure-size certification.",
+  "compact_measurement": {
+    "proof_bytes": 47846,
+    "complete_envelope_bytes": 67888,
+    "transport_overhead_bytes": 20042,
+    "envelope_plus_external_request_json_bytes": 68807
+  }
+}

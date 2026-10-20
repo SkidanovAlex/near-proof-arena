@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 2002,
+  "source_hashes": {
+    "SHA384Padding": "a1da3e31faa9e371128128234ffdbd05a7aa9f57b9ff404cd7de7b9779a51ffa",
+    "SHA384MultiBlockSemantics": "b97c534483e66098417e1fecc1e102bfc611a9f59b65ca9470e51a64a7f17ee6",
+    "SHA384Message": "081822b29e259615320ca13f1935f7dcec427be4c23b8fa455c312aeb188ce36",
+    "AdaptiveWeightedSumcheck": "d5293788459182b0b4150516454fde221db6b650b095529508f933668d335500",
+    "WeightedSumcheckTerminal": "930dba44102178a39acbe469b39eceff8e5ef7540c890453e37ef3a8a2afbac2",
+    "PreparedExecPadding": "ba79fe7a775f5bebfe6aed9780af43da80e91229060d2156c14509f3c3944fed"
+  },
+  "sha384_fixture_statement_unchanged": true,
+  "fixture_sha256": "46c5a51505a8b83008f4346305922d8f0d22899698c927d96b00d72e88d13f25",
+  "scope": [
+    "Concrete public message/digest layout plus actual multiblock AIR implies SHA384 digest equality, under block-count field bound and 48-byte digest length",
+    "Adaptive quadratic sumcheck false initial dot to honest terminal dot count bound with malformed messages rejected",
+    "Actual adjacent-pair lane folds equal weighted lane MLE terminal and initial coefficient functional",
+    "Actual literal AIR DONE suffix preserves failure, gas, PC, SP and all eight stack words"
+  ],
+  "remaining": [
+    "Full cryptographic accepted-proof to AIR satisfaction and QROM security",
+    "Equality-weight residual and end-to-end sumcheck/folding composition",
+    "Terminal state to public output composition",
+    "Full recursive prover, under 300000 bytes at certified quantum parameters",
+    "General Wasm/host/storage semantics and full NEAR 1 Pgas"
+  ]
+}

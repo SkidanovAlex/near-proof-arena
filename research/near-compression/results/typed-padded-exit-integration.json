@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3190,
+  "added_theorems": 13,
+  "sources": {
+    "PreparedTypedQuietLocals": "f6c07f376e964e3ea06dbc01ddaa5b6f8a019306c2c649337b6198aa4db6c761",
+    "PreparedTypedPadding": "5079a7726c2194fbde22f66a15c4e8f772ea7503921e0b8348bfe88c5b887930",
+    "PreparedTypedGasContext": "e6675d0c88690ab16e83c390989cd661910d03402f2add3d8e30acbeee0b7183",
+    "PreparedTypedPaddedExit": "abe44efbc5326ebca44da2590c667e9d55a3a70367eff6c3391d6a5befdd0830"
+  },
+  "audit_log": "/tmp/root-typed-padded-exit-audit.log",
+  "audit_sha256": "ec3ffdddb44eac94f79022001f389814eb1f967a98e7430ed0d271c5ee3e801e",
+  "result": "Typed DONE suffix preserves full snapshot; any reached DONE row has gas/failure/status equal to public exit. Actual successful supported opcodes preserve deferred gas context.",
+  "remaining": [
+    "Reaching DONE and whole-call semantics require remaining opcode successor cases",
+    "Full NEAR state transition capacity and quantum security remain open"
+  ]
+}

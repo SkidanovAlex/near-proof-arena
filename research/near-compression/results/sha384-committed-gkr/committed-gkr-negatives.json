@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "reference_new_table_residual_checks": 13098,
+  "exact_natural_bus_sent": {
+    "0": 4,
+    "1": 4,
+    "2": 3,
+    "3": 1,
+    "6": 376,
+    "4": 4,
+    "5": 1
+  },
+  "exact_natural_bus_received": {
+    "4": 4,
+    "5": 1,
+    "2": 3,
+    "0": 4,
+    "1": 4,
+    "6": 376,
+    "3": 1
+  },
+  "negative_tests": [
+    "framing-prefix",
+    "nonboolean-input",
+    "padding-delimiter",
+    "bit-length-tail",
+    "padding-block-selector",
+    "missing-root",
+    "wrong-root",
+    "wrong-length",
+    "wrong-context",
+    "wrong-air",
+    "truncated-wire",
+    "trailing-wire",
+    "changed-source-root",
+    "changed-opening",
+    "fresh-valid-proof-wrong-expected-root",
+    "fresh-locally-valid-truncated-padding"
+  ],
+  "fresh_different_root_underlying_full_proof_accepts": true,
+  "fresh_different_root_component_rejects": true,
+  "fresh_truncated_padding_local_and_PCS_accept": true,
+  "fresh_truncated_padding_global_reject": true,
+  "scope": "Mandatory root boundary and actual byte routing tested; full new AIR semantic proof and recursive producer routing not claimed."
+}

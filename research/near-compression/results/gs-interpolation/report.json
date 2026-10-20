@@ -1,0 +1,1071 @@
+{
+  "mixed_matrix_checks": 8000,
+  "interpolation_witnesses": [
+    {
+      "prime": 2,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "multiplicity": 1,
+      "weight": 1,
+      "weighted_degree_bound": 3,
+      "height": 3,
+      "variables": 6,
+      "constraints": 3,
+      "rank": 3,
+      "rows": [
+        [
+          0,
+          1,
+          1
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 2,
+      "points": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "multiplicity": 1,
+      "weight": 1,
+      "weighted_degree_bound": 3,
+      "height": 3,
+      "variables": 6,
+      "constraints": 3,
+      "rank": 3,
+      "rows": [
+        [
+          0,
+          1,
+          1
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 2,
+      "points": [
+        [
+          1,
+          1
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "multiplicity": 1,
+      "weight": 1,
+      "weighted_degree_bound": 3,
+      "height": 3,
+      "variables": 6,
+      "constraints": 3,
+      "rank": 2,
+      "rows": [
+        [
+          0,
+          1,
+          1
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 3,
+      "points": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          2
+        ]
+      ],
+      "multiplicity": 2,
+      "weight": 1,
+      "weighted_degree_bound": 6,
+      "height": 3,
+      "variables": 15,
+      "constraints": 9,
+      "rank": 8,
+      "rows": [
+        [
+          1,
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 3,
+      "points": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "multiplicity": 2,
+      "weight": 1,
+      "weighted_degree_bound": 6,
+      "height": 3,
+      "variables": 15,
+      "constraints": 9,
+      "rank": 5,
+      "rows": [
+        [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 3,
+      "points": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "multiplicity": 2,
+      "weight": 1,
+      "weighted_degree_bound": 6,
+      "height": 3,
+      "variables": 15,
+      "constraints": 9,
+      "rank": 6,
+      "rows": [
+        [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 5,
+      "points": [
+        [
+          4,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "multiplicity": 2,
+      "weight": 0,
+      "weighted_degree_bound": 3,
+      "height": 3,
+      "variables": 9,
+      "constraints": 6,
+      "rank": 6,
+      "rows": [
+        [
+          1,
+          4,
+          4
+        ],
+        [
+          2,
+          4,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 5,
+      "points": [
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "multiplicity": 2,
+      "weight": 0,
+      "weighted_degree_bound": 3,
+      "height": 3,
+      "variables": 9,
+      "constraints": 6,
+      "rank": 6,
+      "rows": [
+        [
+          1,
+          1,
+          4
+        ],
+        [
+          3,
+          4,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 5,
+      "points": [
+        [
+          2,
+          1
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "multiplicity": 2,
+      "weight": 0,
+      "weighted_degree_bound": 3,
+      "height": 3,
+      "variables": 9,
+      "constraints": 6,
+      "rank": 6,
+      "rows": [
+        [
+          0,
+          0,
+          4
+        ],
+        [
+          0,
+          4,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 17,
+      "points": [
+        [
+          16,
+          16
+        ],
+        [
+          8,
+          15
+        ],
+        [
+          9,
+          16
+        ],
+        [
+          7,
+          16
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          15,
+          13
+        ],
+        [
+          3,
+          15
+        ],
+        [
+          14,
+          11
+        ]
+      ],
+      "multiplicity": 2,
+      "weight": 2,
+      "weighted_degree_bound": 12,
+      "height": 6,
+      "variables": 42,
+      "constraints": 24,
+      "rank": 24,
+      "rows": [
+        [
+          14,
+          6,
+          11,
+          13,
+          16,
+          8,
+          16,
+          3,
+          12,
+          7,
+          1,
+          8
+        ],
+        [
+          3,
+          2,
+          13,
+          15,
+          11,
+          9,
+          14,
+          16,
+          5,
+          5
+        ],
+        [
+          9,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 17,
+      "points": [
+        [
+          7,
+          14
+        ],
+        [
+          15,
+          0
+        ],
+        [
+          15,
+          8
+        ],
+        [
+          10,
+          13
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          16,
+          7
+        ],
+        [
+          9,
+          12
+        ],
+        [
+          7,
+          10
+        ]
+      ],
+      "multiplicity": 2,
+      "weight": 2,
+      "weighted_degree_bound": 12,
+      "height": 6,
+      "variables": 42,
+      "constraints": 24,
+      "rank": 24,
+      "rows": [
+        [
+          3,
+          8,
+          9,
+          13,
+          13,
+          5,
+          13,
+          16,
+          15,
+          4,
+          7,
+          14
+        ],
+        [
+          7,
+          10,
+          10,
+          0,
+          1,
+          10,
+          3,
+          2,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 17,
+      "points": [
+        [
+          3,
+          10
+        ],
+        [
+          16,
+          6
+        ],
+        [
+          11,
+          7
+        ],
+        [
+          16,
+          5
+        ],
+        [
+          10,
+          13
+        ],
+        [
+          3,
+          14
+        ],
+        [
+          16,
+          6
+        ],
+        [
+          11,
+          6
+        ]
+      ],
+      "multiplicity": 2,
+      "weight": 2,
+      "weighted_degree_bound": 12,
+      "height": 6,
+      "variables": 42,
+      "constraints": 24,
+      "rank": 21,
+      "rows": [
+        [
+          15,
+          5,
+          4,
+          14,
+          16,
+          6,
+          11,
+          5,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 31,
+      "points": [
+        [
+          0,
+          10
+        ],
+        [
+          11,
+          5
+        ],
+        [
+          14,
+          5
+        ],
+        [
+          19,
+          0
+        ],
+        [
+          15,
+          19
+        ],
+        [
+          0,
+          24
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          21,
+          28
+        ]
+      ],
+      "multiplicity": 2,
+      "weight": 2,
+      "weighted_degree_bound": 12,
+      "height": 6,
+      "variables": 42,
+      "constraints": 24,
+      "rank": 24,
+      "rows": [
+        [
+          0,
+          23,
+          21,
+          26,
+          30,
+          24,
+          9,
+          26,
+          20,
+          4,
+          28,
+          21
+        ],
+        [
+          0,
+          28,
+          0,
+          5,
+          18,
+          11,
+          29,
+          19,
+          25,
+          6
+        ],
+        [
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 31,
+      "points": [
+        [
+          11,
+          29
+        ],
+        [
+          8,
+          13
+        ],
+        [
+          27,
+          1
+        ],
+        [
+          9,
+          30
+        ],
+        [
+          12,
+          27
+        ],
+        [
+          14,
+          27
+        ],
+        [
+          15,
+          22
+        ],
+        [
+          27,
+          9
+        ]
+      ],
+      "multiplicity": 2,
+      "weight": 2,
+      "weighted_degree_bound": 12,
+      "height": 6,
+      "variables": 42,
+      "constraints": 24,
+      "rank": 24,
+      "rows": [
+        [
+          3,
+          17,
+          27,
+          16,
+          6,
+          12,
+          15,
+          1,
+          23,
+          27,
+          7,
+          1
+        ],
+        [
+          8,
+          14,
+          9,
+          5,
+          7,
+          1,
+          29,
+          3,
+          19,
+          27
+        ],
+        [
+          4,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 31,
+      "points": [
+        [
+          26,
+          26
+        ],
+        [
+          7,
+          24
+        ],
+        [
+          8,
+          4
+        ],
+        [
+          8,
+          29
+        ],
+        [
+          11,
+          22
+        ],
+        [
+          9,
+          16
+        ],
+        [
+          6,
+          28
+        ],
+        [
+          17,
+          8
+        ]
+      ],
+      "multiplicity": 2,
+      "weight": 2,
+      "weighted_degree_bound": 12,
+      "height": 6,
+      "variables": 42,
+      "constraints": 24,
+      "rank": 24,
+      "rows": [
+        [
+          21,
+          9,
+          28,
+          5,
+          5,
+          4,
+          10,
+          13,
+          18,
+          28,
+          26,
+          22
+        ],
+        [
+          13,
+          25,
+          17,
+          22,
+          26,
+          7,
+          22,
+          8,
+          5,
+          18
+        ],
+        [
+          23,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "prime": 3,
+      "points": [
+        [
+          2,
+          2
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "multiplicity": 0,
+      "weight": 1,
+      "weighted_degree_bound": 1,
+      "height": 1,
+      "variables": 1,
+      "constraints": 0,
+      "rank": 0,
+      "rows": [
+        [
+          1
+        ]
+      ]
+    },
+    {
+      "prime": 3,
+      "points": [
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "multiplicity": 0,
+      "weight": 1,
+      "weighted_degree_bound": 1,
+      "height": 1,
+      "variables": 1,
+      "constraints": 0,
+      "rank": 0,
+      "rows": [
+        [
+          1
+        ]
+      ]
+    },
+    {
+      "prime": 3,
+      "points": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "multiplicity": 0,
+      "weight": 1,
+      "weighted_degree_bound": 1,
+      "height": 1,
+      "variables": 1,
+      "constraints": 0,
+      "rank": 0,
+      "rows": [
+        [
+          1
+        ]
+      ]
+    }
+  ],
+  "scope": "General mixed-jet interpolation existence is Lean-proved under the exact dimension inequality. Solver refinement, MCA exceptions and protocol soundness are not claimed."
+}

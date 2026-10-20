@@ -1,0 +1,20 @@
+{
+  "status": "PASS lossless encoding experiment",
+  "original_canonical_json_bytes": 342047,
+  "encoded_bytes": 260024,
+  "saved_bytes": 82023,
+  "path_hash_occurrences": 1360,
+  "unique_path_hashes": 985,
+  "raw_path_hash_bytes": 65280,
+  "dictionary_hash_bytes": 47280,
+  "roundtrip_exact": true,
+  "malformed_rejections": 3,
+  "limits": [
+    "Not an accepted verifier wire profile; decoded object is byte-identical canonical proof.",
+    "Current Q8 Ext4 outer arithmetic proof only; required inner proofs/statements excluded.",
+    "Not a measured Ext8 high-query result or full recursive/PQ128 proof."
+  ],
+  "source_sha256": "29bd85ce690e424137052944d93c41c0d0575640846487534974a1c6d12497fb",
+  "dedup_raw_digest_saving_bytes": 18000,
+  "current_api_file_bytes_with_experimental_outer_encoding": 4276539
+}

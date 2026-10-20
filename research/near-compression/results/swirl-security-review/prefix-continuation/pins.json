@@ -1,0 +1,32 @@
+{
+  "inputs": {
+    "prefix-dag-gkr/proof.json.gz": "bdb9bf47b8239e5de0f170bcf9ac75d74d5224faf0fdc664cab9f2dabb328f2a",
+    "prefix-dag-gkr/statement.json": "99632da28ebf964b721b35d2e0f4cd28831b794a37097f8b7cb17dbd060caa8f",
+    "opening-free-prefix/controls.json": "93872d4e05ca88a228f636fcdb6ad178b6e36279c049dc40dc689274baff7b69",
+    "opening-free-prefix/transcript-log.txt.gz": "328baf5a7ad42608cb1bd4be709985fe3869d8bb196afcfcc7284ed4ca24876d",
+    "committed-witness/internal.proof.gz": "a5de2cf628532ecd5bb3e462b195a23a6a4088cc6201c568a5b17f37c3b80c84",
+    "committed-witness/layouts.json": "e90431def485035efdec2031446dc03670274aa95636d0e7d2005405a8836b62",
+    "opening-free-prefix/backend.patch.gz": "3dad17298ed5e08017979d43f720b1ede6a98131b443748863ca37504d3d57e2",
+    "weighted-whir/cpu-backend.patch.gz": "10e299b1abe07d1f804c1a5480e678becd2bbfebd54168b40ac6d184c36b0919"
+  },
+  "artifacts": {
+    "driver-native-continuation.log": "48b3d821f46cc29ed9a6ec733e2b3cd96b758b02853275b3563b0ca5a8b20a0a",
+    "driver-native-prefix.log": "c97200580bb037c85e84816185ca0f57bb3ce582f3bba0862ed6a9485330e740",
+    "gkr-binding.bin": "7595a0e571829757481406330f449cfdb9c84ce5679042e4ba4562d5be233b95",
+    "nearproof-prefix-continuation-clippy.log": "73d42fb408491852651de5238faff11d0b3ccf6b6bc24c9080965560ef2899a2",
+    "nearproof-prefix-continuation-driver.log": "d56c86befb5458dc5e420f376d603d12b18afe162f9115da636e0be3636f2092",
+    "nearproof-prefix-continuation-prepare.log": "0b503ed4ebda21bfe0dce389b96a1e351c0b76354e0b849e4e7a3dda06642def",
+    "nearproof-prefix-continuation-prove.log": "47bc72ec900ca4ab9811972429f7a08f6dda7c9619742907de2e33fc15385c50",
+    "nearproof-prefix-continuation-replay.log": "7a2ddf36852e76c197c9b6bf800b71d4156b712838d0969c61413993e98e461a",
+    "nearproof-prefix-continuation-wrong-binding.log": "430856026abd37cb608c60341febcf5d750778567947cc78154490b2d0a97cc9",
+    "openvm-tests.rs.gz": "10514f9e3494290149a83c4614f583c8b328756f7934b7ab49a49b8b0671bd13",
+    "openvm.patch.gz": "3ac6985f226d3b00d8ccc29152adf1012af6ffb940410b4ba75d5175f77ed205",
+    "preparation.json": "8ddce40bd7b60f8c64b2efc95808c405aebd5dbb151384c7e1809f5844ab8507",
+    "report.json": "7f5ee156c20eae7247250afb0cc1d2a5c99c02dcdbbebc084d9393c4536db2ef",
+    "stacking.proof.gz": "a8c65f830c0cd50a6da64a86529d600181ef99d4b7fa99690ca0d25465f93370",
+    "sumcheck.json": "fe20c04731c501e9dd45b09ba09bdabaa6d12a2e6b9f819bd00e1e6b1681dd33",
+    "trace-shapes.json": "748b717384607dc6fc91660dca7f50ccb244466673b3197dde28b9acaffe111a",
+    "weighted-input.bin": "1710eab72cf77f24d2b2ad6f20887784864f52afa02aa083195fd0b2cce43c7b",
+    "whir.proof.gz": "f69261fa7b1276f8b51b541a83d637482c752e8bc99ef91516d571e2cbeed055"
+  }
+}

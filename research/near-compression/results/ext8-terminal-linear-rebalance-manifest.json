@@ -1,0 +1,16 @@
+{
+  "files": {
+    "research/near-compression/results/ext8-terminal-linear-rebalance.json": "86bd83e2709233a430f784c03579d62de25f0ddeafe735019ee89ceb0b746c5d",
+    "research/near-compression/airbender/direct-wasm/rebalance_terminal_linear.py": "58de712edcbefc8fbb43af02ba2a4d922a843c31313851e05f1bda718ae5f2b4",
+    "research/near-compression/airbender/direct-wasm/test_terminal_linear_rebalance.py": "183413116cd7caeccfdcdba6a5fd92043160d94b5352eeb4f84534e40c925b86",
+    "research/near-compression/NearCompression/TerminalWeightedExpansion.lean": "86ff31c061297d707d08a97e284a39bd2258121b01c1f71857007a961e4a67b1",
+    "research/near-compression/results/ext8-compression-q309/reduction.json.gz": "e6f63acfdfd48c37a55de4990e14d70454558bf06f8bfd4c600c1fc7d68e5206",
+    "research/near-compression/airbender/direct-wasm/check_terminal_linear_equivalence.py": "86c6f031ac7fcfe9ed626915cd45123bf36f19894852621653c771fcd14968d0",
+    "research/near-compression/airbender/direct-wasm/test_terminal_linear_equivalence.py": "ab9fdc9a5e3d60fbaaeb71ed06cd33a9dcfdc65fadb081b0130a5ee6a448b1e3",
+    "research/near-compression/NearCompression/TerminalWeightedAggregation.lean": "867af24492cadd32acf94471973a96a7a63ea3683823d027769745e07e939579",
+    "research/near-compression/results/ext8-terminal-linear-equivalence-tests.json": "7e8d6093e88ee7618c39a80d0d09a73b539baf71fdb7490ef748ff8a377a5388"
+  },
+  "replay": "python3 airbender/direct-wasm/test_terminal_linear_rebalance.py --reduction results/ext8-compression-q309/reduction.json.gz --output /tmp/ext8-terminal-rebalance-replay.json",
+  "lean_audit": "PASS: 4210 actual-semantics bridge theorems and boundary regression examples.",
+  "scope": "Experimental optimizer; no accepted compiler change, complete-proof measurement, or full optimizer refinement."
+}

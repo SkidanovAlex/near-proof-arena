@@ -1,0 +1,15 @@
+{
+  "status": "ACTUAL_BASELINE_RECONCILIATION",
+  "source_spec_path": "/tmp/near-sha384-family267/spec.json",
+  "source_spec_sha256": "0b6a69881a0e6ac67ca1c656130bc72ff69145dd4f5386c1b39848d601bc6e37",
+  "actual_prior_endpoint_width": 1668,
+  "prior_conservative_estimator_endpoint_width": 1666,
+  "actual_five_call_core_cells": 6699520,
+  "actual_five_call_endpoint_cells": 33360,
+  "actual_baseline_core_endpoint_cells": 6732880,
+  "new_all_four_tables_cells": 5392192,
+  "actual_cell_saving": 1340688,
+  "actual_saving_percent": 19.912548567626335,
+  "prior_estimate_understates_savings_by_cells": 40,
+  "note": "Frozen estimator used1666 endpoint width (current chunk layout); actual prior267 exported table has1668, adding two last-selector/inverse columns. This small baseline discrepancy understates the saving by40 cells. Input traces and provenance excluded both sides; new use table is a different component boundary."
+}

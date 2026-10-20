@@ -1,0 +1,29 @@
+{
+  "status": "CONCRETE_TERMINAL_CHECK_IMPLIES_AUTHENTICATION_OR_SUPPORTED_HASH_COLLISION",
+  "module": "NearCompression/Ext4TerminalBinding.lean",
+  "proved": [
+    "Accepted reconstructedRSChecks using the concrete Ext4 pair byte serialization and framed Merkle root authenticates every terminal oracle index, or yields unequal hash inputs with equal output on constructed terminal paths.",
+    "Excluding that explicit supported collision supplies the exact pointwise constant-oracle premise used by folding soundness."
+  ],
+  "discharged": [
+    "Abstract typed-tree injectivity assumption.",
+    "Canonical coordinate bounds and pair-serialization injectivity assumptions.",
+    "A priori polynomial degree premise for the terminal oracle."
+  ],
+  "explicit_scope": "Degree-one single-lane diagnostic Fp4 terminal; positive power-of-two pair-tree size, bounded context/capacity, and an arbitrary 48-byte hash function. Actual terminal has two leaves/four scalars.",
+  "remaining": [
+    "Instantiate transcript context and acceptance-event plumbing in the compiled full verifier.",
+    "Quantitative quantum probability of supported hash collisions and Fiat-Shamir reduction.",
+    "Earlier oracle extraction, common-source near-case AIR/GKR/bus/execution composition.",
+    "Secure sub300000-byte full NEAR1Pgas feasibility."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3772,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

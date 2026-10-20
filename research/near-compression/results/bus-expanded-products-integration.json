@@ -1,0 +1,24 @@
+{
+  "status": "PROVED_COMPONENT",
+  "module": "NearCompression/BusExpandedProducts.lean",
+  "established": [
+    "Row traffic product equals direction-selected natural multiplicity powers",
+    "Row-major traffic product equals the product of per-interaction row products",
+    "All-table traffic and public messages equal the exact encoded message product used by the joint challenge theorem",
+    "Existing concrete Ext8 budget bounds equality of the semantic global side products"
+  ],
+  "main_theorems": [
+    "bus_expanded_global_product",
+    "bus_global_side_fp8_bound"
+  ],
+  "premises": [
+    "For the bound: one fixed trace/public vector, bounded source/public shapes and actual natural imbalance",
+    "Distinct ideal challenge samples; no commitment or Fiat-Shamir reduction"
+  ],
+  "remaining": [
+    "Fold constructed bound-final values over each side and prove their list product equals busTablesFinalPower",
+    "Lift source/auxiliary constraints from the common coordinate trace to authenticated proof claims",
+    "Complete adaptive local/PCS/transcript and quantum soundness",
+    "Secure sub300k total-input sizing and full 1 Pgas scope"
+  ]
+}

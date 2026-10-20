@@ -1,0 +1,34 @@
+{
+  "status": "ORDERED_FORMAL_BUS_SPECIFICATION_CHECKED",
+  "module": "NearCompression/GeneratedExt8BusSpecCheck.lean",
+  "theorems": [
+    "generated_ext8_bus_spec_checked"
+  ],
+  "proved": [
+    "Exact ordered formula equality to busTableResiduals lowered by lowerNativeStyleCoordinates implies equality of residual values in every reconstructed environment."
+  ],
+  "executed": [
+    "Lean reconstructs the specification from parsed interactions, public values, alpha/gamma, source width and finals; checks complete ordered formula equality and coordinate width.",
+    "Eight captures/64 residuals pass; sixteen runtime mutations rejected, including coherent wrong formula/program/expected-value substitution.",
+    "Forty exact legacy Ext4 comparisons and full formal audit pass."
+  ],
+  "scope": [
+    "Ext8 Python candidate now emits formal Horner message AST; default Ext4 path remains unchanged.",
+    "Statement/table/challenge inputs are supplied to this checker; no commitment or transcript authentication is inferred.",
+    "This validates each accepted certificate against the formal generator; it does not certify all outputs of Python or a full Ext8 prover."
+  ],
+  "remaining": [
+    "Integrate specification check with slice verifier/compiler artifacts and authenticated inputs.",
+    "Complete source/auxiliary validity and local/GKR/PCS/bus acceptance composition.",
+    "QROM, secure-size feasibility and full 1 Pgas execution remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4078,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

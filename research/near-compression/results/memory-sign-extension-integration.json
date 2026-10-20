@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3404,
+  "added_theorems": 1,
+  "source_sha256": "acb1e352880e1d649342cebb79a30c7e1cfe261e64f10144f07414cd0abb0474",
+  "audit_log": "/tmp/root-sign-extension-audit.log",
+  "audit_sha256": "ee1694c4f9195552acff7b969bdc79f22667a6bc4c797dad3d22f8c0d9759dab",
+  "scope": [
+    "Boolean source bits for k=8/16/32; target n=32/64 and k<=n.",
+    "Replicated sign bits and zero padding decoded by ofBits equal actual Num.extendS."
+  ],
+  "limits": [
+    "Source opcode/result selection and EXEC/MEM composition are separate modules.",
+    "No full-state transition or cryptographic claim."
+  ]
+}

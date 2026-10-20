@@ -724,6 +724,124 @@ exit 0
     assert_eq!(outs[1].exit, Exit::Exited(7));
 }
 
+/// Steps mode with a read-write dir (formal-checker compile batches): the
+/// rw dir persists across steps (and nothing else does), it is written back
+/// like a single run's (new/modified regular files; deletions and symlinks
+/// never returned, host links untouched), untouched seed files are not
+/// copied back, the kill deadline cuts the batch, and the last step is
+/// captured in full when asked.
+#[test]
+fn steps_rw_dirs_persist_and_return_only_changes() {
+    gate!();
+    use arena_sandbox::{Mount, Sandbox, SandboxSpec, StepSpec, StepsOptions};
+    let t = scratch_dir();
+    let host = t.path().join("rw");
+    fs::create_dir_all(host.join("sub")).unwrap();
+    fs::write(host.join("keep.txt"), "seed").unwrap();
+    fs::write(host.join("sub/edit.txt"), "old").unwrap();
+    fs::write(host.join("gone.txt"), "seed").unwrap();
+    std::os::unix::fs::symlink("/in/elsewhere", host.join("link.txt")).unwrap();
+    let keep_mtime = fs::metadata(host.join("keep.txt"))
+        .unwrap()
+        .modified()
+        .unwrap();
+    let sh = |s: &str| vec!["/bin/sh".to_string(), "-c".into(), s.into()];
+    let mut base = SandboxSpec::new(sh("true"));
+    base.cwd = "/scratch".into();
+    base.rw_binds = vec![Mount {
+        host: host.clone(),
+        guest: "/arena/rw".into(),
+    }];
+    base.allow_mount_symlinks = true;
+    base.wall_timeout = Duration::from_secs(20);
+    base.max_output_bytes = 64 << 20;
+    base.steps = StepsOptions {
+        deadline: Some(Duration::from_secs(8)),
+        start_deadline: None,
+        full_capture_last: true,
+    };
+    let step = |argv: Vec<String>, secs: u64| StepSpec {
+        argv,
+        ro_files: vec![],
+        collect: vec![],
+        out_dir: None,
+        wall_timeout: Duration::from_secs(secs),
+    };
+    let steps = vec![
+        step(
+            sh("cd /arena/rw && [ \"$(cat keep.txt)\" = seed ] && echo new > sub/edit.txt && \
+                echo made > made.txt && rm gone.txt && ln -s /etc/passwd evil && \
+                echo x > /tmp/marker && echo x > /scratch/marker && \
+                [ -O made.txt ] && [ -O sub/edit.txt ]"),
+            20,
+        ),
+        step(
+            sh("cd /arena/rw && [ \"$(cat sub/edit.txt made.txt)\" = \"$(printf 'new\\nmade')\" ] && \
+                [ ! -e gone.txt ] && [ ! -e /tmp/marker ] && [ ! -e /scratch/marker ] && \
+                mkdir -p d2 && echo two > d2/f.txt"),
+            20,
+        ),
+        // > 2 KiB of output, then outlives the 8 s kill deadline
+        step(sh("head -c 5000 /dev/zero | tr '\\0' a; sleep 30"), 20),
+        step(sh("echo never > /arena/rw/never.txt"), 20),
+    ];
+    assert!(sandbox().steps_share_instance());
+    let t0 = std::time::Instant::now();
+    let outs = sandbox().run_steps(&base, &steps).expect("steps run");
+    assert!(t0.elapsed() < Duration::from_secs(25), "{:?}", t0.elapsed());
+    assert_eq!(outs.len(), 3, "{outs:?}");
+    for o in &outs[..2] {
+        assert_eq!(
+            o.exit,
+            Exit::Exited(0),
+            "{:?}",
+            String::from_utf8_lossy(&o.stderr_trunc)
+        );
+        assert!(o.output_error.is_none(), "{:?}", o.output_error);
+    }
+    assert_eq!(outs[2].exit, Exit::TimedOut);
+    assert_eq!(
+        outs[2].stdout_trunc.len(),
+        5000,
+        "full capture of the last step"
+    );
+    assert_eq!(
+        fs::read_to_string(host.join("sub/edit.txt")).unwrap(),
+        "new\n"
+    );
+    assert_eq!(fs::read_to_string(host.join("made.txt")).unwrap(), "made\n");
+    assert_eq!(fs::read_to_string(host.join("d2/f.txt")).unwrap(), "two\n");
+    assert!(!host.join("never.txt").exists());
+    // deletions are not returned (as for a single run); untouched seed
+    // files are not rewritten; links: host's untouched, guest's dropped
+    assert_eq!(fs::read_to_string(host.join("gone.txt")).unwrap(), "seed");
+    assert_eq!(
+        fs::metadata(host.join("keep.txt"))
+            .unwrap()
+            .modified()
+            .unwrap(),
+        keep_mtime
+    );
+    assert_eq!(
+        fs::read_link(host.join("link.txt")).unwrap(),
+        PathBuf::from("/in/elsewhere")
+    );
+    assert!(fs::symlink_metadata(host.join("evil")).is_err());
+
+    // start deadline: no step starts after it; the batch returns early
+    let mut b2 = base.clone();
+    b2.steps = StepsOptions {
+        deadline: None,
+        start_deadline: Some(Duration::from_secs(1)),
+        full_capture_last: false,
+    };
+    let outs = sandbox()
+        .run_steps(&b2, &[step(sh("sleep 2"), 20), step(sh("true"), 20)])
+        .expect("steps run");
+    assert_eq!(outs.len(), 1);
+    assert_eq!(outs[0].exit, Exit::Exited(0));
+}
+
 /// Each step's outputs fit `max_output_bytes`, their sum does not: the
 /// cap is per step (regression: vm_per_batch benchmark of ~7 MB proofs
 /// under an 8 MiB cap failed with "output size limit reached").

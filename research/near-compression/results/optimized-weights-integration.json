@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2161,
+  "modules": {
+    "DualBorrowWeightMLE": "9e6af67b61af0df10116088ba1098508a86dab800bcb26146c43cbfcb8c8b30b",
+    "UpperZetaBitPass": "2a771b657a21f6d9af48a96256fc87af0f1ce1b05ea7d57aa333406f24a3af8e"
+  },
+  "parity_report": "results/optimized-weights-parity.json",
+  "remaining": "Native source commitment refinement, pre-GKR shared witness, transcript and quantum security composition remain open."
+}

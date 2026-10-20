@@ -149,13 +149,34 @@ fn with_rpl<T: serde::Serialize>(xs: &[T], s: &HashSet<u64>) -> Result<Value, St
 /// The honest trie-side entries (and self-checks) from the native objects and the
 /// prepared statement / proof entries (size `x2`, `ovh`).
 pub fn entries_of(n: &Native, p: &Prep, entries: &[ProofEntry]) -> Result<Value, String> {
+    entries_of_u(n, p, entries, &[]).map(|x| x.0)
+}
+
+/// [`entries_of`] with the unread-key walks `us` of `walkU` (`nearAirV3D1`, lane v3-d1-a7b):
+/// their `EDGE` / `BMAP` steps count in the node and head use requests (one chain per key over
+/// `walkV3`, the ups walks and `walkU`).  Also returns `us` ranked (`walks::rank_unread`).
+pub fn entries_of_u(
+    n: &Native,
+    p: &Prep,
+    entries: &[ProofEntry],
+    us: &[super::WalkR],
+) -> Result<(Value, Vec<super::WalkR>), String> {
     let v = walks::main_values(n)?;
     let qs = walks::queries(n, &v)?;
     let ws = walks::query_walks(n, &qs)?;
     let insts = upsnat::honest_insts(&n.us)?;
     let js = upsnat::ups_ranked(&ws, &insts);
     let w = upsnat::window_keys(&js);
-    let q = upsnat::use_req(&ws, &insts, w);
+    let all: Vec<super::WalkR> = ws.iter().chain(us).cloned().collect();
+    let q = upsnat::use_req(&all, &insts, w);
+    // `walkU`'s chain ranks come after `walkV3`'s and the ups walks' (`ups_ranked`)
+    let mut prior = ws.clone();
+    prior.push(super::WalkR {
+        w: 0,
+        tau: 0,
+        steps: insts.iter().flat_map(upsnat::four_steps).collect(),
+    });
+    let us_ranked = walks::rank_unread(&prior, us);
     let ns = forest::nodes(n, &q)?;
     let es = forest::vals(n)?;
     let hs = forest::heads(n, &q.edges)?;
@@ -181,7 +202,7 @@ pub fn entries_of(n: &Native, p: &Prep, entries: &[ProofEntry]) -> Result<Value,
         "base size ≤ B0": x01 <= 2_000_000,
     });
     let ser = |x: &dyn erased::Ser| x.to_value();
-    Ok(json!({
+    Ok((json!({
         "node": with_rpl(&ns, &s)?,
         "val": with_rpl(&es, &sv)?,
         "head": ser(&hs),
@@ -190,7 +211,7 @@ pub fn entries_of(n: &Native, p: &Prep, entries: &[ProofEntry]) -> Result<Value,
         "ups": ser(&js),
         "size": size,
         "checks": checks,
-    }))
+    }), us_ranked))
 }
 
 mod erased {

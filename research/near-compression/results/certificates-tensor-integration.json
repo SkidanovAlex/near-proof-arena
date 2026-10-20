@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 1916,
+  "new_public_theorems": 13,
+  "source_hashes": {
+    "PreparedLiteralCertificates": "674bab65f01ec30d8fcc73175a1d1003c41ade263b9c30711d5a2c9cc86ef780",
+    "VectorTensorExtraction": "8719e9084bdcf75bcc3fc90c73fe303aa71386c580ecec22de87d07606c5808c"
+  },
+  "source_certificates": "Every current structural EXEC/CODE source interface instantiated by kernel decide against literal ASTs",
+  "tensor_bound": "n * max(domain length,2) * sampleSize^(n-1), under stated separation",
+  "remaining": [
+    "Entry/public-boundary and whole-call induction",
+    "Exact beta contraction/shared lane interpolation/residual bridge",
+    "Hash bus-to-chain theorem",
+    "Cryptographic/QROM composition and secure recursive proof at 1 Pgas"
+  ]
+}

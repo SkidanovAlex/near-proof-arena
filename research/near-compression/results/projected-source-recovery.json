@@ -1,0 +1,46 @@
+{
+  "status": "generic algebra compiled; concrete beta-separation and domain certificates pending",
+  "module": "NearCompression/ProjectedSourceRecovery.lean",
+  "public_theorems": 8,
+  "contract": {
+    "received": "arbitrary f(x^L), not an assumed polynomial",
+    "domain": "N distinct points; multiplication by z permutes domain",
+    "root": "z^L=1 and z^i != 1 whenever L does not divide i",
+    "candidate": "P degree < D=L*d, at most R mismatches to received",
+    "separation": "2R+D <= N",
+    "conclusion": "P coefficients vanish unless L divides index; recovered Q has degree < d and exact P_i = Q_(i/L) at divisible indices, zero otherwise"
+  },
+  "actual_threshold": {
+    "initial_weights": "unit weights required here; weighted counts need cap conversion",
+    "N": "4D",
+    "sufficient_agreement": "2T >= N+D, i.e. T >= 5N/8",
+    "existing_strict_regime": "T > 3N/4 is stronger; no radius loss from sparse recovery"
+  },
+  "missing_concrete_bridge": {
+    "premise": "JointBetaRepresentative currently compares contractions for all Boolean coordinates, not individual lanes",
+    "suggested_separator": "For a chosen nonempty lane choose a valid current private slot; set all row and PCS coordinates to zero, gamma=0, ru to that Boolean slot selector. Prove actual heterogeneous beta equals one for chosen lane and zero for others. rv arbitrary Boolean.",
+    "metadata_required": "canonical active groups, positive branch widths for listed lanes, disjoint current private-slot supports across tables/source/aux/groups; per-lane WellFormed alone does not establish these",
+    "then": "Universal contraction agreement implies common per-lane agreement on same points. Apply orbit uniqueness independently with domain root z_j of order L_j and same fixed candidate tuple. Recovered tuple precedes row/GKR/PCS challenges."
+  },
+  "counterexample_to_unrestricted_metadata": {
+    "betas": "[beta,beta]",
+    "received_sources": "[0,0], each power-projected",
+    "candidate_polynomials": "[X,-X], common degree D>=2",
+    "agreement": "contractions equal identically on every point and every challenge",
+    "failure": "For even L>=2 neither nonzero degree-one candidate is in sparse image",
+    "meaning": "Shows JointBetaRepresentative alone and duplicate-lane metadata insufficient, not an attack on canonical executable layout"
+  },
+  "remaining_boundaries": [
+    "Concrete Boolean lane separator proof and metadata nonoverlap certificate",
+    "Instantiate root-order/domain permutation from actual RS domain",
+    "Compose recovered coefficient formula with sparseLowLift storage/evaluation theorem",
+    "Original private-slot reconstruction and all AIR/GKR obligation soundness",
+    "Causal actual transcript sampling, commitment binding and QROM remain external"
+  ],
+  "validation": {
+    "command": "heavy lake env lean absolute-own-file from root read-only environment",
+    "exit_code": 0,
+    "wall_seconds": 0.118,
+    "no_axioms_or_sorry": true
+  }
+}

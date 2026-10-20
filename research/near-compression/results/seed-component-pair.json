@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "shared_roots_and_context_shapes": 3,
+  "public_values_equal": true,
+  "old_expanded_core_blocks": 219613,
+  "new_setup_and_core_blocks": 64079,
+  "new_configured_core_blocks": 38969,
+  "scope": "Two independently verified migrated components; no aggregation or dedup inferred."
+}

@@ -1,0 +1,96 @@
+{
+  "status": "PASS",
+  "tables": 33,
+  "negative_checks": 22,
+  "cases": [
+    {
+      "case": "source root0",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "aux root0",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "constraint0",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "claim0",
+      "reason": "shift terminal opening"
+    },
+    {
+      "case": "final0",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "source aux branch swap0",
+      "reason": "round count"
+    },
+    {
+      "case": "source root16",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "aux root16",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "constraint16",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "claim16",
+      "reason": "shift terminal opening"
+    },
+    {
+      "case": "final16",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "source aux branch swap16",
+      "reason": "round count"
+    },
+    {
+      "case": "source root32",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "aux root32",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "constraint32",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "claim32",
+      "reason": "shift terminal opening"
+    },
+    {
+      "case": "final32",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "source aux branch swap32",
+      "reason": "quadratic endpoints"
+    },
+    {
+      "case": "omitted table",
+      "reason": "table count"
+    },
+    {
+      "case": "table order",
+      "reason": "constraint round count"
+    },
+    {
+      "case": "public",
+      "reason": "table zerocheck"
+    },
+    {
+      "case": "terminal profile",
+      "reason": "table zerocheck"
+    }
+  ],
+  "scope": "Fixed proof/statement binding mutations; no adaptive security bound"
+}

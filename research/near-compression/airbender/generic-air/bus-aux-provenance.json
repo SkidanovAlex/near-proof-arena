@@ -1,0 +1,17 @@
+{
+  "source": "/data/illia/nearproof-wt/direct-wasm-whir/zk-formal/ZkFormal/Stark/VerifierDefs.lean",
+  "source_sha256": "31de75d118b393d97cd0029764f4d10c835070039d11f5dea7e4d09808eae853",
+  "fixture_sha256": "21bc02554bfb355a4f22f0968e775c85e51eeff7e1993d5e170d06e46ee3ce6f",
+  "command": [
+    "taskset",
+    "-c",
+    "8-15,24-31",
+    "/data/illia/nearproof-deps/bin/heavy",
+    "lake",
+    "env",
+    "lean",
+    "--run",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/generic-air/BusAuxFixture.lean"
+  ],
+  "note": "Canonical imports must already be built; no shared build performed."
+}

@@ -78,13 +78,59 @@ pub enum InfraError {
     Violation(String),
 }
 
+/// One run of a batch ([`UntrustedRunner::run_batch`]): the batch's
+/// [`RunSpec`] with this argv and wall timeout.
+#[derive(Clone, Debug)]
+pub struct BatchStep {
+    pub argv: Vec<String>,
+    pub wall_timeout: Duration,
+}
+
+/// Cumulative budgets of a batch, from the start of its first run.
+#[derive(Clone, Debug, Default)]
+pub struct BatchBudget {
+    /// Kill deadline: each run's timeout is `min(wall_timeout, deadline -
+    /// elapsed)`.
+    pub deadline: Option<Duration>,
+    /// Start deadline: no further run is started once this has elapsed (the
+    /// batch then returns fewer outcomes than steps, the last one a success).
+    pub start_deadline: Option<Duration>,
+}
+
 pub trait UntrustedRunner: Send + Sync {
     /// Identifier recorded in reports (e.g. `bwrap-dev`, `firecracker`).
     fn id(&self) -> &str;
     /// True if results produced through this runner must be tier-capped at `demo`.
     fn demo_only(&self) -> bool;
     fn run(&self, spec: &RunSpec, capture_limit: usize) -> Result<RunOutcome, InfraError>;
+    /// Max runs per [`UntrustedRunner::run_batch`]; 0 = no batching (the
+    /// checker issues one [`UntrustedRunner::run`] per run).
+    fn batch_max(&self) -> usize {
+        0
+    }
+    /// Run `steps` in order in one sandbox instance, each as a fresh process
+    /// tree with the isolation of a single [`UntrustedRunner::run`] of
+    /// `base` (no network, read-only mounts, fresh scratch/tmp, killed at
+    /// its end); the only state carried from one run to the next is the
+    /// content of `base.rw`, as between consecutive single runs. Stops after
+    /// the first run that does not exit 0 (or hits a budget). Per started
+    /// run: its outcome (the last one captured like a single run), or the
+    /// error a single run would have returned (`Violation`, incomplete
+    /// output collection).
+    fn run_batch(
+        &self,
+        _base: &RunSpec,
+        _steps: &[BatchStep],
+        _budget: &BatchBudget,
+        _capture_limit: usize,
+    ) -> Result<Vec<Result<RunOutcome, InfraError>>, InfraError> {
+        Err(InfraError::Refused("this runner does not batch".into()))
+    }
 }
+
+/// Runs per batch on backends that share one instance across steps
+/// (Firecracker: one microVM; `arena_fc_proto::MAX_STEPS`).
+pub const BATCH_MAX_STEPS: usize = 64;
 
 /// Adapter from the formal checker's seam to the shared runner sandbox
 /// (`arena_sandbox::Sandbox`, CONTRACTS §9): `bwrap-dev` in development,
@@ -302,5 +348,97 @@ impl UntrustedRunner for SandboxRunner {
             stdout,
             stderr,
         })
+    }
+
+    /// Batches only where all steps share one sandbox instance (one microVM
+    /// boot, one staging of the mounts and of the read-write seed); on
+    /// `bwrap-dev` every run stays a separate `run`.
+    fn batch_max(&self) -> usize {
+        if self.sandbox.steps_share_instance() {
+            BATCH_MAX_STEPS
+        } else {
+            0
+        }
+    }
+
+    fn run_batch(
+        &self,
+        base: &RunSpec,
+        steps: &[BatchStep],
+        budget: &BatchBudget,
+        capture_limit: usize,
+    ) -> Result<Vec<Result<RunOutcome, InfraError>>, InfraError> {
+        if base.stdout_file.is_some() || capture_limit > CAPTURE_LIMIT {
+            return Err(InfraError::Refused(
+                "batched runs capture at most CAPTURE_LIMIT bytes of stdout".into(),
+            ));
+        }
+        if steps.is_empty() || steps.len() > self.batch_max() {
+            return Err(InfraError::Refused(format!(
+                "batch of {} runs (max {})",
+                steps.len(),
+                self.batch_max()
+            )));
+        }
+        let mut sspec = self.translate(base, None);
+        sspec.steps = arena_sandbox::StepsOptions {
+            deadline: budget.deadline,
+            start_deadline: budget.start_deadline,
+            full_capture_last: true,
+        };
+        let ssteps: Vec<arena_sandbox::StepSpec> = steps
+            .iter()
+            .map(|st| arena_sandbox::StepSpec {
+                argv: st.argv.clone(),
+                ro_files: vec![],
+                collect: vec![],
+                out_dir: None,
+                wall_timeout: st.wall_timeout,
+            })
+            .collect();
+        let outs = match self.sandbox.run_steps(&sspec, &ssteps) {
+            Ok(o) => o,
+            Err(arena_sandbox::InfraError::InvalidSpec(m))
+            | Err(arena_sandbox::InfraError::Refused(m)) => return Err(InfraError::Refused(m)),
+            Err(e) => return Err(InfraError::Io(std::io::Error::other(e.to_string()))),
+        };
+        if outs.len() > steps.len() {
+            return Err(InfraError::Io(std::io::Error::other(format!(
+                "batch returned {} outcomes for {} runs",
+                outs.len(),
+                steps.len()
+            ))));
+        }
+        Ok(outs
+            .into_iter()
+            .map(|o| {
+                // same order of checks as `run`
+                if !o.violations.is_empty() {
+                    return Err(InfraError::Violation(o.violations.join(", ")));
+                }
+                if let Some(e) = &o.output_error {
+                    return Err(InfraError::Io(std::io::Error::other(format!(
+                        "sandbox output collection incomplete: {e}"
+                    ))));
+                }
+                let exit = match o.exit {
+                    arena_sandbox::ExitStatus::Exited(c) => RunExit::Exited(c),
+                    arena_sandbox::ExitStatus::Signaled(s) => RunExit::Signaled(s),
+                    arena_sandbox::ExitStatus::TimedOut => RunExit::TimedOut,
+                    arena_sandbox::ExitStatus::OomKilled => RunExit::Signaled(libc::SIGKILL),
+                    arena_sandbox::ExitStatus::ExecFailed => RunExit::Exited(127),
+                };
+                let mut stdout = o.stdout_trunc;
+                stdout.truncate(capture_limit);
+                let mut stderr = o.stderr_trunc;
+                stderr.truncate(CAPTURE_LIMIT);
+                Ok(RunOutcome {
+                    exit,
+                    wall: Duration::from_nanos(o.wall_ns),
+                    stdout,
+                    stderr,
+                })
+            })
+            .collect())
     }
 }

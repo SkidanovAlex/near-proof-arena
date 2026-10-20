@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "cases": 75,
+  "full_vs_skipped_low_round_checks": 300,
+  "lifted_coefficient_cells": 2883,
+  "lean_export_sha256": "f6d358b8d88ec35f167da20d00f08c7350cb7b7912128f2e55a1460557970561",
+  "fft_library_sha256": "9bcae9610938c6109260c4c4677a58b625cd5783dea910c040ba6a23c460b038",
+  "scope": "Actual branch_words and native quadratic/fold functions vs executable Lean sparse coefficients, repeated weights and MLEs; base-field embedded challenges only; no commitment or QROM claim"
+}

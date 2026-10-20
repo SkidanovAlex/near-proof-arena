@@ -93,9 +93,16 @@ pub struct RunRequest {
     pub max_output_bytes: u64,
     /// Steps mode (non-empty): run these in order in this one VM instead of
     /// `argv`/`collect` (which must then be empty); `wall_timeout` must be
-    /// the sum of the step timeouts. See `arena_fc_proto::GuestJob::steps`.
+    /// [`RunRequest::steps_wall`]. `rw_dirs` persist across steps. See
+    /// `arena_fc_proto::GuestJob::steps`.
     #[serde(default)]
     pub steps: Vec<NativeStep>,
+    /// Steps mode: cumulative kill deadline (`GuestJob::steps_deadline_ms`).
+    #[serde(default)]
+    pub steps_deadline: Option<Duration>,
+    /// Steps mode: start deadline (`GuestJob::steps_start_deadline_ms`).
+    #[serde(default)]
+    pub steps_start_deadline: Option<Duration>,
     /// Seccomp violation detection for the candidate tree (`Strict` for
     /// entry points, `Tooling` for builds/judge tools, `Off`).
     #[serde(default)]
@@ -139,7 +146,29 @@ impl RunRequest {
             out_dir,
             max_output_bytes: 1 << 30,
             steps: vec![],
+            steps_deadline: None,
+            steps_start_deadline: None,
             syscall_policy: arena_seccomp::Policy::Strict,
         }
+    }
+
+    /// Steps mode: the run's wall timeout — the sum of the step timeouts,
+    /// bounded by the kill deadline and by the start deadline plus the
+    /// longest step.
+    pub fn steps_wall(&self) -> Duration {
+        let mut w: Duration = self.steps.iter().map(|s| s.wall_timeout).sum();
+        if let Some(d) = self.steps_deadline {
+            w = w.min(d.max(Duration::from_millis(1)));
+        }
+        if let Some(d) = self.steps_start_deadline {
+            let longest = self
+                .steps
+                .iter()
+                .map(|s| s.wall_timeout)
+                .max()
+                .unwrap_or_default();
+            w = w.min(d + longest);
+        }
+        w
     }
 }

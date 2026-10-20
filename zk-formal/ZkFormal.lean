@@ -357,3 +357,9 @@ import ZkFormal.Chacha.Spec
 import ZkFormal.Chacha.Statements
 import ZkFormal.Chacha.Table
 import ZkFormal.Chacha.ZEval
+
+-- PQ aggregation tree semantics (arbitrary arity/depth; lane pq-base-aggregation).
+import ZkFormal.PQ.Aggregation.Tree
+import ZkFormal.PQ.Aggregation.Statement
+import ZkFormal.PQ.Aggregation.Shape
+import ZkFormal.PQ.Aggregation.Compose

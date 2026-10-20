@@ -1,0 +1,189 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "packing": 1,
+      "root_hex": "c15bd57ba93970a47c984501a2d832376b4de412f49371d0a1ce144179b73f837b32aaaac1f54c0c3ea67bcffdeacc4a",
+      "handoff": {
+        "kind": "undischarged-packed-pcs-obligation",
+        "context_hex": "4e4541522d50513338342d52532d5041434b45442d56322f726f772d6c6f772d636f6c756d6e2d686967682d6d6f626975732f636f6e73656375746976652d636f6c756d6e2d67726f7570732f7a65726f2d7061642d636f6c756d6e732d616e642d6c6465342f6e61747572616c2d646f6d61696e2f6c616e652d6d616a6f722d70616972732f6c652d753332010000780000000004000000000000000700000000000000010000000000000007000000000000001000000000000000e4c4b40b00000000",
+        "expected_root_hex": "c15bd57ba93970a47c984501a2d832376b4de412f49371d0a1ce144179b73f837b32aaaac1f54c0c3ea67bcffdeacc4a",
+        "packed_point": [
+          [
+            17,
+            19,
+            23,
+            29
+          ],
+          [
+            31,
+            37,
+            41,
+            43
+          ]
+        ],
+        "lane_claims": [
+          [
+            2013234279,
+            2013240801,
+            2013250155,
+            2013262733
+          ],
+          [
+            2013265905,
+            2013265902,
+            2013265898,
+            2013265892
+          ],
+          [
+            2013234248,
+            2013240764,
+            2013250114,
+            2013262690
+          ],
+          [
+            31660,
+            25139,
+            15789,
+            3217
+          ],
+          [
+            31674,
+            25157,
+            15807,
+            3231
+          ],
+          [
+            31674,
+            25157,
+            15807,
+            3231
+          ],
+          [
+            2013202589,
+            2013215625,
+            2013234325,
+            2013259473
+          ]
+        ],
+        "transcript_seed_hex": "84384b9f14ee80dcf228336f2b4d85599fb4acc02e90a8a6701b9345a00b0bc906cb4de12d52acdcc86604bc7d570abd"
+      }
+    },
+    {
+      "packing": 2,
+      "root_hex": "e618d93f2019094fac27a0f0ed5395776fd437efcac86a67bf01d456653feb67d5c6666de54125f7efd7086411e2c169",
+      "handoff": {
+        "kind": "undischarged-packed-pcs-obligation",
+        "context_hex": "4e4541522d50513338342d52532d5041434b45442d56322f726f772d6c6f772d636f6c756d6e2d686967682d6d6f626975732f636f6e73656375746976652d636f6c756d6e2d67726f7570732f7a65726f2d7061642d636f6c756d6e732d616e642d6c6465342f6e61747572616c2d646f6d61696e2f6c616e652d6d616a6f722d70616972732f6c652d753332010000780000000004000000000000000700000000000000020000000000000004000000000000002000000000000000dac44c2d00000000",
+        "expected_root_hex": "e618d93f2019094fac27a0f0ed5395776fd437efcac86a67bf01d456653feb67d5c6666de54125f7efd7086411e2c169",
+        "packed_point": [
+          [
+            17,
+            19,
+            23,
+            29
+          ],
+          [
+            31,
+            37,
+            41,
+            43
+          ],
+          [
+            793508574,
+            1221167580,
+            1744232886,
+            1236912751
+          ]
+        ],
+        "lane_claims": [
+          [
+            1443303410,
+            226824975,
+            334257572,
+            683948339
+          ],
+          [
+            640909055,
+            1441586031,
+            896373096,
+            1697058029
+          ],
+          [
+            31674,
+            25157,
+            15807,
+            3231
+          ],
+          [
+            1860634743,
+            220393312,
+            1165390342,
+            460142061
+          ]
+        ],
+        "transcript_seed_hex": "1c000abd5f7de0380c5020f608308487d930240905ef3f0484f8d00eeaa1e55ce7956fe3d3e705768fb277b069d88fa1"
+      }
+    },
+    {
+      "packing": 8,
+      "root_hex": "aee2424c6adc69bcc5837e7323d331fc025d41aa1fc83f333bb60da61537ad7a60516476b2e29d82e972cfd6bd2fee57",
+      "handoff": {
+        "kind": "undischarged-packed-pcs-obligation",
+        "context_hex": "4e4541522d50513338342d52532d5041434b45442d56322f726f772d6c6f772d636f6c756d6e2d686967682d6d6f626975732f636f6e73656375746976652d636f6c756d6e2d67726f7570732f7a65726f2d7061642d636f6c756d6e732d616e642d6c6465342f6e61747572616c2d646f6d61696e2f6c616e652d6d616a6f722d70616972732f6c652d753332010000780000000004000000000000000700000000000000080000000000000001000000000000008000000000000000646cb51700000000",
+        "expected_root_hex": "aee2424c6adc69bcc5837e7323d331fc025d41aa1fc83f333bb60da61537ad7a60516476b2e29d82e972cfd6bd2fee57",
+        "packed_point": [
+          [
+            17,
+            19,
+            23,
+            29
+          ],
+          [
+            31,
+            37,
+            41,
+            43
+          ],
+          [
+            819137792,
+            1373310651,
+            899383353,
+            854267647
+          ],
+          [
+            1548527718,
+            563697327,
+            1134968727,
+            414545692
+          ],
+          [
+            826240764,
+            1682779015,
+            1293134073,
+            658156893
+          ]
+        ],
+        "lane_claims": [
+          [
+            400073486,
+            142422087,
+            1141807979,
+            1533314839
+          ]
+        ],
+        "transcript_seed_hex": "6b4782aea9ee3cd10d4a4bb475477fc0b8e9f382c39eb1261995d6a4fd9b96bd3873ad5fd296cd526be15050a48cff7e"
+      }
+    }
+  ],
+  "changed_claims_detected_with_full_witness": 84,
+  "transcript_binding_checks": 12,
+  "malformed_rejections": 21,
+  "scope": "Produces PCS obligations only; full witness used by tests to check their truth",
+  "limits": [
+    "No PCS opening protocol integrated",
+    "Ext4 diagnostic is not PQ security profile",
+    "Observed mutation rejection is not a probabilistic soundness proof",
+    "Enclosing AIR transcript binding remains an integration obligation"
+  ]
+}

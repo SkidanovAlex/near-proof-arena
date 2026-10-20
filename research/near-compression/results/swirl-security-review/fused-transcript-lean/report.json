@@ -1,0 +1,29 @@
+{
+  "status": "GENERIC_THEOREMS_AND_SELECTED_FRAME_SCAN_PARITY_CHECKED",
+  "generic_theorems": [
+    "fused_gkr_frame_injective",
+    "fused_gkr_scan_spec",
+    "fused_gkr_draw_spec",
+    "fused_gkr_failure_preserves_state",
+    "fused_gkr_success_advances_once",
+    "fused_gkr_double_commit_rejected",
+    "fused_gkr_no_commit_no_draw"
+  ],
+  "concrete_frame_indices": [
+    0,
+    1,
+    436
+  ],
+  "concrete_scan_indices": [
+    0,
+    1,
+    436
+  ],
+  "axiom_output": "'NearCompression.fused_gkr_frame_injective' depends on axioms: [propext, Classical.choice, Quot.sound]\n'NearCompression.fused_gkr_scan_spec' depends on axioms: [propext, Classical.choice, Quot.sound]\n'NearCompression.fused_gkr_draw_spec' depends on axioms: [propext, Classical.choice, Quot.sound]\n'NearCompression.fused_gkr_failure_preserves_state' does not depend on any axioms\n'NearCompression.fused_gkr_success_advances_once' does not depend on any axioms\n'NearCompression.fused_gkr_double_commit_rejected' depends on axioms: [propext]\n'NearCompression.fused_gkr_no_commit_no_draw' depends on axioms: [propext, Quot.sound]\n'actualFrame_0' does not depend on any axioms\n'actualScan_0' depends on axioms: [propext, Quot.sound]\n'actualFrame_1' does not depend on any axioms\n'actualScan_1' depends on axioms: [propext, Quot.sound]\n'actualFrame_436' does not depend on any axioms\n'actualScan_436' depends on axioms: [propext, Quot.sound]\n",
+  "limitations": [
+    "No SHA384 correctness or random-oracle/QROM theorem added.",
+    "No universal Python/Rust refinement; selected concrete frame/scan agreement only.",
+    "Model treats hash as a function; actual hash circuit and sampler circuit composition remains open.",
+    "No full NEAR1Pgas, PQ128 certificate or complete recursive verifier."
+  ]
+}

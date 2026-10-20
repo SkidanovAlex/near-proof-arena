@@ -1,0 +1,57 @@
+{
+  "status": "PACKED_PCS_PROOF_BYTE_PARITY",
+  "cases": [
+    {
+      "shapes": [
+        [
+          2,
+          3,
+          2
+        ],
+        [
+          3,
+          2,
+          2
+        ]
+      ],
+      "proof_bytes": 3120,
+      "byte_identical": true
+    },
+    {
+      "shapes": [
+        [
+          4,
+          7,
+          4
+        ],
+        [
+          3,
+          2,
+          2
+        ]
+      ],
+      "proof_bytes": 7560,
+      "byte_identical": true
+    },
+    {
+      "shapes": [
+        [
+          3,
+          1,
+          1
+        ]
+      ],
+      "proof_bytes": 1880,
+      "byte_identical": true
+    }
+  ],
+  "packed_scalar_payload_bytes": 32,
+  "native_noncanonical_rejected": true,
+  "scope": "Three small complete proofs equal reference objects and compact bytes with fresh verification. Packed input-state payload only; excludes source caches, Python overhead, GKR, trees and full-scale peak RAM. No protocol/security change.",
+  "sha256": {
+    "airbender/direct-wasm/test_ext8_packed_prover.py": "895b3517ef08a631fc6e610f63c3ac4778c0ecd57a8dc12cfb236602b7498460",
+    "airbender/direct-wasm/pq384_ext8_packed_prover.py": "31b102a81884f835bbd02f8e204491849217cccfb7609d96c493b212505955dd",
+    "airbender/direct-wasm/pq384_ext8_weighted.py": "b0726b2265de376c45cb00087aff66cdc79826609b6c776c1d9768bbfe50acb5",
+    "airbender/direct-wasm/pq384_ext8_weighted_codec.py": "0c31a913d20b399b79dd698619a2c9265dfdc3ad0d607a672bc9b4f3154fe710"
+  }
+}

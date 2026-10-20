@@ -1,0 +1,3 @@
+'NearCompression.packed_concrete_rewrite_eval' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.packed_concrete_constraints' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.packed_concrete_interaction' depends on axioms: [propext, Classical.choice, Quot.sound]

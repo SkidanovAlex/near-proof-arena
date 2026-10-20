@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "current": {
+    "D": 131072,
+    "N": 524288,
+    "T": 393217,
+    "fold_rounds": 17,
+    "queries": 8,
+    "E": 524284,
+    "ideal_field_cardinality": 16428751811598850197311699254593454081,
+    "extraction_term": {
+      "numerator": 524284,
+      "denominator": 16428751811598850197311699254593454081
+    },
+    "query_term": {
+      "numerator": 6561,
+      "denominator": 65536
+    },
+    "total_conditional_term": {
+      "numerator": 107789040635900056144562058809422011701665,
+      "denominator": 1076674678724942246531019522349036606652416
+    },
+    "isolated_extraction_integer_bits": 104,
+    "this_bound_certifies_128_bits": false
+  },
+  "fullheight": {
+    "D": 262144,
+    "N": 1048576,
+    "T": 786433,
+    "fold_rounds": 18,
+    "queries": 8,
+    "E": 1048572,
+    "ideal_field_cardinality": 16428751811598850197311699254593454081,
+    "extraction_term": {
+      "numerator": 1048572,
+      "denominator": 16428751811598850197311699254593454081
+    },
+    "query_term": {
+      "numerator": 6561,
+      "denominator": 65536
+    },
+    "total_conditional_term": {
+      "numerator": 107789040635900056144562058809456371440033,
+      "denominator": 1076674678724942246531019522349036606652416
+    },
+    "isolated_extraction_integer_bits": 103,
+    "this_bound_certifies_128_bits": false
+  },
+  "limits": [
+    "The listed field cardinality and independent sampling instantiate an ideal finite experiment only.",
+    "These sufficient bounds do not certify128-bit security; failure to certify is not an attack or an upper bound on actual security.",
+    "Root binding, FS/QROM and upstream GKR/AIR/bus errors are excluded."
+  ],
+  "security_certified": false,
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/check_weighted_replay_bound.py",
+      "sha256": "238fd99acf6d30216404275285bd10e9f5ad0349da46e4fdf88633c017d929f7"
+    },
+    {
+      "path": "results/tensor-security-accounting.json",
+      "sha256": "24d33d952cb04a768c2ab971f42852d20db32df96b3d1faf76527daf0d311f16"
+    }
+  ]
+}

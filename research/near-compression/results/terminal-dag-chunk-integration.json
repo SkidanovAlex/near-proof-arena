@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "audit_count": 2933,
+  "audit_log": "/tmp/root-node-chunk-audit.log",
+  "chunk_module_sha256": "646675ebee9bdfe54e5064f51b0100f5e2a37de8ef6e5d39f01c8a0e228bc155",
+  "chunk_definition_parity": "Exact extracted definition text equals frozen diagnostic exporter",
+  "terminal_certificate_report": "results/terminal-dag-certificates/report.json",
+  "terminal_captures": 3,
+  "terminal_negative_rejections": 27,
+  "scope": "Generic Lean compiler layer and chunk local-contract lemmas; capture certificates checked in Python, not closed Lean instances. Source AIR-to-DAG, complete chunk compression composition, whole protocol quantum soundness and full NEAR target remain open."
+}

@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "inactive_expressions": 25,
+  "tables": 2,
+  "interactions": 5,
+  "public_segments": 3,
+  "automatic_multiplicity_expressions": 29,
+  "formal_json_sha256": "fa6756a4aaff40ac644c071a5fc5a15123ec895883be586f8b12c40f106854fc",
+  "scope": "Exact bus skeleton and inactive-count AST parity; arbitrary constraints and shared boundary are theorem parameters",
+  "limitations": [
+    "Not a verified exporter/parser or actual Wasm prepare-to-public CODE refinement"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "legacy_certificate_identical": true,
+  "certificate_sha256": "dbc23071e6f2f8863a43212eef286829a317af1e7f2e5c5924f6cad4c586f9e3",
+  "registers": 62420,
+  "mutations_rejected": 14,
+  "shortcuts": {
+    "cases": 14,
+    "labels": [
+      "direct",
+      "constant",
+      "direct",
+      "constant",
+      "direct",
+      "constant",
+      "add-zero-left",
+      "add-zero-right",
+      "sub-zero-right",
+      "sub-same",
+      "mul-zero-left",
+      "mul-zero-right",
+      "mul-one-left",
+      "mul-one-right"
+    ],
+    "rejected_wrong_results": 14
+  },
+  "scope": "Retained Ext4 rebuild certificate regression after explicit field parameterization; no new proof/security claim."
+}

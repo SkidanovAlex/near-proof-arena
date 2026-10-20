@@ -1,0 +1,59 @@
+{
+  "status": "TYPED_RECONSTRUCTION_IMPLIES_TERMINAL_AUTHENTICATION_UNDER_TREE_BINDING",
+  "module": "NearCompression/WeightedTerminalAuthentication.lean",
+  "proved": [
+    "Natural-domain pair leaves at index i contain oracle(i) and oracle(i+half). Equality to reconstruction of one constant yields oracle(y)=constant at every y<2*half.",
+    "The typed terminal reconstruction check implies either a distinct typed tree with equal root or pointwise terminal authentication.",
+    "Excluding that explicit tree collision discharges the pointwise oracle premise; no degree assumption on an arbitrary committed oracle is used."
+  ],
+  "executable_correspondence": {
+    "verifier": "airbender/direct-wasm/pq384_terminal.py:verify_terminal",
+    "caller": "airbender/direct-wasm/pq384_weighted_joint.py:replay",
+    "actual_shape": {
+      "degree": 1,
+      "domain": 4,
+      "lanes": 1,
+      "half": 2
+    },
+    "encoding": "Each leaf contains f(omega^i),f(-omega^i); these are natural-domain indices i and i+half.",
+    "compact_codec": "Reconstructs the last root and openings from the constant; complete original verifier still checks reconstructed terminal root and residual."
+  },
+  "remaining": [
+    "Typed root function must be connected to canonical byte serialization and SHA-384 tree construction.",
+    "Tree-collision probability and all earlier oracle authentication require a cryptographic reduction.",
+    "Common-source near-case AIR/GKR/bus composition, QROM and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "independent_native_terminal_parity": {
+      "status": "PASS",
+      "cases": [
+        {
+          "degree": 1,
+          "domain": 4,
+          "lanes": 1,
+          "mutations_rejected": 23
+        },
+        {
+          "degree": 4,
+          "domain": 16,
+          "lanes": 3,
+          "mutations_rejected": 67
+        },
+        {
+          "degree": 16,
+          "domain": 64,
+          "lanes": 2,
+          "mutations_rejected": 147
+        }
+      ],
+      "method": "Independent direct power-sum oracle, Rust SHA384 tree, separate convolution residual"
+    },
+    "registered_results": 3758,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

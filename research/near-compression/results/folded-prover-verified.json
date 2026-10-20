@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "real_heterogeneous_proof_identical": true,
+  "existing_four_whir_openings_verified": true,
+  "verifier_modified": false,
+  "benchmarks": [
+    {
+      "rows_per_table": 8,
+      "reference_seconds": 0.2230080133304,
+      "folded_seconds": 0.10419882368296385,
+      "speedup": 2.1402162274780174,
+      "proof_and_handoff_identical": true
+    },
+    {
+      "rows_per_table": 16,
+      "reference_seconds": 0.8091740231029689,
+      "folded_seconds": 0.20814624661579728,
+      "speedup": 3.8875263727266103,
+      "proof_and_handoff_identical": true
+    },
+    {
+      "rows_per_table": 32,
+      "reference_seconds": 2.96611570706591,
+      "folded_seconds": 0.4289095336571336,
+      "speedup": 6.915480944839516,
+      "proof_and_handoff_identical": true
+    }
+  ],
+  "sha256": "23ad28b898ce07d2bfb65a9c076b8cedbed4a8965f2566a7993da5eef17a13ab",
+  "limitations": [
+    "Tiny Python benchmarks; no full D1 or1Pgas throughput claim.",
+    "Extra benchmark cases compare prover algorithms with placeholder roots; only saved8/16rowcase has actualPCS verification.",
+    "Runtime parity plus algebra lemmas are not full implementation refinement."
+  ]
+}

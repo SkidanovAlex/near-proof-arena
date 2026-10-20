@@ -1,0 +1,4 @@
+'NearCompression.packed_original_literal_eq' does not depend on any axioms
+'NearCompression.packedLiteralCertificate' depends on axioms: [propext, Quot.sound]
+'NearCompression.packed_literal_holds' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NearCompression.packed_literal_public_run_call' depends on axioms: [propext, Classical.choice, Quot.sound]

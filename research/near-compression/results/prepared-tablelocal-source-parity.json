@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "formal_expressions": 8,
+  "indices": [
+    451,
+    461,
+    462,
+    482,
+    485,
+    486,
+    487,
+    488
+  ],
+  "formal_json_sha256": "3de32ced0eb711de79dfb261d20672944579c96367dad23c976ac37fb3676b33",
+  "scope": "Exact source parity for TableLocal add composition; public CODE provenance remains external"
+}

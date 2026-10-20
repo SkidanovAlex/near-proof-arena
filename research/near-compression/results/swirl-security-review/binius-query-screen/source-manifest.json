@@ -1,0 +1,14 @@
+{
+  "crates/verifier/src/verify.rs": {
+    "sha256": "f5c431cc63d13672e668e4c9dd7da4a10afabe9d3a6347e464b694b8f0240ad6",
+    "snapshot": "crates__verifier__src__verify.rs.gz"
+  },
+  "crates/verifier/src/config.rs": {
+    "sha256": "0f41a8b27efd4a842016be275e54c9d9984cd4491a87568dbf0cfc08c0b936f1",
+    "snapshot": "crates__verifier__src__config.rs.gz"
+  },
+  "crates/iop/src/fri/common.rs": {
+    "sha256": "4d82f637e874229aca6e9a30478ab75a825d8c7ba11209b7c6fcdd2af93e794f",
+    "snapshot": "crates__iop__src__fri__common.rs.gz"
+  }
+}

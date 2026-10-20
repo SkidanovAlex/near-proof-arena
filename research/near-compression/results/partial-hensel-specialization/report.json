@@ -1,0 +1,7 @@
+{
+  "rational_algebraic_source_systems": 36,
+  "algebraic_numeric_lift_pairs": 1080,
+  "coefficient_specialization_comparisons": 3240,
+  "excluded_derivative_guard_points": 27,
+  "scope": "Coefficientwise specialization of the actual finite Hensel recurrence, instantiated by partial algebraic residue specialization with one initial inverse guard. Source-interface discharge and MCA remain open."
+}

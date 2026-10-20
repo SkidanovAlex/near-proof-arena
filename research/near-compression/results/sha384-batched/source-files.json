@@ -1,0 +1,6 @@
+{
+  "NearCompression/SHA384BatchedCore.lean": "6e9a7b391e6865792dd2174be7d063ca7bc42fbc73ef666bf6164b4a56fe880a",
+  "SHA384BatchedFixture.lean": "cb2c9e64e86d4f73483d541f1c8ef02233580c77c73ca2089a0a6b1ca7d228db",
+  "airbender/direct-wasm/prepare_sha384_batched.py": "f0f0e8ba18cdd120b8418a2d11b5f93f1994982fc84ba5f73f0c0ccc94855f8e",
+  "airbender/direct-wasm/test_sha384_batched.py": "d2fb96cc66b204d711227ce5939a957ce13d9de6b6c7ec0bf5f589e64acd519a"
+}

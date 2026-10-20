@@ -1,0 +1,32 @@
+{
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "products": 64,
+  "private_words": 640,
+  "public_io_words": 192,
+  "serialized_bytes": 185844,
+  "payload_bytes": 185808,
+  "public_io_bytes": 1536,
+  "census": {
+    "algebra": 25584,
+    "merkle": 90784,
+    "leaf_values": 69440
+  },
+  "per_product": {
+    "private_words": 10,
+    "and_constraints": 5,
+    "zero_constraints": 8,
+    "imul_constraints": 2
+  },
+  "checks": [
+    "fresh proof verification",
+    "changed canonical public input rejected in verifier",
+    "changed proof rejected at Merkle authentication",
+    "1 and64 product statistics"
+  ],
+  "limitations": [
+    "Diagnostic96-bit query budget/rate1/8; not PQ128 or full security audit.",
+    "Canonical base-field multiplication only; no Ext4 arithmetic or combined GKR verifier.",
+    "Standalone public operands/results; integration can change sharing and private/public layout.",
+    "Lean natural-number soundness is conditional on word-operation equations; no Rust frontend refinement."
+  ]
+}

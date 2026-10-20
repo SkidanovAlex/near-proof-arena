@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3367,
+  "added_theorems": 2,
+  "sources": {
+    "PreparedMemoryRead": "0845f91ffc94dc991728b3da930ff0c1a773c1600fa71a0836ee42a189469ee0",
+    "PreparedMemoryLoad": "e60001d02fde46c076d073b2cba91273bd78a4614d6a42ffe44d3f3d7ea55531"
+  },
+  "audit_log": "/tmp/root-memory-read-audit.log",
+  "audit_sha256": "0215b0b01b3c0fc9858f693954a614505b076c61ff34616994db780b9b92e0ea",
+  "scope": "Accepted width1/2/4/8 byte openings yield actual scalar readLE/typed load successor or collision supported on actual source-tree and one queried opening messages, including queried index.",
+  "limits": [
+    "Initial descriptor honest-state binding/full pages/reference shape explicit.",
+    "At most8 per-byte openings; deduplication and MEM ordering bus remain.",
+    "Gas/PREP/hash AIR wiring and quantum probability remain separate.",
+    "Memory regression agent-run pending; no runtime pass claimed."
+  ]
+}

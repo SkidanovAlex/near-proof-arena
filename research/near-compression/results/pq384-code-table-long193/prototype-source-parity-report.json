@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "cases": 78,
+  "exact_source_residuals": 1069948,
+  "exact_source_interactions": 4462,
+  "actual_source_functions": [
+    "Expr.eval",
+    "Interaction.multNat",
+    "Interaction.msgVal",
+    "pubMsgs",
+    "pubFit"
+  ],
+  "parser_proven_correct": false,
+  "cryptographic_verification": false
+}

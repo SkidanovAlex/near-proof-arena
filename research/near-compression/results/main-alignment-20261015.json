@@ -1,0 +1,78 @@
+{
+  "reviewed_main": "9116a4da95f2d17cfddecc1618ccc0daaa9ba37d",
+  "previous_research_base": "44b2891196883ca980b7341b480502f56cb88403",
+  "documents": [
+    "docs/HANDOVER.md",
+    "docs/logs/v3-d1-a7b-2026-10.md",
+    "docs/logs/v3-d1-phase2-2026-10.md",
+    "docs/zk-formal/V3-D3A-STUDY.md"
+  ],
+  "status": "Current-main Lean audit passed1313 after generic row/shift integration. Canonical AIR reference passed7differentialcases/56negatives; cyclic-next+WHIR222negatives. Research only, not merged.",
+  "adopted_long_term_contract": {
+    "quantum_queries": "at most 2^64",
+    "total_failure_probability": "at most 2^-128",
+    "hash": "SHA-384 throughout proof commitments, transcript and recursion",
+    "bounds": "proven only; concrete constants required",
+    "proof_size": "0.5-1 MB accepted planning target; continue pursuing under 300000 bytes as stretch",
+    "scope": "Every proof layer post-quantum; signed classical challenges unchanged"
+  },
+  "current_main": {
+    "d1_tables": 33,
+    "d1_conformance": "logs report 257 fixtures / 1053 checks, not rerun here",
+    "d1_missing": [
+      "A7D1Step",
+      "LinkD1CoreStmt",
+      "FactorSoundD1 and remaining completeness/admission work",
+      "accepted stub/nonmembership fixture",
+      "fresh 33-table D1a proof verification"
+    ],
+    "source_interface": "zk-formal/ZkFormal/NearV3/D1/Link/Statements.lean: extractD1_of_parts"
+  },
+  "contribution_map": [
+    {
+      "work": "Direct Wasm instruction semantics and compiler preservation",
+      "destination": "future D3 native instruction tables; retain actual NearSpecV3.Wasm semantics",
+      "gap": "global program/control/stack/memory/gas/host consistency and completeness"
+    },
+    {
+      "work": "Constraint zerocheck + WHIR experiment",
+      "destination": "backend proving existing AIR/HoldsP semantics",
+      "gap": "current experiment proves only local quadratic constraints; must add next-row/selectors/public tape and bus arguments, support degree up to16 or prove degree reduction"
+    },
+    {
+      "work": "SHA-512-family AIR lemmas",
+      "destination": "SHA-384 commitments/transcript/recursive verifier",
+      "gap": "SHA-384 IV/truncation and complete honest public witness, backend binding and recursive implementation"
+    },
+    {
+      "work": "Protocol security",
+      "destination": "research/hash-recursion M2 interactive soundness, M3 QROM constants, M4 extraction/composition",
+      "gap": "BLAKE2s/BabyBearExt4 toy profile is diagnostic only; no production security inheritance"
+    }
+  ],
+  "d1_regressions_to_preserve": [
+    "R-5 byte-identical account values: count every tx key, including unread keys",
+    "ridV3 slot l canonical range: field equality is insufficient for natural quotient/remainder",
+    "walkU EDGE/BMAP users and uvalV3 VBYTES sender",
+    "public PKEY includes candidate and unread walks; FullAccess akm writes post values"
+  ],
+  "next_deliverables": [
+    "Review and checkpoint the current-main research package with its reproduction evidence",
+    "Extend the now publicly bound instruction proof to next-row/control/memory and cross-table consistency",
+    "Generalize expression compilation and add cross-table bus arguments to existing HoldsP interface",
+    "Use SHA-384 profile and derived larger challenge field/repetitions before security/size claims"
+  ],
+  "not_done": [
+    "No production backend replacement",
+    "No full NEAR proof",
+    "No 1 Pgas benchmark",
+    "No 128-bit PQ security theorem",
+    "No merge or push"
+  ],
+  "validated_in_current_worktree": [
+    "Toy public binding proof: honest acceptance and 31 rejection tests, including locally valid row swap with valid WHIR opening",
+    "Earlier constraint-only proof still accepted after optional public-binding extension",
+    "make pin-check passed before current research-only edits"
+  ],
+  "strategy": "development-strategy-20261015.json"
+}

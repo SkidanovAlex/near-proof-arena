@@ -1,0 +1,55 @@
+{
+  "review_date": "2026-10-15",
+  "repository": "https://github.com/matter-labs/zksync-airbender",
+  "branch": "av_gkr_compiler",
+  "commit": "129f827003b34acd64a3315a5863eac75bc09fe6",
+  "exact_announced_benchmark_revision_confirmed": false,
+  "findings": {
+    "machine": "RISC-V 32-bit with restricted proving profiles and custom precompiles",
+    "protocol": "GKR sumcheck + WHIR + hash commitments",
+    "recursion": "unrolled -> unified fixed point -> two BabyBear feeders -> Proth120 Keccak final proof",
+    "security_level_in_code": 100,
+    "final_whir_queries": [
+      17,
+      12,
+      8,
+      6,
+      5,
+      4
+    ],
+    "final_whir_pow_bits": [
+      30,
+      30,
+      27,
+      25,
+      21,
+      24
+    ],
+    "debug_fixture_calldata_bytes": {
+      "gkr": 34596,
+      "whir": 76544,
+      "sum": 111140
+    },
+    "other_testdata_gkr_bytes": 32504,
+    "size_interpretation": "Decoded checked-in hex calldata; fixtures differ; not regenerated, verified, or a NEAR benchmark.",
+    "final_in_memory_prover_documented_working_set": "several hundred GiB"
+  },
+  "source_paths": [
+    "verifier_evm/ARCHITECTURE.md",
+    "prover_pipeline/src/lib.rs",
+    "program_prover/src/compression.rs",
+    "program_prover/src/l1.rs",
+    "prover/src/definitions/mod.rs",
+    "prover/src/gkr/prover_config/example_configs.rs",
+    "prover/src/gkr/prover_config/pow_bits.rs",
+    "verifier_evm/tests/flatten_calldata.rs"
+  ],
+  "gaps": [
+    "No reproduced proof or performance benchmark in this review.",
+    "No established 128-bit quantum soundness; conjectured proximity parameters and grinding need quantum analysis.",
+    "NEAR guest, Wasm semantics, host calls, gas and authenticated state binding remain integration work.",
+    "No end-to-end Lean proof established by this review."
+  ],
+  "recommendation": "Evaluate as existing hash-based recursive backend before designing a new VM proving stack.",
+  "followup_verification": "airbender-prime-fixture-verification.json"
+}

@@ -1,0 +1,9 @@
+{
+  "arbitrary_target_systems": 400,
+  "cases_with_constant_polynomial": 151,
+  "zero_targets": 29,
+  "exhaustively_bijective_maps": 98,
+  "exhaustive_coefficient_vectors": 2184,
+  "noncoprime_kernel_counterexamples": 3,
+  "scope": "Formal bounded Bezout coefficient-map injectivity and surjectivity. Determinant construction and parameter-degree denominator bounds remain open."
+}

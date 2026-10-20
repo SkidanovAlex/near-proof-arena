@@ -1,0 +1,210 @@
+{
+  "status": "PASS",
+  "proof_sha256": "6b3b0d0d771d58576cd744d828ffc6114f2e65fc3aa779716076ab4112139bb1",
+  "binary_bytes": 1151130,
+  "expanded_verifier": {
+    "hash_tags": {
+      "global-bus-canonical-statement-digest-v2": {
+        "calls": 1,
+        "framed_input_bytes": 1733876,
+        "compression_blocks": 13547
+      },
+      "global-bus-packed-opening-branch": {
+        "calls": 66,
+        "framed_input_bytes": 10032,
+        "compression_blocks": 132
+      },
+      "merkle/leaf": {
+        "calls": 9348,
+        "framed_input_bytes": 2631612,
+        "compression_blocks": 28644
+      },
+      "merkle/node": {
+        "calls": 52530,
+        "framed_input_bytes": 18236454,
+        "compression_blocks": 162726
+      },
+      "merkle/root": {
+        "calls": 9282,
+        "framed_input_bytes": 2691894,
+        "compression_blocks": 27846
+      },
+      "transcript/commit": {
+        "calls": 2255,
+        "framed_input_bytes": 690494,
+        "compression_blocks": 6714
+      },
+      "transcript/draw-result": {
+        "calls": 1722,
+        "framed_input_bytes": 319839,
+        "compression_blocks": 3444
+      },
+      "transcript/init": {
+        "calls": 133,
+        "framed_input_bytes": 13171,
+        "compression_blocks": 133
+      },
+      "transcript/ratchet": {
+        "calls": 1822,
+        "framed_input_bytes": 345440,
+        "compression_blocks": 3644
+      },
+      "transcript/request": {
+        "calls": 1722,
+        "framed_input_bytes": 285399,
+        "compression_blocks": 3444
+      },
+      "transcript/squeeze": {
+        "calls": 1822,
+        "framed_input_bytes": 272560,
+        "compression_blocks": 3644
+      }
+    },
+    "total_hash_calls": 80703,
+    "total_sha384_compression_blocks": 253918,
+    "ext4_operation_calls": {
+      "mul": 151848,
+      "add": 123834,
+      "sub": 33560
+    }
+  },
+  "binary_decode_authenticate_verify": {
+    "hash_tags": {
+      "global-bus-canonical-statement-digest-v2": {
+        "calls": 1,
+        "framed_input_bytes": 1733876,
+        "compression_blocks": 13547
+      },
+      "global-bus-packed-opening-branch": {
+        "calls": 66,
+        "framed_input_bytes": 10032,
+        "compression_blocks": 132
+      },
+      "merkle/leaf": {
+        "calls": 13527,
+        "framed_input_bytes": 3855740,
+        "compression_blocks": 41779
+      },
+      "merkle/node": {
+        "calls": 69293,
+        "framed_input_bytes": 24118042,
+        "compression_blocks": 216600
+      },
+      "merkle/root": {
+        "calls": 9990,
+        "framed_input_bytes": 2898306,
+        "compression_blocks": 29970
+      },
+      "transcript/commit": {
+        "calls": 5057,
+        "framed_input_bytes": 1518644,
+        "compression_blocks": 14757
+      },
+      "transcript/draw-result": {
+        "calls": 3153,
+        "framed_input_bytes": 584751,
+        "compression_blocks": 6306
+      },
+      "transcript/init": {
+        "calls": 529,
+        "framed_input_bytes": 52375,
+        "compression_blocks": 529
+      },
+      "transcript/ratchet": {
+        "calls": 3382,
+        "framed_input_bytes": 639554,
+        "compression_blocks": 6764
+      },
+      "transcript/request": {
+        "calls": 3153,
+        "framed_input_bytes": 521691,
+        "compression_blocks": 6306
+      },
+      "transcript/squeeze": {
+        "calls": 3382,
+        "framed_input_bytes": 504274,
+        "compression_blocks": 6764
+      }
+    },
+    "total_hash_calls": 111533,
+    "total_sha384_compression_blocks": 343454,
+    "ext4_operation_calls": {
+      "mul": 174981,
+      "add": 143976,
+      "sub": 46415
+    }
+  },
+  "limits": [
+    "Actual Q8/Ext4 33-table AIR and randomized bus-fingerprint verifier",
+    "Counts include repeated transcript replay and path verification in current implementation",
+    "Hash invocation counts are not SHA384 circuit constraints",
+    "No recursive prover or recursion soundness established",
+    "Profiler timings intentionally omitted"
+  ],
+  "shared_binary_verifier": {
+    "hash_tags": {
+      "global-bus-canonical-statement-digest-v2": {
+        "calls": 1,
+        "framed_input_bytes": 1733876,
+        "compression_blocks": 13547
+      },
+      "global-bus-packed-opening-branch": {
+        "calls": 66,
+        "framed_input_bytes": 10032,
+        "compression_blocks": 132
+      },
+      "merkle/leaf": {
+        "calls": 4179,
+        "framed_input_bytes": 1224128,
+        "compression_blocks": 13135
+      },
+      "merkle/node": {
+        "calls": 16763,
+        "framed_input_bytes": 5881588,
+        "compression_blocks": 53874
+      },
+      "merkle/root": {
+        "calls": 708,
+        "framed_input_bytes": 206412,
+        "compression_blocks": 2124
+      },
+      "transcript/commit": {
+        "calls": 3311,
+        "framed_input_bytes": 1088490,
+        "compression_blocks": 10452
+      },
+      "transcript/draw-result": {
+        "calls": 1940,
+        "framed_input_bytes": 360095,
+        "compression_blocks": 3880
+      },
+      "transcript/init": {
+        "calls": 397,
+        "framed_input_bytes": 39307,
+        "compression_blocks": 397
+      },
+      "transcript/ratchet": {
+        "calls": 2126,
+        "framed_input_bytes": 402220,
+        "compression_blocks": 4252
+      },
+      "transcript/request": {
+        "calls": 1940,
+        "framed_input_bytes": 321295,
+        "compression_blocks": 3880
+      },
+      "transcript/squeeze": {
+        "calls": 2126,
+        "framed_input_bytes": 317180,
+        "compression_blocks": 4252
+      }
+    },
+    "total_hash_calls": 33557,
+    "total_sha384_compression_blocks": 109925,
+    "ext4_operation_calls": {
+      "mul": 143726,
+      "add": 134738,
+      "sub": 41746
+    }
+  }
+}

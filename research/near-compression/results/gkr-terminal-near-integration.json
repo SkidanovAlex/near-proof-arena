@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3231,
+  "added_theorems": 1,
+  "source_sha256": "49aeb6ac284f38a36a048fb4633a35ac3169a583f61d2c0044452f7ee943aa9b",
+  "audit_log": "/tmp/root-gkr-terminal-near-audit.log",
+  "audit_sha256": "8dfa64ecfb9f48ecb5bb6e7f7f7fc2fbb9a25cc3777474f462c09871a0c4a4e2",
+  "result": "Wrong full GKR input claim with actual constant subtraction implies existing recovered heterogeneous near-case checked sumcheck bound, using the same polynomial tuple.",
+  "conditional_error": "2*commonLog/|sample| in cross-multiplied finite counting form",
+  "conditions": [
+    "Fixed joint proximity representative and separation",
+    "Sparse projected polynomial tuple and valid lane geometry",
+    "Independent ideal PCS sumcheck challenges"
+  ],
+  "remaining": [
+    "Far-case/proximity verification integration",
+    "Commitment binding and executable verifier refinement",
+    "FS/QROM and fullNEAR secure size target"
+  ]
+}

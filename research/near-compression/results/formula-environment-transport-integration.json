@@ -1,0 +1,41 @@
+{
+  "status": "CHECKED_FORMULAS_TRANSPORT_TO_FIXED_DECODED_COLUMNS",
+  "module": "NearCompression/FormulaEnvironmentTransport.lean",
+  "theorems": [
+    "air_expression_environment_transport",
+    "bus_formula_environment_transport",
+    "mixed_formula_environment_transport",
+    "mixed_sum_environment_transport",
+    "recovered_decoded_environment_agreement",
+    "recovered_mixed_formula_transport",
+    "formula_environment_transport_regressions"
+  ],
+  "proved": [
+    "Bounded agreement of current/next columns and selectors preserves evaluation of checked AIR expressions, bus formulas, and their ordered weighted mixture.",
+    "Canonical polynomial tuple ownership constructs one decoded column table before all later rowpoints, programs, public values, mixing powers and checked residual lists.",
+    "Recovered-slot mixed formula values equal decoded-column MLE/next-MLE formula values; unused out-of-width columns need not agree."
+  ],
+  "assumptions": [
+    "Canonical lane enumeration and disjoint supports.",
+    "Table membership and placement base/next offset checks.",
+    "Formula width bounded by source plus auxiliary width, with accepted residual checks.",
+    "Selectors remain the supplied placement constants; intended selector/specification binding is not derived."
+  ],
+  "remaining": [
+    "Compose transport across all compiler tables with symbolic_formula_recovered_value.",
+    "Bind supplied formulas, metadata and selectors to the intended protocol specification.",
+    "Close accepted-proof to common decoded trace to valid execution, chronological sampling alignment, computational commitment and quantum Fiat-Shamir soundness.",
+    "Establish secure parameters and complete sub300000-byte full-NEAR feasibility."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3893,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "kernel_regressions": "Bounded agreement despite differing unused columns; rejected out-of-width AIR/bus reads; current/next swap and selector-change sensitivity.",
+    "native_capture_execution": "Not rerun: no native adapter or prover changes."
+  }
+}

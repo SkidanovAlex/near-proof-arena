@@ -1,0 +1,40 @@
+{
+  "status": "EVALUATED_STRATEGY_PATH_AND_RECOVERED_TERMINAL_ADAPTER_PROVED",
+  "module": "NearCompression/GKREvaluatedStrategy.lean",
+  "theorems": [
+    "gkr_bind_values_preserves_checks",
+    "gkr_evaluated_path_shape",
+    "gkr_evaluated_path_linked",
+    "gkr_evaluated_continuation_budget",
+    "gkr_evaluated_path_recovered_mismatch"
+  ],
+  "proved": [
+    "Replacing the analysis-only values with finite-circuit evaluation preserves all raw GKR message checks.",
+    "Structural accepted paths have exactly the remaining layer/block count.",
+    "Constructed values discharge per-layer assignment and adjacent evaluation premises in gkrCircuitVerifierPath.",
+    "The false-root acceptance budget with PCS continuations now applies to this constructed assignment.",
+    "Terminal mismatch is the full recovered GKR input mismatch with shape, depth alignment and assignment equality derived from structural path checks and evaluation."
+  ],
+  "structural_checks_still_required": [
+    "Raw per-layer sumcheck and wiring checks.",
+    "Padded layer cube fits within the actual finite gate list.",
+    "Next-layer weighted query wiring and transmitted-claim linkage.",
+    "Path ends at the circuit input depth."
+  ],
+  "remaining": [
+    "Executable verifier/parser and AIR compiler must establish the structural checks and output semantics for the retained profile.",
+    "Map the full layered GKR random experiment and ancillary draws to the selected joint PCS coordinates; then substitute the merged near/far bound.",
+    "Concrete commitment/oracle authentication, AIR/bus-to-Wasm execution and quantum transcript compilation.",
+    "128-bit PQ parameters and full NEAR1Pgas proof below300000 bytes remain unestablished."
+  ],
+  "validation": {
+    "module_check": "PASS",
+    "full_check": "PASS",
+    "registered_results": 3808,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

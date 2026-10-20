@@ -1,0 +1,12 @@
+{
+  "codec-report.json": "04cbec202199051c3b8026dcc687647506efae5fc5b47758a43d63c355cf97c9",
+  "codec-test.log": "04cbec202199051c3b8026dcc687647506efae5fc5b47758a43d63c355cf97c9",
+  "complete-verifier.log": "bc7facc3d44389e42a156060795b8133eca7cef422356f9603b0d78ff8fa72e3",
+  "compression.bin": "b60a43e8af7dd3755673caaac93c04c75bbf8537d859e0f10a572f1a1a8a38a1",
+  "fresh-verifier.log": "f7ed72442c06a4091ddd341c6a4b0063dd1542236fd75527fcac486b31eeb78f",
+  "prover-report.json.gz": "d709be3fc9f83c625da2b5c7e1249341f1c3715afbc37f9dad573197625db396",
+  "prover.log": "204bc577265d4739c3291f5ca9aab56c592110d3e6167cf0ffe3347d5c145e1a",
+  "reduction.json.gz": "e6f63acfdfd48c37a55de4990e14d70454558bf06f8bfd4c600c1fc7d68e5206",
+  "report.json": "45357c3f16c34417d779c3862e192ab68ee7eb31262c7a1d85fb4cc5cc92f473",
+  "statement.json.gz": "63359e5a690f7c3ae04c222b15eccedaa26f6e3e15c654c23bc38f0028e3981e"
+}

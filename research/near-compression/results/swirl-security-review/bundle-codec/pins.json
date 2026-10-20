@@ -1,0 +1,31 @@
+{
+  "inputs": {
+    "prefix-codec/prefix.bin": "8b0a541eb4277116185258ad32bf7996613cc5d6ca9f7af08e6826a222753657",
+    "prefix-dag-gkr/proof.json.gz": "bdb9bf47b8239e5de0f170bcf9ac75d74d5224faf0fdc664cab9f2dabb328f2a",
+    "prefix-continuation/stacking.proof.gz": "a8c65f830c0cd50a6da64a86529d600181ef99d4b7fa99690ca0d25465f93370",
+    "prefix-continuation/whir.proof.gz": "f69261fa7b1276f8b51b541a83d637482c752e8bc99ef91516d571e2cbeed055",
+    "dag-export/dag.jsonl.gz": "78a24241e778d287a3bc05c694bc1fb0101107abd1e22fa7a3f69427b0043e96",
+    "prefix-codec/openvm.patch.gz": "7c59453c7a874c549af7903b69a370bbaccec929cd3d5c389caa10da2c96e47f",
+    "opening-free-prefix/backend.patch.gz": "3dad17298ed5e08017979d43f720b1ede6a98131b443748863ca37504d3d57e2",
+    "weighted-whir/cpu-backend.patch.gz": "10e299b1abe07d1f804c1a5480e678becd2bbfebd54168b40ac6d184c36b0919"
+  },
+  "artifacts": {
+    "fresh-continuation.log": "6a2f3d4b2e472a9396f5e8a3864d476cb601045678a175c017e1884ae2d4f74a",
+    "fresh-prefix.log": "f7dc0bf97a879e59563b19aca83dcbea16a54e868e5a186316fa686163d1c6d9",
+    "mutated-gkr-prefix.log": "b03ad2a3d3e08d658dad38da773ec96d5609c5b29e7cc7695b51cb06f70cbc58",
+    "mutated-prefix-prefix.log": "25f007a7eef9e03f56663a3a2d742aa0e7495bbc016957f6dab47678fdc101d8",
+    "mutated-stacking-continuation.log": "d7eb497dc2dca5435c6d5848121e652db7e21318507e94e37bd1274730f7b3d8",
+    "mutated-stacking-prefix.log": "bc53ce50abba130a62474739fce696beb91f787a39b0f2f17345f195f0601d1f",
+    "mutated-whir-continuation.log": "948953e133554dd22b34370b705be64e302b3c645aee6730b536684d130a7bde",
+    "mutated-whir-prefix.log": "b7cf85d62faffa52406f9fa6c570fd6e334f32bcd40519c79269fad1298cccdd",
+    "nearproof-bundle-fresh.log": "16b09ca41d7181435e5c92cca7ea168a7f4d4600a63e6c82da479ea6497b0282",
+    "nearproof-bundle-handoff-regression.log": "0b503ed4ebda21bfe0dce389b96a1e351c0b76354e0b849e4e7a3dda06642def",
+    "nearproof-bundle-tests.log": "f2a71ed52772acff317140ade8ffe1b3ceefdf4a35be0032f6ef846d7b9d068f",
+    "positive-continuation.log": "f6f60f29d7b5e645e56e403310b3b82713a091e82af55300730a1d97433c434a",
+    "positive-prefix.log": "56c1cb69643e59916341f56b83b351a8beb549f21491ccf17f2f74672c36fad8",
+    "proof.bin": "b5e92372ac07e6c7f3bede75003810b52efda156ef1767a7e40c846c608a41da",
+    "report.json": "f7996c5217e19cafb9e8c07e594e6b7c6252dc67af0f988ab43938e913d9c8cf",
+    "restored-positive-continuation.log": "02defee5b5093996c467512146a7fe5ebfeb5a1ef9290456b0eb7a3e85cdcec2",
+    "restored-positive-prefix.log": "e2b8a890cfb964f66c2063c2fc754764edbc6c8c6d5d4efd1a8a7e7de76146f5"
+  }
+}

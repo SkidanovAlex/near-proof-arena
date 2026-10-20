@@ -1,0 +1,4 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running `target/debug/examples/near_wasm_commitment /data/illia/nearproof/research/near-compression/results/direct-wasm-invalid-export.json /data/illia/nearproof/research/near-compression/results/direct-wasm-invalid-commitment.json`
+[timing] base commit part: 104 cols 2^3, lde 4, 2 values/leaf -> LDE 174.578µs, tree 1.409ms
+exported 104-column RS commitment and 16 openings

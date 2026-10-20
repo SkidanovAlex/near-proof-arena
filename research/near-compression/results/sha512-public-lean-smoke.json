@@ -1,0 +1,79 @@
+{
+  "kind": "Publicly bound single-block SHA512 compression AIR",
+  "table": {
+    "columns": 6944,
+    "constraints": 10469,
+    "added_constraints": 128,
+    "added_columns": 0,
+    "public_fields": 128,
+    "max_degree": 3,
+    "max_log": 7,
+    "forced_height": 128,
+    "compression_endpoint_row": 79
+  },
+  "public_encoding": {
+    "limb_bits": 16,
+    "limbs_per_word": 4,
+    "limb_order": "little endian within each64-bit word",
+    "message_bytes": "big endian within each message word",
+    "initial_state_fields": [
+      0,
+      31
+    ],
+    "message_fields": [
+      32,
+      95
+    ],
+    "output_fields": [
+      96,
+      127
+    ],
+    "exact_length_enforced_by": "sha512PublicClaim combines pub.length=128 with actual Air.Holds"
+  },
+  "formal_claims": [
+    "Actual public claim implies output equals NearSpecV3.SHA512.compress(public state,public block).",
+    "All128 public field representatives are below65536 and all32 decoded words are below2^64.",
+    "The public block equals the constrained decoded initial byte block,has128bytes,and every byte is below256.",
+    "Canonical word serialization equals Boolean-trace byte decoding."
+  ],
+  "validation": {
+    "honest_128_row_fixtures": 2,
+    "messages": [
+      "empty",
+      "abc"
+    ],
+    "substituted_public_limbs_rejected": 256,
+    "out_of_range_public_limbs_rejected": 24,
+    "wrong_row127_outputs_rejected": 2,
+    "short_and_overlong_public_lists_rejected": true,
+    "unused_trailing_field_accepted_by_constraints_alone": true,
+    "formal_and_independent_binding_evaluations_match_all128rows": true,
+    "formal_public_decoders_match_trace": true,
+    "public_outputs_match_actual_compression": true
+  },
+  "new_theorems": 26,
+  "full_audit_theorems": 1166,
+  "commands": [
+    "lake build NearCompression.SHA512Bytes",
+    "lake build NearCompression.SHA512Public",
+    "lake env lean --run SHA512PublicSmoke.lean",
+    "python3 check.py"
+  ],
+  "logs": [
+    "/tmp/near-sha512-bytes.log",
+    "/tmp/near-public.log",
+    "/tmp/near-sha512-public-smoke.log",
+    "/tmp/near-sha512-public-audit.log"
+  ],
+  "source_sha256": {
+    "NearCompression/SHA512Bytes.lean": "c424ec92a633faef9eb0b801291b0fb4e7618f8537c5a9c636179f56094f152a",
+    "NearCompression/SHA512Public.lean": "7c55ddffac26a4a47bf04999551f00c20b91d0c178be4e7b80cbb176950c87b4",
+    "SHA512PublicSmoke.lean": "fc8f5a4c8118f079898e88097c1352a47f445496131d1c153c79e6771da7b3e2"
+  },
+  "limitations": [
+    "Single-block compression only; full-message padding,block chaining,digest serialization and universal honest full-trace completeness remain.",
+    "Public API uses canonical field representatives; unrestricted external integer-to-field casts are not an injective serialization.",
+    "Rows80..127 still execute zero-key rounds; compression output is row79.",
+    "No full NEAR state-transition proof,1Pgas capacity measurement,sub-300KB proof,or128-bit quantum-security proof."
+  ]
+}

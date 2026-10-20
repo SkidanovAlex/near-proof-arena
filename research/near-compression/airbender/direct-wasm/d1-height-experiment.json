@@ -1,0 +1,76 @@
+{
+  "status": "PASS",
+  "case": "00-h10012-s2",
+  "baseline_report": "/tmp/near-d1-real-00-h10012-s2-final-check/report.json",
+  "experiment_report": "/tmp/near-d1-height-00-h10012-s2/report.json",
+  "height_plan": {
+    "plannedrowsperrenderer": [
+      {
+        "name": "codec",
+        "planned": 453,
+        "required": 454,
+        "tail": 0
+      },
+      {
+        "name": "scandist",
+        "planned": 28,
+        "required": 29,
+        "tail": 0
+      },
+      {
+        "name": "proc",
+        "planned": 16,
+        "required": 18,
+        "tail": 1
+      },
+      {
+        "name": "mem",
+        "planned": 24,
+        "required": 25,
+        "tail": 0
+      },
+      {
+        "name": "cmp",
+        "planned": 49,
+        "required": 50,
+        "tail": 0
+      }
+    ],
+    "receipt_log": 7,
+    "receipt_planned": 36,
+    "receipt_required": 37,
+    "scheduler_log": 10
+  },
+  "native_tables": 33,
+  "exact_bus_count_records_equal": 61,
+  "statement_hashes_equal": {
+    "air": "61047e9e2719c03adfd66f2e5aac407d830515f33050a9c543c0f9c54efef9dd",
+    "claim": "257f333655c22cd7b6a9766c31b1840334a412628668426a5194eca964ec8cf9",
+    "hint": "1570f60dc3c664ddf08a14d6c12434271674575e1518ff269cf68b568cb36d53",
+    "prepared": "a173e8d4ef341527cf37af1ae070f74a3db21ca2ca8fa31a66a00a7dc1fcb28c",
+    "witness": "20b3772f4e19d59216e3fc93fe1f497686e0809fd4d015b4051441bc3cd50c4b"
+  },
+  "baseline": {
+    "wall_seconds": 36.99,
+    "peak_rss_kib": 3150748,
+    "total_cells": 2504687442,
+    "compact_trace_bytes": 3076109234,
+    "row_dump_bytes": 10018750032
+  },
+  "experiment": {
+    "wall_seconds": 1.0,
+    "peak_rss_kib": 182252,
+    "total_cells": 38803154,
+    "compact_trace_bytes": 39938866,
+    "row_dump_bytes": 155212880
+  },
+  "artifact_sha256": {
+    "prepare_d1_height_source.py": "0552cd07a838f7699254ba7083cd117fc04445f0f74305f299370ad1024f1ee4",
+    "near_d1_height_export.rs": "31515213efbc990a2bf3b07d8e91234cd217bddc4df9927fedc5ddcac195332f",
+    "run_d1_height_experiment.py": "a103ac9d166dab681958365915914a3180c63df45e7129d3da09f0de7e76d324",
+    "d1-height-render.patch": "cfe40a406ad497fafaac57de4ffe8aab57b07f379d5edb52b18061e558885a7d",
+    "near_d1_height_capacity.rs": "8dcdfb7b2a27ac7da07e07f4e0cca564e796ec93b84234985c43792123c455cf",
+    "d1-height-capacity.json": "33f3d0662f54a20690f8f3a03fb8df1f2d06bd8920dcae7cc4402b76ae9eb803"
+  },
+  "scope": "One real processed-transaction fixture; exact existing native local constraints and natural bus checks. No succinct proof, no formal implementation refinement, no general renderer equivalence theorem. Original default log22 entrypoints preserved in isolated crate."
+}

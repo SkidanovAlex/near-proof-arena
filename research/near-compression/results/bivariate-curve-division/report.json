@@ -1,0 +1,7 @@
+{
+  "division_cases": 1600,
+  "root_cases": 1062,
+  "nonzero_root_cases": 574,
+  "zero_function_nonroots": 4,
+  "scope": "Formal linear-factor identity, quotient nonzeroness and weighted degree only. Repeated-factor extraction, useful factors and full MCA exception count remain open."
+}

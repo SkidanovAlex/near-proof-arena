@@ -1,0 +1,35 @@
+{
+  "status": "incremental progress; goal not complete",
+  "audit": {
+    "declarations": 1511,
+    "log": "/tmp/near-terminal-grid-audit.log"
+  },
+  "terminal_runtime": "pq384-terminal-verified.json",
+  "terminal_shapes": [
+    [
+      1,
+      4,
+      1
+    ],
+    [
+      4,
+      16,
+      3
+    ],
+    [
+      16,
+      64,
+      2
+    ]
+  ],
+  "terminal_negative_checks": 237,
+  "formal_packed_claim_bound": "For p>=1, #agreements<=p*|S|^(p-1) on independent-coordinate sample grid, fixed differing vectors and Nodup S.",
+  "formal_module": "GenericPackedGridCounting",
+  "remaining": [
+    "Root-reconstruction collision-or-correctness composition",
+    "Integration of terminal and packed obligations with complete PCS",
+    "ConcreteSHA384profileextensionfield/queryparameters and QROM bounds",
+    "Full Wasm/PREP/host/state transition semantics",
+    "Recursive completeproof<300000bytes and1Pgas benchmark"
+  ]
+}

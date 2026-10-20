@@ -1,0 +1,1 @@
+{"status": "PASS", "exhaustive_packing_cases": 9, "joint_query_sequences": 4368, "invalid_geometry_rejections": 3, "scope": "Cost arithmetic, optimizer and finite uniform-query geometry only; no soundness claim."}

@@ -1,0 +1,74 @@
+{
+  "status": "PARENT_PROOF_GENERATED_AND_VERIFIED",
+  "openvm_revision": "e74f9b1ee868c42776faf821b8b9f2e8829a7f68",
+  "backend_revision": "d667af5929d0ea9e5194adf639d6bddeb8c10f9a",
+  "rust": "1.91.1",
+  "records": [
+    {
+      "profile": "smoke",
+      "child_bytes": 11934,
+      "parent_bytes": 109441
+    },
+    {
+      "profile": "production",
+      "child_bytes": 87838,
+      "parent_bytes": 383529
+    }
+  ],
+  "workload": "Nine Fibonacci AIRs of height256; one child; VerifierSubCircuit MAX_NUM_PROOFS=2.",
+  "smoke_parameters": "Upstream test parameters, WHIR target5; not secure.",
+  "production_parameters": "app_params_with_100_bits_security(12) child; leaf_params_with_100_bits_security() parent.",
+  "checks": [
+    "Original verifier AIR debug check retained",
+    "Generate parent proof",
+    "Native parent proof verification",
+    "Serialize child and parent",
+    "Targeted Clippy -D warnings"
+  ],
+  "exclusions": [
+    "Final root and stabilized recursion chain",
+    "VM public-value wrapper",
+    "PQ128 security",
+    "Full NEAR semantics and 1 Petagas capacity",
+    "Lean theorem audit"
+  ],
+  "artifacts": [
+    {
+      "file": "Cargo.lock.gz",
+      "raw_bytes": 210798,
+      "raw_sha256": "76467b143beff28428cfbfbe02e6f2badac3922ad6ded02a7cc4859cec2e7d57"
+    },
+    {
+      "file": "instrumented-tests.rs.gz",
+      "raw_bytes": 34264,
+      "raw_sha256": "8c4b2cb1ff7efe0a240692e460698d6fce1b76a93453d1b7aaa07d9b61a702e4"
+    },
+    {
+      "file": "recursion-README.md.gz",
+      "raw_bytes": 3903,
+      "raw_sha256": "dc5f19608bc3697806c270a769264dbd0ef2b317d906fc8b0e0f0338dae5728f"
+    },
+    {
+      "file": "certified-verifier-README.md.gz",
+      "raw_bytes": 3170,
+      "raw_sha256": "435fe7d587e18a94fc8b70c777ef8403a4cebdee8748a4e4171a6c84644d0b83"
+    },
+    {
+      "file": "smoke.log.gz",
+      "raw_bytes": 481,
+      "raw_sha256": "96f5eb1369aab6fc0952207c9f3795b69775ffcf814c48ef674d3f63256e5e93"
+    },
+    {
+      "file": "production.log.gz",
+      "raw_bytes": 1356,
+      "raw_sha256": "ad55e7a24ffe12ca234d03b7f366bd48bb26e8271e3c77b5b4d3b1bcaed021c4"
+    },
+    {
+      "file": "clippy.log.gz",
+      "raw_bytes": 7802,
+      "raw_sha256": "bc72db25f01475f4295c76bfffc7491856bcb79ec7d122d44cd307ed965e799a"
+    }
+  ],
+  "replay": "Apply instrumentation.patch to pinned OpenVM; restore pinned Cargo.lock; RAYON_NUM_THREADS=4 cargo test --locked --profile fast -p openvm-recursion-circuit tests::nearproof_recursion_production_parameters -- --exact --nocapture",
+  "formal_source_status": "README names private ws-fv b94bf5a2a38535d22a2e5a6633b7e6d8351b8a84; generated C available, source proof modules not included."
+}

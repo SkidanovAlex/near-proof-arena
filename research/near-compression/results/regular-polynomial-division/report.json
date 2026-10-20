@@ -1,0 +1,8 @@
+{
+  "regular_divisions": 220,
+  "exact_divisions": 112,
+  "safe_output_coefficients": 360,
+  "constant_divisors": 73,
+  "vanishing_leading_coefficient_pole_examples": 4,
+  "scope": "Long division and exact quotient preserve coefficient regularity when the specialized leading coefficient is nonzero. Representative-independent extension specialization and full MCA remain open."
+}

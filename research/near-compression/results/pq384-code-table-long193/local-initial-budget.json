@@ -1,0 +1,33 @@
+{
+  "status": "CONDITIONAL_COMPONENT_BOUND",
+  "tables": [
+    {
+      "table": 0,
+      "log_rows": 8,
+      "source_residuals": 729,
+      "auxiliary_residuals": 9,
+      "total_residuals": 738,
+      "invalid_row_nonzero_residuals": 9,
+      "initial_error_numerator": 745,
+      "ideal_ext4_bits": 114.08646576995093,
+      "ideal_ext8_bits": 237.71402815525138
+    },
+    {
+      "table": 1,
+      "log_rows": 8,
+      "source_residuals": 499,
+      "auxiliary_residuals": 54,
+      "total_residuals": 553,
+      "invalid_row_nonzero_residuals": 8,
+      "initial_error_numerator": 560,
+      "ideal_ext4_bits": 114.49827936835548,
+      "ideal_ext8_bits": 238.12584175365595
+    }
+  ],
+  "theorem": "NearCompression.air_residual_batch_zero_count",
+  "limits": [
+    "Fixed residual matrix before mixing and row point; source and auxiliaries must be bound",
+    "Independent uniform challenges only; executable profile remains Q8/Ext4",
+    "Actual all-row residual/equality-weight adapter, adaptive sumcheck, PCS and QROM still required"
+  ]
+}

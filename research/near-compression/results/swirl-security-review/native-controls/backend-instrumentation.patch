@@ -1,0 +1,56 @@
+diff --git a/crates/stark-backend/src/verifier/batch_constraints.rs b/crates/stark-backend/src/verifier/batch_constraints.rs
+index 01ac84b..a705094 100644
+--- a/crates/stark-backend/src/verifier/batch_constraints.rs
++++ b/crates/stark-backend/src/verifier/batch_constraints.rs
+@@ -4,7 +4,7 @@ use std::{
+ };
+ 
+ use itertools::Itertools;
+-use p3_field::{batch_multiplicative_inverse, Field, PrimeCharacteristicRing};
++use p3_field::{batch_multiplicative_inverse, BasedVectorSpace, Field, PrimeCharacteristicRing};
+ use thiserror::Error;
+ use tracing::{debug, instrument};
+ 
+@@ -263,6 +263,10 @@ pub fn verify_zerocheck_and_logup<SC: StarkProtocolConfig, TS: FiatShamirTranscr
+         r_rev_prod *= rs[i];
+     }
+ 
++    let capture_path = std::env::var("NEARPROOF_NATIVE_CAPTURE").ok();
++    let encode_ext = |x: SC::EF| format!("{:?}", x.as_basis_coefficients_slice());
++    let encode_exts = |xs: &[SC::EF]| format!("[{}]", xs.iter().map(|x| encode_ext(*x)).join(","));
++    let mut captured_traces = Vec::new();
+     // 9. Compute the interaction/constraint evals and their hash
+     let mut interactions_evals = Vec::new(); // len = 2 * num_traces
+     let mut constraints_evals = Vec::new(); // len = num_traces
+@@ -336,6 +340,14 @@ pub fn verify_zerocheck_and_logup<SC: StarkProtocolConfig, TS: FiatShamirTranscr
+ 
+         let constraints = &vk.symbolic_constraints.constraints;
+         let nodes = evaluator.eval_nodes(&constraints.nodes);
++        if capture_path.is_some() {
++            captured_traces.push(format!("{{\"air\":{air_idx},\"n\":{n},\"nodes\":{},\"first\":{},\"last\":{},\"transition\":{},\"eq_ns\":{},\"eq_sharp\":{},\"norm\":{},\"eq3b\":{}}}",
++                encode_exts(&nodes), encode_ext(evaluator.eval_is_first_row()),
++                encode_ext(evaluator.eval_is_last_row()), encode_ext(evaluator.eval_is_transition()),
++                encode_ext(eq_ns[n_lift]), encode_ext(eq_sharp_ns[n_lift]),
++                encode_ext(SC::EF::from(norm_factor)), encode_exts(&eq_3b_per_trace[trace_idx])));
++        }
++
+         let expr = zip(lambda.powers(), &constraints.constraint_idx)
+             .map(|(lambda_pow, idx)| nodes[*idx] * lambda_pow)
+             .sum::<SC::EF>();
+@@ -383,5 +395,16 @@ pub fn verify_zerocheck_and_logup<SC: StarkProtocolConfig, TS: FiatShamirTranscr
+         return Err(BatchConstraintError::InconsistentClaims);
+     }
+ 
++    if let Some(path) = capture_path {
++        use std::io::Write;
++        let line = format!("{{\"lambda\":{},\"beta\":{},\"mu\":{},\"evaluated_claim\":{},\"sumcheck_claim\":{},\"traces\":[{}]}}\n", encode_ext(lambda), encode_ext(beta_logup), encode_ext(mu), encode_ext(evaluated_claim), encode_ext(cur_sum), captured_traces.join(","));
++        std::fs::OpenOptions::new()
++            .create(true)
++            .append(true)
++            .open(path)
++            .unwrap()
++            .write_all(line.as_bytes())
++            .unwrap();
++    }
+     Ok(rs)
+ }

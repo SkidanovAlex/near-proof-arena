@@ -86,6 +86,11 @@ export type ScopeKind = 'full_chunk_transition' | 'subset';
  * via the `definition` "Tier".
  */
 export type Tier = 'formal' | 'experimental' | 'demo';
+/**
+ * This interface was referenced by `ChallengeDefinition`'s JSON-Schema
+ * via the `definition` "WeightSourceStatus".
+ */
+export type WeightSourceStatus = 'ASSUMED' | 'MEASURED';
 
 export interface ChallengeDefinition {
   chain_id: string;
@@ -151,6 +156,10 @@ export interface CoverageSpec {
    */
   statement_spec: string;
   /**
+   * `succinct` badge thresholds (v1.9, BENCHMARK_SPEC §17). Serialized only when present, so ids of challenges without the badge are unchanged. Display-only: not a gate and not a score component.
+   */
+  succinct?: SuccinctSpec | null;
+  /**
    * Tiers in any order; `rank` is the total order (higher = larger domain).
    */
   tiers: CoverageTier[];
@@ -158,6 +167,27 @@ export interface CoverageSpec {
    * `"coverage-v1"`.
    */
   version: string;
+}
+/**
+ * Thresholds of the `succinct` badge (BENCHMARK_SPEC §17; proposal for `near-chunk-v3`: 2 MiB and 50 ms).
+ *
+ * This interface was referenced by `ChallengeDefinition`'s JSON-Schema
+ * via the `definition` "SuccinctSpec".
+ */
+export interface SuccinctSpec {
+  /**
+   * Log-log slope test (§17): fitted exponent of proof bytes and of verify time against the case's total gas must be ≤ 0.1 (`exponent_bound_ppm`), with a 95% upper confidence bound ≤ `ucb_bound_ppm` ppm of the same quantity (proposal: 0.25 = 250,000 ppm).
+   */
+  exponent_bound_ppm?: number;
+  /**
+   * Largest accepted proof over the conformance and held-out runs.
+   */
+  max_proof_bytes: number;
+  /**
+   * Largest verify wall time over the conformance and held-out runs.
+   */
+  max_verify_ns: number;
+  ucb_bound_ppm?: number;
 }
 /**
  * This interface was referenced by `ChallengeDefinition`'s JSON-Schema
@@ -541,6 +571,10 @@ export interface WorkloadSuite {
    */
   public_fixtures: Digest;
   revision: string;
+  /**
+   * Where the class weights come from (v1.7, additive; absent ⇒ not serialized, so existing challenge ids are unchanged). docs/CONTRACTS.md §11, docs/BENCHMARK_SPEC.md §17.
+   */
+  weight_source?: WeightSource | null;
 }
 /**
  * This interface was referenced by `ChallengeDefinition`'s JSON-Schema
@@ -561,4 +595,21 @@ export interface WorkloadClass {
    * Weight in parts-per-million; all weights in a suite sum to 1_000_000.
    */
   weight_ppm: number;
+}
+/**
+ * Provenance of `WorkloadSuite` class weights (contracts v1.7, additive).
+ *
+ * This interface was referenced by `ChallengeDefinition`'s JSON-Schema
+ * via the `definition` "WeightSource".
+ */
+export interface WeightSource {
+  /**
+   * What the weights rest on (the assumption, or how they were measured).
+   */
+  note: string;
+  /**
+   * Repo-relative path or digest of the supporting record (the documented assumption, or the measurement report). Required for `MEASURED`.
+   */
+  ref?: string | null;
+  status: WeightSourceStatus;
 }

@@ -1,0 +1,2 @@
+'NearCompression.packed_balanced_pair_lift' depends on axioms: [propext, Quot.sound]
+'NearCompression.packed_bits_zero' depends on axioms: [propext, Quot.sound]

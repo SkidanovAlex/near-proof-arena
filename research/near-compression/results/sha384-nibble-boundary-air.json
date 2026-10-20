@@ -1,0 +1,17 @@
+{
+  "status": "PRIVATE_BOUNDARY_MUTATIONS_REJECTED",
+  "blocks": 2,
+  "negative_cases": [
+    "inactive-boundary",
+    "boundary-id",
+    "initial-state",
+    "message",
+    "output-state"
+  ],
+  "scope": "Full-witness AIR parity and boundary linkage checks; no application root binding or security claim.",
+  "sha256": {
+    "airbender/direct-wasm/test_sha384_nibble_boundary_air.py": "2ec799ca0e9a659679a3819b8baa7fa0d360bf3aca1f80cfe96a418ec10ae36a",
+    "airbender/direct-wasm/sha384_nibble_boundary_air.py": "39ba65dd1a5972ba7a1ed6ef70100b5d78b632f6a4f1e669e2174c6347377428",
+    "airbender/direct-wasm/sha384_nibble_phase_air.py": "035f41e5a91df1e6522f5bf655eebdede8a0e3fb9942a760492ea34111951518"
+  }
+}

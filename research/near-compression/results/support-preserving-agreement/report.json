@@ -1,0 +1,31 @@
+{
+  "source_pairs": 793,
+  "weighted_lifts_checked": 1611,
+  "f3_exception_histogram": {
+    "0": 81,
+    "1": 216,
+    "3": 108,
+    "2": 324
+  },
+  "ordinary_support_counterexample": {
+    "even": [
+      0,
+      0,
+      1
+    ],
+    "odd": [
+      0,
+      0,
+      2
+    ],
+    "r": 2,
+    "weights": [
+      1,
+      1,
+      10
+    ],
+    "mixed_agreement_mass": 12,
+    "maximum_joint_mass": 10
+  },
+  "scope": "Finite interface validation only; no general MCA exceptional-set bound or protocol security certificate."
+}

@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1622,
+  "audit_log": "/tmp/near-wasm-execution-audit.log",
+  "module": "PreparedWasmExecution",
+  "theorems_added": 6,
+  "contract": "Concrete const/drop/add/end/exhaustion AIR certificates compose to actual fuelled run, exit sync and callEntry",
+  "remaining_assumptions": [
+    "Valid table-local AIR and exact source fragments",
+    "Finite execution certificate with consecutive rows",
+    "Actual per-row prepared function/code/charge binding",
+    "Actual enter equality after CallingWasm reset",
+    "Initial no-host gas context"
+  ],
+  "remaining_goal_work": [
+    "Derive certificate and entry provenance from original program/public state",
+    "Full Wasm and host coverage",
+    "Complete cryptographic verifier soundness and recursion"
+  ]
+}

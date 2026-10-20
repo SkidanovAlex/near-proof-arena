@@ -1,0 +1,75 @@
+{
+  "irreducible_moduli": 34,
+  "nonzero_residue_inverses": 517,
+  "reduced_representative_checks": 1653,
+  "reduced_uniqueness_pairs": 12629,
+  "nonzero_constants": 93,
+  "reducible_modulus_counterexamples": 3,
+  "witnesses": [
+    {
+      "prime": 2,
+      "modulus": [
+        1,
+        1,
+        1
+      ],
+      "residue": [
+        0,
+        1
+      ],
+      "inverse": [
+        1,
+        1
+      ]
+    },
+    {
+      "prime": 2,
+      "modulus": [
+        1,
+        1,
+        1
+      ],
+      "residue": [
+        1
+      ],
+      "inverse": [
+        1
+      ]
+    },
+    {
+      "prime": 2,
+      "modulus": [
+        1,
+        1,
+        1
+      ],
+      "residue": [
+        1,
+        1
+      ],
+      "inverse": [
+        0,
+        1
+      ]
+    },
+    {
+      "prime": 2,
+      "modulus": [
+        1,
+        0,
+        1,
+        1
+      ],
+      "residue": [
+        0,
+        0,
+        1
+      ],
+      "inverse": [
+        1,
+        1
+      ]
+    }
+  ],
+  "scope": "Generic Lean inverse existence and reduced representative uniqueness; quotient equivalence/ring structure and generic root extension remain to be constructed."
+}

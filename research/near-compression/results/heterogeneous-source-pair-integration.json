@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "integrated_audit": 2216,
+  "audit_log": "/tmp/root-source-pair-audit.log",
+  "module_sha256": "9a87921bfb69e0aca2af62d5dcad6bc9c709fe6e3ccb5499f0aaf28f45b5970b",
+  "theorems": 8,
+  "runtime_pair_checks": 900,
+  "altered_leaf_rejections": 16,
+  "proved": "Exact authenticated wide leaf plus beta batching and heterogeneous side selection equals bound initial oracle at canonical plus/minus points.",
+  "explicit_assumptions": [
+    "exact leaf binding to fixed source functions",
+    "common root half-order",
+    "power-of-two degree ratio"
+  ],
+  "remaining": [
+    "sparse coefficient polynomial evaluation refinement",
+    "Merkle binding security",
+    "pre-GKR shared witness extraction",
+    "full cryptographic and QROM composition"
+  ]
+}

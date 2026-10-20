@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2452,
+  "audit_log": "/tmp/root-direct-public-audit.log",
+  "new_theorems": 8,
+  "source_sha256": "2eecc61711b4e80b6fd3b0b5f92cd42975e811410c2072aff664947ab1d28d5b",
+  "proved": [
+    "Canonical88field direct digest/count/IV/count layout",
+    "Digest and IV byte lookups and exact records",
+    "Both public record counts equal1",
+    "Direct IV record equals canonical old batched IV record"
+  ],
+  "remaining": [
+    "Exact public-count replacement by direct input bus4 sends",
+    "Old batched HoldsP projection and full hash result",
+    "Security/common-witness extraction/recursion/fullNEAR"
+  ]
+}

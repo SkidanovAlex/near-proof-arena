@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3365,
+  "added_theorems": 2,
+  "sources": {
+    "SHA384NativeProjectedSource": "26a635ce16bbd0699401383c72555b8961c637a8b5f3f99227d49965b5bb9e96"
+  },
+  "audit_log": "/tmp/root-native-projected-audit.log",
+  "audit_sha256": "dc316daa29d47f9f0c1a05e7d171754e680154726b830ad6bda453b842919f33",
+  "native_parity_report": "results/sha384-evaluated-native/report.json",
+  "native_parity_sha256": "31e2e0e0229183ba18d2192b2fd9632e7f1b313150ea3c621e4b56f07800f10c",
+  "scope": "Canonical word conversion into arbitrary challenge field plus exact verifier weighted/lifted pair projection, conditional fixed computed root; native parity4cases/76leaves includes exact opening paths.",
+  "limits": [
+    "Word conversion is not an arbitrary-field homomorphism; Ext4 polynomial embedding remains.",
+    "Observed native binary bounded parity, not formal machine-code refinement.",
+    "Adversarial-root extraction/QROM/secure recursive compression/fullNEAR remain open."
+  ]
+}

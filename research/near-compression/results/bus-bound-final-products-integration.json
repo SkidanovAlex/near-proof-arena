@@ -1,0 +1,22 @@
+{
+  "status": "PROVED_COMPONENT",
+  "module": "NearCompression/BusBoundFinalProducts.lean",
+  "main_theorem": "bus_bound_global_product",
+  "established": [
+    "Constructed binding list preserves the full interaction list up to permutation, including duplicates",
+    "Direction-selected bound finals equal the products of semantic formula factors",
+    "Source and auxiliary residuals yield natural-multiplicity side products for every table",
+    "All bound finals plus public factors equal the expanded global message product"
+  ],
+  "premises": [
+    "All source and generated auxiliary residuals vanish on one common trace",
+    "Source, auxiliary and public arithmetic share field K; global public theorem requires PubVal K",
+    "Final values indexed by table and ordered group slot"
+  ],
+  "remaining": [
+    "Concrete BabyBear source to Ext8 coordinate-trace transport, including multiplicities/public traffic",
+    "Cryptographic acceptance implies residual validity on one authenticated common trace",
+    "Full adaptive/PCS/transcript quantum soundness and executable Ext8 migration",
+    "Secure sub300k total-input sizing and full 1 Pgas scope"
+  ]
+}

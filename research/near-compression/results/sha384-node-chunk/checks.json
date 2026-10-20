@@ -1,0 +1,146 @@
+{
+  "status": "PASS",
+  "source_shapes": [
+    [
+      1024,
+      5234
+    ],
+    [
+      16,
+      1666
+    ],
+    [
+      16,
+      191
+    ],
+    [
+      16,
+      179
+    ]
+  ],
+  "source_cells": 5392192,
+  "canonical_residuals": 7300624,
+  "natural_sent": {
+    "1": 11,
+    "3": 11,
+    "0": 22,
+    "2": 11,
+    "4": 15
+  },
+  "natural_received": {
+    "0": 22,
+    "2": 11,
+    "1": 11,
+    "3": 11,
+    "4": 15
+  },
+  "full_state_records": 11,
+  "ordered_use_records": 15,
+  "fanout_bits": 13,
+  "negative_cases": [
+    {
+      "name": "wrong-global-use-node",
+      "local_accepts": true,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "hidden-input-word7",
+      "local_accepts": true,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "hidden-output-word7",
+      "local_accepts": true,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "same-node-wrong-block",
+      "local_accepts": true,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "digest-not-full-C",
+      "local_accepts": true,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "fanout-high-bit-forgery",
+      "local_accepts": true,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "fanout-nonboolean",
+      "local_accepts": false,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "record-padding-fanout",
+      "local_accepts": false,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "duplicate-local-nodeID",
+      "local_accepts": false,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "core-global-reset-bypass",
+      "local_accepts": false,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "core-nodeID-midsegment",
+      "local_accepts": false,
+      "natural_balance_accepts": true
+    },
+    {
+      "name": "use-omission",
+      "local_accepts": false,
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "use-index-duplicate",
+      "local_accepts": false,
+      "natural_balance_accepts": true
+    },
+    {
+      "name": "wrong-global-base",
+      "natural_balance_accepts": false
+    },
+    {
+      "name": "fresh-valid-reordered-use-commitment",
+      "local_accepts": true,
+      "natural_balance_accepts": true,
+      "original_expected_root_rejects": true,
+      "alternate_root": "2d5693248f000d71d13f2d8f2b136d9fae77ead12aa04322e626eeedd6d996dc93d06d7fc49936df0a7116d0f6d9906b"
+    },
+    {
+      "name": "missing-receipt",
+      "mandatory_contract_rejects": true
+    },
+    {
+      "name": "wrong-root",
+      "mandatory_contract_rejects": true
+    },
+    {
+      "name": "wrong-AIR-base",
+      "mandatory_contract_rejects": true
+    },
+    {
+      "name": "wrong-trusted-base",
+      "mandatory_contract_rejects": true
+    },
+    {
+      "name": "wrong-context",
+      "mandatory_contract_rejects": true
+    },
+    {
+      "name": "proof-selected-use-count",
+      "mandatory_contract_rejects": true
+    }
+  ],
+  "external_use_root": "5441e2af567cf1b2402bd0c47553842314214568ec9035894122fd19de7b03d620ecbfc78497fc853e9c41c3cff8fa06",
+  "external_use_receipt_bytes": 732,
+  "elapsed_seconds": 9.114425657317042,
+  "scope": "Reference evaluator+exact natural balance+real external use PCS commitment. No full proof generated/verified by this test, no call-chain/padding provenance claim. Placeholder other roots used only to unit-test mandatory contract."
+}

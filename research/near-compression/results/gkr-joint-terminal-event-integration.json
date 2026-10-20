@@ -1,0 +1,38 @@
+{
+  "status": "EVALUATED_GKR_TERMINAL_MISMATCH_MATCHES_JOINT_HISTORY_INPUT_FUNCTIONAL",
+  "module": "NearCompression/GKRJointTerminalEvent.lean",
+  "theorems": [
+    "gkr_joint_history_accessors",
+    "gkr_joint_history_rows_unchanged",
+    "gkr_joint_history_suffix_split",
+    "gkr_evaluated_joint_terminal_event",
+    "gkr_joint_accessor_regressions"
+  ],
+  "proved": [
+    "Assembled history recovers final GKR left/right axes and gamma exactly, including zero outside axis dimensions.",
+    "Valid source-lane rowpoints are unchanged by appending final GKR/PCS coordinates.",
+    "The take/drop split recovers exactly assembled history and PCS suffix.",
+    "Under evaluated structural path checks, terminal mismatch is exactly the joint-history recovered-input functional mismatch."
+  ],
+  "assumptions": [
+    "Correct row-prefix and left/right axis lengths.",
+    "Rowpoint invariance requires lane row block to fit the row prefix.",
+    "Evaluated verifier path checks, explicit recovered polynomial tuple and constants."
+  ],
+  "remaining": [
+    "Rearrange earlier GKR blocks while retaining rowpoint averaging and map prover messages to the merged PCS event.",
+    "Discharge PCS source/authentication/geometry assumptions in the executable contract.",
+    "Global acceptance, computational extraction, quantum security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3934,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "kernel_regressions": "Distinct axis/gamma values, out-of-range zero and changed row-prefix offset.",
+    "native_capture_execution": "Not rerun; formal coordinate/event identities only."
+  }
+}

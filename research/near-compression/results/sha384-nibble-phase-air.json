@@ -1,0 +1,356 @@
+{
+  "status": "COMPLETE_NIBBLE_COMPRESSION_AIR_CHECKED",
+  "compression_blocks": 2,
+  "source_constraints_evaluated": 933860,
+  "public_field_elements": 3320,
+  "table_shapes": [
+    {
+      "name": "schedule",
+      "rows": 128,
+      "source_width": 274,
+      "aux_base_width": 1224,
+      "degree": 4
+    },
+    {
+      "name": "round",
+      "rows": 256,
+      "source_width": 498,
+      "aux_base_width": 1560,
+      "degree": 5
+    },
+    {
+      "name": "endpoint",
+      "rows": 2,
+      "source_width": 515,
+      "aux_base_width": 1728,
+      "degree": 4
+    },
+    {
+      "name": "xor3/fixed",
+      "rows": 4096,
+      "source_width": 28,
+      "aux_base_width": 248,
+      "degree": 6
+    },
+    {
+      "name": "choose/fixed",
+      "rows": 4096,
+      "source_width": 28,
+      "aux_base_width": 248,
+      "degree": 5
+    },
+    {
+      "name": "majority/fixed",
+      "rows": 4096,
+      "source_width": 28,
+      "aux_base_width": 248,
+      "degree": 6
+    },
+    {
+      "name": "splice1/fixed",
+      "rows": 256,
+      "source_width": 24,
+      "aux_base_width": 248,
+      "degree": 4
+    },
+    {
+      "name": "splice2/fixed",
+      "rows": 256,
+      "source_width": 24,
+      "aux_base_width": 248,
+      "degree": 4
+    },
+    {
+      "name": "splice3/fixed",
+      "rows": 256,
+      "source_width": 24,
+      "aux_base_width": 248,
+      "degree": 4
+    },
+    {
+      "name": "range/fixed",
+      "rows": 16,
+      "source_width": 20,
+      "aux_base_width": 248,
+      "degree": 4
+    }
+  ],
+  "negative_cases": [
+    "schedule-selector",
+    "round-word-copy",
+    "round-carry",
+    "block-id",
+    "endpoint-output",
+    "fixed-multiplicity",
+    "valid-onehot-wrong-phase",
+    "public-result"
+  ],
+  "source_aux_cells": 4327750,
+  "actual_compiled_64_block_shapes": [
+    {
+      "name": "schedule",
+      "rows": 4096,
+      "source_width": 274,
+      "aux_base_width": 1224,
+      "degree": 4,
+      "packing": {
+        "source": {
+          "rows": 4096,
+          "width": 274,
+          "packing": 8,
+          "degree": 32768,
+          "lanes": 35,
+          "within_current_degree_lane_caps": true
+        },
+        "auxiliary": {
+          "rows": 4096,
+          "width": 1224,
+          "packing": 32,
+          "degree": 131072,
+          "lanes": 39,
+          "within_current_degree_lane_caps": true
+        }
+      }
+    },
+    {
+      "name": "round",
+      "rows": 8192,
+      "source_width": 498,
+      "aux_base_width": 1560,
+      "degree": 5,
+      "packing": {
+        "source": {
+          "rows": 8192,
+          "width": 498,
+          "packing": 8,
+          "degree": 65536,
+          "lanes": 63,
+          "within_current_degree_lane_caps": true
+        },
+        "auxiliary": {
+          "rows": 8192,
+          "width": 1560,
+          "packing": 32,
+          "degree": 262144,
+          "lanes": 49,
+          "within_current_degree_lane_caps": true
+        }
+      }
+    },
+    {
+      "name": "endpoint",
+      "rows": 64,
+      "source_width": 515,
+      "aux_base_width": 1728,
+      "degree": 4,
+      "packing": {
+        "source": {
+          "rows": 64,
+          "width": 515,
+          "packing": 16,
+          "degree": 1024,
+          "lanes": 33,
+          "within_current_degree_lane_caps": true
+        },
+        "auxiliary": {
+          "rows": 64,
+          "width": 1728,
+          "packing": 32,
+          "degree": 2048,
+          "lanes": 54,
+          "within_current_degree_lane_caps": true
+        }
+      }
+    },
+    {
+      "name": "xor3/fixed",
+      "rows": 4096,
+      "source_width": 33,
+      "aux_base_width": 328,
+      "degree": 6,
+      "packing": {
+        "source": {
+          "rows": 4096,
+          "width": 33,
+          "packing": 1,
+          "degree": 4096,
+          "lanes": 33,
+          "within_current_degree_lane_caps": true
+        },
+        "auxiliary": {
+          "rows": 4096,
+          "width": 328,
+          "packing": 8,
+          "degree": 32768,
+          "lanes": 41,
+          "within_current_degree_lane_caps": true
+        }
+      }
+    },
+    {
+      "name": "choose/fixed",
+      "rows": 4096,
+      "source_width": 33,
+      "aux_base_width": 328,
+      "degree": 5,
+      "packing": {
+        "source": {
+          "rows": 4096,
+          "width": 33,
+          "packing": 1,
+          "degree": 4096,
+          "lanes": 33,
+          "within_current_degree_lane_caps": true
+        },
+        "auxiliary": {
+          "rows": 4096,
+          "width": 328,
+          "packing": 8,
+          "degree": 32768,
+          "lanes": 41,
+          "within_current_degree_lane_caps": true
+        }
+      }
+    },
+    {
+      "name": "majority/fixed",
+      "rows": 4096,
+      "source_width": 33,
+      "aux_base_width": 328,
+      "degree": 6,
+      "packing": {
+        "source": {
+          "rows": 4096,
+          "width": 33,
+          "packing": 1,
+          "degree": 4096,
+          "lanes": 33,
+          "within_current_degree_lane_caps": true
+        },
+        "auxiliary": {
+          "rows": 4096,
+          "width": 328,
+          "packing": 8,
+          "degree": 32768,
+          "lanes": 41,
+          "within_current_degree_lane_caps": true
+        }
+      }
+    },
+    {
+      "name": "splice1/fixed",
+      "rows": 256,
+      "source_width": 29,
+      "aux_base_width": 328,
+      "degree": 4,
+      "packing": {
+        "source": {
+          "rows": 256,
+          "width": 29,
+          "packing": 1,
+          "degree": 256,
+          "lanes": 29,
+          "within_current_degree_lane_caps": true
+        },
+        "auxiliary": {
+          "rows": 256,
+          "width": 328,
+          "packing": 8,
+          "degree": 2048,
+          "lanes": 41,
+          "within_current_degree_lane_caps": true
+        }
+      }
+    },
+    {
+      "name": "splice2/fixed",
+      "rows": 256,
+      "source_width": 29,
+      "aux_base_width": 328,
+      "degree": 4,
+      "packing": {
+        "source": {
+          "rows": 256,
+          "width": 29,
+          "packing": 1,
+          "degree": 256,
+          "lanes": 29,
+          "within_current_degree_lane_caps": true
+        },
+        "auxiliary": {
+          "rows": 256,
+          "width": 328,
+          "packing": 8,
+          "degree": 2048,
+          "lanes": 41,
+          "within_current_degree_lane_caps": true
+        }
+      }
+    },
+    {
+      "name": "splice3/fixed",
+      "rows": 256,
+      "source_width": 29,
+      "aux_base_width": 328,
+      "degree": 4,
+      "packing": {
+        "source": {
+          "rows": 256,
+          "width": 29,
+          "packing": 1,
+          "degree": 256,
+          "lanes": 29,
+          "within_current_degree_lane_caps": true
+        },
+        "auxiliary": {
+          "rows": 256,
+          "width": 328,
+          "packing": 8,
+          "degree": 2048,
+          "lanes": 41,
+          "within_current_degree_lane_caps": true
+        }
+      }
+    },
+    {
+      "name": "range/fixed",
+      "rows": 16,
+      "source_width": 25,
+      "aux_base_width": 328,
+      "degree": 4,
+      "packing": {
+        "source": {
+          "rows": 16,
+          "width": 25,
+          "packing": 8,
+          "degree": 128,
+          "lanes": 4,
+          "within_current_degree_lane_caps": true
+        },
+        "auxiliary": {
+          "rows": 16,
+          "width": 328,
+          "packing": 8,
+          "degree": 128,
+          "lanes": 41,
+          "within_current_degree_lane_caps": true
+        }
+      }
+    }
+  ],
+  "compiled_64_block_source_aux_cells": 27854288,
+  "compiled_64_block_witness_checked": false,
+  "scope": "Canonical AIR jointly enforces phase programs, bounded additions, lookup relations, routing and public full512-bit state/block/result boundaries. Full-witness interpreter only; no generated succinct proof, universal compiler/Lean theorem or PQ128 security. Public boundary transport is diagnostic, not private recursive call binding.",
+  "sha256": {
+    "airbender/direct-wasm/test_sha384_nibble_phase_air.py": "d5fc54468e18e219eda6808e890e7a7cea5d99a1c77873260e2309ba92d185fc",
+    "airbender/direct-wasm/sha384_nibble_phase_air.py": "035f41e5a91df1e6522f5bf655eebdede8a0e3fb9942a760492ea34111951518",
+    "airbender/direct-wasm/sha384_nibble_circuit.py": "d5e832c4d2076ae13e9d9b6742698fe5138b8742983ecfeb6b2c429906adb10c",
+    "airbender/direct-wasm/sha384_nibble_lookup_air.py": "412988773c1f14e6e679e3f24c138f94981d97ea7be90397a2f190459e7a734f",
+    "airbender/direct-wasm/plan_sha384_nibble_rows.py": "11a6241e9be317eb9f778ba84de0dca7cf6b147a58e4f1b5725d0b43e9f07237",
+    "airbender/generic-air/reference.py": "f1f62d7c93eb8e64625547a43eeb89950303101e3f210aa5c0ba954a064c9402",
+    "airbender/direct-wasm/pq384_ext8_auxiliary.py": "f8e8eb9e62941fae14a0604aa5babf9422e9a5fe4fcf431e054b0c56020d1e49",
+    "airbender/direct-wasm/scheduled_bus_whir.py": "d86f577c00aa6af124b5f2862abd6164235bfa70585121778e772000d2a3c8f2",
+    "airbender/direct-wasm/measure_sha384_block_dag.py": "ea4c0fbd593d78fc044cae7517935ef51fc2445dab4b34163f0a17a732108b51",
+    "results/sha384-nibble-phase-air.spec.json.gz": "b2932aa95b0e4f7bac1c47d1133f967c012df13c6c602d1e58761acf92a9cbed"
+  }
+}

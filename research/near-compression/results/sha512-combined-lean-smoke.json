@@ -1,0 +1,45 @@
+{
+  "kind": "combined SHA512 schedule and round AIR",
+  "table": {
+    "columns": 5152,
+    "constraints": 6848,
+    "schedule_consumption_bit_wires": 64,
+    "max_degree": 3,
+    "max_log": 22
+  },
+  "formal_claims": [
+    "Actual AIR satisfaction projects to both component sequence AIRs with next-row and selector semantics preserved.",
+    "Every round consumes the head of its current constrained schedule window.",
+    "Any nonempty segment and the whole trace compute actual SHA512.rounds using decoded per-row constants."
+  ],
+  "validation": {
+    "four_row_traces": 2,
+    "independently_valid_disconnected_component_traces_rejected": 8,
+    "long_trace_rows": 128,
+    "checked_compression_endpoint_row": 79,
+    "first_80_decoded_constants_match_K": true,
+    "80_round_output_matches_specification": true,
+    "empty_message_digest_matches_python_hashlib_after_external_feed_forward": true,
+    "independent_layout_matches_formal": true,
+    "changed_constant_traces_accepted": 2
+  },
+  "new_theorems": 14,
+  "full_audit_theorems": 1097,
+  "commands": [
+    "lake build NearCompression.SHA512CombinedRun",
+    "lake env lean --run SHA512CombinedSmoke.lean",
+    "python3 check.py"
+  ],
+  "source_sha256": {
+    "NearCompression/SHA512Combined.lean": "01bb745197e11e68f1a873385f0d077e00e7b2cb9a45e606ee49daec4f96a20b",
+    "NearCompression/SHA512CombinedRun.lean": "156d2cbfe30b85046fdd757d9c9bed58573c40656df22034122567da7723ee29",
+    "SHA512CombinedSmoke.lean": "d24d8480c0b411d4450d39a5964ebdb873d623ce34981c96ac63fb3b1355f157"
+  },
+  "limitations": [
+    "Round constants remain unconstrained inputs.",
+    "The test supplies H0, message padding, round80 endpoint and feed-forward externally.",
+    "No circuit proof of complete SHA512 padding/digest/block chaining yet.",
+    "Universal honest combined-trace completeness remains.",
+    "Full NEAR state transitions, 1 Pgas proving, sub-300 KB proof size and 128-bit quantum soundness remain unverified."
+  ]
+}

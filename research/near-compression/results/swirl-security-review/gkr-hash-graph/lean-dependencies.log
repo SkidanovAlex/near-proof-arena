@@ -1,0 +1,194 @@
+⚠ [23/143] Replayed NearSpecV3.Wasm.Host
+warning: NearSpecV3/Wasm/Host.lean:225:88: `List.asString` has been deprecated: Use `String.ofList` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.asString` to `String.ofList x`).
+⚠ [30/143] Replayed ZkFormal.Algebra.Fp
+warning: ZkFormal/Algebra/Fp.lean:38:6: exponent 1006632960 exceeds the threshold 256, exponentiation operation was not evaluated, use `set_option exponentiation.threshold <num>` to set a new threshold
+⚠ [57/143] Replayed NearCompression.InstructionAddRange
+warning: NearCompression/InstructionAddRange.lean:139:43: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/InstructionAddRange.lean:148:43: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAddRange.lean:164:72: `if_true` has been deprecated: Use `ite_true` instead
+warning: NearCompression/InstructionAddRange.lean:164:72: `if_true` has been deprecated: Use `ite_true` instead
+warning: NearCompression/InstructionAddRange.lean:164:72: `if_true` has been deprecated: Use `ite_true` instead
+warning: NearCompression/InstructionAddRange.lean:164:72: `if_true` has been deprecated: Use `ite_true` instead
+⚠ [58/143] Replayed NearCompression.SHA512Bits
+warning: NearCompression/SHA512Bits.lean:112:32: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/SHA512Bits.lean:114:32: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512Bits.lean:118:23: Variable name `hy` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hy
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: NearCompression/SHA512Bits.lean:118:41: Variable name `hz` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hz
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: NearCompression/SHA512Bits.lean:220:32: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/SHA512Bits.lean:229:32: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512Bits.lean:238:34: `if_pos` has been deprecated: Use `ite_eq_left` instead
+⚠ [59/143] Replayed NearCompression.InstructionAdd64
+warning: NearCompression/InstructionAdd64.lean:74:47: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAdd64.lean:79:15: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAdd64.lean:93:46: `if_true` has been deprecated: Use `ite_true` instead
+warning: NearCompression/InstructionAdd64.lean:93:55: `if_false` has been deprecated: Use `ite_false` instead
+warning: NearCompression/InstructionAdd64.lean:152:36: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/InstructionAdd64.lean:155:38: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAdd64.lean:155:49: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/InstructionAdd64.lean:157:38: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAdd64.lean:157:49: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAdd64.lean:157:60: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/InstructionAdd64.lean:162:38: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/InstructionAdd64.lean:170:38: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAdd64.lean:206:51: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAdd64.lean:212:19: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAdd64.lean:224:38: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAdd64.lean:224:49: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAdd64.lean:224:60: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAdd64.lean:224:71: `if_pos` has been deprecated: Use `ite_eq_left` instead
+⚠ [63/143] Replayed NearCompression.InstructionAddControl
+warning: NearCompression/InstructionAddControl.lean:60:51: Variable name `ho` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _ho
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: NearCompression/InstructionAddControl.lean:156:45: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAddControl.lean:156:77: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/InstructionAddControl.lean:166:45: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAddControl.lean:166:56: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/InstructionAddControl.lean:202:5: Variable name `pcBound` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _pcBound
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: NearCompression/InstructionAddControl.lean:246:67: `if_pos` has been deprecated: Use `ite_eq_left` instead
+⚠ [64/143] Replayed NearCompression.SHA512RoundWitness
+warning: NearCompression/SHA512RoundWitness.lean:47:6: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/SHA512RoundWitness.lean:46:4: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: NearCompression/SHA512RoundWitness.lean:50:68: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512RoundWitness.lean:51:6: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/SHA512RoundWitness.lean:59:72: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512RoundWitness.lean:59:83: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512RoundWitness.lean:168:57: This simp argument is unused:
+  UInt64.toNat_ofNat
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [sha512BitsInput, sha512RoundWitnessBitInput, Nat.mod_eq_of_lt ha, Nat.mod_eq_of_lt hb,
+    Nat.mod_eq_of_lt hc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: NearCompression/SHA512RoundWitness.lean:175:57: This simp argument is unused:
+  UInt64.toNat_ofNat
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [sha512BitsInput, sha512RoundWitnessBitInput, Nat.mod_eq_of_lt he, Nat.mod_eq_of_lt hf,
+    Nat.mod_eq_of_lt hg]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: NearCompression/SHA512RoundWitness.lean:206:19: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/SHA512RoundWitness.lean:206:27: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512RoundWitness.lean:206:27: This simp argument is unused:
+  if_neg
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [sha512RoundWitnessBitInput, sha512RoundWitnessInputs, Nat.reduceMul, if_pos,
+    Nat.one_ne_zero] at b00 b01 b02 b10 b11 b12 a0 a2 a3 a6
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [65/143] Replayed NearCompression.SHA512Schedule
+warning: NearCompression/SHA512Schedule.lean:152:6: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/SHA512Schedule.lean:151:4: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: NearCompression/SHA512Schedule.lean:155:71: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512Schedule.lean:156:6: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/SHA512Schedule.lean:164:75: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512Schedule.lean:164:86: `if_neg` has been deprecated: Use `ite_eq_right` instead
+⚠ [70/143] Replayed NearCompression.InstructionAddStep
+warning: NearCompression/InstructionAddStep.lean:59:48: `if_false` has been deprecated: Use `ite_false` instead
+warning: NearCompression/InstructionAddStep.lean:125:31: `if_true` has been deprecated: Use `ite_true` instead
+warning: NearCompression/InstructionAddStep.lean:137:48: `if_false` has been deprecated: Use `ite_false` instead
+warning: NearCompression/InstructionAddStep.lean:137:72: `if_true` has been deprecated: Use `ite_true` instead
+⚠ [72/143] Replayed NearCompression.InstructionSequence
+warning: NearCompression/InstructionSequence.lean:29:4: `if_false` has been deprecated: Use `ite_false` instead
+warning: NearCompression/InstructionSequence.lean:29:14: `if_true` has been deprecated: Use `ite_true` instead
+warning: NearCompression/InstructionSequence.lean:38:4: `if_false` has been deprecated: Use `ite_false` instead
+warning: NearCompression/InstructionSequence.lean:38:14: `if_true` has been deprecated: Use `ite_true` instead
+warning: NearCompression/InstructionSequence.lean:38:4: This simp argument is unused:
+  if_false
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [instructionSequenceConstraint, Expr.eval, Expr.evalWith, rowEnv, if_true, last]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: NearCompression/InstructionSequence.lean:53:6: `if_false` has been deprecated: Use `ite_false` instead
+warning: NearCompression/InstructionSequence.lean:53:16: `if_true` has been deprecated: Use `ite_true` instead
+⚠ [75/143] Replayed NearCompression.SHA512Combined
+warning: NearCompression/SHA512Combined.lean:58:4: Try `simp at hi` instead of `simpa using hi`
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: NearCompression/SHA512Combined.lean:105:19: This simp argument is unused:
+  sha512CombinedRoundRow
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [sha512RoundAddBase, Nat.reduceMul, Nat.reduceAdd, sha512CombinedProjection, sha512BitsWord,
+    ← Nat.add_assoc, Nat.reduceAdd] at eq link ⊢
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [77/143] Replayed NearCompression.SHA512Constants
+warning: NearCompression/SHA512Constants.lean:44:8: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/SHA512Constants.lean:44:8: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/SHA512Constants.lean:47:8: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512Constants.lean:47:8: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512Constants.lean:69:8: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512Constants.lean:61:46: This simp argument is unused:
+  Bool.false_eq_true
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [sha512ConstantStep, hi0, ite_true, Expr.eval, Expr.evalWith, rowEnv, Nat.mod_eq_of_lt next,
+    Nat.ne_of_lt next, ite_false] at hv
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: NearCompression/SHA512Constants.lean:85:10: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512Constants.lean:107:8: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512Constants.lean:138:12: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/SHA512Constants.lean:138:22: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: NearCompression/SHA512Constants.lean:138:33: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512Constants.lean:141:12: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512Constants.lean:141:22: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512Constants.lean:141:33: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: NearCompression/SHA512Constants.lean:155:6: `if_pos` has been deprecated: Use `ite_eq_left` instead
+⚠ [87/143] Replayed ZkFormal.V2.Air
+warning: ZkFormal/V2/Air.lean:138:0: automatically included section variable(s) unused in theorem `ZkFormal.V2.pubMsgs_nil`:
+  [DecidableEq F]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [DecidableEq F] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+⚠ [103/143] Replayed ZkFormal.Chacha.Bus
+warning: ZkFormal/Chacha/Bus.lean:37:10: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: ZkFormal/Chacha/Bus.lean:42:10: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: ZkFormal/Chacha/Bus.lean:77:8: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: ZkFormal/Chacha/Bus.lean:80:8: `if_neg` has been deprecated: Use `ite_eq_right` instead
+warning: ZkFormal/Chacha/Bus.lean:91:6: `if_pos` has been deprecated: Use `ite_eq_left` instead
+warning: ZkFormal/Chacha/Bus.lean:125:0: automatically included section variable(s) unused in theorem `ZkFormal.Chacha.count_flatMap_rows`:
+  [Lean.Grind.CommRing F]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [Lean.Grind.CommRing F] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+⚠ [114/143] Replayed NearCompression.SHA384EndpointCoreSemantics
+warning: NearCompression/SHA384EndpointCoreSemantics.lean:81:15: This simp argument is unused:
+  sha384EndpointCoreTable
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [ite_true]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+Build completed successfully (143 jobs).

@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "algebra_checks": 72,
+  "negative_checks": 40,
+  "scope": "GKR reduction plus exact input-functional mapping; PCS obligation remains required"
+}

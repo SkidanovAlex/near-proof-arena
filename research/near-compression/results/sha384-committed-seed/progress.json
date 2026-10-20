@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "session": 31649,
+  "log": "/tmp/root-committed-seed-prover.log",
+  "runtime_directory": "/tmp/near-sha384-committed-seed",
+  "next": [
+    "Poll same session; do not restart while live.",
+    "After prover exit0 run test_sha384_committed_seed.py --original results/sha384-committed-gkr --migrated /tmp/near-sha384-committed-seed --output results/sha384-committed-seed/mutation-report.json.",
+    "Profile seed core and compare same old four-table expanded core, including setup separately.",
+    "Verify shared roots and contexts with migrated direct component."
+  ],
+  "limits": [
+    "New wrapper and proof not yet validated."
+  ],
+  "prover_exit_code": 0,
+  "validation_session": 46828,
+  "profile_session": 56731,
+  "old_profile_session": 28217,
+  "validation_exit_code": 0,
+  "profile_exit_code": 0,
+  "old_profile_exit_code": 0
+}

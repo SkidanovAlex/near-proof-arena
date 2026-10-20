@@ -1,0 +1,86 @@
+{
+  "review_date": "2026-10-15",
+  "status": "No inherited proximity/RBR/QROM theorem established for the current custom protocol. A separate Basefold-aligned fork is the nearest identified research route.",
+  "reviewed_code": {
+    "root": "/data/illia/nearproof-wt/direct-wasm-whir",
+    "pq384_batched_fold.py_sha256": "e9cb1ac4f966d5c2a36f2f2e53f654e8cd2b380cd5a1b9154624b23142e63dca",
+    "pq384_multi_fold.py_sha256": "754b7892b6a4e3baf1a738501677309c28d2013c92521cc33d62a590e36e8575",
+    "directory": "research/near-compression/airbender/direct-wasm",
+    "scope": "Current SHA384 custom affine folding, not the older pinned Airbender-compatible scheduled WHIR verifier. Source files may continue changing after these hashes."
+  },
+  "sources": [
+    {
+      "id": "WHIR",
+      "url": "https://eprint.iacr.org/2024/1586.pdf",
+      "version": "Search-indexed original Construction 5.1/Theorem 5.2; not a byte-pinned current PDF",
+      "evidence": "Construction 5.1 commits the next oracle, samples an OOD point, receives its answer, samples shift points and a mixing challenge, and incorporates the new constraints into the residual weight. Theorem 5.2 assumes mutual correlated agreement and list bounds for the intermediate codes. The original unique-decoding route is proved; stronger regimes in that original presentation must not be silently treated as unconditional.",
+      "retrieval": "Direct web fetch and ordinary urllib download returned HTTP403. Exact revision bytes unavailable."
+    },
+    {
+      "id": "TARTU",
+      "url": "https://dspace.ut.ee/server/api/core/bitstreams/34da7b9c-acf8-4e6c-bb77-227fda1b0080/content",
+      "metadata_url": "https://dspace.ut.ee/items/a795f7ff-5c78-4a35-945b-31bfddb19fa3/full",
+      "version": "Martin Puskin, An Analysis of the WHIR Interactive Oracle Proof of Proximity, 2026 thesis; indexed PDF page84 inspected",
+      "evidence": "Thesis Theorem5.7 identifies its source as ACFY25 Theorem5.6 and treats MULTI-CONSTRAINT batching on top of an existing constrained-RS IOPP. It states an initial mixing error (t-1)/|F| followed by the underlying errors. The introduction reports a correction to this proof. Thus Theorem5.6 is not simply a renumbered basic WHIR Theorem5.2. The corrected proof itself was not recovered and its improved bound is not adopted here.",
+      "retrieval": "Both download endpoints timed out; theorem and introduction available through primary-source search extraction. No local PDF archive."
+    },
+    {
+      "id": "BASEFOLD",
+      "url": "https://www.researchgate.net/publication/387601318_Basefold_in_the_List_Decoding_Regime",
+      "eprint_url": "https://eprint.iacr.org/2024/1571",
+      "version": "Ulrich Habock author-uploaded revision, page metadata June13,2026; original eprint October2024. Full extracted author text available; PDF bytes not obtained.",
+      "evidence": "Protocol1 pp9-10 uses affine even/odd folding, completes commitments before global-chain queries, and ends with a constant. Protocol2 p11 batches lanes. Theorem1 pp11-12 gives RBR error as the maximum of batching, folding and query errors. Section6.1 pp25-26 extends to arbitrary succinct multilinear inner-product weights, quadratic messages, and Lemma4 using nonlinear weighted correlated agreement Theorem4 pp18-19. Its proximity parameter is theta=1-sqrt(rho)*(1+1/(2m)), integer m>=3. Weighted consistency denominators grow as B_i=2^i. Lemma3 p24 gives query error (1-theta)^s. These are stated as proved results, not a WHIR MCA conjecture. Unique-decoding adaptation is discussed, but exact replacement constants require audit. The displayed error formula and unresolved cross-reference in this revision require checking against PDF typography before numerical certification.",
+      "text_locations": "Protocol1 lines790-872; Protocol2 888-919; Theorem1 985-1008; Theorem3 1467-1506; Theorem4 1563-1606; query Lemma3 2213-2230; Section6.1/Lemma4 2269-2426 in the retrieved text",
+      "retrieval": "Web reader retrieved full author text. Ordinary eprint PDF, author-page urllib and download-link requests failed403 or internal fetch error. No byte hash or full source archive is claimed."
+    },
+    {
+      "id": "SWIRL",
+      "url": "https://openvm.dev/swirl.pdf",
+      "evidence": "Theorem4.2.4 states a unique-decoding batch-WHIR error involving (lane_count-1)*domain_size/extension_field_size, alongside WHIR error. This reinforces that fixed scalar-vector collision bounds alone do not prove proximity of batched arbitrary oracles. Corollary4.2.6 invokes BCS for its own composed IOP, not our custom protocol."
+    },
+    {
+      "id": "QROM",
+      "url": "https://eprint.iacr.org/2019/834",
+      "evidence": "Theorem8.6 is the candidate BCS/QROM route with asymptotic t^2*epsilon_RBR+t^3/2^lambda loss. It requires the appropriate RBR state invariant and compiler; concrete constants and effective t, including verifier overhead, remain required."
+    }
+  ],
+  "current_code_vs_theorems": {
+    "WHIR_direct_inheritance": "No: the custom verifier has neither OOD replies nor random injection of OOD/query constraints into its residual. Merkle-authenticating both adjacent oracles is not a replacement proof of the WHIR candidate-selection invariant.",
+    "Basefold_direct_inheritance": "Not yet: current local queries are sampled and revealed between oracle commitments. The identified theorem uses final shared projection-chain queries. Moreover current execution stops at64 coefficients rather than a constant; batching is virtual at the source; and coefficient-inner-product interpretation needs an explicit semantic correspondence.",
+    "affine_parameter_result": "Our proved punctured-field parameter bijection is useful algebra, but neither establishes correlated agreement nor repairs the query chronology. The Basefold route already uses affine folding, so this reparameterization should not be used to manufacture WHIR applicability.",
+    "noOOD_interpretation": "Omitting OOD is an obstacle to directly applying WHIR, not evidence that every noOOD scheme is insecure. The Basefold alternative provides a relevant candidate theorem family.",
+    "security_scope": "Current Q8 and BabyBearExt4 remain diagnostic. SHA384 does not supply missing proximity, extraction, field-size or QROM arguments."
+  },
+  "recommended_separate_fork": [
+    "Create a new protocol/domain/profile identifier. Keep existing diagnostic profiles immutable and clearly labeled.",
+    "Keep roots and sumcheck messages fixed throughout a commitment phase. Initially implement full folding to a constant to minimize differences from the candidate theorem.",
+    "After final oracle and residual are fixed, sample base-domain points. For each point authenticate the corresponding source and every folded oracle along repeated squaring. Do not infer this relation from previously observed independent local samples.",
+    "Use a virtual deterministic batched oracle derived from the authenticated wide source vector, and prove elimination of the separately committed batch oracle preserves the candidate protocol's acceptance relation.",
+    "Map source univariate coefficient slots to Boolean values of an auxiliary multilinear P. Set R(b)=product_i z_i^b_i, so the original monomial-tensor claim equals the Boolean inner product of P and R. Prove this identity with the actual order, padding and field embedding.",
+    "Define the actual RBR relation using a common candidate polynomial, residual compliance, and accumulated chain-consistency measure. Instantiate or formally prove the weighted correlated-agreement contract, rather than assuming honest polynomial existence.",
+    "Only after this mapping is reviewed, choose sampling, field extension and hash parameters against the requested failure/query target."
+  ],
+  "stopping_at_64_obligations": [
+    "Generalize the terminal relation to a degree<64 polynomial whose complete RS oracle and weighted residual are checked exactly.",
+    "Prove final global-chain consistency plus this exact terminal relation supplies the same candidate state required by the preceding randomized reductions.",
+    "Keep terminal coefficients, root and residual bound before global queries; authenticate final-oracle projections directly or by full reconstruction.",
+    "Prove the omitted final six folds can be replaced by the deterministic terminal check without an adversary choosing a new polynomial after seeing queries. Existing honest reconstruction lemmas alone do not prove this malicious-prover reduction.",
+    "Recompute query and verifier overhead. Full disclosure is non-ZK and its field-extension coefficient cost grows with security field size."
+  ],
+  "field_and_domain_obligations": [
+    "Work over a proven finite extension field K with odd characteristic and a certified embedding of the BabyBear base field. Uniform challenges range over K.",
+    "Embed the base multiplicative subgroup into K, retain exact order4D and nonzero x, and prove each squared projection is two-to-one with the declared next-domain order.",
+    "Instantiate rate1/4, actual domain cardinalities and all weighted-consistency denominator bounds. Distinguish original column width, packed lane count and polynomial dimension.",
+    "For current alpha-power batching, prove a correlated common candidate tuple, not just a root bound for already-defined correct lane claims.",
+    "Exact rejection sampling supplies uniform finite-field challenges only under the specified random-word model; transcript/QROM compilation remains a separate step."
+  ],
+  "query_comparison_own_calculation": {
+    "warning": "Illustrative query-component arithmetic only, conditional on a theorem-aligned global-chain protocol; not a security parameter recommendation.",
+    "current": "Eight local queries per fold do not instantiate the cited final global-chain theorem.",
+    "unique_example": "At theta=1/3, eight global samples would bound only (2/3)^8, approximately2^-4.68. Achieving a query component<=2^-260 requires445 samples.",
+    "list_example": "At rho=1/4,m=3, theta=5/12 and the query component is(7/12)^s; eight samples yield approximately2^-6.22, and335 samples reach2^-260. Field/correlated-agreement costs are excluded.",
+    "work": "Global chains require samples times committed stages, although repeated leaves and paths can share multiproofs. Increasing query count without changing chronology does not establish the cited theorem.",
+    "field_selection": "Unselected. Validate precise weighted-agreement constants first, then include all algebraic stages and the QROM resource bound."
+  },
+  "decision": "Research review recommends a separately versioned Basefold-aligned commitment/global-query experiment before additional WHIR-specific machinery. This is a direction for proving correspondence, not permission to label the result secure."
+}

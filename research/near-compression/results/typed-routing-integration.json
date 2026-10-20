@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "audit_count": 2954,
+  "audit_log": "/tmp/root-typed-routing-audit.log",
+  "modules": {
+    "PreparedTypedValue": 9,
+    "PreparedTypedStep": 5,
+    "SHA384NodeChunkRouting": 7
+  },
+  "typed_evidence": "results/prepared-typed/root-review.json",
+  "scope": "Typed arithmetic and actual instruction execution lemmas, and configurable natural bus routing. Full typed EXEC refinement, configurable compression, whole-protocol PQ128 security and full NEAR capacity remain incomplete."
+}

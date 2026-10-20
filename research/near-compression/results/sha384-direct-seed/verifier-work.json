@@ -1,0 +1,111 @@
+{
+  "status": "PASS",
+  "tables": 3,
+  "proof_sha256": "567d664190d37535f69aa3340b812a849120614a006b85b0c9f321d7cd357300",
+  "statement_sha256": "33c96c0132c73c9670057f328076a6a104422f97135f96814cc6970f56bcb516",
+  "trusted_configuration_setup": {
+    "hash_tags": {
+      "seed-gkr-static-air-config-v1": {
+        "calls": 1,
+        "framed_input_bytes": 1455652,
+        "compression_blocks": 11373
+      }
+    },
+    "total_hash_calls": 1,
+    "total_sha384_compression_blocks": 11373,
+    "ext4_operation_calls": {}
+  },
+  "configured_expanded_verifier": {
+    "hash_tags": {
+      "derived-weight-joint-public-v1": {
+        "calls": 1,
+        "framed_input_bytes": 1078,
+        "compression_blocks": 9
+      },
+      "gkr-after-all-constraints": {
+        "calls": 1,
+        "framed_input_bytes": 113,
+        "compression_blocks": 2
+      },
+      "merkle/leaf": {
+        "calls": 178,
+        "framed_input_bytes": 49638,
+        "compression_blocks": 486
+      },
+      "merkle/node": {
+        "calls": 1561,
+        "framed_input_bytes": 468955,
+        "compression_blocks": 5155
+      },
+      "merkle/root": {
+        "calls": 177,
+        "framed_input_bytes": 43299,
+        "compression_blocks": 411
+      },
+      "near-pq384-seed-gkr-bus-v1": {
+        "calls": 1,
+        "framed_input_bytes": 602,
+        "compression_blocks": 5
+      },
+      "near-pq384-seed-gkr-v1": {
+        "calls": 1,
+        "framed_input_bytes": 254,
+        "compression_blocks": 3
+      },
+      "transcript/commit": {
+        "calls": 1279,
+        "framed_input_bytes": 239707,
+        "compression_blocks": 2573
+      },
+      "transcript/draw-result": {
+        "calls": 1270,
+        "framed_input_bytes": 227626,
+        "compression_blocks": 2540
+      },
+      "transcript/init": {
+        "calls": 3,
+        "framed_input_bytes": 343,
+        "compression_blocks": 4
+      },
+      "transcript/ratchet": {
+        "calls": 1273,
+        "framed_input_bytes": 233279,
+        "compression_blocks": 2546
+      },
+      "transcript/request": {
+        "calls": 1270,
+        "framed_input_bytes": 202226,
+        "compression_blocks": 2540
+      },
+      "transcript/squeeze": {
+        "calls": 1273,
+        "framed_input_bytes": 182359,
+        "compression_blocks": 2546
+      },
+      "weighted-joint-stage-v1": {
+        "calls": 17,
+        "framed_input_bytes": 1887,
+        "compression_blocks": 17
+      },
+      "weighted-pcs-after-seed-gkr": {
+        "calls": 1,
+        "framed_input_bytes": 171,
+        "compression_blocks": 2
+      }
+    },
+    "total_hash_calls": 8306,
+    "total_sha384_compression_blocks": 18839,
+    "ext4_operation_calls": {
+      "mul": 6246211,
+      "add": 1871602,
+      "sub": 1989351
+    }
+  },
+  "setup_and_verification_sha384_blocks": 30212,
+  "limits": [
+    "Configuration AIR/compiler is fixed trusted verifier setup, never proof selected",
+    "Actual fullheight33table Q8/Ext4 input; unchanged algebra and source authentication checks",
+    "Reference operation counts are not circuit constraint estimates",
+    "No proven recursive/QROM soundness"
+  ]
+}

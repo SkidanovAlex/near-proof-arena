@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1753,
+  "audit_log": "/tmp/near-interleaved-residual-audit.log",
+  "modules": {
+    "PreparedRunCall": "d1d84b651b0ce98b7b36a24fd184dd4256d57d034871e12a8bbc706e917b7409",
+    "GlobalChainMass": "275ea603f00e0a4c5f3f5bb505af96e4addd96dd3223b64e4d76c4f3fab7ae8f",
+    "InterleavedRSPullback": "76b172250f9115a8928f9287598d30253c4d3c0809230fe18cb5c66996079c8a",
+    "CanonicalPolynomial": "664dd0df0dc3b269dc7176c7a46344d8147b2b5599f3a5b1bec0db9f0cf9a2fd",
+    "InterleavedResidual": "fa709d11136f77a0f2c88f6f3be295228b65f014f381202724cca0ef136c1887"
+  },
+  "execution_evidence": "prepared-run-call-smoke.json",
+  "wasm_scope": "Actual outerrunCall with executableprepare/loading/link/resolve/instantiate/entry eligibility plus exactHoldsP; bounded16code/8i32stack subset, real=None, no starts or curveimports. Preparation remains verifier-side.",
+  "fold_scope": "Exact recursively computed mass equals count of accepted modulo-chain seeds; actual RS check definition; canonical coefficient normalization; parent evaluation/degree/residual and weightedpairpullback. Nonlinear extraction remains unproved.",
+  "shared_joint_work": "pq384-joint-verifier-work.json",
+  "shared_joint_validation": "pq384-shared-joint-codec/report.json",
+  "full_goal_complete": false
+}

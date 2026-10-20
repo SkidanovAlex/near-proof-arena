@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3354,
+  "added_theorems": 2,
+  "sources": {
+    "PreparedTypedWitnessStack": "8141f1081c63a86adbb1e8e75beb8e3623a6e7bfca2b0cd3872b2173f7b06fa1",
+    "PreparedTypedPublicStackRunCall": "38bf1b6d02ce43729b90038d756436741fa9bb98e47e7393451abc1d96c424d5"
+  },
+  "audit_log": "/tmp/root-public-stack-run-audit.log",
+  "audit_sha256": "bebb7b4648ae75c58795ed4aadda9c2c4e77525f7d98bd1c82461287b53e53e3",
+  "scope": "Concrete bounded twelve-opcode runCall with public DONE/FAIL, exact AIR gas snapshot and decoded public stack equal to actual synchronized terminal stack.",
+  "remaining": [
+    "General memory/calls/hosts and fullNEAR1Pgas capacity.",
+    "Actual recursive aggregation and complete quantum soundness/secure sub300KB.",
+    "Public PC/locals not claimed by combined theorem.",
+    "Computed-source runtime parity still running session68201."
+  ]
+}

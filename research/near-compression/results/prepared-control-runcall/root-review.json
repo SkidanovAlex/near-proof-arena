@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "root_independently_regenerated_fixture": true,
+  "root_reran_smoke_reference_and_literal_parity": true,
+  "source_sha256": {
+    "PreparedControlRunCallSmoke.lean": "b3d94f4ef6b56fc0984c558d3eb5a4ae55eddb577c6bf8be3ba3ceb22a0482f3",
+    "PreparedControlFixture.lean": "c57b3f9ba611cc1804ab48624111f3b177646460e71c91a5be8bfaf70cafe299",
+    "airbender/direct-wasm/test_prepared_control_air.py": "321cb831f45fc3db8b5ba48a13e3a659ab54adb7687f6339230e9084e06be77f",
+    "airbender/direct-wasm/check_prepared_control_literal.py": "4d929081f062708279fb0acdf5068b76dcfa095fcf8ef04e94ddf93304a7a377"
+  },
+  "cases": 6,
+  "setup_code_entry_mutations_rejected": 2052,
+  "output_decoder_mutations_detected": 44,
+  "reference_AIR_negatives_rejected": 433,
+  "source_constraints": [
+    870,
+    543
+  ],
+  "automatic_multiplicity_constraints": [
+    3,
+    26
+  ],
+  "scope": "Executable checker/reference/decoder tests;not cryptographic soundness or fullNEAR"
+}

@@ -1,0 +1,7 @@
+{
+  "airbender/direct-wasm/screen_ext8_code_switch.py": "7cb55d65dbe84c7e68a61f0f93c4aebb54447235c1b6caddf9137439c4a58701",
+  "airbender/direct-wasm/test_ext8_code_switch_ledger.py": "4eafe5a089a721036df6ada744316965206c116d3940f25a65ec487565fe11c4",
+  "results/ext8-code-switch-ledger.json": "3879ed849e41eb0dac02c579806fdad468d035b54311d6acc75cc92961fa1a47",
+  "results/ext8-code-switch-ledger.json.gz": "5d2e72927b2fd0df39ec38fbfaa54c498eb7d0f0463aba908214a00aaa74c6b5",
+  "results/ext8-code-switch-validation.json": "a7a31c2a4f02aa7f6f523fdf8bcdf45f8e9ccfccee410a2c526b7ff2ac10b04e"
+}

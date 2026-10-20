@@ -1,0 +1,24 @@
+Command exited with non-zero status 124
+	Command being timed: "timeout --kill-after=10s 600 /home/illia/.risc0/extensions/v3.0.6-cargo-risczero-x86_64-unknown-linux-gnu/r0vm --elf target/recursion-compress/riscv-guest/compression-methods/compress-guest/riscv32im-risc0-zkvm-elf/release/compress-guest.bin --initial-input target/recursion-compression-inputs/tiny/stdin.bin --receipt target/recursion-compression-inputs/tiny/receipt-cli.bin --receipt-kind succinct -v"
+	User time (seconds): 3796.08
+	System time (seconds): 10.06
+	Percent of CPU this job got: 633%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 10:00.45
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 9607296
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 51
+	Minor (reclaiming a frame) page faults: 9489843
+	Voluntary context switches: 9759
+	Involuntary context switches: 365333
+	Swaps: 0
+	File system inputs: 15736
+	File system outputs: 8064
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 124

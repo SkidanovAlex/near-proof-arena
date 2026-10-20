@@ -1,0 +1,43 @@
+{
+  "source_dag_sha256": "bacc6fa25e466abb6c59dbbe82186187db39ca1a1efc12a0a04aa390db2fa81f",
+  "full_live_nodes": 540713,
+  "full_operations": {
+    "const": 599,
+    "input": 5983,
+    "add": 82498,
+    "sub": 68785,
+    "mul": 382848
+  },
+  "multiplication_classes": {
+    "two_dynamic_operands": 382250,
+    "constant_operand": 598
+  },
+  "slices": [
+    {
+      "checks": 32,
+      "nodes": 642,
+      "operations": {
+        "const": 1,
+        "input": 124,
+        "add": 181,
+        "sub": 84,
+        "mul": 252
+      },
+      "inputs": 124
+    },
+    {
+      "checks": 128,
+      "nodes": 6774,
+      "operations": {
+        "const": 1,
+        "input": 502,
+        "add": 1251,
+        "sub": 846,
+        "mul": 4174
+      },
+      "inputs": 502
+    }
+  ],
+  "checks": "All437checks, residual and2603PCSweights replay identically for fresh fused GKR.",
+  "scope": "Slices are selected verifier equalities, not a full verifier. Transcript and PCS obligations remain external."
+}

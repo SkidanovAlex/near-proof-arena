@@ -1,0 +1,35 @@
+{
+  "status": "FROZEN",
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/generic-air-reference/research/near-compression/SHA384SharedFixture.lean",
+      "sha256": "838e4d5ce2678b5331d7f0b04ff807ec18be90e196034cfc1feb92515ac2c1a4",
+      "bytes": 5954
+    },
+    {
+      "path": "/data/illia/nearproof-wt/generic-air-reference/research/near-compression/airbender/direct-wasm/prepare_sha384_shared.py",
+      "sha256": "5455d62f30c14cc5c8a263020c9115c442d11c80f632621f0ed5b77551c39529",
+      "bytes": 4971
+    },
+    {
+      "path": "/data/illia/nearproof-wt/generic-air-reference/research/near-compression/airbender/direct-wasm/test_sha384_shared_records.py",
+      "sha256": "8afcef28bff526d4d21d61453c3b388e87eaedcb0b166d717799a87f4f552c9e",
+      "bytes": 4606
+    },
+    {
+      "path": "/data/illia/nearproof-wt/generic-air-reference/research/near-compression/airbender/direct-wasm/verify_sha384_shared.py",
+      "sha256": "5767e0fc350b09458c9cbfa55600fb70ee366e8a2cc1c92ebfbc12ed318cfc11",
+      "bytes": 3093
+    },
+    {
+      "path": "/data/illia/nearproof-wt/generic-air-reference/research/near-compression/airbender/direct-wasm/run_sha384_shared.py",
+      "sha256": "235be2a075a8ccc9abf367f1148e122cdff64d8268957b8fc4a6967356284db2",
+      "bytes": 4191
+    },
+    {
+      "path": "/data/illia/nearproof-wt/generic-air-reference/research/near-compression/airbender/direct-wasm/test_sha384_shared.py",
+      "sha256": "06f0357ddcc9bf787bec422deaf7b64c2162a5d1d99fca0810bf432c72654664",
+      "bytes": 5442
+    }
+  ]
+}

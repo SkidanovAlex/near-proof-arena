@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "source_degree": 32,
+  "source_domain": 128,
+  "next_degree": 8,
+  "next_domain": 64,
+  "queries": 4,
+  "diagnostic_only": true,
+  "independent_newdomain_evaluations": 64,
+  "all_prior_coset_fold_checks": 32,
+  "negative_count": 10,
+  "negatives": [
+    "coherent changedcandidate preservingoldfunctional validOODandpaths",
+    "coherent falseOOD freshquerytranscript",
+    "terminal",
+    "next_root",
+    "ood_value",
+    "profile",
+    "source_queries",
+    "wrongroot",
+    "wrongstatement",
+    "wrongqueryprofile"
+  ],
+  "mixing_zero_bad_event": {
+    "candidate_has_false_query_constraints": true,
+    "aggregate_accepts_at_gamma_zero": true,
+    "explanation": "Expected root of a nonzero mixing-error polynomial; actual transcript gamma rejected. No divide-by-weight or claimed perfect soundness."
+  },
+  "whole_json_bytes": 7177,
+  "fresh_process": "PASS fresh rate-shift algebra verifier",
+  "scope": "One constrained rate-shift accumulator with disclosed8coeff candidate, not complete WHIR or improved soundness.",
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_pq384_ext8_rate_shift.py",
+      "sha256": "500355ee7010c148f0c9e87cf1526b5a14b715d909688e59e58ab226e2af3ecc"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/pq384_ext8_rate_shift.py",
+      "sha256": "14ccdb77cce4ab5c1842b42dd4828c4068ffe465a7b549d76353846e5089a19b"
+    }
+  ]
+}

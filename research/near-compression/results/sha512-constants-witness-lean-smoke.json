@@ -1,0 +1,29 @@
+{
+  "kind": "Universal fixed-constant SHA512 witness completeness",
+  "formal_claims": [
+    "Explicit 128-row trace satisfies actual Constants AIR for bounded initial state and valid 16-word window.",
+    "Four bounded limbs decode canonically.",
+    "Inputs decode exactly and row 79 agrees with actual 80-round specification."
+  ],
+  "validation": {
+    "honest_128_row_fixtures": 2,
+    "all_columns_checked": 5280,
+    "coherent_wrong_keys_rejected": 5,
+    "phase_forgeries_rejected": 5,
+    "short_64_row_trace_rejected": true,
+    "full_audit_theorems": 1240
+  },
+  "source_sha256": {
+    "NearCompression/SHA512LimbDecode.lean": "ad90570b5bce113f79ea751131d26a4a35835bc8cf0a2d3c3a95de0e7f3b5b78",
+    "NearCompression/SHA512ConstantsWitness.lean": "3fe2c43517c446fea0c4d71a300379dcce0e1202ff02d43ff220cdbf0e0308f7",
+    "SHA512ConstantsWitnessSmoke.lean": "797fb1c7a58818864547e8106e68cab14d44f78b0a9f7395ad3e518a116435e3"
+  },
+  "logs": [
+    "/tmp/near-constants-witness-smoke.log",
+    "/tmp/near-constants-witness-audit.log"
+  ],
+  "limitations": [
+    "Feed-forward and public binding universal witnesses remain.",
+    "No cryptographic proof size, full NEAR execution, or quantum security claim."
+  ]
+}

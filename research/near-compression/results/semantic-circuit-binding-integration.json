@@ -1,0 +1,33 @@
+{
+  "status": "CHECKED_RECOVERED_CIRCUIT_BINDS_FIXED_SEMANTIC_BATCH",
+  "module": "NearCompression/SemanticCircuitBinding.lean",
+  "theorems": [
+    "checked_semantic_circuit_value",
+    "checked_semantic_circuit_cancellation"
+  ],
+  "proved": [
+    "Compiler checker acceptance, source-slot geometry and checked environment transport imply actual recovered finite circuit equals semantic residual batching.",
+    "Per-rho compiler witnesses may vary; fixed semantic output mismatch bounds actual circuit zero count by tableCount-1."
+  ],
+  "assumptions": [
+    "Fixed decoded family with universal source-environment agreement, obtainable from decoded_family_before_compiler for a canonical disjoint source tuple.",
+    "Source-slot capacity geometry and constant/private separation.",
+    "Per-rho checker acceptance, metadata membership, placements, selectors and bounded formula widths.",
+    "Semantic list fixed before rho and explicitly bound to compiler table projection."
+  ],
+  "remaining": [
+    "Instantiate native transcript and intended AIR formula bindings.",
+    "Compose global averaged counts including no-representative failure.",
+    "Executable refinement, computational/QROM security and secure full-NEAR proof size."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3974,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; only formal composition and witness packaging changed."
+  }
+}

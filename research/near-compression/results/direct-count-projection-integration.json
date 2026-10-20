@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2461,
+  "audit_log": "/tmp/root-direct-count-projection-audit.log",
+  "new_theorems": 9,
+  "source_sha256": {
+    "SHA384DirectCounts": "437d601330f81d8d6f2e2876f95e7a138d659b659343b6a26cf112e036f70fc0",
+    "SHA384DirectProjection": "c6b891c4db57e144539ad47ad5d587b784788184389b87469588764fc311ce03"
+  },
+  "proved": [
+    "First-row traffic contributes exactly one message per payload,zero on later rows",
+    "Direct input table exact counts equal its declared padded block-record list",
+    "Core/endpoint evaluations and traffic independent of public tape",
+    "Exact count replacement plus old pubFit transfers direct HoldsP to batched HoldsP",
+    "Decoded input UInt8 roundtrip from actual Boolean constraints"
+  ],
+  "remaining": [
+    "Canonical full public-count substitution and pubFit",
+    "Apply full batched soundness to direct AIR",
+    "Commitment binding,recursive producer,quantum security,fullNEAR"
+  ]
+}

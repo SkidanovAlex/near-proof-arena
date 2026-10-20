@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2349,
+  "audit_log": "/tmp/root-committed-pad-audit.log",
+  "source_sha256": "d009d75be325ab4956d8026924e3e49ad456a437ac390f4f0cc2048bededdd1f",
+  "new_theorems": 6,
+  "proved": [
+    "Actual pad table constraint extraction from committed HoldsP",
+    "First selector and next-row shift",
+    "selector(row,block) equals one exactly when row equals block",
+    "All selectors vanish after declared block count",
+    "Existing selected padding bytes equal declared padding constants"
+  ],
+  "remaining": [
+    "Global bus derivation of enough pad rows",
+    "Input byte decoding and natural bus6 matching",
+    "Full committed-input SHA384 semantic refinement",
+    "Cryptographic acceptance to HoldsP and recursive producer input binding"
+  ],
+  "security_claim": false
+}

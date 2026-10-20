@@ -1,0 +1,64 @@
+{
+  "status": "PASS",
+  "degree": 128,
+  "lanes": 3,
+  "source_leaves": 256,
+  "samples": [
+    0,
+    127,
+    255,
+    256,
+    383,
+    511
+  ],
+  "nonbase_Ext4_beta_coordinates": true,
+  "negative_cases": [
+    "lane slot 0",
+    "lane slot 1",
+    "lane slot 2",
+    "lane slot 3",
+    "lane slot 4",
+    "lane slot 5",
+    "noncanonical field",
+    "missing lane",
+    "extra lane",
+    "wrong packing context",
+    "wrong root"
+  ],
+  "lean_changed_lane_negatives": 6,
+  "files": [
+    {
+      "path": "SHA384PackedSourceFixture.lean",
+      "sha256": "7c384f6d01bb71f536b44c8a1694620c272765c8334b0601fd596144bcd5162c"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_sha384_packed_source_binding.py",
+      "sha256": "1cc55fcb0b2b8fd2132e6f41017e3c5c528abf831dd5c9b38a8b1578f12e8ac3"
+    },
+    {
+      "path": "airbender/direct-wasm/pq384_batched_fold.py",
+      "sha256": "e9cb1ac4f966d5c2a36f2f2e53f654e8cd2b380cd5a1b9154624b23142e63dca"
+    },
+    {
+      "path": "airbender/direct-wasm/packed_claim_handoff.py",
+      "sha256": "09f5e215a5c57bc6adfc110f081d2bc15031eb53f071eda5ee8e491f1fbe9046"
+    },
+    {
+      "path": "airbender/direct-wasm/pq384_primitives.py",
+      "sha256": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96"
+    },
+    {
+      "path": "results/sha384-packed-source/inputs.json",
+      "sha256": "9dbeacfe3bd9fa89fb1c4391f514031a9a7ae153dd8b68e7d2c1e229f9fdda06"
+    },
+    {
+      "path": "results/sha384-packed-source/lean-results.json",
+      "sha256": "88832cafbf615b3e51aec4f5e7669091b6b944b80d12d6aa01811db6a2ca6eac"
+    }
+  ],
+  "limits": [
+    "Fixed arbitrary canonical base polynomial coefficients exercise actual source_tree FFT and check_opening; no AIR witness or adversarial representative extraction claimed.",
+    "All4 Ext4 coordinates match via base-scalar weighting; source+aux branch scheduling and adaptive representative security remain separate.",
+    "Finite-query collision reduction gives byte/word binding, not hash collision probability."
+  ]
+}

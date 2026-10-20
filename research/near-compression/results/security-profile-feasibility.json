@@ -1,0 +1,183 @@
+{
+  "kind": "Read-only security profile feasibility and implementation plan; no certified parameter set",
+  "target": {
+    "quantum_random_oracle_queries": 18446744073709551616,
+    "maximum_failure": "2^-128",
+    "interpretation": "failure probability at fixed quantum-query resource bound, not 128-bit work factor",
+    "scope": "Current D1 fixture measurements do not bound all NEAR transitions"
+  },
+  "primary_sources": [
+    {
+      "url": "https://eprint.iacr.org/2019/834",
+      "contract": "Chiesa-Manohar-Spooner Theorem 8.6: BCS for an IOP with RBR error epsilon gives O(t^2 epsilon + t^3/2^lambda); t includes adversary queries plus O(IOPqueries log proofLength). Concrete constants remain to extract. Definitions8.3/8.4 specify state, nonrepair by prover moves, and bounded escape at verifier moves. Proposition8.11 and Lemma8.13 connect acceptance and database escape."
+    },
+    {
+      "url": "https://arxiv.org/html/2003.05207v3",
+      "contract": "Generic multiround Fiat-Shamir reduction has O(q^(2n)) loss; cannot assume q^2 without stronger protocol structure."
+    },
+    {
+      "url": "https://eprint.iacr.org/2024/1586",
+      "contract": "WHIR constrained RS IOPP; need exact theorem and parameter correspondence for pinned schedule, batching, OOD and terminal polynomial."
+    },
+    {
+      "url": "https://eprint.iacr.org/2023/1071",
+      "contract": "FRI RBR methodology; its classical ROM Q*epsilon formula is not the QROM bound."
+    },
+    {
+      "url": "https://csrc.nist.gov/pubs/fips/180-4/upd1/final",
+      "contract": "SHA384 algorithm standard, not proof that concrete SHA384 is an ideal QROM oracle."
+    }
+  ],
+  "upstream_commit": "129f827003b34acd64a3315a5863eac75bc09fe6",
+  "fixed_width_findings": [
+    {
+      "path": "prover/src/definitions/hash_like_holder.rs:4",
+      "finding": "DIGEST_SIZE_U32_WORDS aliases BLAKE2s digest words; MerkleTreeCap uses fixed arrays."
+    },
+    {
+      "path": "prover/src/merkle_trees/mod.rs:22",
+      "finding": "MerkleTreeCapVarLength cap Vec<[u32;DIGEST_SIZE_U32_WORDS]>; Digest alias line161 and constructor signatures use same global width."
+    },
+    {
+      "path": "prover/src/gkr/whir/queries.rs:9",
+      "finding": "Base/extension query paths fixed digest arrays at lines9,42; serializers/size methods need new digest profile."
+    },
+    {
+      "path": "prover/src/merkle_trees/blake2s_for_everything_tree.rs:123",
+      "finding": "Tree associated verifier is BLAKE2s-specific; replacing tree hash alone is insufficient."
+    },
+    {
+      "path": "transcript/src/lib.rs:36",
+      "finding": "Associated Seed supports new type, but implementation callers still assume block8."
+    },
+    {
+      "path": "prover/src/gkr/prover/transcript_utils.rs:144",
+      "finding": "draw_query_bits pads with BLAKE2S_DIGEST_SIZE_U32_WORDS and skips PoW word even at zero PoW. New explicit profile must avoid inherited hidden stream conventions."
+    },
+    {
+      "path": "transcript/src/blake2s.rs:669",
+      "finding": "draw_random_field_elements_impl reduces u32 modulo p rather than exact uniform rejection; coefficient assignment line685."
+    },
+    {
+      "path": "prover/src/gkr/prover_config/pow_bits.rs:11",
+      "finding": "challenge_field_size_log2 multiplies field order in u128; larger extensions panic at checked_mul, lines15-18. Replace with proved integer bounds, never unchecked floating logs."
+    },
+    {
+      "path": "field/src/baby_bear/ext6.rs:98",
+      "finding": "PartialEq omits c2, comparing only c0 and c1 at line101. Do not adopt without field implementation audit."
+    },
+    {
+      "path": "field/src/baby_bear/ext6.rs:92",
+      "finding": "riscv32 project_ref_from_array accepts four base coefficients for six-coefficient type; host projection also can unimplemented-panic due alignment."
+    },
+    {
+      "path": "prover/src/gkr/whir/proximity_testing_modes.rs:34",
+      "finding": "PessimisticConjectureMode heuristic20percent margin; UniqueDecodingMode line10 and JohnsonBoundMode line49 are simplified distance calculations, not complete WHIR bounds."
+    },
+    {
+      "path": "research/near-compression/airbender/direct-wasm/scheduled_bus_whir.py:75",
+      "finding": "begin hashes complete spec with SHA256; replace in SHA384 profile as hidden256bit binding bottleneck. check_roots uses8 words, auxiliary coordinate reconstruction assumes degree4."
+    },
+    {
+      "path": "research/near-compression/airbender/direct-wasm/verify_whir_toy.py:30",
+      "finding": "Hash, seed, challenge arithmetic, extension encode all fixed BLAKE2s/degree4; scheduled verifier imports these and checks8word caps."
+    }
+  ],
+  "existing_lean_contracts": [
+    "HashRecursion/Budget.lean: Meets, meets_add, meets_sum, meets_amplify, cubic_budget and cubic_384_at_64 prove arithmetic only.",
+    "HashRecursion/Composition.lean: extraction_event_inclusion and Resources; existential wrapper acceptance does not establish recursive soundness.",
+    "NearCompression/GenericAirRoundDegree.lean: AST-derived round bad-root bounds over generic Field; no distribution or RBR state theorem.",
+    "NearCompression/GenericBusAccumulator.lean: division-free gate-to-product correctness; missing nonzero discrepancy polynomial and probabilistic fingerprint theorem."
+  ],
+  "rbr_composition_contract": {
+    "interface": [
+      "Define the interactive protocol and all ordered prover/oracle/verifier moves, including bus auxiliaries and two PCS forks.",
+      "Define doomed(x, transcript) independently of future prover choices. False statement starts doomed. Every prover extension preserves doomed. A full doomed transcript rejects.",
+      "At every verifier move, bound probability of escaping doomed under the specified fresh uniform challenges, conditional on the entire prefix.",
+      "Relate extracted committed codewords to the same source table/auxiliary polynomial throughout AIR, shift and PCS stages.",
+      "Prove the new framed transcript/Merkle construction refines the BCS compiler, including query forks, rejection sampling, variable-length oracle inputs, statement adaptation and verifier-query overhead."
+    ],
+    "critical_gaps": [
+      "A total interactive union bound alone does not prove RBR.",
+      "WHIR IOPP proximity guarantee must compose with constraint/shift reduction and batching; arbitrary encodings have no unique honest polynomial without a decoding-state argument.",
+      "Concrete constants in the QROM compiler and actual WHIR finite-field/correlated-agreement terms remain unresolved.",
+      "If adaptive public statements are required, the fixed-statement theorem must be strengthened or bound instance choice into the proven game."
+    ]
+  },
+  "sampling": {
+    "proposal": "Consume fresh domain-separated u32 words; accept w<2p and output w mod p, with p=2013265921. Each residue has exactly two preimages. Acceptance 2p/2^32 is slightly above15/16. Extend coefficientwise in a proved field basis.",
+    "requirements": [
+      "Commit all relevant prover messages before draw; fresh counter/domain on each squeeze; never replay emitted seed material.",
+      "Bind field modulus, extension polynomial/basis, digest width, schedules, message lengths and protocol version.",
+      "Finite rejection cap rejects; never fallback to modulo. Honest abort probability and total oracle queries explicitly counted.",
+      "For at most2^32 coefficient draws and64 attempts each, a simple independent-ideal-word union bound for honest abort is below2^-224; this is not automatically a QROM simulation bound.",
+      "Power-of-two index domains use exact bits; preserve with-replacement semantics in query analysis."
+    ]
+  },
+  "field_candidates": [
+    {
+      "degree": 4,
+      "order_bits": 123.6275623853,
+      "assessment": "Existing diagnostic field; insufficient for target even before large quantum loss."
+    },
+    {
+      "degree": 6,
+      "order_bits": 185.441343578,
+      "assessment": "Existing upstream implementation is unaudited and has concrete defects; insufficient under q^2 loss."
+    },
+    {
+      "degree": 8,
+      "order_bits": 247.255124771,
+      "assessment": "Useful engineering tower candidate but below target with128bit q^2 loss plus algebra degree."
+    },
+    {
+      "degree": 10,
+      "order_bits": 309.068905963,
+      "assessment": "Illustrative arithmetic candidate if concrete BCS q^2 loss and stage degrees fit; no selected polynomial or field certificate."
+    },
+    {
+      "degree": 12,
+      "order_bits": 370.882687156,
+      "assessment": "Potential quadratic-over-degree6 tower after correcting/certifying base extension, with more algebra budget; not selected."
+    },
+    {
+      "degree": 16,
+      "order_bits": 494.510249541,
+      "assessment": "Repeated quadratic towers from current quartic are straightforward interface direction; proof bytes and auxiliary coordinate width grow4x; not selected."
+    }
+  ],
+  "field_proof_obligations": [
+    "Irreducibility at every tower step; a nonsquare must be chosen in the actual intermediate field, not assumed from the base field.",
+    "Field laws, cardinality p^k, base embedding injectivity, serialization bijection, canonical basis ordering, inversion and implementation refinement.",
+    "Retain BabyBear base field/FFT for source commitments; extension arithmetic and challenge embedding change.",
+    "Change auxiliary coordinate commitments from4*auxColumns to k*auxColumns and derive all batching widths/degrees again.",
+    "Audit vectorization, alignment, copy routines, serde, equality/hash and fixed-size coefficient buffers."
+  ],
+  "fixture_ledger": {
+    "input": "/tmp/near-d1-scheduled-commitments/spec.json",
+    "tables": 33,
+    "sum_log_rows": 204,
+    "maximum_multiplicity_bits": 1,
+    "bus_discrepancy_total_degree_upper_bound": 1728265,
+    "bus_degree_formula": "max over send/recv sides of sum_i 2^n_i*(2^multBits_i-1)*max(1,messageWidth_i), plus exact public message factor degrees. Requires actual nonzero discrepancy polynomial proof.",
+    "constraint_mixing_degree_sum": 8086,
+    "zerocheck_round_degree_sum": 1093,
+    "shift_batch_plus_round_degree_sum": 9481,
+    "pcs_column_batch_degree_sum": 4487,
+    "caveats": "Last two counts use current degree4 coordinate widths; not the whole WHIR proximity ledger. No bound here covers all NEAR transactions. RBR may use maximum per move after a compositional state proof; these conservative sums are only algebraic inventory."
+  },
+  "budget_workbook": {
+    "template": "epsilon_total <= C_alg*t^2*epsilon_RBR + C_hash*t^3/2^384 + extra compiler/sampling/recursion errors. Constants and applicable theorem must be justified; t includes verifier expansion queries.",
+    "illustration_only": "Ignoring constants and extra verifier queries, t=2^64 gives hash term2^-192. Reserving2^-131 for an algebra event withD<=2^21 requires |K|>=2^(128+131+21)=2^280 under q^2 loss. Degree10 passes this single arithmetic test but is not a protocol parameter recommendation.",
+    "allocation": "Maintain separate exact rational ledger entries for bus, AIR mixing/zerocheck, shift, PCS batching/proximity, QROM compiler/hash, sampler/encoding and any recursive layer. Eight entries each<=2^-131 sum<=2^-128; no independence assumption."
+  },
+  "implementation_order": [
+    "1 Root: new SHA384 primitive/reference profile with domain-separated framing, full384bit spec binding,12word roots, exact sampler, cross-language vectors; explicitly retain experimental label.",
+    "2 Formal: generic RBR state interfaces and sequential composition. Instantiate AST/shift false-claim stages first using existing root-count lemmas, preserving shared statements.",
+    "3 Research: pin concrete CMS19 constants and WHIR RBR theorem; map every custom fold/OOD/query/terminal rule and both branches, including full disclosure n1.",
+    "4 Ledger: derive worst-case shape/multiplicity/degree bounds from accepted public profiles and reject shapes outside certified envelope. Keep actual fixture ledger separately.",
+    "5 Only after bound closure: select/certify extension polynomial and implement generic degree-k arithmetic, sampler and coordinate encoding; audit all fixed-size assumptions.",
+    "6 Derive query schedule from complete proven bound, no heuristic margin/grinding credit. Regenerate actual D1 proofs and full shared-codec byte measurements; optimize batching if too large.",
+    "7 Recursion later: explicit quantum extraction and resource composition for the same statement; wrapper cannot upgrade weak inner proof."
+  ]
+}

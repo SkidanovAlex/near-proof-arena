@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "tables": [
+    {
+      "table": 11,
+      "multiplicity_expressions_zero": 16,
+      "padding_row_sha256": "1cd7f04a7418408b3757bb50de653e95e86ce490084cb67d46992415d8a393fc"
+    },
+    {
+      "table": 12,
+      "multiplicity_expressions_zero": 10,
+      "padding_row_sha256": "b84ebf737e0f25288794c70ddd44a6afe06cb34cfbe899a373aacb8c766a4b66"
+    },
+    {
+      "table": 13,
+      "multiplicity_expressions_zero": 11,
+      "padding_row_sha256": "89ac6ed683bc5aaabcfc33162aedb81844781db2098636e876b261e12f3ae7d0"
+    },
+    {
+      "table": 14,
+      "multiplicity_expressions_zero": 4,
+      "padding_row_sha256": "de00ad3c3dbe7586a4cb252dada6eb7836e4c94fb28ff62fe8ae7ba451d174e6"
+    },
+    {
+      "table": 15,
+      "multiplicity_expressions_zero": 1,
+      "padding_row_sha256": "09bad798d4b07e0a94fd4cc77eab11e30612d8f87a857e02ee9f82132cfbc209"
+    },
+    {
+      "table": 16,
+      "multiplicity_expressions_zero": 18,
+      "padding_row_sha256": "d8a1e67bab1c842bd524d6707d3488bd47b3ce49fd89b8e2e6bbf1e623a00474"
+    }
+  ],
+  "symbolic_variables": "All next-row columns and last selector; transition=1-last,first=0",
+  "limitations": [
+    "Python polynomial normalization, not a formal Lean certificate.",
+    "The renderer must establish that its padding rows equal these observed cells."
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "status": "INVALID_LATER_TABLE_BOUND_PRESERVES_EARLIER_TRANSCRIPT_ADAPTIVITY",
+  "module": "NearCompression/AdaptiveTableContinuation.lean",
+  "theorems": [
+    "decoded_invalid_table_after_earlier_budget",
+    "earlier_local_error_count",
+    "decoded_adaptive_table_after_earlier_budget",
+    "decoded_adaptive_witness_after_earlier_budget",
+    "decoded_adaptive_invalid_rows_budget"
+  ],
+  "proved": [
+    "The actual invalid decoded-trace bound lifts after arbitrary earlier transcripts, with local sent/claim strategies depending on the complete earlier value.",
+    "Only the final sum of terminal errors receives a PCS budget; no conditional PCS bound is assumed.",
+    "The error sum equals one chronological earlier/local/continuation event count.",
+    "Decoded tables, auxiliary formula constants and compiled residual entries may depend on the earlier transcript; auxiliary count and degree bounds remain uniform.",
+    "Violated row and residual index may depend on earlier bus transcripts while remaining fixed before selected local challenges.",
+    "Failure of complete combined-residual validity supplies these adaptive row/index witnesses by classical selection."
+  ],
+  "assumptions": [
+    "A nonzero combined residual at the same row/lane in each earlier fiber, correct residual order, uniform auxiliary length and degree bounds; decoded and auxiliary families are fixed before local sampling.",
+    "Acceptance implies selected local checks, and wrong terminal continuation repair is supplied by batching/GKR composition.",
+    "Fixed continuation space and repair amount.",
+    "Joint error budget still requires concrete PCS substitution."
+  ],
+  "remaining": [
+    "Account for invalid decoded bus auxiliaries even when the fixed source is locally valid; bus witness failure cannot be bounded by PCS failure alone.",
+    "Select a bad decoded table from invalid slice semantics before local challenges and instantiate all verifier bindings.",
+    "Assemble absent-representative and invalid-trace branches into one concrete acceptance theorem.",
+    "Native refinement, QROM security and secure full-NEAR size remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4050,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal adaptive experiment composition only."
+  }
+}

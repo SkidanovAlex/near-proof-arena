@@ -1,0 +1,47 @@
+{
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "results": [
+    {
+      "challenges": 8,
+      "hash_calls": 42,
+      "compression_blocks": 83,
+      "public_inout_words": 117,
+      "public_inout_bytes": 936,
+      "status": "PROVED_AND_FRESH_VERIFIED",
+      "serialized_proof_bytes": 182756,
+      "proof_payload_bytes": 182720
+    },
+    {
+      "challenges": 64,
+      "hash_calls": 322,
+      "compression_blocks": 643,
+      "public_inout_words": 833,
+      "public_inout_bytes": 6664,
+      "status": "PROVED_AND_FRESH_VERIFIED",
+      "serialized_proof_bytes": 280516,
+      "proof_payload_bytes": 280480
+    },
+    {
+      "challenges": 437,
+      "hash_calls": 2187,
+      "compression_blocks": 4373,
+      "public_inout_words": 5650,
+      "public_inout_bytes": 45200,
+      "status": "SETUP_ADDRESS_LIMIT",
+      "proof_bytes": null
+    }
+  ],
+  "negative_checks": [
+    "changed public input: proof-verifier rejection",
+    "changed proof: Merkle rejection"
+  ],
+  "security": "Pinned SECURITY_BITS=96 is not a complete soundness bound or PQ128 certification; SHA256 default suite.",
+  "scope": [
+    "Fixed graph and literal framing are trusted key data; hash parents use computed digest wires.",
+    "Public squeeze digests and final seed; public inputs are outside serialized proof.",
+    "CLI fresh verification computes reference public outputs using host SHA384 and evaluates a witness.",
+    "No field sampling, GKR arithmetic, native prefix, PCS verifier, full NEAR, or Lean circuit refinement.",
+    "Fixed observed squeeze schedule does not prove arbitrary rejection-sampling control flow.",
+    "Full graph failed setup, not cryptographic verification. No full-graph size exists."
+  ]
+}

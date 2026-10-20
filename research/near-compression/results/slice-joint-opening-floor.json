@@ -1,0 +1,443 @@
+{
+  "statement_sha256": "537fbf23440da2c546a96fe5a1de80080576ef906f86e95b78f27cb6818a13ed",
+  "packing_report_sha256": "5842900efcd80269ec4fb471f7230353054b838aa737b8e78d63db2da0dcfdf5",
+  "status": "OPTIMISTIC_EXPECTED_LAYOUT_SCREEN_NOT_A_PROTOCOL",
+  "cases": [
+    {
+      "extension_degree": 4,
+      "queries": 128,
+      "retained_local_and_framing_bytes": 51590,
+      "four_tree_expected_source_only_bytes": 163421.64111303265,
+      "four_tree_plus_retained_local_bytes": 215011.64111303265,
+      "two_phase_tree_expected_source_only_bytes": 101825.89733401993,
+      "two_phase_tree_plus_retained_local_bytes": 153415.89733401994,
+      "two_phase_remaining_budget_before_all_other_costs": 198174.10266598006,
+      "four_tree_optima": [
+        {
+          "packing": 64,
+          "degree": 16384,
+          "lanes": 10,
+          "expected_leaf_bytes": 10220.181660256141,
+          "expected_sibling_bytes": 43753.87960082157,
+          "expected_bytes": 53974.06126107772
+        },
+        {
+          "packing": 1,
+          "degree": 256,
+          "lanes": 12,
+          "expected_leaf_bytes": 10881.740562781184,
+          "expected_sibling_bytes": 9002.152867448114,
+          "expected_bytes": 19883.8934302293
+        },
+        {
+          "packing": 16,
+          "degree": 4096,
+          "lanes": 13,
+          "expected_leaf_bytes": 13209.339525452055,
+          "expected_sibling_bytes": 31572.50368541076,
+          "expected_bytes": 44781.84321086282
+        },
+        {
+          "packing": 16,
+          "degree": 4096,
+          "lanes": 13,
+          "expected_leaf_bytes": 13209.339525452055,
+          "expected_sibling_bytes": 31572.50368541076,
+          "expected_bytes": 44781.84321086282
+        }
+      ],
+      "phase_tree_optima": [
+        {
+          "phase": "before_bus",
+          "width": 803,
+          "best": {
+            "packing": 64,
+            "degree": 16384,
+            "lanes": 13,
+            "expected_leaf_bytes": 13286.236158332982,
+            "expected_sibling_bytes": 43753.87960082157,
+            "expected_bytes": 57040.115759154556
+          }
+        },
+        {
+          "phase": "after_bus",
+          "width": 212,
+          "best": {
+            "packing": 32,
+            "degree": 8192,
+            "lanes": 7,
+            "expected_leaf_bytes": 7140.289830953751,
+            "expected_sibling_bytes": 37645.491743911625,
+            "expected_bytes": 44785.781574865374
+          }
+        }
+      ]
+    },
+    {
+      "extension_degree": 4,
+      "queries": 239,
+      "retained_local_and_framing_bytes": 51590,
+      "four_tree_expected_source_only_bytes": 264985.35183882795,
+      "four_tree_plus_retained_local_bytes": 316575.35183882795,
+      "two_phase_tree_expected_source_only_bytes": 169485.47399714816,
+      "two_phase_tree_plus_retained_local_bytes": 221075.47399714816,
+      "two_phase_remaining_budget_before_all_other_costs": 130514.52600285184,
+      "four_tree_optima": [
+        {
+          "packing": 64,
+          "degree": 16384,
+          "lanes": 10,
+          "expected_leaf_bytes": 19050.731066411634,
+          "expected_sibling_bytes": 71389.99126935167,
+          "expected_bytes": 90440.7223357633
+        },
+        {
+          "packing": 2,
+          "degree": 512,
+          "lanes": 6,
+          "expected_leaf_bytes": 10236.016166424339,
+          "expected_sibling_bytes": 17676.924656851184,
+          "expected_bytes": 27912.940823275523
+        },
+        {
+          "packing": 16,
+          "degree": 4096,
+          "lanes": 13,
+          "expected_leaf_bytes": 24498.389655748888,
+          "expected_sibling_bytes": 48817.454684145676,
+          "expected_bytes": 73315.84433989457
+        },
+        {
+          "packing": 16,
+          "degree": 4096,
+          "lanes": 13,
+          "expected_leaf_bytes": 24498.389655748888,
+          "expected_sibling_bytes": 48817.454684145676,
+          "expected_bytes": 73315.84433989457
+        }
+      ],
+      "phase_tree_optima": [
+        {
+          "phase": "before_bus",
+          "width": 803,
+          "best": {
+            "packing": 64,
+            "degree": 16384,
+            "lanes": 13,
+            "expected_leaf_bytes": 24765.950386335124,
+            "expected_sibling_bytes": 71389.99126935167,
+            "expected_bytes": 96155.9416556868
+          }
+        },
+        {
+          "phase": "after_bus",
+          "width": 212,
+          "best": {
+            "packing": 32,
+            "degree": 8192,
+            "lanes": 7,
+            "expected_leaf_bytes": 13287.256594832199,
+            "expected_sibling_bytes": 60042.27574662915,
+            "expected_bytes": 73329.53234146135
+          }
+        }
+      ]
+    },
+    {
+      "extension_degree": 4,
+      "queries": 309,
+      "retained_local_and_framing_bytes": 51590,
+      "four_tree_expected_source_only_bytes": 321598.58306574204,
+      "four_tree_plus_retained_local_bytes": 373188.58306574204,
+      "two_phase_tree_expected_source_only_bytes": 208182.7543460714,
+      "two_phase_tree_plus_retained_local_bytes": 259772.7543460714,
+      "two_phase_remaining_budget_before_all_other_costs": 91817.2456539286,
+      "four_tree_optima": [
+        {
+          "packing": 64,
+          "degree": 16384,
+          "lanes": 10,
+          "expected_leaf_bytes": 24604.185212739474,
+          "expected_sibling_bytes": 86839.67397026403,
+          "expected_bytes": 111443.85918300351
+        },
+        {
+          "packing": 2,
+          "degree": 512,
+          "lanes": 6,
+          "expected_leaf_bytes": 12808.612104502836,
+          "expected_sibling_bytes": 18676.44193596619,
+          "expected_bytes": 31485.054040469025
+        },
+        {
+          "packing": 16,
+          "degree": 4096,
+          "lanes": 13,
+          "expected_leaf_bytes": 31539.357481073264,
+          "expected_sibling_bytes": 57795.477440061484,
+          "expected_bytes": 89334.83492113475
+        },
+        {
+          "packing": 16,
+          "degree": 4096,
+          "lanes": 13,
+          "expected_leaf_bytes": 31539.357481073264,
+          "expected_sibling_bytes": 57795.477440061484,
+          "expected_bytes": 89334.83492113475
+        }
+      ],
+      "phase_tree_optima": [
+        {
+          "phase": "before_bus",
+          "width": 803,
+          "best": {
+            "packing": 64,
+            "degree": 16384,
+            "lanes": 13,
+            "expected_leaf_bytes": 31985.440776561318,
+            "expected_sibling_bytes": 86839.67397026403,
+            "expected_bytes": 118825.11474682535
+          }
+        },
+        {
+          "phase": "after_bus",
+          "width": 212,
+          "best": {
+            "packing": 32,
+            "degree": 8192,
+            "lanes": 7,
+            "expected_leaf_bytes": 17142.363698126217,
+            "expected_sibling_bytes": 72215.2759011198,
+            "expected_bytes": 89357.63959924603
+          }
+        }
+      ]
+    },
+    {
+      "extension_degree": 8,
+      "queries": 128,
+      "retained_local_and_framing_bytes": 123302,
+      "four_tree_expected_source_only_bytes": 175323.98928242823,
+      "four_tree_plus_retained_local_bytes": 298625.9892824282,
+      "two_phase_tree_expected_source_only_bytes": 107948.12252215543,
+      "two_phase_tree_plus_retained_local_bytes": 231250.12252215543,
+      "two_phase_remaining_budget_before_all_other_costs": 192051.87747784457,
+      "four_tree_optima": [
+        {
+          "packing": 64,
+          "degree": 16384,
+          "lanes": 10,
+          "expected_leaf_bytes": 10220.181660256141,
+          "expected_sibling_bytes": 43753.87960082157,
+          "expected_bytes": 53974.06126107772
+        },
+        {
+          "packing": 2,
+          "degree": 512,
+          "lanes": 12,
+          "expected_leaf_bytes": 11556.322757722442,
+          "expected_sibling_bytes": 14105.732051368079,
+          "expected_bytes": 25662.05480909052
+        },
+        {
+          "packing": 16,
+          "degree": 4096,
+          "lanes": 13,
+          "expected_leaf_bytes": 13209.339525452055,
+          "expected_sibling_bytes": 31572.50368541076,
+          "expected_bytes": 44781.84321086282
+        },
+        {
+          "packing": 32,
+          "degree": 8192,
+          "lanes": 13,
+          "expected_leaf_bytes": 13260.538257485538,
+          "expected_sibling_bytes": 37645.491743911625,
+          "expected_bytes": 50906.030001397165
+        }
+      ],
+      "phase_tree_optima": [
+        {
+          "phase": "before_bus",
+          "width": 803,
+          "best": {
+            "packing": 64,
+            "degree": 16384,
+            "lanes": 13,
+            "expected_leaf_bytes": 13286.236158332982,
+            "expected_sibling_bytes": 43753.87960082157,
+            "expected_bytes": 57040.115759154556
+          }
+        },
+        {
+          "phase": "after_bus",
+          "width": 424,
+          "best": {
+            "packing": 64,
+            "degree": 16384,
+            "lanes": 7,
+            "expected_leaf_bytes": 7154.1271621792985,
+            "expected_sibling_bytes": 43753.87960082157,
+            "expected_bytes": 50908.00676300087
+          }
+        }
+      ]
+    },
+    {
+      "extension_degree": 8,
+      "queries": 239,
+      "retained_local_and_framing_bytes": 123302,
+      "four_tree_expected_source_only_bytes": 286624.13308810384,
+      "four_tree_plus_retained_local_bytes": 409926.13308810384,
+      "two_phase_tree_expected_source_only_bytes": 180881.4446715266,
+      "two_phase_tree_plus_retained_local_bytes": 304183.4446715266,
+      "two_phase_remaining_budget_before_all_other_costs": 119118.55532847339,
+      "four_tree_optima": [
+        {
+          "packing": 64,
+          "degree": 16384,
+          "lanes": 10,
+          "expected_leaf_bytes": 19050.731066411634,
+          "expected_sibling_bytes": 71389.99126935167,
+          "expected_bytes": 90440.7223357633
+        },
+        {
+          "packing": 2,
+          "degree": 512,
+          "lanes": 12,
+          "expected_leaf_bytes": 20472.032332848677,
+          "expected_sibling_bytes": 17676.924656851184,
+          "expected_bytes": 38148.95698969986
+        },
+        {
+          "packing": 16,
+          "degree": 4096,
+          "lanes": 13,
+          "expected_leaf_bytes": 24498.389655748888,
+          "expected_sibling_bytes": 48817.454684145676,
+          "expected_bytes": 73315.84433989457
+        },
+        {
+          "packing": 32,
+          "degree": 8192,
+          "lanes": 13,
+          "expected_leaf_bytes": 24676.33367611694,
+          "expected_sibling_bytes": 60042.27574662915,
+          "expected_bytes": 84718.60942274609
+        }
+      ],
+      "phase_tree_optima": [
+        {
+          "phase": "before_bus",
+          "width": 803,
+          "best": {
+            "packing": 64,
+            "degree": 16384,
+            "lanes": 13,
+            "expected_leaf_bytes": 24765.950386335124,
+            "expected_sibling_bytes": 71389.99126935167,
+            "expected_bytes": 96155.9416556868
+          }
+        },
+        {
+          "phase": "after_bus",
+          "width": 424,
+          "best": {
+            "packing": 64,
+            "degree": 16384,
+            "lanes": 7,
+            "expected_leaf_bytes": 13335.511746488144,
+            "expected_sibling_bytes": 71389.99126935167,
+            "expected_bytes": 84725.50301583981
+          }
+        }
+      ]
+    },
+    {
+      "extension_degree": 8,
+      "queries": 309,
+      "retained_local_and_framing_bytes": 123302,
+      "four_tree_expected_source_only_bytes": 349123.45444675005,
+      "four_tree_plus_retained_local_bytes": 472425.45444675005,
+      "two_phase_tree_expected_source_only_bytes": 222887.71836600703,
+      "two_phase_tree_plus_retained_local_bytes": 346189.71836600703,
+      "two_phase_remaining_budget_before_all_other_costs": 77112.28163399297,
+      "four_tree_optima": [
+        {
+          "packing": 64,
+          "degree": 16384,
+          "lanes": 10,
+          "expected_leaf_bytes": 24604.185212739474,
+          "expected_sibling_bytes": 86839.67397026403,
+          "expected_bytes": 111443.85918300351
+        },
+        {
+          "packing": 2,
+          "degree": 512,
+          "lanes": 12,
+          "expected_leaf_bytes": 25617.22420900567,
+          "expected_sibling_bytes": 18676.44193596619,
+          "expected_bytes": 44293.66614497187
+        },
+        {
+          "packing": 16,
+          "degree": 4096,
+          "lanes": 13,
+          "expected_leaf_bytes": 31539.357481073264,
+          "expected_sibling_bytes": 57795.477440061484,
+          "expected_bytes": 89334.83492113475
+        },
+        {
+          "packing": 32,
+          "degree": 8192,
+          "lanes": 13,
+          "expected_leaf_bytes": 31835.818296520112,
+          "expected_sibling_bytes": 72215.2759011198,
+          "expected_bytes": 104051.09419763992
+        }
+      ],
+      "phase_tree_optima": [
+        {
+          "phase": "before_bus",
+          "width": 803,
+          "best": {
+            "packing": 64,
+            "degree": 16384,
+            "lanes": 13,
+            "expected_leaf_bytes": 31985.440776561318,
+            "expected_sibling_bytes": 86839.67397026403,
+            "expected_bytes": 118825.11474682535
+          }
+        },
+        {
+          "phase": "after_bus",
+          "width": 424,
+          "best": {
+            "packing": 64,
+            "degree": 16384,
+            "lanes": 7,
+            "expected_leaf_bytes": 17222.929648917634,
+            "expected_sibling_bytes": 86839.67397026403,
+            "expected_bytes": 104062.60361918167
+          }
+        }
+      ]
+    }
+  ],
+  "preserved": [
+    "Base-field source/auxiliary coordinate leaves, SHA384 Merkle paths, rate1/4, same query count per tree.",
+    "Two-phase alternative keeps source commitments before bus challenges and auxiliary commitments after; no cross-phase merging."
+  ],
+  "omitted": [
+    "All folded-oracle openings, PCS round messages, terminal coefficients.",
+    "Statement/request bytes, any new cross-table reduction or domain framing costs."
+  ],
+  "qualifications": [
+    "Expected values under uniform queries, not per-proof lower bounds.",
+    "Four-tree minima are only over eligible packing choices in this model.",
+    "Two-phase merging is speculative; no combined prover/verifier or binding theorem is implemented.",
+    "Retained non-PCS subtotal deliberately remains unchanged, including old root/framing bytes; the subtotal is not an exact new-format prediction.",
+    "Ext8 and all query counts remain uncertified projections."
+  ],
+  "decision": "Sharing only folded-oracle work cannot meet300000 bytes in the four-tree309-query Ext8 model. Two-phase merging additionally requires compression of local claim data and a budget for the omitted PCS work; evaluate against recursion."
+}

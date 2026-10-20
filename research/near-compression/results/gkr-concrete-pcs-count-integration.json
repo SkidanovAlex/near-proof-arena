@@ -1,0 +1,35 @@
+{
+  "status": "MERGED_NEAR_FAR_BOUND_INSTANTIATED_ON_CONCRETE_GKR_PCS_SAMPLES",
+  "module": "NearCompression/GKRConcretePCSCount.lean",
+  "theorems": [
+    "gkr_concrete_pcs_event_count",
+    "gkr_concrete_joint_failure_count"
+  ],
+  "proved": [
+    "Concrete rows/final-GKR-block/PCS-point/fold-path/query samples have exactly the same accepted failure event count as the joint history experiment.",
+    "The merged joint failure theorem is invoked with the constructed GKR terminal claim and reindexed PCS message/prover families.",
+    "Concrete accepted absence-of-representative OR recovered-input mismatch count times sample size is bounded by max(nearBudget,farBudget).",
+    "The chosen joint source representative is used directly; no representative-existence premise is added."
+  ],
+  "assumptions": [
+    "All original merged-theorem hypotheses remain explicit: valid/canonical geometry, fixed source oracles/projection, RS root/domain/degree conditions, threshold and unique-decoding regime.",
+    "Correct initial constant subtraction, constant slot bounds and weighted source-oracle identity.",
+    "Authenticated terminal folding oracle, distinct ideal sample and algebraic folding geometry.",
+    "Earlier GKR sequence fixed for this theorem; lifting over earlier sequences uses the existing count rearrangement."
+  ],
+  "remaining": [
+    "Compose numerical concrete PCS bound over earlier GKR sequences and upstream local/GKR failures without conditioning away rowpoint averages.",
+    "Derive source/authentication/geometry premises from the executable verifier and commitment assumptions.",
+    "Global computational/QROM soundness, secure parameters and full-NEAR sub300000-byte feasibility remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3948,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal event transport and merged-bound instantiation only."
+  }
+}

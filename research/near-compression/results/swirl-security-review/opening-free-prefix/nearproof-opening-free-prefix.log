@@ -1,0 +1,17 @@
+   Compiling openvm-recursion-circuit v2.1.0 (/tmp/nearproof-openvm/crates/recursion)
+   Compiling openvm-stark-backend v2.0.1 (https://github.com/openvm-org/stark-backend.git?branch=main#d667af59)
+   Compiling openvm-cpu-backend v2.0.1 (https://github.com/openvm-org/stark-backend.git?branch=main#d667af59)
+   Compiling openvm-instructions v2.1.0 (/tmp/nearproof-openvm/crates/toolchain/instructions)
+   Compiling openvm-circuit-primitives v2.1.0 (/tmp/nearproof-openvm/crates/circuits/primitives)
+   Compiling openvm-stark-sdk v2.0.1 (https://github.com/openvm-org/stark-backend.git?branch=main#d667af59)
+   Compiling openvm-poseidon2-air v2.1.0 (/tmp/nearproof-openvm/crates/circuits/poseidon2-air)
+   Compiling openvm-circuit v2.1.0 (/tmp/nearproof-openvm/crates/vm)
+    Finished `fast` profile [optimized + debuginfo] target(s) in 21.66s
+     Running unittests src/lib.rs (target/fast/deps/openvm_recursion_circuit-0e902e15daeda90d)
+
+running 1 test
+NEARPROOF_OPENING_FREE_PREFIX controls_equal=true full_transcript_logs_equal=true removed_and_changed_openings=2 bad_prefix_rejected=1
+test tests::nearproof_opening_free_prefix ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 273 filtered out; finished in 0.34s
+

@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "independent_formula_cases": 30,
+  "exact_ledger_runs": 256,
+  "unique_known_case": true,
+  "johnson_field_budget_rejection": true,
+  "scope": "Arithmetic/source-formula validation only; no theorem mapping or quantum certificate."
+}

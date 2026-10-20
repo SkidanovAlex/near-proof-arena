@@ -1,0 +1,444 @@
+diff --git a/crates/stark-backend/src/interaction/debug.rs b/crates/stark-backend/src/interaction/debug.rs
+index 0aab880..861b9dc 100644
+--- a/crates/stark-backend/src/interaction/debug.rs
++++ b/crates/stark-backend/src/interaction/debug.rs
+@@ -92,12 +92,12 @@ impl<F: Field> SymbolicEvaluator<F, F> for Evaluator<'_, F> {
+         }
+     }
+     fn eval_is_first_row(&self) -> F {
+-        unreachable!()
++        F::from_bool(self.local_index == 0)
+     }
+     fn eval_is_last_row(&self) -> F {
+-        unreachable!()
++        F::from_bool(self.local_index + 1 == self.height)
+     }
+     fn eval_is_transition(&self) -> F {
+-        unreachable!()
++        F::from_bool(self.local_index + 1 < self.height)
+     }
+ }
+diff --git a/crates/stark-backend/src/keygen/types.rs b/crates/stark-backend/src/keygen/types.rs
+index b265f22..493a87f 100644
+--- a/crates/stark-backend/src/keygen/types.rs
++++ b/crates/stark-backend/src/keygen/types.rs
+@@ -55,12 +55,20 @@ impl LinearConstraint {
+     /// Returns true if `self` is logically implied by `other`, i.e.,
+     /// whenever `other` is satisfied, `self` is also satisfied.
+     pub fn is_implied_by(&self, other: &LinearConstraint) -> bool {
+-        self.threshold >= other.threshold
+-            && self
+-                .coefficients
+-                .iter()
+-                .zip(&other.coefficients)
+-                .all(|(a, b)| a <= b)
++        if self.coefficients.len() != other.coefficients.len() {
++            return false;
++        }
++        // For nonnegative heights h: self.dot(h) <= scale * other.dot(h).
++        // Positive scale preserves the strict bound; u32 products fit in u64.
++        let mut scale = 1u64;
++        for (&a, &b) in self.coefficients.iter().zip(&other.coefficients) {
++            if b == 0 {
++                if a != 0 { return false; }
++            } else {
++                scale = scale.max(u64::from(a).div_ceil(u64::from(b)));
++            }
++        }
++        scale * u64::from(other.threshold) <= u64::from(self.threshold)
+     }
+ }
+ 
+diff --git a/crates/stark-backend/src/verifier/batch_constraints.rs b/crates/stark-backend/src/verifier/batch_constraints.rs
+index 01ac84b..e677b48 100644
+--- a/crates/stark-backend/src/verifier/batch_constraints.rs
++++ b/crates/stark-backend/src/verifier/batch_constraints.rs
+@@ -4,7 +4,7 @@ use std::{
+ };
+ 
+ use itertools::Itertools;
+-use p3_field::{batch_multiplicative_inverse, Field, PrimeCharacteristicRing};
++use p3_field::{batch_multiplicative_inverse, BasedVectorSpace, Field, PrimeCharacteristicRing};
+ use thiserror::Error;
+ use tracing::{debug, instrument};
+ 
+@@ -60,15 +60,206 @@ pub fn verify_zerocheck_and_logup<SC: StarkProtocolConfig, TS: FiatShamirTranscr
+     n_per_trace: &[isize],
+     omega_skip_pows: &[SC::F],
+ ) -> Result<Vec<SC::EF>, BatchConstraintError<SC::EF>> {
++    let BatchConstraintPrefix {
++        rs,
++        lambda,
++        beta_logup,
++        mu,
++        cur_sum,
++        eq_ns,
++        eq_sharp_ns,
++        eq_3b_per_trace,
++    } = verify_zerocheck_and_logup_prefix(
++        transcript,
++        mvk,
++        public_values,
++        gkr_proof,
++        batch_proof.into(),
++        trace_id_to_air_id,
++        n_per_trace,
++        omega_skip_pows,
++    )?;
++    let l_skip = mvk.params.l_skip;
++    let column_openings = &batch_proof.column_openings;
++    let capture_path = std::env::var("NEARPROOF_NATIVE_CAPTURE").ok();
++    let encode_ext = |x: SC::EF| format!("{:?}", x.as_basis_coefficients_slice());
++    let encode_exts = |xs: &[SC::EF]| format!("[{}]", xs.iter().map(|x| encode_ext(*x)).join(","));
++    let mut captured_traces = Vec::new();
++    // 9. Compute the interaction/constraint evals and their hash
++    let mut interactions_evals = Vec::new(); // len = 2 * num_traces
++    let mut constraints_evals = Vec::new(); // len = num_traces
++    let need_rot_per_trace = trace_id_to_air_id
++        .iter()
++        .map(|&air_idx| mvk.per_air[air_idx].params.need_rot)
++        .collect_vec();
++
++    // Observe common main openings first, and then preprocessed/cached
++    // Proof shape asserts that:
++    // - column_openings.len() == num_traces
++    // - air_openings.len() == vk.num_parts() > 0
++    for (trace_idx, air_openings) in column_openings.iter().enumerate() {
++        let need_rot = need_rot_per_trace[trace_idx];
++        // Proof shape asserts that air_openings[0].len() == width.common_main * (needs_rot ? 2 : 1)
++        for (claim, claim_rot) in column_openings_by_rot(&air_openings[0], need_rot) {
++            transcript.observe_ext(claim);
++            transcript.observe_ext(claim_rot);
++        }
++    }
++
++    for (trace_idx, air_openings) in column_openings.iter().enumerate() {
++        let air_idx = trace_id_to_air_id[trace_idx];
++        let vk = &mvk.per_air[air_idx];
++        let n = n_per_trace[trace_idx];
++        let n_lift = n.max(0) as usize;
++        let need_rot = need_rot_per_trace[trace_idx];
++
++        // claim lengths are checked in proof shape
++        for claims in air_openings.iter().skip(1) {
++            // Proof shape asserts that claims.len() is always multiple of (needs_rot ? 2 : 1)
++            for (claim, claim_rot) in column_openings_by_rot(claims, need_rot) {
++                transcript.observe_ext(claim);
++                transcript.observe_ext(claim_rot);
++            }
++        }
++
++        let has_preprocessed = vk.preprocessed_data.is_some();
++        let common_main = column_openings_by_rot(&air_openings[0], need_rot).collect::<Vec<_>>();
++        let preprocessed = has_preprocessed
++            .then(|| column_openings_by_rot(&air_openings[1], need_rot).collect::<Vec<_>>());
++        let cached_idx = 1 + has_preprocessed as usize;
++        let mut partitioned_main: Vec<_> = air_openings[cached_idx..]
++            .iter()
++            .map(|opening| column_openings_by_rot(opening, need_rot).collect::<Vec<_>>())
++            .collect();
++        partitioned_main.push(common_main);
++        let part_main_slices = partitioned_main
++            .iter()
++            .map(|x| x.as_slice())
++            .collect::<Vec<_>>();
++
++        // We are evaluating the lift, which is the same as evaluating the original with domain
++        // D^{(2^{n})}
++        let (l, rs_n, norm_factor) = if n.is_negative() {
++            (
++                l_skip.wrapping_add_signed(n),
++                &[rs[0].exp_power_of_2(-n as usize)] as &[_],
++                SC::F::from_usize(1 << n.unsigned_abs()).inverse(),
++            )
++        } else {
++            (l_skip, &rs[..=(n as usize)], SC::F::ONE)
++        };
++        let evaluator = VerifierConstraintEvaluator::<SC::F, SC::EF>::new(
++            preprocessed.as_deref(),
++            &part_main_slices,
++            &public_values[air_idx],
++            rs_n,
++            l,
++        );
++
++        let constraints = &vk.symbolic_constraints.constraints;
++        let nodes = evaluator.eval_nodes(&constraints.nodes);
++        if capture_path.is_some() {
++            captured_traces.push(format!("{{\"air\":{air_idx},\"n\":{n},\"nodes\":{},\"first\":{},\"last\":{},\"transition\":{},\"eq_ns\":{},\"eq_sharp\":{},\"norm\":{},\"eq3b\":{}}}",
++                encode_exts(&nodes), encode_ext(evaluator.eval_is_first_row()),
++                encode_ext(evaluator.eval_is_last_row()), encode_ext(evaluator.eval_is_transition()),
++                encode_ext(eq_ns[n_lift]), encode_ext(eq_sharp_ns[n_lift]),
++                encode_ext(SC::EF::from(norm_factor)), encode_exts(&eq_3b_per_trace[trace_idx])));
++        }
++
++        let expr = zip(lambda.powers(), &constraints.constraint_idx)
++            .map(|(lambda_pow, idx)| nodes[*idx] * lambda_pow)
++            .sum::<SC::EF>();
++        debug!(%trace_idx, %expr, %air_idx, "constraints_eval");
++        let eq_xi_r = eq_ns[n_lift];
++        debug!(%trace_idx, %eq_xi_r);
++        constraints_evals.push(eq_xi_r * expr);
++
++        let symbolic_constraints = SymbolicConstraints::from(&vk.symbolic_constraints);
++        let interactions = &symbolic_constraints.interactions;
++        let cur_interactions_evals = interactions
++            .iter()
++            .map(|interaction| {
++                let num = evaluator.eval_expr(&interaction.count);
++                let denom = interaction
++                    .message
++                    .iter()
++                    .map(|expr| evaluator.eval_expr(expr))
++                    .chain(std::iter::once(
++                        SC::EF::from_u16(interaction.bus_index) + SC::EF::ONE,
++                    ))
++                    .zip(beta_logup.powers())
++                    .fold(SC::EF::ZERO, |acc, (x, y)| acc + x * y);
++                (num, denom)
++            })
++            .collect_vec();
++        let eq_3bs = &eq_3b_per_trace[trace_idx];
++        let mut num = SC::EF::ZERO;
++        let mut denom = SC::EF::ZERO;
++        for (&eq_3b, (n, d)) in eq_3bs.iter().zip_eq(cur_interactions_evals.iter()) {
++            num += eq_3b * *n;
++            denom += eq_3b * *d;
++        }
++        debug!(%trace_idx, %num, %denom, %air_idx, "interactions_eval");
++        interactions_evals.push(num * norm_factor * eq_sharp_ns[n_lift]);
++        interactions_evals.push(denom * eq_sharp_ns[n_lift]);
++    }
++    let evaluated_claim = interactions_evals
++        .iter()
++        .chain(constraints_evals.iter())
++        .zip(mu.powers())
++        .map(|(x, y)| *x * y)
++        .sum::<SC::EF>();
++    if cur_sum != evaluated_claim {
++        return Err(BatchConstraintError::InconsistentClaims);
++    }
++
++    if let Some(path) = capture_path {
++        use std::io::Write;
++        let line = format!("{{\"r\":{},\"l_skip\":{},\"lambda\":{},\"beta\":{},\"mu\":{},\"evaluated_claim\":{},\"sumcheck_claim\":{},\"traces\":[{}]}}\n", encode_exts(&rs), l_skip, encode_ext(lambda), encode_ext(beta_logup), encode_ext(mu), encode_ext(evaluated_claim), encode_ext(cur_sum), captured_traces.join(","));
++        std::fs::OpenOptions::new()
++            .create(true)
++            .append(true)
++            .open(path)
++            .unwrap()
++            .write_all(line.as_bytes())
++            .unwrap();
++    }
++    Ok(rs)
++}
++
++/// Terminal controls derived before any column openings are absorbed.
++/// Caller must validate prefix message shapes and the trace/key preamble.
++#[derive(Clone, Debug, PartialEq, Eq)]
++pub struct BatchConstraintPrefix<EF> {
++    pub rs: Vec<EF>,
++    pub lambda: EF,
++    pub beta_logup: EF,
++    pub mu: EF,
++    pub cur_sum: EF,
++    pub eq_ns: Vec<EF>,
++    pub eq_sharp_ns: Vec<EF>,
++    pub eq_3b_per_trace: Vec<Vec<EF>>,
++}
++
++#[allow(clippy::too_many_arguments)]
++pub fn verify_zerocheck_and_logup_prefix<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
++    transcript: &mut TS,
++    mvk: &MultiStarkVerifyingKey0<SC>,
++    _public_values: &[Vec<SC::F>],
++    gkr_proof: &GkrProof<SC>,
++    batch_proof: BatchConstraintPrefixMessage<'_, SC::EF>,
++    trace_id_to_air_id: &[usize],
++    n_per_trace: &[isize],
++    omega_skip_pows: &[SC::F],
++) -> Result<BatchConstraintPrefix<SC::EF>, BatchConstraintError<SC::EF>> {
+     let l_skip = mvk.params.l_skip;
+     // Proof shape asserts that numerator_term_per_air.len() == denominator_term_per_air.len() ==
+     // num_traces (=: num_airs_present)
+-    let BatchConstraintProof {
++    let BatchConstraintPrefixMessage {
+         numerator_term_per_air,
+         denominator_term_per_air,
+         univariate_round_coeffs,
+         sumcheck_round_polys,
+-        column_openings,
+     } = batch_proof;
+ 
+     // 1. Check GKR witness
+@@ -154,7 +345,7 @@ pub fn verify_zerocheck_and_logup<SC: StarkProtocolConfig, TS: FiatShamirTranscr
+         univariate_round_coeffs.len(),
+         (mvk.max_constraint_degree() + 1) * ((1 << l_skip) - 1) + 1
+     );
+-    let s_0 = UnivariatePoly::new(univariate_round_coeffs.clone());
++    let s_0 = UnivariatePoly::new(univariate_round_coeffs.to_vec());
+     let sum_univ_domain_s_0 = s_0
+         .coeffs()
+         .iter()
+@@ -263,125 +454,44 @@ pub fn verify_zerocheck_and_logup<SC: StarkProtocolConfig, TS: FiatShamirTranscr
+         r_rev_prod *= rs[i];
+     }
+ 
+-    // 9. Compute the interaction/constraint evals and their hash
+-    let mut interactions_evals = Vec::new(); // len = 2 * num_traces
+-    let mut constraints_evals = Vec::new(); // len = num_traces
+-    let need_rot_per_trace = trace_id_to_air_id
+-        .iter()
+-        .map(|&air_idx| mvk.per_air[air_idx].params.need_rot)
+-        .collect_vec();
+-
+-    // Observe common main openings first, and then preprocessed/cached
+-    // Proof shape asserts that:
+-    // - column_openings.len() == num_traces
+-    // - air_openings.len() == vk.num_parts() > 0
+-    for (trace_idx, air_openings) in column_openings.iter().enumerate() {
+-        let need_rot = need_rot_per_trace[trace_idx];
+-        // Proof shape asserts that air_openings[0].len() == width.common_main * (needs_rot ? 2 : 1)
+-        for (claim, claim_rot) in column_openings_by_rot(&air_openings[0], need_rot) {
+-            transcript.observe_ext(claim);
+-            transcript.observe_ext(claim_rot);
+-        }
+-    }
+-
+-    for (trace_idx, air_openings) in column_openings.iter().enumerate() {
+-        let air_idx = trace_id_to_air_id[trace_idx];
+-        let vk = &mvk.per_air[air_idx];
+-        let n = n_per_trace[trace_idx];
+-        let n_lift = n.max(0) as usize;
+-        let need_rot = need_rot_per_trace[trace_idx];
+-
+-        // claim lengths are checked in proof shape
+-        for claims in air_openings.iter().skip(1) {
+-            // Proof shape asserts that claims.len() is always multiple of (needs_rot ? 2 : 1)
+-            for (claim, claim_rot) in column_openings_by_rot(claims, need_rot) {
+-                transcript.observe_ext(claim);
+-                transcript.observe_ext(claim_rot);
+-            }
+-        }
+-
+-        let has_preprocessed = vk.preprocessed_data.is_some();
+-        let common_main = column_openings_by_rot(&air_openings[0], need_rot).collect::<Vec<_>>();
+-        let preprocessed = has_preprocessed
+-            .then(|| column_openings_by_rot(&air_openings[1], need_rot).collect::<Vec<_>>());
+-        let cached_idx = 1 + has_preprocessed as usize;
+-        let mut partitioned_main: Vec<_> = air_openings[cached_idx..]
+-            .iter()
+-            .map(|opening| column_openings_by_rot(opening, need_rot).collect::<Vec<_>>())
+-            .collect();
+-        partitioned_main.push(common_main);
+-        let part_main_slices = partitioned_main
+-            .iter()
+-            .map(|x| x.as_slice())
+-            .collect::<Vec<_>>();
+-
+-        // We are evaluating the lift, which is the same as evaluating the original with domain
+-        // D^{(2^{n})}
+-        let (l, rs_n, norm_factor) = if n.is_negative() {
+-            (
+-                l_skip.wrapping_add_signed(n),
+-                &[rs[0].exp_power_of_2(-n as usize)] as &[_],
+-                SC::F::from_usize(1 << n.unsigned_abs()).inverse(),
+-            )
+-        } else {
+-            (l_skip, &rs[..=(n as usize)], SC::F::ONE)
+-        };
+-        let evaluator = VerifierConstraintEvaluator::<SC::F, SC::EF>::new(
+-            preprocessed.as_deref(),
+-            &part_main_slices,
+-            &public_values[air_idx],
+-            rs_n,
+-            l,
+-        );
+-
+-        let constraints = &vk.symbolic_constraints.constraints;
+-        let nodes = evaluator.eval_nodes(&constraints.nodes);
+-        let expr = zip(lambda.powers(), &constraints.constraint_idx)
+-            .map(|(lambda_pow, idx)| nodes[*idx] * lambda_pow)
+-            .sum::<SC::EF>();
+-        debug!(%trace_idx, %expr, %air_idx, "constraints_eval");
+-        let eq_xi_r = eq_ns[n_lift];
+-        debug!(%trace_idx, %eq_xi_r);
+-        constraints_evals.push(eq_xi_r * expr);
++    Ok(BatchConstraintPrefix {
++        rs,
++        lambda,
++        beta_logup,
++        mu,
++        cur_sum,
++        eq_ns,
++        eq_sharp_ns,
++        eq_3b_per_trace,
++    })
++}
+ 
+-        let symbolic_constraints = SymbolicConstraints::from(&vk.symbolic_constraints);
+-        let interactions = &symbolic_constraints.interactions;
+-        let cur_interactions_evals = interactions
+-            .iter()
+-            .map(|interaction| {
+-                let num = evaluator.eval_expr(&interaction.count);
+-                let denom = interaction
+-                    .message
+-                    .iter()
+-                    .map(|expr| evaluator.eval_expr(expr))
+-                    .chain(std::iter::once(
+-                        SC::EF::from_u16(interaction.bus_index) + SC::EF::ONE,
+-                    ))
+-                    .zip(beta_logup.powers())
+-                    .fold(SC::EF::ZERO, |acc, (x, y)| acc + x * y);
+-                (num, denom)
+-            })
+-            .collect_vec();
+-        let eq_3bs = &eq_3b_per_trace[trace_idx];
+-        let mut num = SC::EF::ZERO;
+-        let mut denom = SC::EF::ZERO;
+-        for (&eq_3b, (n, d)) in eq_3bs.iter().zip_eq(cur_interactions_evals.iter()) {
+-            num += eq_3b * *n;
+-            denom += eq_3b * *d;
++/// Prefix wire view deliberately has no column-opening field.
++pub struct BatchConstraintPrefixMessage<'a, EF> {
++    pub numerator_term_per_air: &'a [EF],
++    pub denominator_term_per_air: &'a [EF],
++    pub univariate_round_coeffs: &'a [EF],
++    pub sumcheck_round_polys: &'a [Vec<EF>],
++}
++impl<'a, SC: StarkProtocolConfig> From<&'a BatchConstraintProof<SC>>
++    for BatchConstraintPrefixMessage<'a, SC::EF>
++{
++    fn from(p: &'a BatchConstraintProof<SC>) -> Self {
++        Self {
++            numerator_term_per_air: &p.numerator_term_per_air,
++            denominator_term_per_air: &p.denominator_term_per_air,
++            univariate_round_coeffs: &p.univariate_round_coeffs,
++            sumcheck_round_polys: &p.sumcheck_round_polys,
+         }
+-        debug!(%trace_idx, %num, %denom, %air_idx, "interactions_eval");
+-        interactions_evals.push(num * norm_factor * eq_sharp_ns[n_lift]);
+-        interactions_evals.push(denom * eq_sharp_ns[n_lift]);
+-    }
+-    let evaluated_claim = interactions_evals
+-        .iter()
+-        .chain(constraints_evals.iter())
+-        .zip(mu.powers())
+-        .map(|(x, y)| *x * y)
+-        .sum::<SC::EF>();
+-    if cur_sum != evaluated_claim {
+-        return Err(BatchConstraintError::InconsistentClaims);
+     }
++}
+ 
+-    Ok(rs)
++/// Selectors at a public terminal point, without any column data.
++pub fn prefix_selectors<SC: StarkProtocolConfig>(rs: &[SC::EF], l_skip: usize) -> [SC::EF; 3] {
++    let evaluator = VerifierConstraintEvaluator::<SC::F, SC::EF>::new(None, &[], &[], rs, l_skip);
++    [
++        evaluator.eval_is_first_row(),
++        evaluator.eval_is_last_row(),
++        evaluator.eval_is_transition(),
++    ]
+ }

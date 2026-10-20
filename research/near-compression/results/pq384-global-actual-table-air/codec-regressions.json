@@ -1,0 +1,193 @@
+{
+  "status": "PASS",
+  "binary_bytes": 83852,
+  "binary_sha256": "977a1a0ef77902f07c99165680782f95580eb0395de7116a770d2ae8a246015a",
+  "negative_checks": 46,
+  "cases": [
+    {
+      "case": "truncate0",
+      "reason": "table codec size"
+    },
+    {
+      "case": "truncate1",
+      "reason": "table codec size"
+    },
+    {
+      "case": "truncate2",
+      "reason": "table codec size"
+    },
+    {
+      "case": "truncate3",
+      "reason": "table codec size"
+    },
+    {
+      "case": "truncate4",
+      "reason": "table codec size"
+    },
+    {
+      "case": "truncate5",
+      "reason": "table codec size"
+    },
+    {
+      "case": "truncate6",
+      "reason": "table codec size"
+    },
+    {
+      "case": "truncate7",
+      "reason": "table codec size"
+    },
+    {
+      "case": "truncate8",
+      "reason": "table codec size"
+    },
+    {
+      "case": "truncate9",
+      "reason": "table codec size"
+    },
+    {
+      "case": "truncate10",
+      "reason": "table codec size"
+    },
+    {
+      "case": "truncate11",
+      "reason": "table codec size"
+    },
+    {
+      "case": "truncate12",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate13",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate14",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate15",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate16",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate17",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate18",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate19",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate20",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate21",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate22",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate23",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate24",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate25",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate26",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate27",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate28",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate29",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate30",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "truncate31",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "last byte missing",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "extra byte",
+      "reason": "canonical total size"
+    },
+    {
+      "case": "magic",
+      "reason": "table codec magic"
+    },
+    {
+      "case": "constraint",
+      "reason": "AIR zerocheck"
+    },
+    {
+      "case": "current",
+      "reason": "AIR terminal"
+    },
+    {
+      "case": "next",
+      "reason": "AIR terminal"
+    },
+    {
+      "case": "shift",
+      "reason": "shift sumcheck identity"
+    },
+    {
+      "case": "claims",
+      "reason": "shift terminal opening"
+    },
+    {
+      "case": "PCS header",
+      "reason": "codec magic"
+    },
+    {
+      "case": "PCS leaf/path",
+      "reason": "multiproof root mismatch"
+    },
+    {
+      "case": "noncanonical field",
+      "reason": "table noncanonical field"
+    },
+    {
+      "case": "external root",
+      "reason": "AIR zerocheck"
+    },
+    {
+      "case": "public",
+      "reason": "AIR zerocheck"
+    },
+    {
+      "case": "terminal profile",
+      "reason": "AIR zerocheck"
+    }
+  ],
+  "scope": "Complete table-local diagnostic payload; external spec/root; not global bus or security proof"
+}

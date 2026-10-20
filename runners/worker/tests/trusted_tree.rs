@@ -75,6 +75,7 @@ fn with_store(f: &mut Fixture, store: Option<PathBuf>) {
         trusted_trees: store,
         configs_dir: repo().join("runners/formal-checker/challenges"),
         images_dir: None,
+        sandbox: None,
     });
 }
 

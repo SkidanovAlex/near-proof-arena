@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2343,
+  "audit_log": "/tmp/root-control-fft-integration-audit.log",
+  "modules": {
+    "PreparedControlLegacyLocal": "d579283ff0a4483ef32d08ae67542b62a2c1730b3431d4bcf325057d169f40db",
+    "PreparedControlLegacyState": "8fad2cbf8d604dc23cba96222e217d6057590fe45168e723ef91ce6cfa9a5f40",
+    "FFTBitReversal": "cb52457f57007770aa0bcfb2321f573c9a2dc051498c2de42844b251e5d21a48"
+  },
+  "scope": "Authenticated ordinary control-step successor states and exact natural-index reversed-counter/swap loop. Whole control run, sequential butterflies and machine arithmetic remain open."
+}

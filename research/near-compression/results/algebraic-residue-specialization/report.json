@@ -1,0 +1,8 @@
+{
+  "regular_equivalent_representatives": 193,
+  "specialized_root_value_equalities": 134,
+  "quotient_add_mul_values": 268,
+  "leading_degree_drop_counterexamples": 4,
+  "chosen_root_nonzero_insufficient_for_regular_inverse": 3,
+  "scope": "Representative-independent partial algebraic specialization and add/mul closure. Inverse domain requires stronger guards; extension/Hensel specialization and full MCA remain open."
+}

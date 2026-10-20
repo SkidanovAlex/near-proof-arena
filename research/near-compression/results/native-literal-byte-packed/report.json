@@ -1,0 +1,147 @@
+{
+  "packing": {
+    "code_count_column": 88,
+    "tables": [
+      {
+        "table": 0,
+        "packed_bit_columns": 512,
+        "byte_columns": 64,
+        "remaining_width": 157,
+        "retained_source_constraints": 214,
+        "range_interactions": 64
+      },
+      {
+        "table": 1,
+        "packed_bit_columns": 96,
+        "byte_columns": 12,
+        "remaining_width": 114,
+        "retained_source_constraints": 281,
+        "range_interactions": 12
+      }
+    ],
+    "range_rows": 256,
+    "range_lookups": 19456,
+    "max_range_multiplicity": 15578,
+    "formal_refinement_proved": false
+  },
+  "input_source": "research/near-compression/results/native-literal-byte-packed-input",
+  "status": "NATIVE_WASM_CHILD_SHA384_EXT12_VERIFIED",
+  "child_bytes": 412097,
+  "wire_census": {
+    "total": 412097,
+    "gkr": 22904,
+    "relations": 31432,
+    "stacking": 1840,
+    "whir": 336260,
+    "other": 19661
+  },
+  "public_fields": 4891,
+  "public_included": true,
+  "request_bytes": 919,
+  "total_child_plus_request_bytes": 413016,
+  "independent_Lean_runCall": {
+    "done": true,
+    "failed": false,
+    "gas": 999999447071257,
+    "stack": []
+  },
+  "eligibility": {
+    "code_length": 193,
+    "status": "PASS"
+  },
+  "public_mutations_rejected": 6,
+  "witness_independent_replay": true,
+  "transcript_oracle": {
+    "samples": 96,
+    "rejections": 5,
+    "draw_blocks": 13,
+    "final_state_equal": true,
+    "version": 4
+  },
+  "verifier_hash_cost": {
+    "tags": [
+      "leaf",
+      "node",
+      "init",
+      "observe_field",
+      "observe_commit",
+      "draw_block"
+    ],
+    "calls": [
+      2208,
+      7286,
+      1,
+      200,
+      6,
+      357
+    ],
+    "compression_blocks": [
+      2208,
+      7286,
+      1,
+      959,
+      12,
+      357
+    ],
+    "total_compression_blocks": 10823,
+    "scope": "single engine.verify call; excludes keygen and decoding"
+  },
+  "security": {
+    "hash": "SHA-384",
+    "field": "BabyBear[X]/(X^12-31)",
+    "query_target_bits": 268,
+    "grinding_bits": 0,
+    "parameters": {
+      "n_stack": 15,
+      "k": 3,
+      "log_blowup": 7,
+      "all_list": 1,
+      "queries": [
+        82,
+        63,
+        51,
+        43,
+        37
+      ],
+      "interaction_log": 26
+    },
+    "native_component_min_bits": 268.7638209393418,
+    "logup_bits": 331.57533223384377,
+    "proximity_bits": 320.9308746090779,
+    "query_bits": 268.7638209393418,
+    "certified": false
+  },
+  "backend_pin": "d667af5929d0ea9e5194adf639d6bddeb8c10f9a",
+  "exclusions": [
+    "custom transcript compiler/QROM applicability and concrete constants",
+    "recursive parent upgrade and knowledge composition",
+    "Lean field irreducibility and Rust refinement",
+    "packed AIR-to-original AIR refinement",
+    "cryptographic acceptance-to-execution Lean theorem",
+    "full NEAR1Pgas and performance target"
+  ],
+  "sha256": {
+    "Cargo.lock": "7a0e92b49ae35775174359c3f78eac06f30450fde00abb5752b3cbc98ac2a1ab",
+    "Cargo.toml": "517a141cee9d26e6f90d3afb0e053febafb54c7395d9ffc264bcaec8064dca48",
+    "auth-digests.bin": "6dfa8710cca4127586349084a2522796f116d560168854b11076e5474e86f79d",
+    "backend.patch": "fc3f8ee331ed4d871ddb4e6b95b565cb52d5d8ce898a9e3886c7273b286a06ec",
+    "child.proof": "fafa2aae62cdc615545e0a537444ebc0fd3c867e3c82fb34bd0821ccb636b174",
+    "fixture.json": "f86142cae0e1df917444dbbf340920ffb34ba3c3a170e8ae7f1251ae9b2bcb80",
+    "invalid-byte.log": "23f385e7a89cea114a1d91dffb3d7e8cae89c7a897867db16b087c70b311c074",
+    "literal.rs": "30b40e70f3243d711e144b2418475342696ab96d8bc8a883599a93b544b7b4b4",
+    "main.rs": "281dc6e546cae662abc800107a62ed04292c30774b7a1926fe5c74d0cbdcd68d",
+    "native_digest_dictionary.rs": "289b77e62a3cb536872d17da4501f4b576cf04ec01f2fbe0b7d24b66de5e3830",
+    "native_sha384_config.rs": "932c4bbd8a9e95b7f0a2c11db20df8564d9a0ebac1705a3cb6401e8a733babde",
+    "packing-check.json": "e914c82f34f08ffaf71195b3d19bd162990edcbf93be81597653012a86947e6e",
+    "packing.json": "f2ea1bbc485f256b22df2a3e35fce5b5a23b7fd0ec458dc92994d59501c27ad5",
+    "plonky3-ext12.patch": "cd82dbb5f650b277146db19eecaa93fc133c4095de429e0db36f60c7c6d83c50",
+    "prove.log": "13700818f9e93d7011cde53aa57715bbaf9fe017fc989f9631d5c3ff4eb6a376",
+    "public.bin": "2214c301b99a881c039544a7235ff4ac867ad472f1ae93325f89381c0cc4d82a",
+    "replay.log": "3334106840da6d69ff8f27fa84edc892c2f0c2167eba88caf0a95a0f732478f7",
+    "rows-0.bin": "e7aab2f759c888740bc61af0961d161a6711f3cab608425eb9fcea5e35d0d69e",
+    "rows-1.bin": "60cf1045db3b5ab5dcf9abdde9dfcfd34090fab2d33d93cefaf79025fe223bcc",
+    "rows-2.bin": "e9143b66f8245c694c03c7d8debb67f6d1a0e96cde4579d2cd57e1581c7d979c",
+    "spec.json": "d3eb51a8f07574b185a2447091aa5af387e4c047b9345ba425a77c4ef96f3122",
+    "transcript-vectors.log": "80fddab771dcdd52a5c1ec97a04d00b54e341ef5f976a7692b7d20778f963693"
+  }
+}

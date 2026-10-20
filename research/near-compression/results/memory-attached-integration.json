@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "added_theorems": 13,
+  "integrated_theorems": 3480,
+  "audit_log": "/tmp/root-memory-attached-audit.log",
+  "audit_sha256": "7ddb2a0c4b165ddf67915bbd417ca8d65f63d8d68291cb095fdc67393f55703c",
+  "sources_sha256": {
+    "PreparedMemoryWordBinding": "2d21de4304ffda160d45760fe83e9b829e4845e5a66f9bf09ddadb8bc55bae9b",
+    "PreparedMemoryMessageLink": "cfb3f0547626be460986f6187c2c13d92e8e75b706b5f3eb00838d9eb5d20bde",
+    "PreparedMemoryMatchedOperands": "9fefc6fc706b00162f74b5c4259661f8239d8bdc3357e5f145b9a6cd300ab854",
+    "PreparedMemoryMessageFields": "ce63bff61df5155fcb45b4e50aa52905610a1256fbec97111ba5b4edbfbd89a8",
+    "PreparedMemoryAttachedExec": "f5ad55e8d5f6da50cf38404a2bd98f7622cf5109d4238d76765c5d47bc075594"
+  },
+  "scope": "Exact23field matched row messages derive selected operands and local actual load/store execution with finite collision alternative.",
+  "limits": [
+    "Explicit local pairing; no pairing from global bus balance.",
+    "Arbitrary lower actual stack remains; whole decoded sender stack transition pending.",
+    "CODE/gas/pages/instance and public boundary provenance remain open."
+  ]
+}

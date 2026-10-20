@@ -1,0 +1,20 @@
+{
+  "columns": 263,
+  "cryptographic_scope": "RS commitment only; no opening/proximity verification",
+  "field_modulus": 2013265921,
+  "hash": "BLAKE2s-256, 10 rounds",
+  "lde_factor": 4,
+  "log_rows": 7,
+  "root": [
+    689446950,
+    3039698868,
+    612005565,
+    3432892549,
+    2751196040,
+    1526255970,
+    78880850,
+    186691853
+  ],
+  "root_only": true,
+  "values_per_leaf": 2
+}

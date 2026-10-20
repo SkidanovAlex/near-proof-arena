@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "audit_count": 2981,
+  "audit_log": "/tmp/root-program-layer-audit.log",
+  "source_sha256": {
+    "TerminalDAGTotalSemantics": "412710950ab5940e517c3d4af7620fe18a9edb0318627fbf88d2ef77cfcd64a0",
+    "TerminalDAGArithmetic": "d9a5cbb964e9aab9d9a8bbe2ef3f558f473d587cf9e941cabaf8491b422cc2d9",
+    "TerminalSignedExpansion": "be07c27caf87bc9b567015b20b8edaf272f9d13aa93dd9d7195a2d8c53348d1d",
+    "TerminalProgramSemantics": "b65df29a491afa445da4b10aca946875a3191687e8d9a000f42184cae4eb6d94",
+    "TerminalDAGBalance": "d8abaca7c9af0d3243df956f269630789d5d4813d00417863dac68f50d9d9a7b",
+    "TerminalRebuildCertificate": "d16b46450fc94b1ca118c7dfdcb367ff604b4942ce0278fe9e29707d4ff91c06",
+    "TerminalProgramLayer": "001c9dc0c299eddc1000f4716e161d194f93b5afefeb34e733b500c5537abc79",
+    "SHA384NodeChunkNodes": "82d023b94610a4ed23fcfda020b73ffe6264b6606e5f19dc908ca4dba6d87fc8"
+  },
+  "scope": "Structural reconstruction certificate implies source ABI interpreter equals emitted DAG; composed with layer routing to physical circuit output. Captured rebuild certificates and AIR AST-to-ABI refinement remain open. Configurable chunk node output equals standard compression under actual HoldsP; ordered-use decoding and end-to-end cryptographic security remain open."
+}

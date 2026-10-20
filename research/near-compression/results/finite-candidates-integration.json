@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "audited_theorems": 1674,
+  "audit_log": "/tmp/near-finite-candidates-audit.log",
+  "module": "FiniteBatchCandidates",
+  "contract": "Fixed finitefamily ofT lengthL wrongcandidateclaimvectors causes atmostT*(L-1) distinctchallenge cancellations",
+  "rbr_candidate_relation": "Defined explicitly; NOT proved or assumed as axiom",
+  "remaining": [
+    "Small complete correlatedcandidate family for arbitrary sourcewords",
+    "Weighted agreement through folding",
+    "Concretefield/hash/QROM bounds"
+  ],
+  "evidence": "finite-batch-rbr-contract.json"
+}

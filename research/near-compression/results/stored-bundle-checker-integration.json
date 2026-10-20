@@ -1,0 +1,42 @@
+{
+  "status": "LEAN_STORED_BUNDLE_ROOT_PRESERVATION_PROVED",
+  "module": "NearCompression/TerminalStoredBundleCheck.lean",
+  "theorems": [
+    "terminal_acyclic_checked",
+    "terminal_initial_stored_checked",
+    "terminal_checked_bundle_root",
+    "terminal_stored_bundle_regressions"
+  ],
+  "proved": "One Boolean bundle acceptance derives acyclicity, initial input/constant placement, reserved zero, finite layer routing and root placement, implying finite circuit output equals sequential source DAG root for every private input.",
+  "kernel_regressions": [
+    "Valid complete bundle accepted",
+    "Changed constant rejected",
+    "Misplaced input rejected",
+    "Nonzero reserved slot rejected",
+    "Cyclic dependency rejected"
+  ],
+  "capture_validation": {
+    "report": "results/lean-stored-route-captures.json",
+    "captures": 2,
+    "nodes_each": 10509,
+    "layers_each": 35,
+    "gates_each": 21834,
+    "malformed_rejections": 18,
+    "scope": "Native execution of proved checker; not kernel-reduced concrete capture certificates."
+  },
+  "remaining": [
+    "JSON parser refinement and concrete kernel certificates for retained captures.",
+    "Source AIR/program-to-DAG compiler correspondence must be connected to these bundles.",
+    "Checker proves semantic live routes; unused-gate bounds and padding shape remain separate executable invariants.",
+    "Global GKR/PCS sampling composition, commitment binding, execution soundness and quantum security remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 3819,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ]
+  }
+}

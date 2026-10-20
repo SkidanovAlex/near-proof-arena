@@ -1,0 +1,12 @@
+{
+  "airbender/direct-wasm/prove_swirl_weighted_dag.py": "8097ef94e5568943fe484c9aa750dd2377e6a02b7b4a41512b17b4f97f8b2718",
+  "airbender/direct-wasm/swirl_consumer_weights.py": "23870f5b5703832ad55833812b5004461aa90d0a406e999450b136bd7dd67e29",
+  "airbender/direct-wasm/compile_swirl_fixed_dag.py": "e0eda935f8b6547ae6f5925981bd386afb1b92095675456921eca7ca31716456",
+  "airbender/direct-wasm/pq384_terminal_gkr.py": "58c32cabd696c89aee5003b64062c4a4297fd0f809d720a6a9499e7f4f9d4cbc",
+  "airbender/direct-wasm/native-folded/kernel_gkr4.rs": "d1b60be5bc50eef105ceb630186d7c7ff515934b6df22e451f2312bed51683fa",
+  "NearCompression/SwirlKnownInputSplit.lean": "b449b71961cb63dcd164729b6112573373d4a34e009c61014466a0b2a1c9e0b2",
+  "results/swirl-security-review/dag-export/dag.jsonl.gz": "78a24241e778d287a3bc05c694bc1fb0101107abd1e22fa7a3f69427b0043e96",
+  "results/swirl-security-review/weighted-dag-gkr/input-obligation.json.gz": "885d81578122714f9eb091947380de42d9155f3f5f02955bea81bc5579a9e9fb",
+  "results/swirl-security-review/weighted-dag-gkr/pcs-obligation.json.gz": "eacae3ac4e577d488232d518f7f6be2cbc3b36a24873870bc53b09ae993249b1",
+  "results/swirl-security-review/weighted-dag-gkr/proof.json.gz": "cbad88db49dc5d9da8a3c284d3b51657d4c7556a4ca904c520f213015d0c40d6"
+}

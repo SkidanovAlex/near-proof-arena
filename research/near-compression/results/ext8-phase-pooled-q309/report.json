@@ -1,0 +1,217 @@
+{
+  "status": "PASS",
+  "derived_fold_transport": true,
+  "terminal_profile": "affine-v1",
+  "commitment_profile": "phase-pooled-v1",
+  "queries": 309,
+  "compression_extension_degree": 8,
+  "call_extension_degree": 8,
+  "compression_envelope_bytes": 1322232,
+  "compression_opening_bytes": 1278352,
+  "compression_reduction_bytes": 43880,
+  "call_proof_bytes": 103064,
+  "receipt_bytes": 731,
+  "calls_bytes": 5858,
+  "combined_bytes": 1431885,
+  "under_300000_bytes": false,
+  "fresh_conjunction_verified": true,
+  "pcs_breakdown": {
+    "header_bytes": 4360,
+    "stages": [
+      {
+        "kind": "sources",
+        "index": 0,
+        "unique_leaves": 309,
+        "leaf_bytes": 138432,
+        "sibling_bytes": 144624,
+        "derived_scalar_count": 0,
+        "shared_source": false
+      },
+      {
+        "kind": "sources",
+        "index": 1,
+        "unique_leaves": 309,
+        "leaf_bytes": 24720,
+        "sibling_bytes": 116784,
+        "derived_scalar_count": 0,
+        "shared_source": false
+      },
+      {
+        "kind": "sources",
+        "index": 2,
+        "unique_leaves": 179,
+        "leaf_bytes": 64440,
+        "sibling_bytes": 3360,
+        "derived_scalar_count": 0,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 0,
+        "unique_leaves": 309,
+        "leaf_bytes": 9888,
+        "sibling_bytes": 130896,
+        "derived_scalar_count": 309,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 1,
+        "unique_leaves": 309,
+        "leaf_bytes": 9888,
+        "sibling_bytes": 116784,
+        "derived_scalar_count": 309,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 2,
+        "unique_leaves": 309,
+        "leaf_bytes": 9888,
+        "sibling_bytes": 102960,
+        "derived_scalar_count": 309,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 3,
+        "unique_leaves": 309,
+        "leaf_bytes": 9888,
+        "sibling_bytes": 88320,
+        "derived_scalar_count": 309,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 4,
+        "unique_leaves": 309,
+        "leaf_bytes": 9888,
+        "sibling_bytes": 73968,
+        "derived_scalar_count": 309,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 5,
+        "unique_leaves": 307,
+        "leaf_bytes": 9760,
+        "sibling_bytes": 59472,
+        "derived_scalar_count": 309,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 6,
+        "unique_leaves": 303,
+        "leaf_bytes": 9568,
+        "sibling_bytes": 45552,
+        "derived_scalar_count": 307,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 7,
+        "unique_leaves": 290,
+        "leaf_bytes": 8864,
+        "sibling_bytes": 31968,
+        "derived_scalar_count": 303,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 8,
+        "unique_leaves": 267,
+        "leaf_bytes": 7808,
+        "sibling_bytes": 19872,
+        "derived_scalar_count": 290,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 9,
+        "unique_leaves": 230,
+        "leaf_bytes": 6176,
+        "sibling_bytes": 10128,
+        "derived_scalar_count": 267,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 10,
+        "unique_leaves": 179,
+        "leaf_bytes": 4096,
+        "sibling_bytes": 3360,
+        "derived_scalar_count": 230,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 11,
+        "unique_leaves": 118,
+        "leaf_bytes": 1824,
+        "sibling_bytes": 480,
+        "derived_scalar_count": 179,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 12,
+        "unique_leaves": 63,
+        "leaf_bytes": 256,
+        "sibling_bytes": 48,
+        "derived_scalar_count": 118,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 13,
+        "unique_leaves": 32,
+        "leaf_bytes": 32,
+        "sibling_bytes": 0,
+        "derived_scalar_count": 63,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 14,
+        "unique_leaves": 16,
+        "leaf_bytes": 0,
+        "sibling_bytes": 0,
+        "derived_scalar_count": 32,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 15,
+        "unique_leaves": 8,
+        "leaf_bytes": 0,
+        "sibling_bytes": 0,
+        "derived_scalar_count": 16,
+        "shared_source": false
+      },
+      {
+        "kind": "folds",
+        "index": 16,
+        "unique_leaves": 4,
+        "leaf_bytes": 0,
+        "sibling_bytes": 0,
+        "derived_scalar_count": 8,
+        "shared_source": false
+      }
+    ],
+    "total_bytes": 1278352,
+    "derived_scalar_bytes_saved": 117344
+  },
+  "scope": "Actual all-Ext8 SHA384 node/call diagnostic, externally fixed operands and receipt; static AIR/spec excluded. Not a full recursive verifier or full NEAR1Pgas proof. No PQ128/QROM/proximity certificate.",
+  "files": {
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/measure_ext8_compression_envelope.py": "60fcbf048602262d850a2f863564ae21ca5599994b4b6779072f02e5d80b39bc",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/ext8_execution_codec.py": "0c133abfaaa3c342af1e2babc64467f8b4d457b60dda11fac7df0c1055bc28ce",
+    "/tmp/ext8-phase-pooled-q309-report.json": "0b2f17e5a3549ecaeaca534bfbe5a31470d77c41ff582655cb25b9dd7b190b7f",
+    "/tmp/ext8-phase-pooled-statement.json": "4851b51b4625e64109c12058512eea3abecfec2d171692a87b72ff2ad32f5416",
+    "results/ext8-affine-q309/receipt.json": "f33b113e4398a341af225ff0c0abe2dd0a6b3159b84f4e489434039c2358ee7b",
+    "results/call-ext8-shared-q309/proof.bin": "efafe27f4400aaf2407e1762153ea9c22ec1fe1652124cdf12b9031c5354ed1e",
+    "results/ext8-linked-calls/calls.json": "6084f703978c43a4098d7e04e327d1eb2e1f6905db359d3b08b23c02da5dc996",
+    "/tmp/ext8-phase-pooled-q309/reduction.json": "ceeba89e1a84d78440060c146f47085d6580568415c644715032ac346cd09fdf",
+    "/tmp/ext8-phase-pooled-q309/proof.bin": "285fbcce1e9b67d467aea5ee4885929ee031e78305c0983146a97d0bc0937e32"
+  }
+}

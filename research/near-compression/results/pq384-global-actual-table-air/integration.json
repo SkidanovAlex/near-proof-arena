@@ -1,0 +1,34 @@
+{
+  "status": "PASS",
+  "table_index": 0,
+  "rows": 8192,
+  "width": 544,
+  "public_words": 5577,
+  "constraint_degree": 4,
+  "timing": {
+    "zerocheck_seconds": 3.322679423727095,
+    "shift_seconds": 6.498780217021704,
+    "opening_seconds": 5.021182237192988,
+    "separate_verifier_seconds": 0.42559530586004257
+  },
+  "whole_table_binary_bytes": 83852,
+  "air_prefix_bytes": 27990,
+  "opening_binary_bytes": 55862,
+  "proof_json_bytes": 400333,
+  "source_root": "38fdb616c24b4a7bec36ba71073cec05e865edb2ff3753804b859479d12302a6def3559577689f9ff617b8077bc95350",
+  "source_file_sha256": "ab4864f181e160e397ccc3d6cfb4238adbd5996b0c822c6ea86a55a20564d6b2",
+  "spec_sha256": "5d1b748f974b46accf8f65500717d7ab2419490506f157991e14b5bce439fe09",
+  "verification": "PASS: full table-local AIR/global-chain binary diagnostic",
+  "scope": "Actual D1 table-local AIR plus global-chain shared-path opening; not all33tables or global bus balance",
+  "limits": [
+    "Q8/Ext4 diagnostic; no128-bit or QROM security certification",
+    "Spec includes trusted entire public array"
+  ],
+  "root_fresh_process_verify": "PASS: full table-local AIR/global-chain binary diagnostic",
+  "codec_negative_checks": 46,
+  "small_reference_parity": true,
+  "audited_theorems": 1664,
+  "formal_module": "VirtualSourceBatching",
+  "formal_limits": "Arbitrary fixed sourceoracle semantic equivalence under exact authentication; not joint candidate extraction or QROM simulation",
+  "audit_log": "/tmp/near-virtual-batching-audit.log"
+}

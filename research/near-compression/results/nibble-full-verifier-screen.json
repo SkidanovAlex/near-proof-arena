@@ -1,0 +1,80 @@
+{
+  "status": "INDEPENDENT_NIBBLE_CHUNK_TRANSPORT_REJECTED",
+  "measured_proof_bytes": 265040,
+  "queries": 8,
+  "mandatory_bytes_per_fixed_spec_envelope": {
+    "header_and_roots": 1064,
+    "finals": 18912,
+    "local_rounds": 21728,
+    "total": 41704
+  },
+  "replacement_comparisons": [
+    {
+      "component": "entire_opening",
+      "allowance_bytes": 146466,
+      "measured_q8_hash_only_proof_bytes": 265040,
+      "headroom_bytes": -118574,
+      "covers_replaced_verifier": false
+    },
+    {
+      "component": "entire_compression_envelope",
+      "allowance_bytes": 190346,
+      "measured_q8_hash_only_proof_bytes": 265040,
+      "headroom_bytes": -74694,
+      "covers_replaced_verifier": false
+    },
+    {
+      "component": "entire_bundle",
+      "allowance_bytes": 299999,
+      "measured_q8_hash_only_proof_bytes": 265040,
+      "headroom_bytes": 34959,
+      "covers_replaced_verifier": false
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "unchanged_whole_input_deduplicated_verifier",
+      "sha384_compression_blocks": 242409,
+      "independent_64_slot_envelopes": 3788,
+      "mandatory_header_roots_finals_local_bytes": 157974752,
+      "exceeds_300000_before_GKR_PCS_and_call_binding": true
+    },
+    {
+      "name": "optimistically_erased_derived_transcript_work",
+      "sha384_compression_blocks": 152167,
+      "independent_64_slot_envelopes": 2378,
+      "mandatory_header_roots_finals_local_bytes": 99172112,
+      "exceeds_300000_before_GKR_PCS_and_call_binding": true
+    }
+  ],
+  "coverage": {
+    "implemented": [
+      "64 independent SHA384 compression state/message/result relations",
+      "phase scheduling, word routing, fixed lookup relations and bounded additions within that relation"
+    ],
+    "missing": [
+      "bind private boundary root to exact verifier hash calls and their multiplicities",
+      "SHA message framing, padding, IV, chaining and digest truncation for those calls",
+      "derive Fiat-Shamir challenges from the authenticated transcript",
+      "verify Merkle index/path/root equations and PCS fold/query equations",
+      "local/GKR algebraic checks and source-to-auxiliary opening obligations",
+      "outer proof soundness, adaptive QROM accounting and PQ128 parameters",
+      "full near-chunk-v3 semantics and 1 Petagas capacity"
+    ]
+  },
+  "decision": "Do not transport one existing envelope per hash batch or launch larger SHA-only proving as a substitute for full-verifier recursion. A next viable candidate must jointly prove the closed verifier, amortize fixed messages globally, and account for call routing plus arithmetic; validate its complete byte/security ledger before full-scale proving.",
+  "scope": "Exact lower bound only for concatenating independent envelopes with this fixed 64-slot specification. Workload is the recorded verifier after whole-input hash deduplication, not a minimum over new algorithms, block/state sharing or transcript redesign. Optimistic scenario is an assumed workload, not an implemented protocol. This does not rule out joint proofs, recursive aggregation, different AIR/codec, or a redesigned verifier. q8 and hash-only coverage cannot establish PQ128 or full NEAR feasibility.",
+  "sha256": {
+    "airbender/direct-wasm/screen_nibble_full_verifier.py": "cebea97a1763ab711266c72e83af7d6362338624b7689893193b414fcb98c9bf",
+    "airbender/direct-wasm/pq384_ext8_auxiliary.py": "f8e8eb9e62941fae14a0604aa5babf9422e9a5fe4fcf431e054b0c56020d1e49",
+    "airbender/direct-wasm/scheduled_bus_whir.py": "d86f577c00aa6af124b5f2862abd6164235bfa70585121778e772000d2a3c8f2",
+    "airbender/direct-wasm/ext8_execution_codec.py": "0c133abfaaa3c342af1e2babc64467f8b4d457b60dda11fac7df0c1055bc28ce",
+    "results/sha384-nibble64/codec-report.json": "085467e05ab8a90b00dcc3653d2f41275519b89821e8bcf3b599ecaa721595db",
+    "results/sha384-nibble64/statement.json.gz": "32c18d1dd33c9bd6949de80861acf5f4c5df94b4843af0b6039f76662cb09fbc",
+    "results/switch-full-verifier-hash-work.json": "030200f4f7643648bf18cb32d5fd55cd93336824549b54757b04089c88663f21",
+    "results/ext8-switch-execution-q309/report.json": "a56cc786cb66529a398785caced9fd51e6a8b78e9edc76e1b06de4bbc3e643b4",
+    "results/derived-transcript-bindings.json": "20b63f657147802a5590a013e1b8c09ab8a580b2c328bd95802164f38d376a6b",
+    "results/ext8-switch-execution-q309/codec-report.json": "0bd112a656b25d607915bff5bd78cc1d61efad5d7eb9537497a54d0a547cca83",
+    "results/sha384-nibble64/compression.bin": "22a622b664d83f83ca63d4cf97afe7c1fdcbfaf1c38dd65255a6c1ffc9a9327b"
+  }
+}

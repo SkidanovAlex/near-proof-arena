@@ -1,0 +1,44 @@
+{
+  "status": "PRIVATE_BOUNDARY_FULL_WITNESS_CHECKED",
+  "blocks": 64,
+  "full_witness_verified": true,
+  "source_constraints_evaluated": 8802336,
+  "canonical_check_seconds": 22.528630007058382,
+  "table_names": [
+    "schedule",
+    "round",
+    "endpoint",
+    "xor3/fixed",
+    "choose/fixed",
+    "majority/fixed",
+    "splice1/fixed",
+    "splice2/fixed",
+    "splice3/fixed",
+    "range/fixed",
+    "private-boundary"
+  ],
+  "boundary_source_index": 10,
+  "boundary_root": "fc52a781c41cefe14fbd90a313758e8837710fb120e53944da16911a8b491a1268684695a51ab577548a88f6c655c25a",
+  "public_field_elements": 0,
+  "source_aux_cells": 27939408,
+  "files": {
+    "source/source-00-rows.json": "55dea8af44240cdb835898d5c1e2154207de1a8b8756ea7deeb784e0958f2683",
+    "source/source-01-rows.json": "ea96a9d84af7d1eac83e94652424764751491da1830b1fe5688d092c85373eae",
+    "source/source-02-rows.json": "29342f338cafe266c98697681951958b10f8887429e618d591215922bc3c531a",
+    "source/source-03-rows.json": "dae04856356d8f72a8751de8a459933152907cb8e9b165005b3fecc9ed19b819",
+    "source/source-04-rows.json": "38f7b66b2097cc5adc2d84c6511e99619804611beece0cfc656c43969843dff4",
+    "source/source-05-rows.json": "161ac356835947434c47e8da6175585c911547f30de262ae8e34cf26081bb670",
+    "source/source-06-rows.json": "3e8006eb2961b2ab213990f2477f51688c7bc246ef3268b318a47c0c1eb696af",
+    "source/source-07-rows.json": "2c8b085073c7e3c5faab16ef43bae5d079dec6df4d7515b8f1ab050d38b5b5b7",
+    "source/source-08-rows.json": "b73809d79a7e493444b398cd4c79adb9e90abd87278153592e09b8987ae6b17e",
+    "source/source-09-rows.json": "cbeba751a6820cc5dfa21b290a5ea0a9cecd28c87c1e568fe9d2c40604a4da66",
+    "source/source-10-rows.json": "ada85892cbaaa02614a13f6b8413685de7a27cb300540b91a9629c9dddad35d8",
+    "statement.json": "76d7a6c9d6bc27470ce1d64742a11b97d4259c691b4beea45b0b2618a0d55e72"
+  },
+  "source_sha256": {
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/prepare_sha384_nibble_private.py": "8370c946d4c985d55a0657f29511b717ffb6e5cf29b0377a6e8f7019a7a3744e",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/sha384_nibble_boundary_air.py": "39ba65dd1a5972ba7a1ed6ef70100b5d78b632f6a4f1e669e2174c6347377428"
+  },
+  "prior_public_preparation_sha256": "b724fe09a970ca948ec4d829df21f80a366cd355c2fdb2f081fdf7ca2ddc8510",
+  "scope": "Full compression AIR with proof-committed private state/message/result table. Empty public vector does not bind any application hash claim: boundary root still needs same-root recursive call routing. No zero-knowledge, succinct proof, formal compiler, or PQ128 claim."
+}

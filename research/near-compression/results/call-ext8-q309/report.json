@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "queries": 309,
+  "challenge_extension_degree": 8,
+  "call_count": 12,
+  "equations": 2880,
+  "input_capacity": 8192,
+  "gkr_layers": 14,
+  "call_proof_bytes": 168896,
+  "compression_proof_bytes": 120477,
+  "combined_proof_bytes": 289373,
+  "trusted_calls_json_bytes": 5858,
+  "receipt_json_bytes": 731,
+  "combined_proofs_calls_receipt_bytes": 295962,
+  "prover_seconds": 6.032374978065491,
+  "encode_decode_seconds": 8.596689694095403,
+  "fresh_conjunction_verified": true,
+  "disclosed_row_bytes": 0,
+  "negative_cases": [
+    "truncated",
+    "trailing",
+    "gkr-coefficient",
+    "pcs-authentication",
+    "external-digest",
+    "external-message",
+    "call-order",
+    "trusted-query-budget"
+  ],
+  "source_mutation_checks": [
+    "IV",
+    "message-block",
+    "hidden-chaining-output",
+    "hidden-chaining-input",
+    "final-digest"
+  ],
+  "proof_sha256": "e4e1797ed80f2ee30c059f1b1fd071b1bf5fec48ec6d35a7e196c487ca0c78cd",
+  "scope": "Same committed use root for call-link GKR/PCS and compression proof. Caller fixes message bytes, digests and ordered use ordinals. Call-link proof uses Ext8 and the explicit query budget; compression proof remains Q8/Ext4. No128-bit quantum certificate, QROM, complete composition or full recursion claim; static AIR/spec external."
+}

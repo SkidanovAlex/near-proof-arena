@@ -1,0 +1,500 @@
+{
+  "status": "CONDITIONAL_QUERY_PAYLOAD_SCREEN",
+  "rows": [
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 0,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        182,
+        89,
+        59
+      ],
+      "extension": 5,
+      "base_elements": 43697,
+      "extension_elements": 3582,
+      "all_auth_and_column_reduction_free_bytes": 247313,
+      "fails_size_even_with_free_components": false
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 0,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        182,
+        89,
+        59
+      ],
+      "extension": 9,
+      "base_elements": 43697,
+      "extension_elements": 3582,
+      "all_auth_and_column_reduction_free_bytes": 304625,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 0,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        182,
+        89,
+        59
+      ],
+      "extension": 10,
+      "base_elements": 43697,
+      "extension_elements": 3582,
+      "all_auth_and_column_reduction_free_bytes": 318953,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 0,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        182,
+        89,
+        59
+      ],
+      "extension": 12,
+      "base_elements": 43697,
+      "extension_elements": 3582,
+      "all_auth_and_column_reduction_free_bytes": 347609,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 0,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        184,
+        90,
+        59
+      ],
+      "extension": 5,
+      "base_elements": 44177,
+      "extension_elements": 3598,
+      "all_auth_and_column_reduction_free_bytes": 249553,
+      "fails_size_even_with_free_components": false
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 0,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        184,
+        90,
+        59
+      ],
+      "extension": 9,
+      "base_elements": 44177,
+      "extension_elements": 3598,
+      "all_auth_and_column_reduction_free_bytes": 307121,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 0,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        184,
+        90,
+        59
+      ],
+      "extension": 10,
+      "base_elements": 44177,
+      "extension_elements": 3598,
+      "all_auth_and_column_reduction_free_bytes": 321513,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 0,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        184,
+        90,
+        59
+      ],
+      "extension": 12,
+      "base_elements": 44177,
+      "extension_elements": 3598,
+      "all_auth_and_column_reduction_free_bytes": 350297,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 15,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        172,
+        84,
+        55
+      ],
+      "extension": 5,
+      "base_elements": 41297,
+      "extension_elements": 3438,
+      "all_auth_and_column_reduction_free_bytes": 234833,
+      "fails_size_even_with_free_components": false
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 15,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        172,
+        84,
+        55
+      ],
+      "extension": 9,
+      "base_elements": 41297,
+      "extension_elements": 3438,
+      "all_auth_and_column_reduction_free_bytes": 289841,
+      "fails_size_even_with_free_components": false
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 15,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        172,
+        84,
+        55
+      ],
+      "extension": 10,
+      "base_elements": 41297,
+      "extension_elements": 3438,
+      "all_auth_and_column_reduction_free_bytes": 303593,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 15,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        172,
+        84,
+        55
+      ],
+      "extension": 12,
+      "base_elements": 41297,
+      "extension_elements": 3438,
+      "all_auth_and_column_reduction_free_bytes": 331097,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 15,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        173,
+        84,
+        56
+      ],
+      "extension": 5,
+      "base_elements": 41537,
+      "extension_elements": 3454,
+      "all_auth_and_column_reduction_free_bytes": 236113,
+      "fails_size_even_with_free_components": false
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 15,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        173,
+        84,
+        56
+      ],
+      "extension": 9,
+      "base_elements": 41537,
+      "extension_elements": 3454,
+      "all_auth_and_column_reduction_free_bytes": 291377,
+      "fails_size_even_with_free_components": false
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 15,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        173,
+        84,
+        56
+      ],
+      "extension": 10,
+      "base_elements": 41537,
+      "extension_elements": 3454,
+      "all_auth_and_column_reduction_free_bytes": 305193,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 0,
+      "nominal_grinding_credit": 15,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        173,
+        84,
+        56
+      ],
+      "extension": 12,
+      "base_elements": 41537,
+      "extension_elements": 3454,
+      "all_auth_and_column_reduction_free_bytes": 332825,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 0,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        188,
+        91,
+        61
+      ],
+      "extension": 5,
+      "base_elements": 45137,
+      "extension_elements": 3646,
+      "all_auth_and_column_reduction_free_bytes": 254353,
+      "fails_size_even_with_free_components": false
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 0,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        188,
+        91,
+        61
+      ],
+      "extension": 9,
+      "base_elements": 45137,
+      "extension_elements": 3646,
+      "all_auth_and_column_reduction_free_bytes": 312689,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 0,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        188,
+        91,
+        61
+      ],
+      "extension": 10,
+      "base_elements": 45137,
+      "extension_elements": 3646,
+      "all_auth_and_column_reduction_free_bytes": 327273,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 0,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        188,
+        91,
+        61
+      ],
+      "extension": 12,
+      "base_elements": 45137,
+      "extension_elements": 3646,
+      "all_auth_and_column_reduction_free_bytes": 356441,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 0,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        190,
+        92,
+        61
+      ],
+      "extension": 5,
+      "base_elements": 45617,
+      "extension_elements": 3662,
+      "all_auth_and_column_reduction_free_bytes": 256593,
+      "fails_size_even_with_free_components": false
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 0,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        190,
+        92,
+        61
+      ],
+      "extension": 9,
+      "base_elements": 45617,
+      "extension_elements": 3662,
+      "all_auth_and_column_reduction_free_bytes": 315185,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 0,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        190,
+        92,
+        61
+      ],
+      "extension": 10,
+      "base_elements": 45617,
+      "extension_elements": 3662,
+      "all_auth_and_column_reduction_free_bytes": 329833,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 0,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        190,
+        92,
+        61
+      ],
+      "extension": 12,
+      "base_elements": 45617,
+      "extension_elements": 3662,
+      "all_auth_and_column_reduction_free_bytes": 359129,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 15,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        177,
+        86,
+        57
+      ],
+      "extension": 5,
+      "base_elements": 42497,
+      "extension_elements": 3502,
+      "all_auth_and_column_reduction_free_bytes": 240913,
+      "fails_size_even_with_free_components": false
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 15,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        177,
+        86,
+        57
+      ],
+      "extension": 9,
+      "base_elements": 42497,
+      "extension_elements": 3502,
+      "all_auth_and_column_reduction_free_bytes": 296945,
+      "fails_size_even_with_free_components": false
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 15,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        177,
+        86,
+        57
+      ],
+      "extension": 10,
+      "base_elements": 42497,
+      "extension_elements": 3502,
+      "all_auth_and_column_reduction_free_bytes": 310953,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 15,
+      "allocation": "relaxed_half_each",
+      "queries": [
+        177,
+        86,
+        57
+      ],
+      "extension": 12,
+      "base_elements": 42497,
+      "extension_elements": 3502,
+      "all_auth_and_column_reduction_free_bytes": 338969,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 15,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        179,
+        87,
+        58
+      ],
+      "extension": 5,
+      "base_elements": 42977,
+      "extension_elements": 3534,
+      "all_auth_and_column_reduction_free_bytes": 243473,
+      "fails_size_even_with_free_components": false
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 15,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        179,
+        87,
+        58
+      ],
+      "extension": 9,
+      "base_elements": 42977,
+      "extension_elements": 3534,
+      "all_auth_and_column_reduction_free_bytes": 300017,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 15,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        179,
+        87,
+        58
+      ],
+      "extension": 10,
+      "base_elements": 42977,
+      "extension_elements": 3534,
+      "all_auth_and_column_reduction_free_bytes": 314153,
+      "fails_size_even_with_free_components": true
+    },
+    {
+      "log2_C": 8,
+      "nominal_grinding_credit": 15,
+      "allocation": "query_quarter_split_three",
+      "queries": [
+        179,
+        87,
+        58
+      ],
+      "extension": 12,
+      "base_elements": 42977,
+      "extension_elements": 3534,
+      "all_auth_and_column_reduction_free_bytes": 342425,
+      "fails_size_even_with_free_components": true
+    }
+  ],
+  "exact_interval_minima_verified": true,
+  "security_certified": false,
+  "exclusions": [
+    "Full QROM applicability and losses",
+    "All hash security terms",
+    "All authentication bytes",
+    "All column-replacement bytes",
+    "Changed recursive circuit layout",
+    "NEAR and VM public binding"
+  ],
+  "notes": [
+    "15-bit credit is hypothetical, not a quantum grinding theorem.",
+    "Relaxed half-each grants the whole success budget to each term.",
+    "Failure concerns this accounting and fixed geometry, not an attack."
+  ]
+}

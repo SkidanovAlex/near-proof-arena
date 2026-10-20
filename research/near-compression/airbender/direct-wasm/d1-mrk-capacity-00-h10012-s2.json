@@ -1,0 +1,32 @@
+{
+  "case": "/data/illia/nearproof-wt/direct-wasm-whir/oracle/fixtures/v3/public-d1/d1/00-h10012-s2",
+  "empty_log1": "PASS",
+  "rejections": [
+    {
+      "error": "Merkle log must be within1..19",
+      "kind": "height",
+      "log": 0
+    },
+    {
+      "error": "Merkle log must be within1..19",
+      "kind": "height",
+      "log": 20
+    },
+    {
+      "error": "Merkle requires 3 rows including padding, log1 cannot fit",
+      "kind": "height",
+      "log": 1
+    },
+    {
+      "error": "Merkle node count differs from complete shape",
+      "kind": "missing_node"
+    },
+    {
+      "error": "Merkle node count differs from complete shape",
+      "kind": "extra_node"
+    }
+  ],
+  "required_rows": 3,
+  "scope": "Capacity and complete-block shape guards before trace allocation; no proof claim",
+  "status": "PASS"
+}

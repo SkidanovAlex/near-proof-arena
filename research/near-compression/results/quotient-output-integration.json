@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 2020,
+  "sources": {
+    "PreparedLiteralRun": "5822aa68bb9dd6998963e6d4468a009869291887d880849cfa520245c4159645",
+    "PreparedExecPublicOutput": "6a6cd8902167a631624ddf3349a8e06cda2bbd9a52ce19b4cb231b286a58ed59",
+    "EqualityWeightResidual": "8d8336ce80a0fe45cc3ef6ecec0cc6d743f48a25193e3b2df31af9c1d5fa8f2d",
+    "ColumnQuotient": "8c4a8ec10b7e0445ff0269684c712859c191c13af3a406cc6bdbc0743e97580a",
+    "ColumnQuotientSHA384": "a17f5dba2c0d5b07706c48156262d8a26f257d677e91d967be1625bba3bef322"
+  },
+  "output_scope": "Given actual terminal result represented at first DONE row, literal AIR padding and exact natural boundary bus imply published status, gas and live i32 stack. TerminalWitness-to-first-DONE-row bridge remains open.",
+  "run_change": "Terminal witness now retains labels invariant already derived by execution induction; no new caller premise.",
+  "quotient_evidence": "results/sha384-column-quotient/root-review.json"
+}

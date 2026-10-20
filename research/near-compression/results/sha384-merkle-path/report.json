@@ -1,0 +1,50 @@
+{
+  "status": "PASS",
+  "honest_paths": 14,
+  "exact_query_sequences": 22,
+  "negative_cases": [
+    "root byte",
+    "context byte",
+    "leaf byte",
+    "wrong position",
+    "wrong count",
+    "non power2",
+    "count1",
+    "out of range index",
+    "short root",
+    "short sibling",
+    "omitted sibling",
+    "extra sibling",
+    "reordered siblings",
+    "sibling byte 0",
+    "sibling byte 1",
+    "sibling byte 2"
+  ],
+  "files": [
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/SHA384MerklePathFixture.lean",
+      "sha256": "fe3efbd8259f0560e5813e5ec5e73e6f5579ffac6843203384d34ee2ca653762"
+    },
+    {
+      "path": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/direct-wasm/test_sha384_merkle_path.py",
+      "sha256": "8b6bd932d443e00b41152c94b04949fe73084d8af0189e474759ab0587537fb7"
+    },
+    {
+      "path": "airbender/direct-wasm/pq384_primitives.py",
+      "sha256": "230b8ba21cb619cb5ed9cba0bf112adaaa766f3a8dedcad9b5e9ec6f51e47d96"
+    },
+    {
+      "path": "results/sha384-merkle-path/inputs.json",
+      "sha256": "bbdf40e37c38c0734ecd3f9bafca87374e371ed2784968f6699d94ff5e82411b"
+    },
+    {
+      "path": "results/sha384-merkle-path/lean-results.json",
+      "sha256": "eca0ad9a3814bf54c3223f648345f5f205c1a78bca7505fdcb66338fe62f7079"
+    }
+  ],
+  "limits": [
+    "Byte-list semantic model excludes Python non-byte types; count/index/shape checks match typed accepted paths.",
+    "Collision theorem locates distinct inputs in the two actual finite path-query supports; no SHA384 collision-resistance probability bound.",
+    "No probability, QROM, or128-bit security bound inherited from existing64-byte widehash modules."
+  ]
+}

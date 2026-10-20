@@ -1,0 +1,40 @@
+{
+  "kind": "actual SHA512 bit-operation AIR validation",
+  "word_cases": 8,
+  "operations_per_word_case": 6,
+  "one_hot_sigma_cases": 64,
+  "rejected_mutations": 7680,
+  "mutation_policy": "Force input bits to2;increment orflip outputs. Legitimate unconstrained input changes need not fail.",
+  "independent_python_fixture": {
+    "inputs": [
+      81985529216486895,
+      18364758544493064720,
+      1085102592571150095
+    ],
+    "outputs": [
+      13242124488700510635,
+      8575716958325396839,
+      8039707622016752289,
+      8116407978251530618,
+      1012195045828461056,
+      1085102592571150095
+    ]
+  },
+  "table": {
+    "columns": 576,
+    "constraints": 576,
+    "max_degree": 3,
+    "max_log": 22
+  },
+  "full_audit_theorems": 991,
+  "command": "lake env lean --run SHA512BitsSmoke.lean",
+  "source_sha256": {
+    "NearCompression/SHA512BitSemantics.lean": "cf3d97344c054e1edf067524d65b7f8eedd3634c00e16d22043ea87ea0385b11",
+    "NearCompression/SHA512Bits.lean": "586c86ac8e4516e8aede009a44c468ae7a12f67c15c864e815642237df34510c",
+    "SHA512BitsSmoke.lean": "414a012c7a46c5ef1c452f7c108afbae133d4098efdff3464197943d117b8714"
+  },
+  "limitations": [
+    "Bit/addition circuit wiring and full SHA512 hash assembly incomplete.",
+    "No full state transition,proof-size measurement or quantum-security bound."
+  ]
+}

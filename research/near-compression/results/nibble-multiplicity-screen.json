@@ -1,0 +1,335 @@
+{
+  "status": "STATIC_MULTIPLICITY_PACKING_SCREEN",
+  "blocks": 64,
+  "trials": [
+    {
+      "operation": "xor3",
+      "static_requests_per_block": 4608,
+      "per_value_natural_multiplicity_upper_bound": 294912,
+      "old_bits": 21,
+      "new_bits": 19,
+      "geometry": {
+        "source": {
+          "before": {
+            "rows": 4096,
+            "width": 33,
+            "packing": 1,
+            "degree": 4096,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 4096,
+            "width": 31,
+            "packing": 1,
+            "degree": 4096,
+            "lanes": 31,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "auxiliary": {
+          "before": {
+            "rows": 4096,
+            "width": 328,
+            "packing": 8,
+            "degree": 32768,
+            "lanes": 41,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 4096,
+            "width": 296,
+            "packing": 8,
+            "degree": 32768,
+            "lanes": 37,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    },
+    {
+      "operation": "choose",
+      "static_requests_per_block": 1280,
+      "per_value_natural_multiplicity_upper_bound": 81920,
+      "old_bits": 21,
+      "new_bits": 17,
+      "geometry": {
+        "source": {
+          "before": {
+            "rows": 4096,
+            "width": 33,
+            "packing": 1,
+            "degree": 4096,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 4096,
+            "width": 29,
+            "packing": 1,
+            "degree": 4096,
+            "lanes": 29,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "auxiliary": {
+          "before": {
+            "rows": 4096,
+            "width": 328,
+            "packing": 8,
+            "degree": 32768,
+            "lanes": 41,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 4096,
+            "width": 264,
+            "packing": 8,
+            "degree": 32768,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    },
+    {
+      "operation": "majority",
+      "static_requests_per_block": 1280,
+      "per_value_natural_multiplicity_upper_bound": 81920,
+      "old_bits": 21,
+      "new_bits": 17,
+      "geometry": {
+        "source": {
+          "before": {
+            "rows": 4096,
+            "width": 33,
+            "packing": 1,
+            "degree": 4096,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 4096,
+            "width": 29,
+            "packing": 1,
+            "degree": 4096,
+            "lanes": 29,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "auxiliary": {
+          "before": {
+            "rows": 4096,
+            "width": 328,
+            "packing": 8,
+            "degree": 32768,
+            "lanes": 41,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 4096,
+            "width": 264,
+            "packing": 8,
+            "degree": 32768,
+            "lanes": 33,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    },
+    {
+      "operation": "splice1",
+      "static_requests_per_block": 3328,
+      "per_value_natural_multiplicity_upper_bound": 212992,
+      "old_bits": 21,
+      "new_bits": 18,
+      "geometry": {
+        "source": {
+          "before": {
+            "rows": 256,
+            "width": 29,
+            "packing": 1,
+            "degree": 256,
+            "lanes": 29,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 256,
+            "width": 26,
+            "packing": 1,
+            "degree": 256,
+            "lanes": 26,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "auxiliary": {
+          "before": {
+            "rows": 256,
+            "width": 328,
+            "packing": 8,
+            "degree": 2048,
+            "lanes": 41,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 256,
+            "width": 280,
+            "packing": 8,
+            "degree": 2048,
+            "lanes": 35,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    },
+    {
+      "operation": "splice2",
+      "static_requests_per_block": 4864,
+      "per_value_natural_multiplicity_upper_bound": 311296,
+      "old_bits": 21,
+      "new_bits": 19,
+      "geometry": {
+        "source": {
+          "before": {
+            "rows": 256,
+            "width": 29,
+            "packing": 1,
+            "degree": 256,
+            "lanes": 29,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 256,
+            "width": 27,
+            "packing": 1,
+            "degree": 256,
+            "lanes": 27,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "auxiliary": {
+          "before": {
+            "rows": 256,
+            "width": 328,
+            "packing": 8,
+            "degree": 2048,
+            "lanes": 41,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 256,
+            "width": 296,
+            "packing": 8,
+            "degree": 2048,
+            "lanes": 37,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    },
+    {
+      "operation": "splice3",
+      "static_requests_per_block": 3328,
+      "per_value_natural_multiplicity_upper_bound": 212992,
+      "old_bits": 21,
+      "new_bits": 18,
+      "geometry": {
+        "source": {
+          "before": {
+            "rows": 256,
+            "width": 29,
+            "packing": 1,
+            "degree": 256,
+            "lanes": 29,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 256,
+            "width": 26,
+            "packing": 1,
+            "degree": 256,
+            "lanes": 26,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "auxiliary": {
+          "before": {
+            "rows": 256,
+            "width": 328,
+            "packing": 8,
+            "degree": 2048,
+            "lanes": 41,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 256,
+            "width": 280,
+            "packing": 8,
+            "degree": 2048,
+            "lanes": 35,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    },
+    {
+      "operation": "range",
+      "static_requests_per_block": 2800,
+      "per_value_natural_multiplicity_upper_bound": 179200,
+      "old_bits": 21,
+      "new_bits": 18,
+      "geometry": {
+        "source": {
+          "before": {
+            "rows": 16,
+            "width": 25,
+            "packing": 8,
+            "degree": 128,
+            "lanes": 4,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 16,
+            "width": 22,
+            "packing": 8,
+            "degree": 128,
+            "lanes": 3,
+            "within_current_degree_lane_caps": true
+          }
+        },
+        "auxiliary": {
+          "before": {
+            "rows": 16,
+            "width": 328,
+            "packing": 8,
+            "degree": 128,
+            "lanes": 41,
+            "within_current_degree_lane_caps": true
+          },
+          "after": {
+            "rows": 16,
+            "width": 280,
+            "packing": 8,
+            "degree": 128,
+            "lanes": 35,
+            "within_current_degree_lane_caps": true
+          }
+        }
+      }
+    }
+  ],
+  "source_aux_cells_saved": 731952,
+  "packed_base_coefficients_saved": 732032,
+  "lanes_saved": 61,
+  "decision": "Packing retains savings. Candidate for compiler specialization after completing baseline proof measurement; no optimized proof launched.",
+  "required_semantic_contract": "For each canonical scheduled block, operation-tagged source requests equal the static graph counts. Under exact natural bus balance, any received tuple multiplicity is bounded by the total requests to its relation. No honest-witness maximum is used. Universal compiler/routing correctness and cryptographic extraction of natural balance are still unproved.",
+  "scope": "Static graph-count and exact geometry screen only. No revised compiler, witness, succinct proof, Lean theorem, PQ128 or proof-byte saving demonstrated.",
+  "sha256": {
+    "airbender/direct-wasm/screen_nibble_multiplicity_bounds.py": "52f751d2c4e34eec9fa5f675fb987ec337b8dd760be0afaa3716c3304cf676e1",
+    "airbender/direct-wasm/sha384_nibble_circuit.py": "d5e832c4d2076ae13e9d9b6742698fe5138b8742983ecfeb6b2c429906adb10c",
+    "airbender/direct-wasm/plan_sha384_nibble_rows.py": "11a6241e9be317eb9f778ba84de0dca7cf6b147a58e4f1b5725d0b43e9f07237",
+    "airbender/direct-wasm/sha384_nibble_lookup_air.py": "412988773c1f14e6e679e3f24c138f94981d97ea7be90397a2f190459e7a734f",
+    "airbender/direct-wasm/pq384_ext8_auxiliary.py": "f8e8eb9e62941fae14a0604aa5babf9422e9a5fe4fcf431e054b0c56020d1e49",
+    "results/sha384-nibble64/statement.json.gz": "32c18d1dd33c9bd6949de80861acf5f4c5df94b4843af0b6039f76662cb09fbc"
+  }
+}

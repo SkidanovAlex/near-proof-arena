@@ -1,0 +1,9 @@
+{
+  "source": "/data/illia/nearproof-wt/direct-wasm-whir/examples/np-udr-stark-v2/source",
+  "isolated": "/tmp/near-d1-height-source",
+  "changed_file": "src/v3/sched.rs",
+  "before_sha256": "2669eef5ffd6a8f716eae8a1b544900c3e2bab9d2c8d70ce488892c0c819a6ad",
+  "after_sha256": "d1df6ac3490637e77f191396a993f123c443e626a266c7cbc6ba89a9d7e35939",
+  "patch_sha256": "cfe40a406ad497fafaac57de4ffe8aab57b07f379d5edb52b18061e558885a7d",
+  "scope": "Explicit height wrappers in isolated copy; no production edits; no AIR changes."
+}

@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "cases": 36,
+  "coefficient_entries": 2044,
+  "borrow_dp_vs_explicit_mle_cases": 108,
+  "lean_export_sha256": "928aec5bf73e38268ae8109f5018760b3458a57984cebaaf27363b53172b0074",
+  "scope": "Lean dual current/cyclic-next weights vs actual Python row_weights, with independent inverse transform and borrow-DP regression. Base-field embeddings only; not native commitment or full implementation proof."
+}

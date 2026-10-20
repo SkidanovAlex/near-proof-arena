@@ -1,0 +1,3475 @@
+{
+  "status": "IDEAL_QUERY_EXPECTATION_SCREEN_NOT_PROOF_MEASUREMENT",
+  "validation_exhaustive_tree_cases": 12,
+  "cases": [
+    {
+      "extension_degree": 4,
+      "queries": 8,
+      "non_pcs_bytes": 51590,
+      "optimized_expected_proof_bytes": 122682.10033980387,
+      "retained_expected_proof_bytes": 122682.10033980387,
+      "branches": [
+        {
+          "table": 0,
+          "branch": 0,
+          "width": 605,
+          "best": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 24812.84582448748,
+            "fixed_bytes": 1174,
+            "expected_leaf_bytes": 4978.888203292583,
+            "expected_sibling_bytes": 18659.957621194895
+          },
+          "retained": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 24812.84582448748,
+            "fixed_bytes": 1174,
+            "expected_leaf_bytes": 4978.888203292583,
+            "expected_sibling_bytes": 18659.957621194895
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 38,
+              "expected_bytes": 24812.84582448748,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 4978.888203292583,
+              "expected_sibling_bytes": 18659.957621194895
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 19,
+              "expected_bytes": 27867.324068146158,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 4019.557929934977,
+              "expected_sibling_bytes": 22577.76613821118
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 10,
+              "expected_bytes": 31945.14625369994,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 3699.694627825102,
+              "expected_sibling_bytes": 26879.451625874837
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 5,
+              "expected_bytes": 36662.794146106164,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 3635.718551624583,
+              "expected_sibling_bytes": 31565.075594481583
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 3,
+              "expected_bytes": 41956.385645078946,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 3763.7168426141325,
+              "expected_sibling_bytes": 36634.66880246482
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 2,
+              "expected_bytes": 47697.96005454697,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 3955.7134246844976,
+              "expected_sibling_bytes": 42088.24662986248
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 53823.52805536898,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 4147.711288468698,
+              "expected_sibling_bytes": 47925.81676690029
+            }
+          ]
+        },
+        {
+          "table": 0,
+          "branch": 1,
+          "width": 12,
+          "best": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 12,
+            "expected_bytes": 9902.302618665351,
+            "fixed_bytes": 790,
+            "expected_leaf_bytes": 2289.9696600382204,
+            "expected_sibling_bytes": 6822.33295862713
+          },
+          "retained": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 12,
+            "expected_bytes": 9902.302618665351,
+            "fixed_bytes": 790,
+            "expected_leaf_bytes": 2289.9696600382204,
+            "expected_sibling_bytes": 6822.33295862713
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 1,
+              "degree": 256,
+              "lanes": 12,
+              "expected_bytes": 9902.302618665351,
+              "fixed_bytes": 790,
+              "expected_leaf_bytes": 2289.9696600382204,
+              "expected_sibling_bytes": 6822.33295862713
+            },
+            {
+              "packing": 2,
+              "degree": 512,
+              "lanes": 6,
+              "expected_bytes": 12257.973012351425,
+              "fixed_bytes": 886,
+              "expected_leaf_bytes": 2164.1460818394808,
+              "expected_sibling_bytes": 9207.826930511945
+            },
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 3,
+              "expected_bytes": 15185.611556246775,
+              "fixed_bytes": 982,
+              "expected_leaf_bytes": 2228.2549236286286,
+              "expected_sibling_bytes": 11975.356632618146
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 2,
+              "expected_bytes": 18623.939414276687,
+              "fixed_bytes": 1078,
+              "expected_leaf_bytes": 2420.0363337644517,
+              "expected_sibling_bytes": 15125.903080512235
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 1,
+              "expected_bytes": 22445.857296273516,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 2611.89967507862,
+              "expected_sibling_bytes": 18659.957621194895
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 1,
+              "expected_bytes": 26715.57013185771,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 2867.803993646528,
+              "expected_sibling_bytes": 22577.76613821118
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 1,
+              "expected_bytes": 31369.20777338249,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 3123.7561475076527,
+              "expected_sibling_bytes": 26879.451625874837
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 1,
+              "expected_bytes": 36406.80781756394,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 3379.732223082359,
+              "expected_sibling_bytes": 31565.075594481583
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 41828.38906299554,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 3635.720260530729,
+              "expected_sibling_bytes": 36634.66880246482
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 47633.96090903264,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 3891.714279170166,
+              "expected_sibling_bytes": 42088.24662986248
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 53823.52805536898,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 4147.711288468698,
+              "expected_sibling_bytes": 47925.81676690029
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 0,
+          "width": 198,
+          "best": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 18188.475948325522,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 5231.119315707376,
+            "expected_sibling_bytes": 11975.356632618146
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 18188.475948325522,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 5231.119315707376,
+            "expected_sibling_bytes": 11975.356632618146
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 50,
+              "expected_bytes": 18188.475948325522,
+              "fixed_bytes": 982,
+              "expected_leaf_bytes": 5231.119315707376,
+              "expected_sibling_bytes": 11975.356632618146
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 25,
+              "expected_bytes": 20094.682215755554,
+              "fixed_bytes": 1078,
+              "expected_leaf_bytes": 3890.7791352433196,
+              "expected_sibling_bytes": 15125.903080512235
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 13,
+              "expected_bytes": 23213.529251369935,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 3379.5716301750404,
+              "expected_sibling_bytes": 18659.957621194895
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 7,
+              "expected_bytes": 27099.488110620525,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 3251.7219724093443,
+              "expected_sibling_bytes": 22577.76613821118
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 4,
+              "expected_bytes": 31561.18726682164,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 3315.7356409468025,
+              "expected_sibling_bytes": 26879.451625874837
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 2,
+              "expected_bytes": 36470.8043996995,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 3443.7288052179147,
+              "expected_sibling_bytes": 31565.075594481583
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 41828.38906299554,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 3635.720260530729,
+              "expected_sibling_bytes": 36634.66880246482
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 47633.96090903264,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 3891.714279170166,
+              "expected_sibling_bytes": 42088.24662986248
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 53823.52805536898,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 4147.711288468698,
+              "expected_sibling_bytes": 47925.81676690029
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 1,
+          "width": 200,
+          "best": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 18188.475948325522,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 5231.119315707376,
+            "expected_sibling_bytes": 11975.356632618146
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 18188.475948325522,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 5231.119315707376,
+            "expected_sibling_bytes": 11975.356632618146
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 50,
+              "expected_bytes": 18188.475948325522,
+              "fixed_bytes": 982,
+              "expected_leaf_bytes": 5231.119315707376,
+              "expected_sibling_bytes": 11975.356632618146
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 25,
+              "expected_bytes": 20094.682215755554,
+              "fixed_bytes": 1078,
+              "expected_leaf_bytes": 3890.7791352433196,
+              "expected_sibling_bytes": 15125.903080512235
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 13,
+              "expected_bytes": 23213.529251369935,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 3379.5716301750404,
+              "expected_sibling_bytes": 18659.957621194895
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 7,
+              "expected_bytes": 27099.488110620525,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 3251.7219724093443,
+              "expected_sibling_bytes": 22577.76613821118
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 4,
+              "expected_bytes": 31561.18726682164,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 3315.7356409468025,
+              "expected_sibling_bytes": 26879.451625874837
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 2,
+              "expected_bytes": 36470.8043996995,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 3443.7288052179147,
+              "expected_sibling_bytes": 31565.075594481583
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 41828.38906299554,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 3635.720260530729,
+              "expected_sibling_bytes": 36634.66880246482
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 47633.96090903264,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 3891.714279170166,
+              "expected_sibling_bytes": 42088.24662986248
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 53823.52805536898,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 4147.711288468698,
+              "expected_sibling_bytes": 47925.81676690029
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension_degree": 4,
+      "queries": 128,
+      "non_pcs_bytes": 51590,
+      "optimized_expected_proof_bytes": 495516.95052592753,
+      "retained_expected_proof_bytes": 495516.95052592753,
+      "branches": [
+        {
+          "table": 0,
+          "branch": 0,
+          "width": 605,
+          "best": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 171772.57868981047,
+            "fixed_bytes": 1174,
+            "expected_leaf_bytes": 63660.66348788818,
+            "expected_sibling_bytes": 106937.91520192228
+          },
+          "retained": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 171772.57868981047,
+            "fixed_bytes": 1174,
+            "expected_leaf_bytes": 63660.66348788818,
+            "expected_sibling_bytes": 106937.91520192228
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 38,
+              "expected_bytes": 171772.57868981047,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 63660.66348788818,
+              "expected_sibling_bytes": 106937.91520192228
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 19,
+              "expected_bytes": 194347.35374348017,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 48493.946797646284,
+              "expected_sibling_bytes": 144583.40694583388
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 10,
+              "expected_bytes": 233116.7939382284,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 43413.50739157296,
+              "expected_sibling_bytes": 188337.28654665544
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 5,
+              "expected_bytes": 282075.7740871443,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 42396.44063571559,
+              "expected_sibling_bytes": 238217.33345142868
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 3,
+              "expected_bytes": 340234.4017250368,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 44443.94438318941,
+              "expected_sibling_bytes": 294232.45734184736
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 2,
+              "expected_bytes": 405556.07049131766,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 47514.952434090425,
+              "expected_sibling_bytes": 356387.1180572272
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 477019.8791742746,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 50586.332406311,
+              "expected_sibling_bytes": 424683.5467679636
+            }
+          ]
+        },
+        {
+          "table": 0,
+          "branch": 1,
+          "width": 12,
+          "best": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 12,
+            "expected_bytes": 37221.711786919506,
+            "fixed_bytes": 790,
+            "expected_leaf_bytes": 20446.422662006986,
+            "expected_sibling_bytes": 15985.289124912517
+          },
+          "retained": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 12,
+            "expected_bytes": 37221.711786919506,
+            "fixed_bytes": 790,
+            "expected_leaf_bytes": 20446.422662006986,
+            "expected_sibling_bytes": 15985.289124912517
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 1,
+              "degree": 256,
+              "lanes": 12,
+              "expected_bytes": 37221.711786919506,
+              "fixed_bytes": 790,
+              "expected_leaf_bytes": 20446.422662006986,
+              "expected_sibling_bytes": 15985.289124912517
+            },
+            {
+              "packing": 2,
+              "degree": 512,
+              "lanes": 6,
+              "expected_bytes": 49947.111508628004,
+              "fixed_bytes": 886,
+              "expected_leaf_bytes": 18970.090332347416,
+              "expected_sibling_bytes": 30091.021176280592
+            },
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 3,
+              "expected_bytes": 70800.43860432158,
+              "fixed_bytes": 982,
+              "expected_leaf_bytes": 20022.7104598369,
+              "expected_sibling_bytes": 49795.728144484674
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 2,
+              "expected_bytes": 99475.58637581285,
+              "fixed_bytes": 1078,
+              "expected_leaf_bytes": 23032.17485930135,
+              "expected_sibling_bytes": 75365.4115165115
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 1,
+              "expected_bytes": 134176.76619429307,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 26064.850992370782,
+              "expected_sibling_bytes": 106937.91520192228
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 1,
+              "expected_bytes": 175986.6084638848,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 30133.20151805091,
+              "expected_sibling_bytes": 144583.40694583388
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 1,
+              "expected_bytes": 223918.63044399786,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 34215.34389734243,
+              "expected_sibling_bytes": 188337.28654665544
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 1,
+              "expected_bytes": 277983.74029490724,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 38304.40684347854,
+              "expected_sibling_bytes": 238217.33345142868
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 338187.3935946814,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 42396.93625283402,
+              "expected_sibling_bytes": 294232.45734184736
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 404532.318498456,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 46491.200441228764,
+              "expected_sibling_bytes": 356387.1180572272
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 477019.8791742746,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 50586.332406311,
+              "expected_sibling_bytes": 424683.5467679636
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 0,
+          "width": 198,
+          "best": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 117466.33002459878,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 66688.6018801141,
+            "expected_sibling_bytes": 49795.728144484674
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 117466.33002459878,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 66688.6018801141,
+            "expected_sibling_bytes": 49795.728144484674
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 50,
+              "expected_bytes": 117466.33002459878,
+              "fixed_bytes": 982,
+              "expected_leaf_bytes": 66688.6018801141,
+              "expected_sibling_bytes": 49795.728144484674
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 25,
+              "expected_bytes": 122666.17694128834,
+              "fixed_bytes": 1078,
+              "expected_leaf_bytes": 46222.765424776844,
+              "expected_sibling_bytes": 75365.4115165115
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 13,
+              "expected_bytes": 146370.00267932576,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 38258.08747740346,
+              "expected_sibling_bytes": 106937.91520192228
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 7,
+              "expected_bytes": 182106.8568904166,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 36253.4499445827,
+              "expected_sibling_bytes": 144583.40694583388
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 4,
+              "expected_bytes": 226984.6849420747,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 37281.39839541927,
+              "expected_sibling_bytes": 188337.28654665544
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 2,
+              "expected_bytes": 279006.7487429665,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 39327.4152915378,
+              "expected_sibling_bytes": 238217.33345142868
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 338187.3935946814,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 42396.93625283402,
+              "expected_sibling_bytes": 294232.45734184736
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 404532.318498456,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 46491.200441228764,
+              "expected_sibling_bytes": 356387.1180572272
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 477019.8791742746,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 50586.332406311,
+              "expected_sibling_bytes": 424683.5467679636
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 1,
+          "width": 200,
+          "best": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 117466.33002459878,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 66688.6018801141,
+            "expected_sibling_bytes": 49795.728144484674
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 117466.33002459878,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 66688.6018801141,
+            "expected_sibling_bytes": 49795.728144484674
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 50,
+              "expected_bytes": 117466.33002459878,
+              "fixed_bytes": 982,
+              "expected_leaf_bytes": 66688.6018801141,
+              "expected_sibling_bytes": 49795.728144484674
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 25,
+              "expected_bytes": 122666.17694128834,
+              "fixed_bytes": 1078,
+              "expected_leaf_bytes": 46222.765424776844,
+              "expected_sibling_bytes": 75365.4115165115
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 13,
+              "expected_bytes": 146370.00267932576,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 38258.08747740346,
+              "expected_sibling_bytes": 106937.91520192228
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 7,
+              "expected_bytes": 182106.8568904166,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 36253.4499445827,
+              "expected_sibling_bytes": 144583.40694583388
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 4,
+              "expected_bytes": 226984.6849420747,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 37281.39839541927,
+              "expected_sibling_bytes": 188337.28654665544
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 2,
+              "expected_bytes": 279006.7487429665,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 39327.4152915378,
+              "expected_sibling_bytes": 238217.33345142868
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 338187.3935946814,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 42396.93625283402,
+              "expected_sibling_bytes": 294232.45734184736
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 404532.318498456,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 46491.200441228764,
+              "expected_sibling_bytes": 356387.1180572272
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 477019.8791742746,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 50586.332406311,
+              "expected_sibling_bytes": 424683.5467679636
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension_degree": 4,
+      "queries": 239,
+      "non_pcs_bytes": 51590,
+      "optimized_expected_proof_bytes": 708065.2275102128,
+      "retained_expected_proof_bytes": 708065.2275102128,
+      "branches": [
+        {
+          "table": 0,
+          "branch": 0,
+          "width": 605,
+          "best": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 258765.66060201527,
+            "fixed_bytes": 1174,
+            "expected_leaf_bytes": 111629.61329261913,
+            "expected_sibling_bytes": 145962.04730939612
+          },
+          "retained": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 258765.66060201527,
+            "fixed_bytes": 1174,
+            "expected_leaf_bytes": 111629.61329261913,
+            "expected_sibling_bytes": 145962.04730939612
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 38,
+              "expected_bytes": 258765.66060201527,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 111629.61329261913,
+              "expected_sibling_bytes": 145962.04730939612
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 19,
+              "expected_bytes": 290896.6356987028,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 83622.31264267759,
+              "expected_sibling_bytes": 206004.32305602526
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 10,
+              "expected_bytes": 352960.66533125425,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 74200.35100587737,
+              "expected_sibling_bytes": 277394.3143253769
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 5,
+              "expected_bytes": 433968.5628609118,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 72312.57426373524,
+              "expected_sibling_bytes": 360193.9885971766
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 3,
+              "expected_bytes": 532127.2978729134,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 76134.837318943,
+              "expected_sibling_bytes": 454434.4605539704
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 2,
+              "expected_bytes": 643652.6874693455,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 81867.36708599559,
+              "expected_sibling_bytes": 560131.3203833499
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 766643.5692028563,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 87601.19779829647,
+              "expected_sibling_bytes": 677292.3714045598
+            }
+          ]
+        },
+        {
+          "table": 0,
+          "branch": 1,
+          "width": 12,
+          "best": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 12,
+            "expected_bytes": 45881.02120802251,
+            "fixed_bytes": 790,
+            "expected_leaf_bytes": 30776.223471915277,
+            "expected_sibling_bytes": 14314.797736107232
+          },
+          "retained": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 12,
+            "expected_bytes": 45881.02120802251,
+            "fixed_bytes": 790,
+            "expected_leaf_bytes": 30776.223471915277,
+            "expected_sibling_bytes": 14314.797736107232
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 1,
+              "degree": 256,
+              "lanes": 12,
+              "expected_bytes": 45881.02120802251,
+              "fixed_bytes": 790,
+              "expected_leaf_bytes": 30776.223471915277,
+              "expected_sibling_bytes": 14314.797736107232
+            },
+            {
+              "packing": 2,
+              "degree": 512,
+              "lanes": 6,
+              "expected_bytes": 61658.365774899765,
+              "fixed_bytes": 886,
+              "expected_leaf_bytes": 28780.643381941354,
+              "expected_sibling_bytes": 31991.72239295841
+            },
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 3,
+              "expected_bytes": 91076.11586618045,
+              "fixed_bytes": 982,
+              "expected_leaf_bytes": 30783.839502744333,
+              "expected_sibling_bytes": 59310.27636343611
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 2,
+              "expected_bytes": 134526.5138802344,
+              "fixed_bytes": 1078,
+              "expected_leaf_bytes": 36303.92125498394,
+              "expected_sibling_bytes": 97144.59262525043
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 1,
+              "expected_bytes": 189039.47465872997,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 41903.42734933386,
+              "expected_sibling_bytes": 145962.04730939612
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 1,
+              "expected_bytes": 256729.40445484864,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 49455.08139882338,
+              "expected_sibling_bytes": 206004.32305602526
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 1,
+              "expected_bytes": 335815.0073714838,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 57054.693046106906,
+              "expected_sibling_bytes": 277394.3143253769
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 1,
+              "expected_bytes": 426334.433342748,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 64678.444745571374,
+              "expected_sibling_bytes": 360193.9885971766
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 528306.7675830809,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 72314.30702911051,
+              "expected_sibling_bytes": 454434.4605539704
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 641741.5551582773,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 79956.23477492742,
+              "expected_sibling_bytes": 560131.3203833499
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 766643.5692028563,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 87601.19779829647,
+              "expected_sibling_bytes": 677292.3714045598
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 0,
+          "width": 198,
+          "best": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 175914.2728500875,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 115621.99648665138,
+            "expected_sibling_bytes": 59310.27636343611
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 175914.2728500875,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 115621.99648665138,
+            "expected_sibling_bytes": 59310.27636343611
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 50,
+              "expected_bytes": 175914.2728500875,
+              "fixed_bytes": 982,
+              "expected_leaf_bytes": 115621.99648665138,
+              "expected_sibling_bytes": 59310.27636343611
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 25,
+              "expected_bytes": 177249.18157748063,
+              "fixed_bytes": 1078,
+              "expected_leaf_bytes": 79026.58895223022,
+              "expected_sibling_bytes": 97144.59262525043
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 13,
+              "expected_bytes": 211653.3728024982,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 64517.32549310207,
+              "expected_sibling_bytes": 145962.04730939612
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 7,
+              "expected_bytes": 268118.4815361334,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 60844.15848010811,
+              "expected_sibling_bytes": 206004.32305602526
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 4,
+              "expected_bytes": 341530.22669140727,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 62769.912366030396,
+              "expected_sibling_bytes": 277394.3143253769
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 2,
+              "expected_bytes": 428242.96572228894,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 66586.97712511233,
+              "expected_sibling_bytes": 360193.9885971766
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 528306.7675830809,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 72314.30702911051,
+              "expected_sibling_bytes": 454434.4605539704
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 641741.5551582773,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 79956.23477492742,
+              "expected_sibling_bytes": 560131.3203833499
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 766643.5692028563,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 87601.19779829647,
+              "expected_sibling_bytes": 677292.3714045598
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 1,
+          "width": 200,
+          "best": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 175914.2728500875,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 115621.99648665138,
+            "expected_sibling_bytes": 59310.27636343611
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 175914.2728500875,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 115621.99648665138,
+            "expected_sibling_bytes": 59310.27636343611
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 50,
+              "expected_bytes": 175914.2728500875,
+              "fixed_bytes": 982,
+              "expected_leaf_bytes": 115621.99648665138,
+              "expected_sibling_bytes": 59310.27636343611
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 25,
+              "expected_bytes": 177249.18157748063,
+              "fixed_bytes": 1078,
+              "expected_leaf_bytes": 79026.58895223022,
+              "expected_sibling_bytes": 97144.59262525043
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 13,
+              "expected_bytes": 211653.3728024982,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 64517.32549310207,
+              "expected_sibling_bytes": 145962.04730939612
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 7,
+              "expected_bytes": 268118.4815361334,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 60844.15848010811,
+              "expected_sibling_bytes": 206004.32305602526
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 4,
+              "expected_bytes": 341530.22669140727,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 62769.912366030396,
+              "expected_sibling_bytes": 277394.3143253769
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 2,
+              "expected_bytes": 428242.96572228894,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 66586.97712511233,
+              "expected_sibling_bytes": 360193.9885971766
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 528306.7675830809,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 72314.30702911051,
+              "expected_sibling_bytes": 454434.4605539704
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 641741.5551582773,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 79956.23477492742,
+              "expected_sibling_bytes": 560131.3203833499
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 766643.5692028563,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 87601.19779829647,
+              "expected_sibling_bytes": 677292.3714045598
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension_degree": 4,
+      "queries": 309,
+      "non_pcs_bytes": 51590,
+      "optimized_expected_proof_bytes": 816298.7583745242,
+      "retained_expected_proof_bytes": 820634.0598331243,
+      "branches": [
+        {
+          "table": 0,
+          "branch": 0,
+          "width": 605,
+          "best": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 305148.2814026957,
+            "fixed_bytes": 1174,
+            "expected_leaf_bytes": 140362.7040014572,
+            "expected_sibling_bytes": 163611.5774012385
+          },
+          "retained": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 305148.2814026957,
+            "fixed_bytes": 1174,
+            "expected_leaf_bytes": 140362.7040014572,
+            "expected_sibling_bytes": 163611.5774012385
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 38,
+              "expected_bytes": 305148.2814026957,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 140362.7040014572,
+              "expected_sibling_bytes": 163611.5774012385
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 19,
+              "expected_bytes": 341501.2798636148,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 104404.42656125652,
+              "expected_sibling_bytes": 235826.8533023583
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 10,
+              "expected_bytes": 416307.5025506335,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 92274.97527801125,
+              "expected_sibling_bytes": 322666.5272726223
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 5,
+              "expected_bytes": 515539.4874266096,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 89843.46526002514,
+              "expected_sibling_bytes": 424234.0221665845
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 3,
+              "expected_bytes": 636923.8912198227,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 94784.5585800892,
+              "expected_sibling_bytes": 540581.3326397334
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 2,
+              "expected_bytes": 775583.2802792379,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 102194.75314194497,
+              "expected_sibling_bytes": 671734.5271372929
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 929063.781593625,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 109607.12389343687,
+              "expected_sibling_bytes": 817706.6577001881
+            }
+          ]
+        },
+        {
+          "table": 0,
+          "branch": 1,
+          "width": 12,
+          "best": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 12,
+            "expected_bytes": 49414.61386553745,
+            "fixed_bytes": 790,
+            "expected_leaf_bytes": 35784.26081252466,
+            "expected_sibling_bytes": 12840.35305301279
+          },
+          "retained": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 12,
+            "expected_bytes": 49414.61386553745,
+            "fixed_bytes": 790,
+            "expected_leaf_bytes": 35784.26081252466,
+            "expected_sibling_bytes": 12840.35305301279
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 1,
+              "degree": 256,
+              "lanes": 12,
+              "expected_bytes": 49414.61386553745,
+              "fixed_bytes": 790,
+              "expected_leaf_bytes": 35784.26081252466,
+              "expected_sibling_bytes": 12840.35305301279
+            },
+            {
+              "packing": 2,
+              "degree": 512,
+              "lanes": 6,
+              "expected_bytes": 66137.44312046118,
+              "fixed_bytes": 886,
+              "expected_leaf_bytes": 33734.648131482194,
+              "expected_sibling_bytes": 31516.794988978978
+            },
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 3,
+              "expected_bytes": 99372.36664373043,
+              "fixed_bytes": 982,
+              "expected_leaf_bytes": 36350.31601684959,
+              "expected_sibling_bytes": 62040.05062688084
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 2,
+              "expected_bytes": 150302.1601684535,
+              "fixed_bytes": 1078,
+              "expected_leaf_bytes": 43408.0602072765,
+              "expected_sibling_bytes": 105816.099961177
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 1,
+              "expected_bytes": 215382.41780271794,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 50596.840401479436,
+              "expected_sibling_bytes": 163611.5774012385
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 1,
+              "expected_bytes": 297420.9160684331,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 60324.062766074814,
+              "expected_sibling_bytes": 235826.8533023583
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 1,
+              "expected_bytes": 394163.735859168,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 70131.20858654572,
+              "expected_sibling_bytes": 322666.5272726223
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 1,
+              "expected_bytes": 505674.6865388836,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 79978.66437229907,
+              "expected_sibling_bytes": 424234.0221665845
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 631985.6955251589,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 89846.36288542548,
+              "expected_sibling_bytes": 540581.3326397334
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 773112.731921976,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 99724.20478468302,
+              "expected_sibling_bytes": 671734.5271372929
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 929063.781593625,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 109607.12389343687,
+              "expected_sibling_bytes": 817706.6577001881
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 0,
+          "width": 198,
+          "best": {
+            "packing": 8,
+            "degree": 2048,
+            "lanes": 25,
+            "expected_bytes": 205072.93155314552,
+            "fixed_bytes": 1078,
+            "expected_leaf_bytes": 98178.83159196851,
+            "expected_sibling_bytes": 105816.099961177
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 207240.58228244557,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 144218.53165556473,
+            "expected_sibling_bytes": 62040.05062688084
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 50,
+              "expected_bytes": 207240.58228244557,
+              "fixed_bytes": 982,
+              "expected_leaf_bytes": 144218.53165556473,
+              "expected_sibling_bytes": 62040.05062688084
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 25,
+              "expected_bytes": 205072.93155314552,
+              "fixed_bytes": 1078,
+              "expected_leaf_bytes": 98178.83159196851,
+              "expected_sibling_bytes": 105816.099961177
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 13,
+              "expected_bytes": 244495.67086217017,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 79710.09346093169,
+              "expected_sibling_bytes": 163611.5774012385
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 7,
+              "expected_bytes": 312114.370666827,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 75017.51736446872,
+              "expected_sibling_bytes": 235826.8533023583
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 4,
+              "expected_bytes": 401544.9914229899,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 77512.46415036757,
+              "expected_sibling_bytes": 322666.5272726223
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 2,
+              "expected_bytes": 508140.8867608151,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 82444.86459423059,
+              "expected_sibling_bytes": 424234.0221665845
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 631985.6955251589,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 89846.36288542548,
+              "expected_sibling_bytes": 540581.3326397334
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 773112.731921976,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 99724.20478468302,
+              "expected_sibling_bytes": 671734.5271372929
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 929063.781593625,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 109607.12389343687,
+              "expected_sibling_bytes": 817706.6577001881
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 1,
+          "width": 200,
+          "best": {
+            "packing": 8,
+            "degree": 2048,
+            "lanes": 25,
+            "expected_bytes": 205072.93155314552,
+            "fixed_bytes": 1078,
+            "expected_leaf_bytes": 98178.83159196851,
+            "expected_sibling_bytes": 105816.099961177
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 207240.58228244557,
+            "fixed_bytes": 982,
+            "expected_leaf_bytes": 144218.53165556473,
+            "expected_sibling_bytes": 62040.05062688084
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 50,
+              "expected_bytes": 207240.58228244557,
+              "fixed_bytes": 982,
+              "expected_leaf_bytes": 144218.53165556473,
+              "expected_sibling_bytes": 62040.05062688084
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 25,
+              "expected_bytes": 205072.93155314552,
+              "fixed_bytes": 1078,
+              "expected_leaf_bytes": 98178.83159196851,
+              "expected_sibling_bytes": 105816.099961177
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 13,
+              "expected_bytes": 244495.67086217017,
+              "fixed_bytes": 1174,
+              "expected_leaf_bytes": 79710.09346093169,
+              "expected_sibling_bytes": 163611.5774012385
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 7,
+              "expected_bytes": 312114.370666827,
+              "fixed_bytes": 1270,
+              "expected_leaf_bytes": 75017.51736446872,
+              "expected_sibling_bytes": 235826.8533023583
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 4,
+              "expected_bytes": 401544.9914229899,
+              "fixed_bytes": 1366,
+              "expected_leaf_bytes": 77512.46415036757,
+              "expected_sibling_bytes": 322666.5272726223
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 2,
+              "expected_bytes": 508140.8867608151,
+              "fixed_bytes": 1462,
+              "expected_leaf_bytes": 82444.86459423059,
+              "expected_sibling_bytes": 424234.0221665845
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 631985.6955251589,
+              "fixed_bytes": 1558,
+              "expected_leaf_bytes": 89846.36288542548,
+              "expected_sibling_bytes": 540581.3326397334
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 773112.731921976,
+              "fixed_bytes": 1654,
+              "expected_leaf_bytes": 99724.20478468302,
+              "expected_sibling_bytes": 671734.5271372929
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 929063.781593625,
+              "fixed_bytes": 1750,
+              "expected_leaf_bytes": 109607.12389343687,
+              "expected_sibling_bytes": 817706.6577001881
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension_degree": 8,
+      "queries": 8,
+      "non_pcs_bytes": 123302,
+      "optimized_expected_proof_bytes": 209097.56514305892,
+      "retained_expected_proof_bytes": 208483.69905609294,
+      "branches": [
+        {
+          "table": 0,
+          "branch": 0,
+          "width": 605,
+          "best": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 27952.772836641398,
+            "fixed_bytes": 1766,
+            "expected_leaf_bytes": 7526.8152154465015,
+            "expected_sibling_bytes": 18659.957621194895
+          },
+          "retained": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 27952.772836641398,
+            "fixed_bytes": 1766,
+            "expected_leaf_bytes": 7526.8152154465015,
+            "expected_sibling_bytes": 18659.957621194895
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 38,
+              "expected_bytes": 27952.772836641398,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 7526.8152154465015,
+              "expected_sibling_bytes": 18659.957621194895
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 19,
+              "expected_bytes": 31311.141731998883,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 6823.375593787702,
+              "expected_sibling_bytes": 22577.76613821118
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 10,
+              "expected_bytes": 35692.90923672788,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 6759.457610853038,
+              "expected_sibling_bytes": 26879.451625874837
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 5,
+              "expected_bytes": 40714.52978705297,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 6951.454192571386,
+              "expected_sibling_bytes": 31565.075594481583
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 3,
+              "expected_bytes": 46312.107614567976,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 7335.43881210316,
+              "expected_sibling_bytes": 36634.66880246482
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 2,
+              "expected_bytes": 52357.67518820281,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 7783.428558340332,
+              "expected_sibling_bytes": 42088.24662986248
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 58787.239771082146,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 8231.42300418186,
+              "expected_sibling_bytes": 47925.81676690029
+            }
+          ]
+        },
+        {
+          "table": 0,
+          "branch": 1,
+          "width": 24,
+          "best": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 24,
+            "expected_bytes": 12592.272278703571,
+            "fixed_bytes": 1190,
+            "expected_leaf_bytes": 4579.939320076441,
+            "expected_sibling_bytes": 6822.33295862713
+          },
+          "retained": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 24,
+            "expected_bytes": 12592.272278703571,
+            "fixed_bytes": 1190,
+            "expected_leaf_bytes": 4579.939320076441,
+            "expected_sibling_bytes": 6822.33295862713
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 1,
+              "degree": 256,
+              "lanes": 24,
+              "expected_bytes": 12592.272278703571,
+              "fixed_bytes": 1190,
+              "expected_leaf_bytes": 4579.939320076441,
+              "expected_sibling_bytes": 6822.33295862713
+            },
+            {
+              "packing": 2,
+              "degree": 512,
+              "lanes": 12,
+              "expected_bytes": 14870.119094190906,
+              "fixed_bytes": 1334,
+              "expected_leaf_bytes": 4328.2921636789615,
+              "expected_sibling_bytes": 9207.826930511945
+            },
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 6,
+              "expected_bytes": 17909.866479875403,
+              "fixed_bytes": 1478,
+              "expected_leaf_bytes": 4456.509847257257,
+              "expected_sibling_bytes": 11975.356632618146
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 3,
+              "expected_bytes": 21524.030408846404,
+              "fixed_bytes": 1622,
+              "expected_leaf_bytes": 4776.127328334171,
+              "expected_sibling_bytes": 15125.903080512235
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 2,
+              "expected_bytes": 25649.756971352137,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 5223.79935015724,
+              "expected_sibling_bytes": 18659.957621194895
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 1,
+              "expected_bytes": 30159.387795710434,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 5671.621657499253,
+              "expected_sibling_bytes": 22577.76613821118
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 1,
+              "expected_bytes": 35116.970756410425,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 6183.519130535589,
+              "expected_sibling_bytes": 26879.451625874837
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 1,
+              "expected_bytes": 40458.54345851074,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 6695.467864029161,
+              "expected_sibling_bytes": 31565.075594481583
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 46184.11103248457,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 7207.442230019756,
+              "expected_sibling_bytes": 36634.66880246482
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 52293.67604268848,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 7719.429412826,
+              "expected_sibling_bytes": 42088.24662986248
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 58787.239771082146,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 8231.42300418186,
+              "expected_sibling_bytes": 47925.81676690029
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 0,
+          "width": 198,
+          "best": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 20721.05867671508,
+            "fixed_bytes": 1478,
+            "expected_leaf_bytes": 7267.702044096935,
+            "expected_sibling_bytes": 11975.356632618146
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 20721.05867671508,
+            "fixed_bytes": 1478,
+            "expected_leaf_bytes": 7267.702044096935,
+            "expected_sibling_bytes": 11975.356632618146
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 50,
+              "expected_bytes": 20721.05867671508,
+              "fixed_bytes": 1478,
+              "expected_leaf_bytes": 7267.702044096935,
+              "expected_sibling_bytes": 11975.356632618146
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 25,
+              "expected_bytes": 22930.82787113054,
+              "fixed_bytes": 1622,
+              "expected_leaf_bytes": 6182.9247906183045,
+              "expected_sibling_bytes": 15125.903080512235
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 13,
+              "expected_bytes": 26353.456263523854,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 5927.498642328959,
+              "expected_sibling_bytes": 18659.957621194895
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 7,
+              "expected_bytes": 30543.30577447325,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 6055.5396362620695,
+              "expected_sibling_bytes": 22577.76613821118
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 4,
+              "expected_bytes": 35308.95024984957,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 6375.498623974739,
+              "expected_sibling_bytes": 26879.451625874837
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 2,
+              "expected_bytes": 40522.5400406463,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 6759.464446164718,
+              "expected_sibling_bytes": 31565.075594481583
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 46184.11103248457,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 7207.442230019756,
+              "expected_sibling_bytes": 36634.66880246482
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 52293.67604268848,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 7719.429412826,
+              "expected_sibling_bytes": 42088.24662986248
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 58787.239771082146,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 8231.42300418186,
+              "expected_sibling_bytes": 47925.81676690029
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 1,
+          "width": 400,
+          "best": {
+            "packing": 8,
+            "degree": 2048,
+            "lanes": 50,
+            "expected_bytes": 24529.461350998874,
+            "fixed_bytes": 1622,
+            "expected_leaf_bytes": 7781.558270486639,
+            "expected_sibling_bytes": 15125.903080512235
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 100,
+            "expected_bytes": 23915.595264032898,
+            "fixed_bytes": 1478,
+            "expected_leaf_bytes": 10462.238631414752,
+            "expected_sibling_bytes": 11975.356632618146
+          },
+          "retained_within_lane_limit": false,
+          "options": [
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 50,
+              "expected_bytes": 24529.461350998874,
+              "fixed_bytes": 1622,
+              "expected_leaf_bytes": 7781.558270486639,
+              "expected_sibling_bytes": 15125.903080512235
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 25,
+              "expected_bytes": 27121.128218620273,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 6695.170597425379,
+              "expected_sibling_bytes": 18659.957621194895
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 13,
+              "expected_bytes": 30927.223753236067,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 6439.457615024886,
+              "expected_sibling_bytes": 22577.76613821118
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 7,
+              "expected_bytes": 35500.929743288725,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 6567.478117413889,
+              "expected_sibling_bytes": 26879.451625874837
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 4,
+              "expected_bytes": 40650.53320491741,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 6887.457610435829,
+              "expected_sibling_bytes": 31565.075594481583
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 2,
+              "expected_bytes": 46248.109323526274,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 7271.440521061458,
+              "expected_sibling_bytes": 36634.66880246482
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 52293.67604268848,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 7719.429412826,
+              "expected_sibling_bytes": 42088.24662986248
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 58787.239771082146,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 8231.42300418186,
+              "expected_sibling_bytes": 47925.81676690029
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension_degree": 8,
+      "queries": 128,
+      "non_pcs_bytes": 123302,
+      "optimized_expected_proof_bytes": 683222.770020746,
+      "retained_expected_proof_bytes": 698440.7595593936,
+      "branches": [
+        {
+          "table": 0,
+          "branch": 0,
+          "width": 605,
+          "best": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 197413.32664176187,
+            "fixed_bytes": 1766,
+            "expected_leaf_bytes": 88709.41143983959,
+            "expected_sibling_bytes": 106937.91520192228
+          },
+          "retained": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 197413.32664176187,
+            "fixed_bytes": 1766,
+            "expected_leaf_bytes": 88709.41143983959,
+            "expected_sibling_bytes": 106937.91520192228
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 38,
+              "expected_bytes": 197413.32664176187,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 88709.41143983959,
+              "expected_sibling_bytes": 106937.91520192228
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 19,
+              "expected_bytes": 224100.51385710912,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 77607.10691127524,
+              "expected_sibling_bytes": 144583.40694583388
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 10,
+              "expected_bytes": 266998.1196695452,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 76606.83312288979,
+              "expected_sibling_bytes": 188337.28654665544
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 5,
+              "expected_bytes": 320093.17248256353,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 79677.83903113486,
+              "expected_sibling_bytes": 238217.33345142868
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 3,
+              "expected_bytes": 382391.8339126931,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 85817.37657084574,
+              "expected_sibling_bytes": 294232.45734184736
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 2,
+              "expected_bytes": 451855.5189396847,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 92982.40088245753,
+              "expected_sibling_bytes": 356387.1180572272
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 527462.3355940883,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 100148.78882612473,
+              "expected_sibling_bytes": 424683.5467679636
+            }
+          ]
+        },
+        {
+          "table": 0,
+          "branch": 1,
+          "width": 24,
+          "best": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 24,
+            "expected_bytes": 58068.13444892649,
+            "fixed_bytes": 1190,
+            "expected_leaf_bytes": 40892.84532401397,
+            "expected_sibling_bytes": 15985.289124912517
+          },
+          "retained": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 24,
+            "expected_bytes": 58068.13444892649,
+            "fixed_bytes": 1190,
+            "expected_leaf_bytes": 40892.84532401397,
+            "expected_sibling_bytes": 15985.289124912517
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 1,
+              "degree": 256,
+              "lanes": 24,
+              "expected_bytes": 58068.13444892649,
+              "fixed_bytes": 1190,
+              "expected_leaf_bytes": 40892.84532401397,
+              "expected_sibling_bytes": 15985.289124912517
+            },
+            {
+              "packing": 2,
+              "degree": 512,
+              "lanes": 12,
+              "expected_bytes": 69365.20184097542,
+              "fixed_bytes": 1334,
+              "expected_leaf_bytes": 37940.18066469483,
+              "expected_sibling_bytes": 30091.021176280592
+            },
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 6,
+              "expected_bytes": 91319.14906415847,
+              "fixed_bytes": 1478,
+              "expected_leaf_bytes": 40045.4209196738,
+              "expected_sibling_bytes": 49795.728144484674
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 3,
+              "expected_bytes": 122043.4746887892,
+              "fixed_bytes": 1622,
+              "expected_leaf_bytes": 45056.06317227768,
+              "expected_sibling_bytes": 75365.4115165115
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 2,
+              "expected_bytes": 160833.61718666385,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 52129.701984741565,
+              "expected_sibling_bytes": 106937.91520192228
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 1,
+              "expected_bytes": 205739.76857751375,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 59246.36163167986,
+              "expected_sibling_bytes": 144583.40694583388
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 1,
+              "expected_bytes": 257799.95617531467,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 67408.66962865922,
+              "expected_sibling_bytes": 188337.28654665544
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 1,
+              "expected_bytes": 316001.1386903265,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 75585.80523889781,
+              "expected_sibling_bytes": 238217.33345142868
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 380344.8257823377,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 83770.36844049035,
+              "expected_sibling_bytes": 294232.45734184736
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 450831.7669468231,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 91958.64888959586,
+              "expected_sibling_bytes": 356387.1180572272
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 527462.3355940883,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 100148.78882612473,
+              "expected_sibling_bytes": 424683.5467679636
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 0,
+          "width": 198,
+          "best": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 135006.36656399246,
+            "fixed_bytes": 1478,
+            "expected_leaf_bytes": 83732.6384195078,
+            "expected_sibling_bytes": 49795.728144484674
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 135006.36656399246,
+            "fixed_bytes": 1478,
+            "expected_leaf_bytes": 83732.6384195078,
+            "expected_sibling_bytes": 49795.728144484674
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 50,
+              "expected_bytes": 135006.36656399246,
+              "fixed_bytes": 1478,
+              "expected_leaf_bytes": 83732.6384195078,
+              "expected_sibling_bytes": 49795.728144484674
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 25,
+              "expected_bytes": 144225.77870793964,
+              "fixed_bytes": 1622,
+              "expected_leaf_bytes": 67238.36719142813,
+              "expected_sibling_bytes": 75365.4115165115
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 13,
+              "expected_bytes": 172010.7506312771,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 63306.83542935483,
+              "expected_sibling_bytes": 106937.91520192228
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 7,
+              "expected_bytes": 211860.01700404554,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 65366.61005821165,
+              "expected_sibling_bytes": 144583.40694583388
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 4,
+              "expected_bytes": 260866.01067339152,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 70474.72412673608,
+              "expected_sibling_bytes": 188337.28654665544
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 2,
+              "expected_bytes": 317024.14713838574,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 76608.81368695707,
+              "expected_sibling_bytes": 238217.33345142868
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 380344.8257823377,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 83770.36844049035,
+              "expected_sibling_bytes": 294232.45734184736
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 450831.7669468231,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 91958.64888959586,
+              "expected_sibling_bytes": 356387.1180572272
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 527462.3355940883,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 100148.78882612473,
+              "expected_sibling_bytes": 424683.5467679636
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 1,
+          "width": 400,
+          "best": {
+            "packing": 8,
+            "degree": 2048,
+            "lanes": 50,
+            "expected_bytes": 169432.9423660652,
+            "fixed_bytes": 1622,
+            "expected_leaf_bytes": 92445.53084955369,
+            "expected_sibling_bytes": 75365.4115165115
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 100,
+            "expected_bytes": 184650.93190471287,
+            "fixed_bytes": 1478,
+            "expected_leaf_bytes": 133377.2037602282,
+            "expected_sibling_bytes": 49795.728144484674
+          },
+          "retained_within_lane_limit": false,
+          "options": [
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 50,
+              "expected_bytes": 169432.9423660652,
+              "fixed_bytes": 1622,
+              "expected_leaf_bytes": 92445.53084955369,
+              "expected_sibling_bytes": 75365.4115165115
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 25,
+              "expected_bytes": 184203.9871163098,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 75500.07191438753,
+              "expected_sibling_bytes": 106937.91520192228
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 13,
+              "expected_bytes": 217980.26543057733,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 71486.85848474344,
+              "expected_sibling_bytes": 144583.40694583388
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 7,
+              "expected_bytes": 263932.06517146836,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 73540.77862481293,
+              "expected_sibling_bytes": 188337.28654665544
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 4,
+              "expected_bytes": 319070.16403450427,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 78654.8305830756,
+              "expected_sibling_bytes": 238217.33345142868
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 2,
+              "expected_bytes": 381368.3298475154,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 84793.87250566804,
+              "expected_sibling_bytes": 294232.45734184736
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 450831.7669468231,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 91958.64888959586,
+              "expected_sibling_bytes": 356387.1180572272
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 527462.3355940883,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 100148.78882612473,
+              "expected_sibling_bytes": 424683.5467679636
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension_degree": 8,
+      "queries": 239,
+      "non_pcs_bytes": 123302,
+      "optimized_expected_proof_bytes": 958334.5224922379,
+      "retained_expected_proof_bytes": 993547.0212992658,
+      "branches": [
+        {
+          "table": 0,
+          "branch": 0,
+          "width": 605,
+          "best": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 299376.59643936844,
+            "fixed_bytes": 1766,
+            "expected_leaf_bytes": 151648.54912997232,
+            "expected_sibling_bytes": 145962.04730939612
+          },
+          "retained": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 299376.59643936844,
+            "fixed_bytes": 1766,
+            "expected_leaf_bytes": 151648.54912997232,
+            "expected_sibling_bytes": 145962.04730939612
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 38,
+              "expected_bytes": 299376.59643936844,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 151648.54912997232,
+              "expected_sibling_bytes": 145962.04730939612
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 19,
+              "expected_bytes": 339093.5375839788,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 131179.21452795353,
+              "expected_sibling_bytes": 206004.32305602526
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 10,
+              "expected_bytes": 408798.28527072,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 129349.97094534313,
+              "expected_sibling_bytes": 277394.3143253769
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 5,
+              "expected_bytes": 497474.4752269422,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 135082.48662976563,
+              "expected_sibling_bytes": 360193.9885971766
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 3,
+              "expected_bytes": 603315.3397571077,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 146538.87920313727,
+              "expected_sibling_bytes": 454434.4605539704
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 2,
+              "expected_bytes": 722529.7899332048,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 159912.46954985484,
+              "expected_sibling_bytes": 560131.3203833499
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 853213.2009109883,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 173290.82950642842,
+              "expected_sibling_bytes": 677292.3714045598
+            }
+          ]
+        },
+        {
+          "table": 0,
+          "branch": 1,
+          "width": 24,
+          "best": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 24,
+            "expected_bytes": 77057.24467993778,
+            "fixed_bytes": 1190,
+            "expected_leaf_bytes": 61552.44694383055,
+            "expected_sibling_bytes": 14314.797736107232
+          },
+          "retained": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 24,
+            "expected_bytes": 77057.24467993778,
+            "fixed_bytes": 1190,
+            "expected_leaf_bytes": 61552.44694383055,
+            "expected_sibling_bytes": 14314.797736107232
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 1,
+              "degree": 256,
+              "lanes": 24,
+              "expected_bytes": 77057.24467993778,
+              "fixed_bytes": 1190,
+              "expected_leaf_bytes": 61552.44694383055,
+              "expected_sibling_bytes": 14314.797736107232
+            },
+            {
+              "packing": 2,
+              "degree": 512,
+              "lanes": 12,
+              "expected_bytes": 90887.00915684112,
+              "fixed_bytes": 1334,
+              "expected_leaf_bytes": 57561.28676388271,
+              "expected_sibling_bytes": 31991.72239295841
+            },
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 6,
+              "expected_bytes": 122355.95536892477,
+              "fixed_bytes": 1478,
+              "expected_leaf_bytes": 61567.679005488666,
+              "expected_sibling_bytes": 59310.27636343611
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 3,
+              "expected_bytes": 169516.9278440337,
+              "fixed_bytes": 1622,
+              "expected_leaf_bytes": 70750.33521878326,
+              "expected_sibling_bytes": 97144.59262525043
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 2,
+              "expected_bytes": 231534.90200806386,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 83806.85469866772,
+              "expected_sibling_bytes": 145962.04730939612
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 1,
+              "expected_bytes": 304926.3063401246,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 97011.9832840993,
+              "expected_sibling_bytes": 206004.32305602526
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 1,
+              "expected_bytes": 391652.62731094955,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 112204.31298557266,
+              "expected_sibling_bytes": 277394.3143253769
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 1,
+              "expected_bytes": 489840.34570877836,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 127448.35711160176,
+              "expected_sibling_bytes": 360193.9885971766
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 599494.8094672752,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 142718.3489133048,
+              "expected_sibling_bytes": 454434.4605539704
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 720618.6576221365,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 158001.33723878665,
+              "expected_sibling_bytes": 560131.3203833499
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 853213.2009109883,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 173290.82950642842,
+              "expected_sibling_bytes": 677292.3714045598
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 0,
+          "width": 198,
+          "best": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 201778.91084322074,
+            "fixed_bytes": 1478,
+            "expected_leaf_bytes": 140990.63447978464,
+            "expected_sibling_bytes": 59310.27636343611
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 201778.91084322074,
+            "fixed_bytes": 1478,
+            "expected_leaf_bytes": 140990.63447978464,
+            "expected_sibling_bytes": 59310.27636343611
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 50,
+              "expected_bytes": 201778.91084322074,
+              "fixed_bytes": 1478,
+              "expected_leaf_bytes": 140990.63447978464,
+              "expected_sibling_bytes": 59310.27636343611
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 25,
+              "expected_bytes": 210382.08825009537,
+              "fixed_bytes": 1622,
+              "expected_leaf_bytes": 111615.49562484493,
+              "expected_sibling_bytes": 97144.59262525043
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 13,
+              "expected_bytes": 252264.3086398514,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 104536.26133045527,
+              "expected_sibling_bytes": 145962.04730939612
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 7,
+              "expected_bytes": 316315.3834214093,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 108401.06036538402,
+              "expected_sibling_bytes": 206004.32305602526
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 4,
+              "expected_bytes": 397367.84663087304,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 117919.53230549615,
+              "expected_sibling_bytes": 277394.3143253769
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 2,
+              "expected_bytes": 491748.8780883194,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 129356.88949114275,
+              "expected_sibling_bytes": 360193.9885971766
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 599494.8094672752,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 142718.3489133048,
+              "expected_sibling_bytes": 454434.4605539704
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 720618.6576221365,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 158001.33723878665,
+              "expected_sibling_bytes": 560131.3203833499
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 853213.2009109883,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 173290.82950642842,
+              "expected_sibling_bytes": 677292.3714045598
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 1,
+          "width": 400,
+          "best": {
+            "packing": 8,
+            "degree": 2048,
+            "lanes": 50,
+            "expected_bytes": 256819.77052971086,
+            "fixed_bytes": 1622,
+            "expected_leaf_bytes": 158053.17790446043,
+            "expected_sibling_bytes": 97144.59262525043
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 100,
+            "expected_bytes": 292032.26933673886,
+            "fixed_bytes": 1478,
+            "expected_leaf_bytes": 231243.99297330275,
+            "expected_sibling_bytes": 59310.27636343611
+          },
+          "retained_within_lane_limit": false,
+          "options": [
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 50,
+              "expected_bytes": 256819.77052971086,
+              "fixed_bytes": 1622,
+              "expected_leaf_bytes": 158053.17790446043,
+              "expected_sibling_bytes": 97144.59262525043
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 25,
+              "expected_bytes": 274878.2067836196,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 127150.15947422346,
+              "expected_sibling_bytes": 145962.04730939612
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 13,
+              "expected_bytes": 327704.460502694,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 119790.13744666877,
+              "expected_sibling_bytes": 206004.32305602526
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 7,
+              "expected_bytes": 403083.06595079653,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 123634.75162541964,
+              "expected_sibling_bytes": 277394.3143253769
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 4,
+              "expected_bytes": 495565.94284740125,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 133173.95425022466,
+              "expected_sibling_bytes": 360193.9885971766
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 2,
+              "expected_bytes": 601405.0746121914,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 144628.61405822102,
+              "expected_sibling_bytes": 454434.4605539704
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 720618.6576221365,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 158001.33723878665,
+              "expected_sibling_bytes": 560131.3203833499
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 853213.2009109883,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 173290.82950642842,
+              "expected_sibling_bytes": 677292.3714045598
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension_degree": 8,
+      "queries": 309,
+      "non_pcs_bytes": 123302,
+      "optimized_expected_proof_bytes": 1103809.3482514904,
+      "retained_expected_proof_bytes": 1151968.6990443869,
+      "branches": [
+        {
+          "table": 0,
+          "branch": 0,
+          "width": 605,
+          "best": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 353911.0173825541,
+            "fixed_bytes": 1766,
+            "expected_leaf_bytes": 188533.43998131563,
+            "expected_sibling_bytes": 163611.5774012385
+          },
+          "retained": {
+            "packing": 16,
+            "degree": 4096,
+            "lanes": 38,
+            "expected_bytes": 353911.0173825541,
+            "fixed_bytes": 1766,
+            "expected_leaf_bytes": 188533.43998131563,
+            "expected_sibling_bytes": 163611.5774012385
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 38,
+              "expected_bytes": 353911.0173825541,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 188533.43998131563,
+              "expected_sibling_bytes": 163611.5774012385
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 19,
+              "expected_bytes": 400016.4335299573,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 162279.580227599,
+              "expected_sibling_bytes": 235826.8533023583
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 10,
+              "expected_bytes": 484666.2926159053,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 159945.765343283,
+              "expected_sibling_bytes": 322666.5272726223
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 5,
+              "expected_bytes": 593787.9515769773,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 167355.9294103927,
+              "expected_sibling_bytes": 424234.0221665845
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 3,
+              "expected_bytes": 725085.1562579162,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 182161.82361818283,
+              "expected_sibling_bytes": 540581.3326397334
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 2,
+              "expected_bytes": 873668.9367066589,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 199448.40956936605,
+              "expected_sibling_bytes": 671734.5271372929
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 1037079.6314500938,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 216742.97374990577,
+              "expected_sibling_bytes": 817706.6577001881
+            }
+          ]
+        },
+        {
+          "table": 0,
+          "branch": 1,
+          "width": 24,
+          "best": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 24,
+            "expected_bytes": 85598.87467806211,
+            "fixed_bytes": 1190,
+            "expected_leaf_bytes": 71568.52162504932,
+            "expected_sibling_bytes": 12840.35305301279
+          },
+          "retained": {
+            "packing": 1,
+            "degree": 256,
+            "lanes": 24,
+            "expected_bytes": 85598.87467806211,
+            "fixed_bytes": 1190,
+            "expected_leaf_bytes": 71568.52162504932,
+            "expected_sibling_bytes": 12840.35305301279
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 1,
+              "degree": 256,
+              "lanes": 24,
+              "expected_bytes": 85598.87467806211,
+              "fixed_bytes": 1190,
+              "expected_leaf_bytes": 71568.52162504932,
+              "expected_sibling_bytes": 12840.35305301279
+            },
+            {
+              "packing": 2,
+              "degree": 512,
+              "lanes": 12,
+              "expected_bytes": 100320.09125194336,
+              "fixed_bytes": 1334,
+              "expected_leaf_bytes": 67469.29626296439,
+              "expected_sibling_bytes": 31516.794988978978
+            },
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 6,
+              "expected_bytes": 136218.68266058003,
+              "fixed_bytes": 1478,
+              "expected_leaf_bytes": 72700.63203369918,
+              "expected_sibling_bytes": 62040.05062688084
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 3,
+              "expected_bytes": 191872.88248943904,
+              "fixed_bytes": 1622,
+              "expected_leaf_bytes": 84434.78252826205,
+              "expected_sibling_bytes": 105816.099961177
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 2,
+              "expected_bytes": 266571.2582041974,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 101193.68080295887,
+              "expected_sibling_bytes": 163611.5774012385
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 1,
+              "expected_bytes": 355936.0697347756,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 118199.2164324173,
+              "expected_sibling_bytes": 235826.8533023583
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 1,
+              "expected_bytes": 462522.5259244398,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 137801.9986518175,
+              "expected_sibling_bytes": 322666.5272726223
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 1,
+              "expected_bytes": 583923.1506892511,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 157491.12852266664,
+              "expected_sibling_bytes": 424234.0221665845
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 720146.9605632526,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 177223.62792351912,
+              "expected_sibling_bytes": 540581.3326397334
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 871198.388349397,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 196977.8612121041,
+              "expected_sibling_bytes": 671734.5271372929
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 1037079.6314500938,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 216742.97374990577,
+              "expected_sibling_bytes": 817706.6577001881
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 0,
+          "width": 198,
+          "best": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 237201.69304576016,
+            "fixed_bytes": 1478,
+            "expected_leaf_bytes": 173683.64241887932,
+            "expected_sibling_bytes": 62040.05062688084
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 50,
+            "expected_bytes": 237201.69304576016,
+            "fixed_bytes": 1478,
+            "expected_leaf_bytes": 173683.64241887932,
+            "expected_sibling_bytes": 62040.05062688084
+          },
+          "retained_within_lane_limit": true,
+          "options": [
+            {
+              "packing": 4,
+              "degree": 1024,
+              "lanes": 50,
+              "expected_bytes": 237201.69304576016,
+              "fixed_bytes": 1478,
+              "expected_leaf_bytes": 173683.64241887932,
+              "expected_sibling_bytes": 62040.05062688084
+            },
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 25,
+              "expected_bytes": 244262.31598784012,
+              "fixed_bytes": 1622,
+              "expected_leaf_bytes": 136824.2160266631,
+              "expected_sibling_bytes": 105816.099961177
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 13,
+              "expected_bytes": 293258.4068420286,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 127880.82944079011,
+              "expected_sibling_bytes": 163611.5774012385
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 7,
+              "expected_bytes": 370629.52433316957,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 132892.67103081124,
+              "expected_sibling_bytes": 235826.8533023583
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 4,
+              "expected_bytes": 469903.78148826165,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 145183.25421563935,
+              "expected_sibling_bytes": 322666.5272726223
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 2,
+              "expected_bytes": 586389.3509111826,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 159957.32874459814,
+              "expected_sibling_bytes": 424234.0221665845
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 1,
+              "expected_bytes": 720146.9605632526,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 177223.62792351912,
+              "expected_sibling_bytes": 540581.3326397334
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 871198.388349397,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 196977.8612121041,
+              "expected_sibling_bytes": 671734.5271372929
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 1037079.6314500938,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 216742.97374990577,
+              "expected_sibling_bytes": 817706.6577001881
+            }
+          ]
+        },
+        {
+          "table": 1,
+          "branch": 1,
+          "width": 400,
+          "best": {
+            "packing": 8,
+            "degree": 2048,
+            "lanes": 50,
+            "expected_bytes": 303795.763145114,
+            "fixed_bytes": 1622,
+            "expected_leaf_bytes": 196357.66318393702,
+            "expected_sibling_bytes": 105816.099961177
+          },
+          "retained": {
+            "packing": 4,
+            "degree": 1024,
+            "lanes": 100,
+            "expected_bytes": 351955.1139380103,
+            "fixed_bytes": 1478,
+            "expected_leaf_bytes": 288437.06331112946,
+            "expected_sibling_bytes": 62040.05062688084
+          },
+          "retained_within_lane_limit": false,
+          "options": [
+            {
+              "packing": 8,
+              "degree": 2048,
+              "lanes": 50,
+              "expected_bytes": 303795.763145114,
+              "fixed_bytes": 1622,
+              "expected_leaf_bytes": 196357.66318393702,
+              "expected_sibling_bytes": 105816.099961177
+            },
+            {
+              "packing": 16,
+              "degree": 4096,
+              "lanes": 25,
+              "expected_bytes": 322371.6599014809,
+              "fixed_bytes": 1766,
+              "expected_leaf_bytes": 156994.08250024237,
+              "expected_sibling_bytes": 163611.5774012385
+            },
+            {
+              "packing": 32,
+              "degree": 8192,
+              "lanes": 13,
+              "expected_bytes": 385322.97893156344,
+              "fixed_bytes": 1910,
+              "expected_leaf_bytes": 147586.1256292051,
+              "expected_sibling_bytes": 235826.8533023583
+            },
+            {
+              "packing": 64,
+              "degree": 16384,
+              "lanes": 7,
+              "expected_bytes": 477285.0370520834,
+              "fixed_bytes": 2054,
+              "expected_leaf_bytes": 152564.50977946116,
+              "expected_sibling_bytes": 322666.5272726223
+            },
+            {
+              "packing": 128,
+              "degree": 32768,
+              "lanes": 4,
+              "expected_bytes": 591321.7513550457,
+              "fixed_bytes": 2198,
+              "expected_leaf_bytes": 164889.72918846118,
+              "expected_sibling_bytes": 424234.0221665845
+            },
+            {
+              "packing": 256,
+              "degree": 65536,
+              "lanes": 2,
+              "expected_bytes": 722616.0584105845,
+              "fixed_bytes": 2342,
+              "expected_leaf_bytes": 179692.72577085096,
+              "expected_sibling_bytes": 540581.3326397334
+            },
+            {
+              "packing": 512,
+              "degree": 131072,
+              "lanes": 1,
+              "expected_bytes": 871198.388349397,
+              "fixed_bytes": 2486,
+              "expected_leaf_bytes": 196977.8612121041,
+              "expected_sibling_bytes": 671734.5271372929
+            },
+            {
+              "packing": 1024,
+              "degree": 262144,
+              "lanes": 1,
+              "expected_bytes": 1037079.6314500938,
+              "fixed_bytes": 2630,
+              "expected_leaf_bytes": 216742.97374990577,
+              "expected_sibling_bytes": 817706.6577001881
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scope": "Actual193-instruction table dimensions; each PCS branch optimized independently over power-of-two packing1..1024 within degree/lane limits.",
+  "qualifications": [
+    "Expected sizes, not worst-case bounds or authenticated generated proofs.",
+    "Uniform seed marginals suffice for expected stage sums; stage independence is not assumed.",
+    "Retained Ext8 CODE-aux packing has100 lanes and exceeds the current64-lane limit; retained expectations are hypothetical references, not eligible profiles.",
+    "Ext8 increases auxiliary coordinate widths and field-element bytes; implementation and security are unproved.",
+    "Statement/request bytes excluded; changing packing changes the statement and transcript.",
+    "No joint-opening, recursion, or terminal64 model. No claim of a global packing optimum beyond enumerated choices."
+  ]
+}

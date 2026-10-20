@@ -1,0 +1,4 @@
+import NearCompression.PreparedLiteral
+import ZkFormal.V2.Export
+open NearCompression ZkFormal.V2
+def main : IO Unit := IO.println (preparedLiteralAir 193).exportJson

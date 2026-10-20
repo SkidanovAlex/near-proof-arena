@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "canonical_trace_regeneration": true,
+  "binary_decode_exact": true,
+  "full_chain_fresh_verification": true,
+  "independent_boundary_mutations": 16,
+  "compression_blocks": 4,
+  "message_bytes": 376,
+  "security_certified": false,
+  "scope": "One exact framed SHA384 hash; external boundaries, not recursive verifier",
+  "fresh_source_verifier_capture_matches": true,
+  "audited_theorems": 1866
+}

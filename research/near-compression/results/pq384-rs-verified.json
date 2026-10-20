@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "source": "/tmp/near-d1-scheduled-commitments/source-00-rows.json",
+  "cases": [
+    {
+      "rows": 16,
+      "width": 4,
+      "root_hex": "9ef79518f29cabf7b3dbd534c9ced18c0e57968ba169e95cce1b8b73de4dcd15e150b3b6a504afa4fdd60d1ff50d2b48",
+      "checked_pairs": 32,
+      "full_root_reconstruction": true,
+      "negative_checks": 160,
+      "native_seconds_including_io": 0.0010631871409714222
+    },
+    {
+      "rows": 2,
+      "width": 2,
+      "root_hex": "5e22959c51b7fc1bc1c9633976be0b0fbdef168235ccbea93477d869d0df1171266b1e965725a8a97530b654cf961b64",
+      "checked_pairs": 4,
+      "full_root_reconstruction": true,
+      "negative_checks": 20,
+      "native_seconds_including_io": 0.0005398690700531006
+    },
+    {
+      "rows": 8192,
+      "width": 544,
+      "root_hex": "fbf1854db4053a991d975f58aa5873d2db23266929ced61c27037581348dc21274f192d37688c85aac8a62991ba940c0",
+      "checked_pairs": 3,
+      "full_root_reconstruction": false,
+      "negative_checks": 15,
+      "native_seconds_including_io": 0.8407450267113745
+    }
+  ],
+  "scope": "SHA-384 RS commitment encoding only; no PCS proximity or security claim",
+  "independent_reference": "Direct multilinear folding at x,x^2,x^4; no Mobius or FFT",
+  "large_case_limit": "Three complete vector pairs and their Merkle paths checked; full root not independently reconstructed"
+}

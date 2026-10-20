@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "audit_count": 3065,
+  "audit_log": "/tmp/root-bus-program-audit.log",
+  "chronology_report": "results/sha384-occurrence-order/report.json",
+  "chronology_independent_check": "results/sha384-occurrence-order/independent-check.json",
+  "chronology_outputs_match_agent_bytes": true,
+  "bus_certificate_report": "results/bus-program-certificates/report.json",
+  "real_auxiliary_formulas_checked": 1596,
+  "synthetic_value_comparisons": 64,
+  "wrong_formula_rejections": 1660,
+  "scope": "Configured saved verifier replay, setup excluded as original capture; observed chronology, not Lean capture refinement. Structural formula/ABI checks and audited implication from zero individual residuals to gates; no inference from single mixed residual zero, no bus collision/commitment/QROM security claim."
+}

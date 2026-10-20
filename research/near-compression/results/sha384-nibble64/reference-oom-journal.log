@@ -1,0 +1,4 @@
+Oct 17 00:51:10 ns1027125 systemd[2122]: Started run-r869a6c3f006c43b78cf62e08cd30b846.scope - /usr/bin/sh -c "echo 1000 > /proc/self/oom_score_adj; exec \"\$@\"" heavy python3 airbender/direct-wasm/test_ext8_execution_reduction.py --statement /tmp/sha384-nibble64-private/statement.json --source-directory /tmp/sha384-nibble64-private/source --pcs-queries 8 --terminal-profile affine-v1 --capture-dir /tmp/sha384-nibble64-private/proof --output /tmp/sha384-nibble64-private/prover-report.json.
+Oct 17 01:02:02 ns1027125 systemd[2122]: run-r869a6c3f006c43b78cf62e08cd30b846.scope: A process of this unit has been killed by the OOM killer.
+Oct 17 01:02:02 ns1027125 systemd[2122]: run-r869a6c3f006c43b78cf62e08cd30b846.scope: Failed with result 'oom-kill'.
+Oct 17 01:02:02 ns1027125 systemd[2122]: run-r869a6c3f006c43b78cf62e08cd30b846.scope: Consumed 10min 51.959s CPU time.

@@ -9,6 +9,9 @@
 //! `nice -n 19 taskset -c 9,25`, RAYON_NUM_THREADS=2): contended, indicative only.
 mod chips;
 mod ext;
+mod sha512;
+mod sha512k;
+mod v1;
 mod wasm;
 
 use std::time::Instant;
@@ -24,6 +27,8 @@ fn main() {
     match a.get(1).map(|s| s.as_str()) {
         Some("run") => run(&a[2], a[3].parse().unwrap(), a.iter().any(|s| s == "--prove"), a.iter().any(|s| s == "--tamper")),
         Some("bench-ext") => ext::bench_ext(),
+        Some("sha") => sha(&a[2], a[3].parse().unwrap(), a.iter().any(|s| s == "--prove")),
+        Some("run1") => run1(&a[2], a[3].parse().unwrap(), a.iter().any(|s| s == "--prove"), a.iter().any(|s| s == "--forge")),
         Some("bench-hash") => bench_hash(a.get(2).map(|s| s.parse().unwrap()).unwrap_or(256)),
         Some("bench-commit") => bench_commit(a[2].parse().unwrap(), a[3].parse().unwrap(), a[4].parse().unwrap()),
         _ => eprintln!("usage: see src/main.rs"),
@@ -349,4 +354,297 @@ fn bench_commit(log_n: usize, w: usize, lb: usize) {
         100.0 * (t_leaf + t_node) / tot,
         lvl[0][0]
     );
+}
+
+// =========================================================================================
+// v1 (spike #4): typed operand forms, channels, single-lookup timestamps, public binding,
+// forged-proof tests
+// =========================================================================================
+
+fn prog1(name: &str, iters: u64) -> v1::Prog {
+    match name {
+        "measured" => v1::measured(iters),
+        "loadchain" => v1::loadchain(iters, 16),
+        "divchain" => v1::divchain(iters),
+        "callchain" => v1::callchain(iters),
+        "memmix" => v1::memmix(iters),
+        "bulk" => v1::bulk(iters, 256),
+        _ => panic!("unknown program {name}"),
+    }
+}
+
+fn imbalance1(b: &v1::Built, traces: &[p3_matrix::dense::RowMajorMatrix<F>]) -> usize {
+    let pubs = npudr::verifier::public_inputs(&b.air, &b.cb);
+    let trs: Vec<(usize, &p3_matrix::dense::RowMajorMatrix<F>)> = traces.iter().enumerate().collect();
+    (0..b.air.num_buses)
+        .map(|bus| npudr::check::bus_imbalance_with_pub(&b.air, &trs, &pubs, &b.cb, bus).map(|v| v.len()).unwrap_or(usize::MAX / 64))
+        .sum()
+}
+
+fn prove1(b: &v1::Built, traces: Vec<p3_matrix::dense::RowMajorMatrix<F>>, label: &str) -> Option<Vec<u8>> {
+    let opts = npudr::prover::ProveOptions { verbose: false };
+    let t0 = Instant::now();
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| npudr::prover::prove_bytes(&b.air, traces, &[], &b.cb, &opts)));
+    let dt = t0.elapsed().as_secs_f64();
+    match r {
+        Ok(Ok(v)) => {
+            let weq: f64 = b.air.tables.iter().zip(&b.traces).map(|(t, tr)| (t.width + 8 * AuxLayout::new(t, 1).width() + 8 * (table_degree(t, 1) - 1)) as f64 * tr.height() as f64).sum();
+            let main: f64 = b.traces.iter().map(|t| (t.width() * t.height()) as f64).sum();
+            println!("  [{label}] prover emitted a proof ({} KB) in {dt:.1} s | committed W_eq {:.1} M (Fp8, blowup 16, grand products) = {:.2} M W_eq/s; main {:.1} M cells", v.len() / 1024, weq / 1e6, weq / dt / 1e6, main / 1e6);
+            Some(v)
+        }
+        Ok(Err(e)) => {
+            println!("  [{label}] prover refused after {dt:.1} s: {e}");
+            None
+        }
+        Err(_) => {
+            println!("  [{label}] prover panicked after {dt:.1} s");
+            None
+        }
+    }
+}
+
+fn verify1(b: &v1::Built, cb: &[u8], bytes: &[u8]) -> Result<(), String> {
+    npudr::verifier::verify(&b.air, &[], cb, bytes)
+}
+
+fn col(b: &v1::Built, t: usize, n: &str) -> usize {
+    b.names[t].iter().position(|x| x == n).unwrap_or_else(|| panic!("no column {n} in {}", b.air.tables[t].name))
+}
+
+fn set_env(k: &str, v: &str) {
+    // SAFETY: single-threaded at this point (rayon pools idle between proofs)
+    unsafe { std::env::set_var(k, v) }
+}
+fn clear_env() {
+    unsafe {
+        std::env::remove_var("NPUDR_FORGE");
+        std::env::remove_var("NPUDR_FORGE_BUS");
+    }
+}
+
+fn run1(name: &str, iters: u64, prove: bool, forge: bool) {
+    let p = prog1(name, iters);
+    let t0 = Instant::now();
+    let rf = v1::interpret(&p);
+    let t_int = t0.elapsed().as_secs_f64();
+    let rp = v1::translate(&p);
+    let t1 = Instant::now();
+    let run = v1::execute(&rp, &p);
+    let t_exec = t1.elapsed().as_secs_f64();
+    // differential: entry-frame locals and memory vs the reference interpreter; gas
+    for (i, v) in rf.locals0.iter().enumerate() {
+        let got = run.mem.get(&(v1::SP_LOCAL, i as u32)).map(|x| v1::unl(&x.0)).unwrap_or(*p.args.get(i).unwrap_or(&0));
+        assert_eq!(got, *v, "local {i} differs");
+    }
+    let mut mem = p.mem0.clone();
+    mem.resize(v1::MEMB, 0);
+    for ((sp, w), (l, _)) in &run.mem {
+        if *sp == v1::SP_MEM && ((*w as usize) + 1) * 4 <= v1::MEMB {
+            let v = (v1::unl(l) as u32).to_le_bytes();
+            mem[4 * *w as usize..4 * *w as usize + 4].copy_from_slice(&v);
+        }
+    }
+    assert!(mem == rf.mem, "memory differs from the reference");
+    assert_eq!(run.final_state.3 as u64, rf.gas, "gas differs");
+    println!("program: {} | iterations {iters}", p.name);
+    println!(
+        "  WASM ops {} (gas units {}) | rows {} | ops/row {:.2} | static rows {} | locals, memory, gas == reference: OK | channel discipline: OK",
+        rf.ops,
+        rf.gas,
+        run.steps.len(),
+        rf.ops as f64 / run.steps.len() as f64,
+        rp.rows.len()
+    );
+    println!("  reference interpreter {t_int:.3} s, register machine {t_exec:.3} s ({:.1} M rows/s, {:.1} M ops/s)", run.steps.len() as f64 / t_exec / 1e6, rf.ops as f64 / t_exec / 1e6);
+    let t2 = Instant::now();
+    let b = v1::build(&rp, &run);
+    println!("  trace build {:.3} s", t2.elapsed().as_secs_f64());
+    let mut bad = 0;
+    for (t, tr) in b.air.tables.iter().zip(&b.traces) {
+        let f = npudr::check::failing_constraints(t, tr, &npudr::verifier::public_inputs(&b.air, &b.cb), 3);
+        if !f.is_empty() {
+            println!("  FAIL constraints in {}: {:?}", t.name, f);
+            bad += f.len();
+        }
+    }
+    let imb = imbalance1(&b, &b.traces);
+    println!("  honest trace: {bad} failing constraints, {imb} unbalanced bus messages (public segments included)");
+    report1(&b, rf.ops, rf.gas);
+    if !prove {
+        return;
+    }
+    clear_env();
+    let Some(bytes) = prove1(&b, b.traces.clone(), "honest") else { return };
+    println!("  [honest] verify: {:?}", verify1(&b, &b.cb, &bytes).map(|_| "ACCEPT"));
+    // public binding: the same proof against a modified claim must be rejected
+    let n_code = u32::from_le_bytes(b.cb[0..4].try_into().unwrap()) as usize;
+    let off_code = u32::from_le_bytes(b.cb[4..8].try_into().unwrap()) as usize;
+    let off_mem = u32::from_le_bytes(b.cb[12..16].try_into().unwrap()) as usize;
+    let off_io = u32::from_le_bytes(b.cb[20..24].try_into().unwrap()) as usize;
+    let mut cases: Vec<(&str, Vec<u8>)> = vec![];
+    let mut c = b.cb.clone();
+    c[off_code + (n_code / 2) * v1::CODE_REC + 6] ^= 1; // an immediate byte of a mid code row
+    cases.push(("code byte", c));
+    if off_io > off_mem {
+        let mut c = b.cb.clone();
+        c[off_mem + 5] ^= 1; // first initial memory word's value
+        cases.push(("initial memory word", c));
+    }
+    let mut c = b.cb.clone();
+    c[off_io + 28 + 12] ^= 1; // final u (gas)
+    cases.push(("final gas", c));
+    for (what, c) in cases {
+        let r = verify1(&b, &c, &bytes);
+        println!("  B (claim: {what} flipped, honest proof): {}", if r.is_err() { format!("rejected ({})", r.unwrap_err()) } else { "ACCEPTED: UNSOUND".into() });
+    }
+    if !forge {
+        return;
+    }
+    // forged proofs: dishonest traces committed by the forging prover
+    let alu = b.air.tables.iter().position(|t| t.name.starts_with("alu_ri")).expect("an alu_ri table");
+    let w = b.traces[alu].width();
+    let mut t_constraint = b.traces.clone();
+    t_constraint[alu].values[col(&b, alu, "C0")] += F::ONE; // result limb +1 (row 0)
+    let mut t_bus = b.traces.clone();
+    // a consistent-arithmetic lie about the value read (bus-only violation): +1 on A0 and C0 of row 0
+    let (ca, cc) = (col(&b, alu, "A0"), col(&b, alu, "C0"));
+    if b.names[alu].iter().any(|n| n == "a_t") || true {
+        t_bus[alu].values[ca] += F::ONE;
+        t_bus[alu].values[cc] += F::ONE;
+    }
+    let _ = w;
+    let tests: Vec<(&str, Vec<p3_matrix::dense::RowMajorMatrix<F>>, &str, &str)> = vec![
+        ("F1 constraint violation, naive forger", t_constraint.clone(), "1", "0"),
+        ("F2 constraint violation, OOD-consistent forger", t_constraint, "2", "0"),
+        ("F3 bus violation, naive forger", t_bus.clone(), "1", "0"),
+        ("F4 bus violation, finals balanced + OOD-consistent forger", t_bus, "2", "1"),
+    ];
+    // F5: an honest trace proved against a claim with a different final gas (forger balances the
+    // bus products and patches the OOD quotient values)
+    {
+        let mut c = b.cb.clone();
+        let off_io = u32::from_le_bytes(c[20..24].try_into().unwrap()) as usize;
+        c[off_io + 28 + 12] ^= 1;
+        let bb = v1::Built { air: b.air.clone(), traces: vec![], active: vec![], kind: vec![], names: vec![], cb: c };
+        set_env("NPUDR_FORGE", "2");
+        set_env("NPUDR_FORGE_BUS", "1");
+        let pr = prove1(&bb, b.traces.clone(), "F5 claim mismatch (final gas)");
+        clear_env();
+        if let Some(bytes) = pr {
+            let r = verify1(&bb, &bb.cb, &bytes);
+            println!("  F5 claim mismatch (honest trace, final gas flipped in the claim), forger -> verifier {}", if r.is_err() { format!("REJECTS ({})", r.unwrap_err()) } else { "ACCEPTS: UNSOUND".into() });
+        }
+    }
+    for (what, tr, m, bus) in tests {
+        let nf: usize = npudr::check::failing_constraints(&b.air.tables[alu], &tr[alu], &[], 3).len();
+        let ni = imbalance1(&b, &tr);
+        set_env("NPUDR_FORGE", m);
+        set_env("NPUDR_FORGE_BUS", bus);
+        let pr = prove1(&b, tr, what);
+        clear_env();
+        match pr {
+            Some(bytes) => {
+                let r = verify1(&b, &b.cb, &bytes);
+                println!(
+                    "  {what}: trace has {nf} failing constraint(s), {ni} unbalanced message(s) -> verifier {}",
+                    if r.is_err() { format!("REJECTS ({})", r.unwrap_err()) } else { "ACCEPTS: UNSOUND".into() }
+                );
+            }
+            None => println!("  {what}: forger produced no proof"),
+        }
+    }
+}
+
+fn report1(b: &v1::Built, ops: u64, gas: u64) {
+    println!("\n  table                  kind   active   padded   w   I | per active row: committed U-logUp(E=10)  GKR  ML");
+    let (mut main, mut fr, mut lu, mut gkr) = (0f64, 0f64, 0f64, 0f64);
+    let mut fixed = 0f64;
+    for (i, t) in b.air.tables.iter().enumerate() {
+        let w = t.width as f64;
+        let ni = t.interactions.len() as f64;
+        let act = b.active[i] as f64;
+        let e = 10.0;
+        let l = w + e * ((ni / 2.0).ceil() + 1.0) + e * 2.0;
+        let g = w + e * 2.0;
+        println!("  {:22} {:5} {:8} {:8} {:3} {:3} | {:28.0} {:4.0} {:3.0}", t.name, b.kind[i], b.active[i], b.traces[i].height(), t.width, t.interactions.len(), l, g, w);
+        if b.kind[i] == "fixed" {
+            fixed += w * b.traces[i].height() as f64;
+        } else {
+            main += w * act;
+            fr += ni * act;
+            lu += l * act;
+            gkr += g * act;
+        }
+    }
+    let o = ops as f64;
+    println!(
+        "\n  per WASM op (chips + memory boundary; fixed tables excluded): main {:.1} | fractions {:.1} | committed U-logUp {:.1}, U-GKR {:.1}, ML {:.1} | per gas unit: main {:.2}, fractions {:.2}",
+        main / o, fr / o, lu / o, gkr / o, main / o, main / gas as f64, fr / gas as f64
+    );
+    println!("  fixed tables (code/io/minit/range16/rangeT/pair8): {:.2} M main cells", fixed / 1e6);
+}
+
+fn sha(which: &str, nblk: usize, prove: bool) {
+    let sp = if which == "256" { sha512::SHA256 } else { sha512::SHA384 };
+    let t0 = Instant::now();
+    let b = sha512::build(sp, nblk, 0x1234_5678_9abc_def1);
+    println!("{} compression AIR: {nblk} compressions, reference == sha2 crate: OK | build {:.2} s", sp.name, t0.elapsed().as_secs_f64());
+    let mut bad = 0;
+    for (t, tr) in b.air.tables.iter().zip(&b.traces) {
+        let f = npudr::check::failing_constraints(t, tr, &[], 3);
+        if !f.is_empty() {
+            println!("  FAIL constraints in {}: {:?}", t.name, f);
+            bad += f.len();
+        }
+    }
+    let imb = npudr::check::bus_imbalance(&b.air, &b.traces, &[]).len();
+    println!("  honest trace: {bad} failing constraints, {imb} unbalanced bus messages");
+    let (mut cells, mut fr, mut lu) = (0f64, 0f64, 0f64);
+    let e = 10.0;
+    for (i, t) in b.air.tables.iter().enumerate() {
+        let rows_per = b.rows_per[i] as f64;
+        let deg = npudr::aux::table_degree(t, 1);
+        let pre = if i < 2 { b.preprocessed[i] } else { 0 };
+        println!(
+            "  {:11} w {:4} (preprocessed {:2}) | interactions {:2} | degree {} | rows/compression {:3} | main cells/compression {:7.0}",
+            t.name, t.width, pre, t.interactions.len(), deg, rows_per, t.width as f64 * rows_per
+        );
+        if i < 3 {
+            let ni = t.interactions.len() as f64;
+            cells += (t.width - pre) as f64 * rows_per;
+            fr += ni * rows_per;
+            lu += rows_per * (e * ((ni / 2.0).ceil() + 1.0) + e * 2.0);
+        }
+    }
+    let committed = cells + lu;
+    let work = committed + fr * 6.3;
+    println!(
+        "  per compression ({} B; rounds + sched + final; input and preprocessed columns excluded): main {:.0} cells, {:.0} fraction slots | committed U-logUp (E=10, degree-3 target) {:.0} | work cell-eq {:.0} | per byte: main {:.0}, work {:.0}",
+        b.bytes_per_block, cells, fr, committed, work, cells / b.bytes_per_block as f64, work / b.bytes_per_block as f64
+    );
+    if !prove {
+        return;
+    }
+    let opts = npudr::prover::ProveOptions { verbose: false };
+    let t1 = Instant::now();
+    let bytes = npudr::prover::prove_bytes(&b.air, b.traces.clone(), &[], &[], &opts).expect("honest proof");
+    let dt = t1.elapsed().as_secs_f64();
+    let r = npudr::verifier::verify(&b.air, &[], &[], &bytes);
+    println!("  [honest] prove {dt:.1} s, proof {} KB, verify {:?}", bytes.len() / 1024, r.map(|_| "ACCEPT"));
+    let mut tr = b.traces.clone();
+    let wr = tr[0].width();
+    let c = b.a0_col;
+    tr[0].values[10 * wr + c] = F::ONE - tr[0].values[10 * wr + c];
+    let nf = npudr::check::failing_constraints(&b.air.tables[0], &tr[0], &[], 3).len();
+    set_env("NPUDR_FORGE", "2");
+    let fb = npudr::prover::prove_bytes(&b.air, tr, &[], &[], &opts);
+    clear_env();
+    match fb {
+        Ok(fb) => {
+            let r = npudr::verifier::verify(&b.air, &[], &[], &fb);
+            println!("  [forged: one state bit flipped ({nf} failing constraint(s)), OOD-consistent forger] verifier {}", if r.is_err() { format!("REJECTS ({})", r.unwrap_err()) } else { "ACCEPTS: UNSOUND".into() });
+        }
+        Err(e) => println!("  forger produced no proof: {e}"),
+    }
 }

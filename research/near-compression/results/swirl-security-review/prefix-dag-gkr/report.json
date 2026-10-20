@@ -1,0 +1,15 @@
+{
+  "status": "WEIGHTED_COMPONENT_AND_KNOWN_INPUT_SPLIT_CHECKED",
+  "field_elements": 1258,
+  "ext4_field_payload_bytes": 20128,
+  "known_slots": 3941,
+  "pcs_coordinates": 2303,
+  "total_input_slots": 6244,
+  "prover_seconds": 11.012923302128911,
+  "negative_checks": 4,
+  "limitations": [
+    "Verifier statement contains opening-free native prefix log hash and public controls; witness openings remain prover inputs. No combined PCS/transcript security theorem.",
+    "Residual PCS claim checked with full witness, not a PCS opening proof.",
+    "Ext4 diagnostic only; no PQ128, full NEAR or compiler correctness theorem."
+  ]
+}

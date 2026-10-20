@@ -1,0 +1,147 @@
+{
+  "status": "conditional parameter arithmetic and geometry simulation",
+  "rows": [
+    {
+      "degree": 131072,
+      "blowup": 4,
+      "domain": 524288,
+      "threshold": 393217,
+      "extraction_numerator": 524284,
+      "queries": 314,
+      "min_bytes": 871752,
+      "max_bytes": 894976,
+      "mean_bytes": 881915.0
+    },
+    {
+      "degree": 131072,
+      "blowup": 8,
+      "domain": 1048576,
+      "threshold": 742742,
+      "extraction_numerator": 1048568,
+      "queries": 262,
+      "min_bytes": 904344,
+      "max_bytes": 927824,
+      "mean_bytes": 914899.0
+    },
+    {
+      "degree": 131072,
+      "blowup": 16,
+      "domain": 2097152,
+      "threshold": 1441793,
+      "extraction_numerator": 2097136,
+      "queries": 241,
+      "min_bytes": 992472,
+      "max_bytes": 1014808,
+      "mean_bytes": 1003358.0
+    },
+    {
+      "degree": 131072,
+      "blowup": 32,
+      "domain": 4194304,
+      "threshold": 2839894,
+      "extraction_numerator": 4194272,
+      "queries": 232,
+      "min_bytes": 1115328,
+      "max_bytes": 1139072,
+      "mean_bytes": 1124332.0
+    },
+    {
+      "degree": 131072,
+      "blowup": 64,
+      "domain": 8388608,
+      "threshold": 5636097,
+      "extraction_numerator": 8388544,
+      "queries": 227,
+      "min_bytes": 1250696,
+      "max_bytes": 1274952,
+      "mean_bytes": 1261552.0
+    },
+    {
+      "degree": 131072,
+      "blowup": 128,
+      "domain": 16777216,
+      "threshold": 11228502,
+      "extraction_numerator": 16777088,
+      "queries": 225,
+      "min_bytes": 1404184,
+      "max_bytes": 1430392,
+      "mean_bytes": 1417322.0
+    },
+    {
+      "degree": 262144,
+      "blowup": 4,
+      "domain": 1048576,
+      "threshold": 786433,
+      "extraction_numerator": 1048572,
+      "queries": 314,
+      "min_bytes": 1037448,
+      "max_bytes": 1065648,
+      "mean_bytes": 1049997.0
+    },
+    {
+      "degree": 262144,
+      "blowup": 8,
+      "domain": 2097152,
+      "threshold": 1485483,
+      "extraction_numerator": 2097144,
+      "queries": 262,
+      "min_bytes": 1059296,
+      "max_bytes": 1085424,
+      "mean_bytes": 1071076.0
+    },
+    {
+      "degree": 262144,
+      "blowup": 16,
+      "domain": 4194304,
+      "threshold": 2883585,
+      "extraction_numerator": 4194288,
+      "queries": 241,
+      "min_bytes": 1148536,
+      "max_bytes": 1172744,
+      "mean_bytes": 1160172.0
+    },
+    {
+      "degree": 262144,
+      "blowup": 32,
+      "domain": 8388608,
+      "threshold": 5679787,
+      "extraction_numerator": 8388576,
+      "queries": 232,
+      "min_bytes": 1276368,
+      "max_bytes": 1302208,
+      "mean_bytes": 1286822.0
+    },
+    {
+      "degree": 262144,
+      "blowup": 64,
+      "domain": 16777216,
+      "threshold": 11272193,
+      "extraction_numerator": 16777152,
+      "queries": 227,
+      "min_bytes": 1419688,
+      "max_bytes": 1445304,
+      "mean_bytes": 1431710.0
+    },
+    {
+      "degree": 262144,
+      "blowup": 128,
+      "domain": 33554432,
+      "threshold": 22457003,
+      "extraction_numerator": 33554304,
+      "queries": 225,
+      "min_bytes": 1582216,
+      "max_bytes": 1610712,
+      "mean_bytes": 1597002.0
+    }
+  ],
+  "target_replay_bits": 130,
+  "field_degree": 8,
+  "threshold_rule": "T=floor((2N+D)/3)+1",
+  "extraction_rule": "E=sum(next-domain-sizes)=N-B for binary folds and B>=4",
+  "limits": [
+    "Only rate4 runtime profile exists; alternate domains are hypothetical instantiations of abstract geometric premises.",
+    "Size includes scalar leaf/frontier/round data only; no config/framing/upstream/fullNEAR.",
+    "Ideal replay bound only; adversarial-root extraction, FS/QROM and total security budget open.",
+    "Deterministic query simulation, not actual proof measurements or universal lower bounds."
+  ]
+}

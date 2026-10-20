@@ -1,0 +1,76 @@
+--- a/src/v3/mrksort.rs
++++ b/src/v3/mrksort.rs
+@@ -261,33 +261,52 @@
+ /// Row 0 is the root row; then the node rows in `MrkGen.recs` order (a hashed
+ /// node spans 64 rows, a promoted node one), then padding.  `v.nodes` is in
+ /// `mrkShape` order, so `shape[k]`'s node is `v.nodes[k]`.
+-pub fn mrk_aligned(v: &MrkV) -> Tab {
++pub fn mrk_aligned(v: &MrkV) -> Tab { mrk_at_log(v, MRK_LOG).expect("default Merkle capacity") }
++
++/// Complete root/node prefix plus one inactive row; never split hashed blocks.
++pub fn mrk_required_rows(v: &MrkV) -> Result<usize,String> {
++    if v.n == 0 {
++        if !v.nodes.is_empty() { return Err("empty Merkle input has nodes".into()); }
++        return Ok(2);
++    }
++    // Reject impossible counts before constructing the shape vector.
++    if v.n > (1u64 << MRK_LOG) { return Err("Merkle count exceeds supported capacity".into()); }
++    let shape=mrk_shape(v.n as usize);
++    if shape.len()!=v.nodes.len() { return Err("Merkle node count differs from complete shape".into()); }
++    let mut required=2usize; // root plus at least one inactive padding row
++    for ((_,_,hashed),node) in shape.iter().zip(&v.nodes) {
++        if *hashed != matches!(node,MrkNode::Hashed{..}) {
++            return Err("Merkle node kind differs from complete shape".into());
++        }
++        required=required.checked_add(if *hashed {64} else {1}).ok_or("Merkle row capacity overflow")?;
++    }
++    Ok(required)
++}
++
++pub fn mrk_at_log(v: &MrkV, log: usize) -> Result<Tab,String> {
++    if !(1..=MRK_LOG).contains(&log) { return Err("Merkle log must be within1..19".into()); }
++    let required=mrk_required_rows(v)?;
++    if required>(1usize<<log) { return Err(format!("Merkle requires {required} rows including padding, log{log} cannot fit")); }
+     let n = v.n;
+     if n == 0 {
+         let mut t = Tab::zero(1, MRK_V3_WIDTH);
+         for q in 0..t.height() {
+             t.set(q, MRK_EMPTY, 1);
+         }
+-        return t;
+-    }
+-    let mut t = Tab::zero(MRK_LOG, MRK_V3_WIDTH);
++        return Ok(t);
++    }
++    let mut t = Tab::zero(log, MRK_V3_WIDTH);
+     let h = t.height();
+     let root = root_cell(n, v);
+     for (c, x) in root.into_iter().enumerate() {
+         t.set(0, c, x);
+     }
+     let mut q = 1usize;
+-    'shape: for (k, &(j, i, hashed)) in mrk_shape(n as usize).iter().enumerate() {
+-        let nd = match v.nodes.get(k) {
+-            Some(nd) => nd,
+-            None => break,
+-        };
++    for (k, &(j, i, hashed)) in mrk_shape(n as usize).iter().enumerate() {
++        let nd = &v.nodes[k];
+         let (j, i) = (j as u64, i as u64);
+         let rows = if hashed { 64u64 } else { 1 };
+         for p in 0..rows {
+-            if q >= h {
+-                break 'shape;
+-            }
+             let row = node_cell(n, nd, j, i, p);
+             for (c, x) in row.into_iter().enumerate() {
+                 t.set(q, c, x);
+@@ -299,7 +318,7 @@
+     for q in 0..h {
+         t.set(q, MRK_INV, inv);
+     }
+-    t
++    Ok(t)
+ }
+ 
+ /// Parse `json` as a [`MrkV`] and render the `mrk` trace.

@@ -1,0 +1,17 @@
+{
+  "internal.proof.gz": "a5de2cf628532ecd5bb3e462b195a23a6a4088cc6201c568a5b17f37c3b80c84",
+  "layouts.json": "e90431def485035efdec2031446dc03670274aa95636d0e7d2005405a8836b62",
+  "leaf.proof.gz": "28ad9200e018c8488a94010bba2a8be403a0b86c9e8215211f724b1502c7ffc2",
+  "nearproof-fresh-export.log": "3add4798a1dc0120add99a7a304533a6e4634ede7ee080cb57a47b673aa9f75b",
+  "nearproof-fresh-witness.log": "eca0456feba5c668cb87dbab86bf3ca07a8a9b59e4ae1999e52916df2d37d400",
+  "nearproof-reconstruct.log": "c5f3e431a66fdb8c8f636b6ad594c42d23be5977c401a726685c8db9971a7871",
+  "nearproof-witness-final-clippy.log": "07cbf523736dee50e0513d87468d32bdee79e742666dd6ad53979c5a782f9895",
+  "nearproof-witness-openings.log": "f6ae9146fe860a24b4e083ddf57dd706b00a34db7fd0643a5a67d8e9be7e50b9",
+  "openings.json.gz": "335c11890785c0e35ab9520c5d3f1044e5e110ce06530a915ea33ae98f5cf438",
+  "openvm-tests.patch.gz": "baea1bca13ac5139cdbc36e147cd0411970fc90329db499def6b652c2cf7bf64",
+  "openvm-tests.rs.gz": "f74ef29484fdb2ad7c55e8a34fd6f2edb658d4a60fa46ac9f8bec6953607456b",
+  "point-capture.jsonl.gz": "d7752c69f18d6476a8ddb81db944b60562e47293a320753df92beec7b8e5ab1b",
+  "report.json": "d360e7144a51020ab701abed5e043dc13ddf79da889e587439e56e4569af67f3",
+  "witness-hashes.json": "3ad2d6ecadf33ab39fddf1155160ef6844a38b81364b3abc5ca98f1a92fa65b2",
+  "witness.tar.gz": "53936c49bdcb71afc3b45665b882f47fd6bdcafb949f6ceeb2542120a5fb0db1"
+}

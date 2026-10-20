@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3230,
+  "added_theorems": 7,
+  "sources": {
+    "PreparedTypedLocalIndex": "a7688d2220e331ede226e78bd7f84bd93c5597905bb53a9e086d4eb5256b5603",
+    "PreparedTypedLocalUpdate": "79bfc3ed51c63f400dc418fc313c31d43572270dc792885be26ace2e7a72aa45",
+    "PreparedTypedLocalDepth": "917fe4207991a2bb3ad05b7d7eefb81170d8bc485e63aa002c5e46b70b5a2eaf"
+  },
+  "audit_log": "/tmp/root-typed-local-source-audit.log",
+  "audit_sha256": "e3297d1c30be92077d894e908de5e8deff55225bfd02d7315fcea2910e68c704",
+  "scope": "Literal local-selector bounds, two-limb index equality, four-limb typed store semantics, get/set/tee stack depth and nonempty/capacity guards.",
+  "remaining": [
+    "Authenticated full local-op successors still in progress",
+    "Whole-call and fullNEAR capacity not established",
+    "PCS binding and quantum soundness open"
+  ]
+}

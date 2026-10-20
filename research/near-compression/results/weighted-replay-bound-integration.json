@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3432,
+  "added_theorems": 2,
+  "source_sha256": "49d08e8b4bfb80ea28b669e94deddd298f79f71454d00c42242ec1784a332d02",
+  "audit_log": "/tmp/root-weighted-replay-bound-audit.log",
+  "audit_sha256": "7c967edf588a2bcc30a783eacb882d3efd36d44cc13b49ea71a06e445d15c2be",
+  "arithmetic_report": "results/weighted-pcs-replay/bound-arithmetic.json",
+  "scope": "Conditional accepted replay/query AND no fixed-source initial candidate count; candidate absence is part of event, not a premise.",
+  "limits": [
+    "Fixed source oracle, authenticated terminal, domain geometry, snapshot causality and ideal samples explicit.",
+    "No QROM/root extraction or upstream-error certification."
+  ]
+}

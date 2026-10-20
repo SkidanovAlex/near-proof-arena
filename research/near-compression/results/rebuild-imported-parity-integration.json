@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "capture_registers": [
+    62420,
+    62420,
+    82795
+  ],
+  "capture_rejections": 42,
+  "arithmetic_cases": 14,
+  "arithmetic_wrong_results_rejected": 14,
+  "checker_sha256": "ebfbcade2cb85c5da7d1d4890267292a840d2fe0ea49dd3ba7143ede0ea31a37",
+  "scope": "Executable structural certificates and canonical export parity; not kernel proofs for captured instances, compiler AIR lowering, or cryptographic acceptance-to-HoldsP."
+}

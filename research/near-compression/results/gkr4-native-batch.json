@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "binary_sha256": "fb2a820479543697e7447a4a4a488414f3b525338f7a3364acf31300a5859521",
+  "proof_bytes": 120477,
+  "exact_proof_json_and_binary_parity": true,
+  "exact_statement_and_receipt_parity": true,
+  "fresh_process_verify": true,
+  "native_library_sha256": "6a415034438fa2d5c776e17ba88a076fee0e258cd2ce98eba64e8bf6626193e2",
+  "timings": {
+    "reference": {
+      "source_commitments": 3.4260779079049826,
+      "fresh_auxiliaries_and_commitments": 18.283163962885737,
+      "gkr_and_weighted_pcs": 288.3570972508751,
+      "independent_verifier": 12.394492426887155
+    },
+    "native": {
+      "source_commitments": 3.3957046889699996,
+      "fresh_auxiliaries_and_commitments": 18.505021585151553,
+      "gkr_and_weighted_pcs": 123.44337557116523,
+      "independent_verifier": 12.48239429993555
+    }
+  },
+  "gkr_pcs_speedup": 2.335946306690527,
+  "reference_pipeline_seconds": 379.0048207491636,
+  "native_pipeline_seconds": 214.37886449694633,
+  "scope": "One retained 24-node SHA384 batch; same Q8/Ext4 diagnostic proof. Single-run timings include PCS; no full-DAG throughput extrapolation, Rust refinement or security certification."
+}

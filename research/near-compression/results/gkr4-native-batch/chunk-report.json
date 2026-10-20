@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "profile": "near-sha384-node-chunk-v1",
+  "proof_profile": "near-pq384-gkr-bus-v1",
+  "codec": "NPGC compact GKR v1",
+  "proof_bytes_including_four_source_roots": 120477,
+  "public_fixed_width_bytes": 0,
+  "external_receipt_json_bytes": 731,
+  "receipt_context_bytes": 197,
+  "receipt_external_root_bytes": 48,
+  "proof_public_and_receipt_bytes": 121208,
+  "canonical_air_json_bytes": 1144881,
+  "canonical_air_digest_binding_in_receipt": true,
+  "source_cells": 10784384,
+  "source_shapes": [
+    [
+      2048,
+      5234
+    ],
+    [
+      32,
+      1666
+    ],
+    [
+      32,
+      191
+    ],
+    [
+      32,
+      179
+    ]
+  ],
+  "global_base": 1995,
+  "unique_nodes": 24,
+  "declared_unique_call_steps": 24,
+  "original_occurrence_steps": 1288,
+  "fanout_bits": 13,
+  "prior_witness_and_external_commit_work_excluded": true,
+  "prover_runner_seconds": 164.09294569306076,
+  "elapsed_after_fixed_external_receipt": 214.37886449694633,
+  "fresh_process_verify": true,
+  "binary_sha256": "fb2a820479543697e7447a4a4a488414f3b525338f7a3364acf31300a5859521",
+  "receipt_sha256": "f33b113e4398a341af225ff0c0abe2dd0a6b3159b84f4e489434039c2358ee7b",
+  "scope": "Compression-record component only. Q8/BabyBearExt4 diagnostic, no quantum128/QROM/proximity certification. Ordered use root fixed externally; call-chain, IV/padding/digest provenance, cross-chunk coverage and aggregation remain open. Canonical static AIR/spec external to payload; four source commitments are included."
+}

@@ -1,0 +1,81 @@
+{
+  "status": "source-derived accounting; not RSS measurement",
+  "source": "airbender/direct-wasm/pq384-native/src/bin/rs_commit.rs",
+  "tables": [
+    {
+      "table": 0,
+      "rows": 512,
+      "width": 5234,
+      "packing": 128,
+      "lanes": 41,
+      "decoded_row_payload_bytes": 10719232,
+      "leaf_payload_bytes": 42991616,
+      "one_fft_buffer_bytes": 2097152,
+      "all_merkle_digest_bytes": 12582864,
+      "construction_payload_peak_lower_bound": 66293712,
+      "cache_bytes_excluding_manifest": 66322384,
+      "disk_backed_proposal": {
+        "retained_fft_buffer_bytes": 2097152,
+        "caveat": "Requires new disk-backed leaf transpose, streamed tree builder and non-JSON row reader; not implemented."
+      },
+      "independent_existing_cache_file_sizes": {
+        "coefficients.u32": 10747904,
+        "leaves.u32": 42991616,
+        "tree.sha384": 12582864
+      }
+    },
+    {
+      "table": 1,
+      "rows": 4,
+      "width": 1668,
+      "packing": 32,
+      "lanes": 53,
+      "decoded_row_payload_bytes": 26688,
+      "leaf_payload_bytes": 108544,
+      "one_fft_buffer_bytes": 4096,
+      "all_merkle_digest_bytes": 24528,
+      "construction_payload_peak_lower_bound": 159760,
+      "cache_bytes_excluding_manifest": 160208,
+      "disk_backed_proposal": {
+        "retained_fft_buffer_bytes": 4096,
+        "caveat": "Requires new disk-backed leaf transpose, streamed tree builder and non-JSON row reader; not implemented."
+      },
+      "independent_existing_cache_file_sizes": {
+        "coefficients.u32": 27136,
+        "leaves.u32": 108544,
+        "tree.sha384": 24528
+      }
+    },
+    {
+      "table": 2,
+      "rows": 2,
+      "width": 3008,
+      "packing": 64,
+      "lanes": 47,
+      "decoded_row_payload_bytes": 24064,
+      "leaf_payload_bytes": 96256,
+      "one_fft_buffer_bytes": 4096,
+      "all_merkle_digest_bytes": 24528,
+      "construction_payload_peak_lower_bound": 144848,
+      "cache_bytes_excluding_manifest": 144848,
+      "disk_backed_proposal": {
+        "retained_fft_buffer_bytes": 4096,
+        "caveat": "Requires new disk-backed leaf transpose, streamed tree builder and non-JSON row reader; not implemented."
+      },
+      "independent_existing_cache_file_sizes": {
+        "coefficients.u32": 24064,
+        "leaves.u32": 96256,
+        "tree.sha384": 24528
+      }
+    }
+  ],
+  "excluded": [
+    "serde_json input Value and temporary clone",
+    "Vec headers and allocator overhead",
+    "auxiliary commitments",
+    "prover work after source commitment",
+    "parallel table jobs"
+  ],
+  "unchanged_protocol_requirement": "Disk-backed implementation must preserve exact context, root, leaf order and every authenticated opening.",
+  "cache_accounting_validation": "PASS all three actual existing cache file lengths; no peak RSS measurement"
+}

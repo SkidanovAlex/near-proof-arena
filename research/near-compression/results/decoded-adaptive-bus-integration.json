@@ -1,0 +1,34 @@
+{
+  "status": "DECODED_COORDINATES_CONNECT_TO_ADAPTIVE_BUS_BOUND",
+  "module": "NearCompression/DecodedAdaptiveBus.lean",
+  "theorems": [
+    "decoded_base_trace_attached",
+    "decoded_bus_implies_adaptive_accept",
+    "decoded_adaptive_bus_error_bound"
+  ],
+  "proved": [
+    "A decoded coordinate trace sharing fixed source cells and row logs projects to an allowed busAttachAuxiliary trace.",
+    "Reconstructed auxiliary residual validity and final-product equality imply the existing adaptive bus acceptance event on the same fixed source.",
+    "Decoded witnesses and finals may depend on both bus challenges without increasing the ideal bus bound."
+  ],
+  "assumptions": [
+    "Source cells and row geometry fixed before bus challenges.",
+    "Residual validity is on reconstructed auxiliary coordinates of the projected decoded trace; not inferred from PCS alone.",
+    "Source/public message bounds, bus imbalance and distinct ideal sample."
+  ],
+  "remaining": [
+    "Prove fixed source representative consistency across auxiliary commitments and bus challenges.",
+    "Connect actual generated auxiliary formulas to the reconstructed-coordinate residual predicate.",
+    "Assemble local/bus/PCS cases, authenticated source/native refinement, QROM security and secure full-NEAR size."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4020,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal decoded trace/adaptive bus composition only."
+  }
+}

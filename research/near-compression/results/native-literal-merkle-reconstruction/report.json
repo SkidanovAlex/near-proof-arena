@@ -1,0 +1,41 @@
+{
+  "status": "EXECUTED_MERKLE_DAG_RECONSTRUCTION_ANALYSIS",
+  "native_proof_sha256": "2324abdf45b66b90022094c31d10db61dc8421911638ca4bf227631d77b13464",
+  "trace_sha256": "5a4f7caef9a57b481021598dc4d1ddd049296564ef11c325079baa3cf6811057",
+  "actual_trace_calls": {
+    "leaves": 2472,
+    "nodes": 8354
+  },
+  "unique_trace_outputs": 9073,
+  "unique_authentication_targets": 4741,
+  "authentication_occurrences": 6191,
+  "closure_counts": {
+    "frontier": 4135,
+    "leaf": 2472,
+    "node": 6595
+  },
+  "all_leaf_sources_outside_omitted_auth_slots": true,
+  "exact_reconstruction_from_zeroed_auth_skeleton": true,
+  "native_non_auth_bytes": 215441,
+  "frontier_digest_bytes": 198480,
+  "fixed_plan_payload_plus_request_ignoring_metadata": 414840,
+  "simple_instruction_program_bytes": 257838,
+  "simple_encoding_bytes_before_headers": 491852,
+  "current_dictionary_bytes": 450302,
+  "decision": "Do not adopt the naive explicit-DAG encoding; pursue an additional protocol-level reduction.",
+  "limitations": [
+    "fixed captured verification DAG, not global reconstruction optimum",
+    "unchanged non-authentication byte payload in this accounting",
+    "known algebraic/padding structure outside captured operations not explored",
+    "instruction model is not a serialized verified wire artifact",
+    "no QROM certificate, recursive parent, full NEAR or new Lean theorem"
+  ],
+  "security_certified": false,
+  "artifact_sha256": {
+    "plan.json.gz": "335bb6b598eab72c65061ccfe57148059a01f0a218936dfe1453b832a77991f7",
+    "replay.log": "6a3b9d5a5e6b9f5f0245b0df26cae28060cb926883e510999cbae4d0ca2a97fd",
+    "main.rs": "0c1cda48063c02bd7f365f1246b14642f82b17481b64c3668a7215d45b6eee39",
+    "merkle-trace.bin.gz": "5bae02182f5f92fce0674284abcd845773ea8b28d11baffe899981f54492a3a8",
+    "native_sha384_config.rs": "932c4bbd8a9e95b7f0a2c11db20df8564d9a0ebac1705a3cb6401e8a733babde"
+  }
+}

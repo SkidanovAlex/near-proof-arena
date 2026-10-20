@@ -1,0 +1,28 @@
+{
+  "profile": "near-pq384-seed-gkr-bus-v1",
+  "trust_boundary": "configure(AIR) fixes canonical AIR and compiler semantics outside the per-proof verifier; proof cannot supply configuration",
+  "dependency_chain": [
+    "Canonical static AIR plus fixed compiler identifier -> trusted configuration digest.",
+    "Configuration digest plus fixed-width public values and all table shapes/packings -> statement digest.",
+    "Statement digest plus ordered source roots -> alpha/gamma; all auxiliary roots and finals precede every zerocheck challenge.",
+    "All zerocheck coefficient vectors are committed in table/round order. Fresh rho is drawn only after their completion.",
+    "Canonical compiler deterministically derives circuit topology, all public constants and input-slot mapping from the above values. No proof-selected layout is accepted.",
+    "GKR initialization binds fixed compiler configuration, pre-GKR transcript binding and output claim. Every sumcheck polynomial and pair of input claims is absorbed before the next challenge.",
+    "Final GKR transcript seed binds its complete message history. Final input query points, batching scalar, public-constant subtraction and aggregate private claim are verifier-derived.",
+    "Current/next input-slot weights map deterministically through upper-zeta and cyclic-shift row functionals to per-lane coefficient weights. Source/aux order and public row points come from the fixed statement and verified zerochecks.",
+    "Weighted PCS initialization binds statement, pre/final GKR seed, fixed-width root/shape/rowpoint metadata and aggregate claim. It omits only lane arrays already fixed by the dependency chain.",
+    "Complete verifier invokes weighted PCS and global randomized bus fingerprint product equality. No residual opening obligation is returned as acceptance."
+  ],
+  "required_assumptions": [
+    "Framed SHA384 statement/transcript binding; no QROM reduction is supplied",
+    "Canonical compiler/evaluation/weight-map correspondence, tested but not fully formally composed",
+    "Sumcheck/GKR/batching algebraic soundness bounds and correlated virtual-oracle/proximity/RBR security remain to be established",
+    "Natural bus balance only outside fingerprint collision and zero-factor bad events",
+    "Q8/Ext4 remains a diagnostic parameter set"
+  ],
+  "non_goals": [
+    "No standalone arbitrary-weight PCS security claim under omitted-weight hashing",
+    "No proof of the complete recursive verifier",
+    "No128-bit or postquantum soundness certification"
+  ]
+}

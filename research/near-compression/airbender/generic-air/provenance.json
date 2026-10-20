@@ -1,0 +1,24 @@
+{
+  "lean_project": "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression",
+  "dependency_repository_commit": "9116a4da95f2d17cfddecc1618ccc0daaa9ba37d",
+  "source_sha256": {
+    "zk-formal/ZkFormal/Air/Basic.lean": "314cbb8567bd854494a977cec07edfca265e71bada3b7cf5192bd4fa81beaae7",
+    "zk-formal/ZkFormal/Air/Export.lean": "d449c92100ab2af03fa36e53cb4426867bba9a38e819376820c3faea9dd706f5",
+    "zk-formal/ZkFormal/V2/Air.lean": "d124498ad3d6501a46117ac4be56ff1461d832dbf4000915a5f9188077bfa349",
+    "zk-formal/ZkFormal/V2/Export.lean": "5f204bbc919201fa95bd41c20600ecb1fce9653d659147e147779709054b7516",
+    "zk-formal/ZkFormal/Algebra/Fp.lean": "a54a17cb958402687acadebd66fdf76bccaf9ff122608df5a6ab2653b9f6fcfb"
+  },
+  "fixture_sha256": "dc2dbb4d662d3af3adf93abc6a60b749054e1d8cd8560e899a4b09155d2aa6dc",
+  "command": [
+    "taskset",
+    "-c",
+    "8-15,24-31",
+    "/data/illia/nearproof-deps/bin/heavy",
+    "lake",
+    "env",
+    "lean",
+    "--run",
+    "/data/illia/nearproof-wt/direct-wasm-whir/research/near-compression/airbender/generic-air/Fixture.lean"
+  ],
+  "note": "Uses prebuilt imports. Caller must first build current canonical dependencies; no build is run here."
+}

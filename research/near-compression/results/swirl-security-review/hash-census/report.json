@@ -1,0 +1,57 @@
+{
+  "upstream_commit": "e74f9b1ee868c42776faf821b8b9f2e8829a7f68",
+  "stages": [
+    {
+      "stage": "leaf",
+      "proof_bytes": 383529,
+      "raw_permute": 3354,
+      "raw_compress": 4825,
+      "distinct": 5656,
+      "padded": 8192,
+      "already_removed": 2523,
+      "padding": 2536,
+      "distinct_removal_to_half_height": 1560
+    },
+    {
+      "stage": "internal",
+      "proof_bytes": 398697,
+      "raw_permute": 6225,
+      "raw_compress": 16429,
+      "distinct": 19685,
+      "padded": 32768,
+      "already_removed": 2969,
+      "padding": 13083,
+      "distinct_removal_to_half_height": 3301
+    },
+    {
+      "stage": "root_geometry_babybear_hash",
+      "proof_bytes": 242809,
+      "raw_permute": 11025,
+      "raw_compress": 7054,
+      "distinct": 16842,
+      "padded": 32768,
+      "already_removed": 1237,
+      "padding": 15926,
+      "distinct_removal_to_half_height": 458
+    }
+  ],
+  "raw_sha256": {
+    "run.log": "5fee34bd506a13bb2061453922c90029fed0690583db2414707577370bba8263",
+    "clippy.log": "72d08505aa5b12d8f6ec4a5119c8c03ad4c1d653cdac092e9df7ad42350ad19c",
+    "transcript.rs": "5fe93b9ab48954d218fb770be9889b3a11093e46205b1034a0fc88eb196c9962",
+    "poseidon2-air.rs": "8503432f00dc4f8405bf0fc028fbec66b83106c6984bca51e348cfd55323d8e7",
+    "tests.rs": "6f6c8b1959449aa7298489957f457c390188bbc70275e42c34883dd9c45eb6cc",
+    "Cargo.lock": "76467b143beff28428cfbfbe02e6f2badac3922ad6ded02a7cc4859cec2e7d57"
+  },
+  "root_counterfactual": {
+    "required_distinct_reduction": 458,
+    "hash_cell_saving_if_half_height": 4931584,
+    "common_cells_after": 9516272
+  },
+  "limitations": [
+    "Generic Fibonacci recursive chain, not full VM or NEAR.",
+    "Upstream RBR100 parameters; not PQ128.",
+    "CPU hash deduplication is already implemented with separate permutation/compression lookup multiplicities.",
+    "Counterfactual assumes other tables unchanged; no optimized circuit or proof implemented."
+  ]
+}

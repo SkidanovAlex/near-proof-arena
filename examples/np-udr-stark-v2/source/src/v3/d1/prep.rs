@@ -52,8 +52,10 @@ pub struct PrepD1 {
     pub o0: u64,
     pub tok0: u128,
     pub ops: Vec<TxOp>,
-    /// `(w, key bytes)`
+    /// `(w, key bytes)`: the candidates' and credits' walks
     pub walks: Vec<(u64, Bytes)>,
+    /// the unread-key walks (`uwalks`, every `txKeys` entry, lane v3-d1-a7b)
+    pub uwalks: Vec<(u64, Bytes)>,
     pub leaves: Vec<Bytes>,
     pub rids: Vec<Bytes>,
 }
@@ -104,6 +106,7 @@ pub fn prep_of_run(cb: &[u8], run: &D1Run) -> Result<PrepD1, String> {
         tok0: run.tok0,
         ops,
         walks: run.walks.clone(),
+        uwalks: run.uwalks.clone(),
         leaves: run
             .leaf_pre
             .iter()
@@ -141,7 +144,13 @@ pub fn blocks_d1(p: &PrepD1) -> Vec<Vec<Vec<u8>>> {
             .collect(),
     );
     bs.push(p.ops.iter().map(|o| vec![o.valid]).collect());
-    bs.push(p.walks.iter().flat_map(|(w, k)| walk_recs(*w, k)).collect());
+    bs.push(
+        p.walks
+            .iter()
+            .chain(&p.uwalks)
+            .flat_map(|(w, k)| walk_recs(*w, k))
+            .collect(),
+    );
     bs.push(p.leaves.clone());
     bs.push(
         p.rids

@@ -1,0 +1,9 @@
+{
+  "nonzero_coefficient_families": 400,
+  "exact_row_reconstructions": 2204,
+  "universal_common_divisor_checks": 8000,
+  "primitive_divisor_checks": 1605,
+  "safe_scaled_evaluation_checks": 30249,
+  "redundant_denominator_content_removed": 16,
+  "scope": "Constructed common content, exact primitive normalization and irreducibility preservation. Gauss descent and original-source parameter-degree bounds remain open."
+}

@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "audit_theorems": 2463,
+  "audit_log": "/tmp/root-direct-records-audit.log",
+  "new_theorems": 2,
+  "source_sha256": "9e08b6332aee90c2048705ef6d748274c52489edf38e7daf8faf3ce2e411897a",
+  "proved": [
+    "Each direct padded block equals the old canonical batched public record",
+    "Entire block record list including order/multiplicity equals canonical PubSeg.msgs"
+  ],
+  "remaining": [
+    "Combine digest/IV/block counts into full pubCount substitution",
+    "Full direct hash theorem",
+    "Cryptographic binding/quantum security/recursion/fullNEAR"
+  ]
+}

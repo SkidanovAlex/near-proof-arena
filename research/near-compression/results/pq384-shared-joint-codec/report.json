@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "whole_proof_bytes": 522596,
+  "retained_air_roots_finals_claims": 256422,
+  "joint_length_frame": 8,
+  "joint_header_reduction_rounds_terminal": 2614,
+  "initial_source_leaves": 83824,
+  "initial_source_siblings": 134496,
+  "shared_fold_leaves": 4000,
+  "shared_fold_siblings": 41232,
+  "negative_checks": 178,
+  "exact_roundtrip": true,
+  "shared_verification": true,
+  "shared_rejections": 178,
+  "verification": "PASS: joint full-AIR binary diagnostic; no joint soundness certification",
+  "test_seconds": 238.4922451954335,
+  "scope": "Full actual workload size; new joint PCS soundness not established"
+}

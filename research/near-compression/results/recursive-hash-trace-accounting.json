@@ -1,0 +1,34 @@
+{
+  "status": "exact layout accounting",
+  "input_hashes": {
+    "results/pq384-seed-hash-reuse.json": "f1bd875e4629787c3f2982db60e5cf77e5dc15008065ae2128910842c24c5432",
+    "results/sha384-compression-baseline/fixture-report.json": "03df30d7de341e811c47f512f1696f10a8e8f273603a78fbe6feefd8710e3767"
+  },
+  "current_gadget": {
+    "rows_per_block": 128,
+    "width": 6944
+  },
+  "configured_verifier_all_calls": {
+    "compression_blocks": 41542,
+    "trace_rows": 5317376,
+    "base_field_cells": 36923858944,
+    "raw_u32_trace_bytes": 147695435776,
+    "raw_u32_trace_gib": 137.55209350585938
+  },
+  "identical_hash_inputs_shared": {
+    "compression_blocks": 32587,
+    "trace_rows": 4171136,
+    "base_field_cells": 28964368384,
+    "raw_u32_trace_bytes": 115857473536,
+    "raw_u32_trace_gib": 107.90068054199219
+  },
+  "fullproof_sha256": "83d6e6e4946ffe9439c833d1bebde506e3edb0244e838ec0aed553948ce2de83",
+  "limits": [
+    "Only existing Q8 Ext4 seed-profile hash work; excludes trusted setup",
+    "Dense base-field source trace bytes only, not actual peak memory or prover runtime",
+    "Excludes FFT extension, auxiliaries, commitments and every non-hash verifier operation",
+    "Sharing requires explicit equality/routing constraints and is not implemented",
+    "Current one-table-per-block multiblock layout is a semantic prototype; this does not establish scalable aggregation",
+    "Secure query counts and extension parameters remain unimplemented and uncertified"
+  ]
+}

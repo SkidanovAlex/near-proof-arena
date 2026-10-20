@@ -1,0 +1,184 @@
+{
+  "status": "PASS",
+  "bundle": "results/literal193-fixed-layer-routes/pq384-literal193-gkr-fixed13-certificate.json",
+  "bundle_sha256": "5dc9199d1e4401b81092cf29561c0e0082d32c770f0231cee878699257b0a1cb",
+  "rebuild": "results/literal193-fixed-rebuild.json",
+  "rebuild_sha256": "be3281e9eb335ad2f6640538207ffbf36b411e577ba109733560fabbd27b1586",
+  "adapter_sha256": "ea9ceed4941b798d3f270e857c1ae0651873ca69df19dec11116e74946905104",
+  "manifest_sha256": "4ea96930e035b4b42a5442273217033e9e2a1454136aef38edd9522882e6b848",
+  "air_sha256": "592671413521d34458c826ce8144b31ba3f2c99c9d398bd37fc4400c64537265",
+  "positive": [
+    {
+      "result": {
+        "air_checks": true,
+        "batch_entries": 2,
+        "bus_formula_checks": true,
+        "programs": 2,
+        "records": 9152,
+        "scope": "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes selector products against supplied replay terminal points and ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, extraction, parser refinement and concrete kernel certificates",
+        "seed": 0,
+        "selector_product_checks": true,
+        "status": "PASS",
+        "symbolic_compiled_check": true,
+        "symbolic_formula_compiler_check": true,
+        "symbolic_rebuild_check": true
+      },
+      "seconds": 7.939300865866244
+    },
+    {
+      "result": {
+        "air_checks": true,
+        "batch_entries": 2,
+        "bus_formula_checks": true,
+        "programs": 2,
+        "records": 9152,
+        "scope": "Native combined finite compiler check on diagnostic assignment and supplied replay manifest; includes selector products against supplied replay terminal points and ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, extraction, parser refinement and concrete kernel certificates",
+        "seed": 7,
+        "selector_product_checks": true,
+        "status": "PASS",
+        "symbolic_compiled_check": true,
+        "symbolic_formula_compiler_check": true,
+        "symbolic_rebuild_check": true
+      },
+      "seconds": 7.910899301059544
+    }
+  ],
+  "rejected": [
+    {
+      "case": "wrong-root",
+      "reason": "uncaught exception: rebuild records rejected"
+    },
+    {
+      "case": "wrong-expansion-sign",
+      "reason": "uncaught exception: rebuild records rejected"
+    },
+    {
+      "case": "missing-root-record",
+      "reason": "uncaught exception: rebuild records rejected"
+    },
+    {
+      "case": "changed-input-target",
+      "reason": "uncaught exception: no valid arithmetic witness"
+    },
+    {
+      "case": "changed-selector",
+      "reason": "uncaught exception: terminal selector products rejected"
+    },
+    {
+      "case": "unknown-opcode",
+      "reason": "uncaught exception: instruction opcode"
+    },
+    {
+      "case": "wrong-batch-power",
+      "reason": "uncaught exception: no valid arithmetic witness"
+    },
+    {
+      "case": "wrong-batch-weight",
+      "reason": "uncaught exception: no valid arithmetic witness"
+    },
+    {
+      "case": "wrong-batch-claim",
+      "reason": "uncaught exception: no valid arithmetic witness"
+    },
+    {
+      "case": "missing-batch-entry",
+      "reason": "uncaught exception: batch count"
+    },
+    {
+      "case": "wrong-final-root",
+      "reason": "uncaught exception: circuit root mismatch"
+    },
+    {
+      "case": "changed-expected-rho",
+      "reason": "uncaught exception: batch entries rejected"
+    },
+    {
+      "case": "changed-expected-weight",
+      "reason": "uncaught exception: local terminal replay binding rejected"
+    },
+    {
+      "case": "changed-expected-claim",
+      "reason": "uncaught exception: local terminal replay binding rejected"
+    },
+    {
+      "case": "changed-terminal-point",
+      "reason": "uncaught exception: terminal selector products rejected"
+    },
+    {
+      "case": "truncated-terminal-point",
+      "reason": "uncaught exception: terminal selector products rejected"
+    },
+    {
+      "case": "wrong-terminal-row-log",
+      "reason": "uncaught exception: terminal selector products rejected"
+    },
+    {
+      "case": "missing-terminal-table",
+      "reason": "uncaught exception: batch count"
+    },
+    {
+      "case": "changed-replay-mixing",
+      "reason": "uncaught exception: local terminal replay binding rejected"
+    },
+    {
+      "case": "changed-replay-claim",
+      "reason": "uncaught exception: local terminal replay binding rejected"
+    },
+    {
+      "case": "changed-replay-tau",
+      "reason": "uncaught exception: local terminal replay binding rejected"
+    },
+    {
+      "case": "truncated-replay-tau",
+      "reason": "uncaught exception: local terminal replay binding rejected"
+    },
+    {
+      "case": "unknown-air-expression",
+      "reason": "uncaught exception: unknown AIR expression"
+    },
+    {
+      "case": "out-of-range-air-register",
+      "reason": "uncaught exception: AIR expression rejected"
+    },
+    {
+      "case": "wrong-air-mixing",
+      "reason": "uncaught exception: AIR accumulator rejected"
+    },
+    {
+      "case": "wrong-accumulator-coefficient",
+      "reason": "uncaught exception: AIR accumulator rejected"
+    },
+    {
+      "case": "wrong-air-final-copy",
+      "reason": "uncaught exception: AIR accumulator rejected"
+    },
+    {
+      "case": "missing-air-table",
+      "reason": "uncaught exception: batch count"
+    },
+    {
+      "case": "wrong-bus-operation",
+      "reason": "uncaught exception: bus formula rejected"
+    },
+    {
+      "case": "missing-bus-register",
+      "reason": "uncaught exception: bus formula rejected"
+    },
+    {
+      "case": "missing-bus-formula",
+      "reason": "uncaught exception: complete formula residual order"
+    },
+    {
+      "case": "reordered-bus-formulas",
+      "reason": "uncaught exception: complete formula residual order"
+    }
+  ],
+  "stored_bundle_check": {
+    "gates": 21834,
+    "layers": 35,
+    "nodes": 10509,
+    "scope": "Lean checker execution; not a kernel proof of this JSON instance",
+    "status": "PASS"
+  },
+  "scope": "Native combined finite compiler checker on two diagnostic assignments with supplied replay manifest. Includes replay mixing/claim and recomputed tau/point kernel-weight binding, selector products against supplied replay terminal points and ordered AIR and bus-formula evaluation checks; excludes formal expected-formula generation, commitment extraction, parser refinement and concrete kernel proof terms."
+}

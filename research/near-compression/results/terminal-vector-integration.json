@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "audited_public_theorems": 1903,
+  "source_hashes": {
+    "PreparedExecStackClosure": "14361123e4f038df56733dba305d1c6eb92efa596826ad5bb7d6a191985670b5",
+    "PreparedExecTerminal": "7880c7094b4440307bdd8a7a7da82af0a6e0495aa62b5ce826ff8c01428d7ce2",
+    "VectorAffineExtraction": "26841f03bc0aadef88fe39e24714be968da6264fd81a584abab67e9b66fda7a0"
+  },
+  "source_parity_expressions": 46,
+  "remaining": [
+    "Literal source certificates",
+    "Whole-call initialization and induction",
+    "Multiblock bus-to-chain semantics",
+    "Tensor extraction and full cryptographic soundness",
+    "1 Pgas full NEAR, actual recursion and certified proof size"
+  ]
+}

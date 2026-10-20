@@ -1,0 +1,21 @@
+{
+  "challenges": 437,
+  "hash_calls": 2187,
+  "compression_blocks": 4373,
+  "public_inout_words": 5650,
+  "public_inout_bytes": 45200,
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "status": "FULL_FIXED_HASH_GRAPH_PROVED_AND_VERIFIED",
+  "proof_payload_bytes": 399696,
+  "serialized_proof_bytes": 399732,
+  "proof_sha256": "31d90c134504d177d9323b289884cb77e16de60b8c43aa0f19385b24a913905e",
+  "checks": [
+    "fresh verification",
+    "old 64-draw proof verifies after address widening",
+    "changed public input rejected by verifier",
+    "changed proof rejected by Merkle authentication"
+  ],
+  "scope": "Only fixed hash graph: no sampler, GKR arithmetic, prefix/PCS verifier, full NEAR or Lean refinement.",
+  "security": "Unchanged diagnostic SECURITY_BITS=96 and SHA256 suite; no complete/PQ128 soundness claim.",
+  "public_io": "Public input/output bytes are external to the proof file; graph is fixed verifier-key data."
+}

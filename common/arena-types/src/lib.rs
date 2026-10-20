@@ -19,7 +19,10 @@ pub use canonical::{canonical_json, sha256_digest, Digest};
 pub use challenge::{
     ChallengeDefinition, ChallengeId, FormalParams, WeightSource, WeightSourceStatus,
 };
-pub use coverage::{ClassCoverage, CoverageReport, CoverageSection, CoverageSpec, CoverageTier};
+pub use coverage::{
+    ClassCoverage, CoveragePublic, CoverageReport, CoverageSection, CoverageSpec, CoverageTier,
+    HeldoutAggregate,
+};
 pub use evidence::EvidenceGraph;
 pub use pipeline::*;
 pub use scoring::{

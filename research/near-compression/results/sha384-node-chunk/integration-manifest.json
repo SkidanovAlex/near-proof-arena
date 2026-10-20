@@ -1,0 +1,49 @@
+{
+  "status": "FROZEN_PASS",
+  "artifact_files": [
+    {
+      "path": "/tmp/near-sha384-node-chunk-proof/proof.bin",
+      "sha256": "807ae1d1fff863ceabcf87134b60b2cbe3394c225f2ba82fd2c6c4abef587675",
+      "bytes": 111051
+    },
+    {
+      "path": "/tmp/near-sha384-node-chunk-proof/proof.json",
+      "sha256": "df4bd474686c6c096777cdb053018eba26cd6105cf04a0748e014dd48e25525b",
+      "bytes": 396085
+    },
+    {
+      "path": "/tmp/near-sha384-node-chunk-proof/statement.json",
+      "sha256": "adb7a5b15eaaf1fbc2e4ec710be7190651f568dc7f074f8552f005a2244a7d88",
+      "bytes": 1145424
+    },
+    {
+      "path": "/tmp/near-sha384-node-chunk-proof/expected-use.json",
+      "sha256": "01b509d8ab4d51eed0893ec8c2ea177f469319b36d9119a9ea334d97f61ef2e8",
+      "bytes": 732
+    },
+    {
+      "path": "/tmp/near-sha384-node-chunk-proof/chunk-report.json",
+      "sha256": "de3da1ca6255da097b5d1936d472b5bcee015786ea2eeaf4d944be74a7eb141f",
+      "bytes": 1501
+    },
+    {
+      "path": "/tmp/near-sha384-node-chunk-proof/report.json",
+      "sha256": "c3604fb8fbc93ed062e21806f402ac55b8910a4dd07938f77b127b58fd1966ab",
+      "bytes": 2019
+    },
+    {
+      "path": "/tmp/near-sha384-node-chunk-proof/fresh-verifier.log",
+      "sha256": "9d21b74af300204db36023a0315e016f0bbf8be9f78ec0f96c0a3c6b10bbc44b",
+      "bytes": 105
+    }
+  ],
+  "frozen_source_manifests": [
+    "/tmp/near-sha384-node-chunk/source-files.json",
+    "/tmp/near-sha384-node-chunk/runtime-source-files.json"
+  ],
+  "measured_peak_rss_kib": 358116,
+  "measured_wall_seconds": 331.43,
+  "resource_log": "/tmp/near-sha384-node-chunk-proof.log",
+  "canonical_spec_external_bytes": 1144933,
+  "note": "External canonical AIR/packing configuration is trusted setup, explicitly excluded from payload+receipt size. Four source roots are transported in proof. No witness/source reuse; prior fixture generation and expected-use commitment excluded from timed run."
+}

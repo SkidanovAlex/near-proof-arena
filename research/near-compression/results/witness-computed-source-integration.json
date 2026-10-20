@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "integrated_theorems": 3312,
+  "added_theorems": 6,
+  "sources": {
+    "PreparedTypedWitnessPublic": "6c79ba327516df11579a28bf7d337bbf9f8142d3aad6f026b89109ec7d4efce2",
+    "SHA384ComputedSource": "e134e96d62c38a1b340afda4523e6f31133b1dcd2700a1dfe35dfa855dc5209e"
+  },
+  "audit_log": "/tmp/root-witness-computed-audit.log",
+  "audit_sha256": "6597dbc16ff04ddbe1598b569b92e72aedb4064af16b9e6f3f6fe0a0eb1836e0",
+  "scope": [
+    "Terminal witness yields padded public DONE/FAIL and exact affordable debit or pretrap gas snapshot.",
+    "Canonical Fp pair serialization roundtrip and bounds.",
+    "Accepted fixed computed-source opening yields modeled Mobius/FFT polynomial pair or supported Merkle path collision."
+  ],
+  "limits": [
+    "Full live-stack public decoding not provided by witness publication predicate.",
+    "Model-level source semantics; not native implementation refinement.",
+    "Fixed computed commitment, not adversarial-root extraction or quantum probability bound.",
+    "Concrete whole-call induction awaits br_if."
+  ]
+}

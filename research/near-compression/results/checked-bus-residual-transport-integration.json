@@ -1,0 +1,35 @@
+{
+  "status": "CHECKED_FORMULA_LIST_CONNECTED_TO_BUS_VALIDITY",
+  "module": "NearCompression/CheckedBusResidualTransport.lean",
+  "theorems": [
+    "checked_bus_decoded_row_values",
+    "checked_bus_failure_combined_index",
+    "checked_bus_rows_zero",
+    "checked_bus_tables_residuals_zero"
+  ],
+  "proved": [
+    "Exact specification checking transports all certificate residual values to reconstructed bus row values.",
+    "A formal bus auxiliary violation yields a nonzero combined local residual in the actual checked list.",
+    "Zero checked residuals in all tables reconstruct busExt8TablesResidualsZero, including exact table offsets."
+  ],
+  "assumptions": [
+    "Base typing for referenced coordinate columns, available conditionally from typed representative/provenance results.",
+    "Source constraint validity/column bounds and interaction bounds remain explicit.",
+    "Table source widths match coordinate layout; public/challenge/final values used by checks match the bus predicate."
+  ],
+  "remaining": [
+    "Use these implications to discharge the bus witness premise outside the full local/GKR/PCS failure event.",
+    "Assemble adaptive invalid-auxiliary error budgets and average earlier bus randomness.",
+    "Authenticate table/challenge/source inputs in full Ext8 slice verifier; QROM, secure size and full 1 Pgas remain open."
+  ],
+  "validation": {
+    "full_check": "PASS",
+    "registered_results": 4082,
+    "axiom_allowlist": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "native_capture_execution": "Not rerun; formal composition only."
+  }
+}

@@ -85,6 +85,10 @@ export interface LeaderboardEntry {
   submission_id: string;
   submitted_at: string;
   /**
+   * `succinct` badge evaluation of the ranked run (v1.9, additive; BENCHMARK_SPEC §17): `granted` drives the board's "succinct only" filter. Display-only: not a gate, not a score component.
+   */
+  succinct?: SuccinctBadge | null;
+  /**
    * Set when the challenge has been superseded: the board is historical (frozen, closed for new submissions) and scores are not comparable with the successor's (additive, v1.4).
    */
   superseded_by?: string | null;
@@ -137,4 +141,44 @@ export interface CostClass {
   verify_fusd: number;
   verify_ns: number;
   weight_ppm: number;
+}
+/**
+ * One measured evaluation of the badge criteria ("recorded per run").
+ *
+ * This interface was referenced by `LeaderboardEntry`'s JSON-Schema
+ * via the `definition` "SuccinctBadge".
+ */
+export interface SuccinctBadge {
+  /**
+   * Log-log slope of proof bytes against per-run batch gas, in ppm of the exponent (0.137 → 137_000). `None` without gas data or spread.
+   */
+  bytes_exponent_ppm?: number | null;
+  /**
+   * 95% upper confidence bound of the bytes exponent, ppm.
+   */
+  bytes_ucb_ppm?: number | null;
+  /**
+   * Why the badge was denied (empty when granted).
+   */
+  denied?: string[];
+  /**
+   * Both the thresholds and both slope tests passed (fail-closed: a fit that cannot be computed denies the badge).
+   */
+  granted: boolean;
+  /**
+   * Largest proof over the measured runs (`ClassMeasurement.proof_bytes_max`).
+   */
+  max_proof_bytes: number;
+  /**
+   * Largest per-run Σ verify wall ns of a class's batch over the measured runs (cost_v1's paid quantity; ≥ any single proof's verify wall).
+   */
+  max_verify_ns: number;
+  /**
+   * Log-log slope of verify time against per-run batch gas, ppm.
+   */
+  verify_exponent_ppm?: number | null;
+  /**
+   * 95% upper confidence bound of the verify exponent, ppm.
+   */
+  verify_ucb_ppm?: number | null;
 }

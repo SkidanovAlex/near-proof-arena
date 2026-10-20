@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "added_theorems": 9,
+  "integrated_theorems": 3500,
+  "audit_log": "/tmp/root-source-program-audit.log",
+  "audit_sha256": "4f44b8ac7432e2f8077725e55761ac1bb1c8d7cb83039a5ff33ca6bb5b9125ac",
+  "source_sha256": "bba0c7d0df82ccabf54f14b6186468b92c0aec404289e3ba76e431d6d1670b50",
+  "checker_sha256": "5f0def1e28f62aab03e60e6a66d23ed18a38c4f2e6e338148e52109524976b0b",
+  "native_rederived_dependency": "/tmp/root-recursive-single-root/derived-dependency.json",
+  "dependency_sha256": "1673834045f5fd9d8592840dc7f7c9d7028d556193bc1fb0aa5c479be2ab39ea",
+  "executable_report": "results/recursive-source-program-root/report.json",
+  "scope": "Structural DAG route correctness, concrete source batching evaluator, exact offset/outputorder; rebuilt24369nodes/32outputs and192comparisons.",
+  "limits": [
+    "Captured route certificates checked executably, not kernel-certified instance.",
+    "Native original component header/hash/transcript checks remain outside recursion.",
+    "No cryptographic binding, FS/QROM or fullNEAR security claim."
+  ]
+}

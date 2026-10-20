@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "table_index": 0,
+  "rows": 8192,
+  "width": 544,
+  "public_words": 5577,
+  "constraint_degree": 4,
+  "timing": {
+    "zerocheck_seconds": 3.2396665504202247,
+    "shift_seconds": 6.297680733725429,
+    "opening_seconds": 5.129892769269645,
+    "separate_verifier_seconds": 0.4284721310250461
+  },
+  "opening_binary_bytes": 128966,
+  "proof_json_bytes": 352857,
+  "source_root": "38fdb616c24b4a7bec36ba71073cec05e865edb2ff3753804b859479d12302a6def3559577689f9ff617b8077bc95350",
+  "source_file_sha256": "ab4864f181e160e397ccc3d6cfb4238adbd5996b0c822c6ea86a55a20564d6b2",
+  "spec_sha256": "89fe8c8c309a83409ebe6098f63242d239acbf766b9ef35e4f57f52e4496c44c",
+  "verification": "PASS: SHA384 canonical AIR table-local opening diagnostic",
+  "scope": "Actual D1 table-local AIR plus packed source opening; not all33tables or global bus balance",
+  "limits": [
+    "Q8/Ext4 diagnostic; no128-bit or QROM security certification",
+    "Spec includes trusted entire public array"
+  ]
+}

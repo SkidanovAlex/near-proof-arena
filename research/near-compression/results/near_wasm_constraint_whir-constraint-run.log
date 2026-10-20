@@ -1,0 +1,63 @@
+   Compiling prover v0.1.0 (/data/illia/nearproof-deps/airbender-prime-review-20261015/prover)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.84s
+     Running `target/debug/examples/near_wasm_constraint_whir /data/illia/nearproof/research/near-compression/results/direct-wasm-constraint-export.json /data/illia/nearproof/research/near-compression/results/direct-wasm-constraint-opening.json /data/illia/nearproof/research/near-compression/results/direct-wasm-constraint-handoff.json`
+[timing] base commit part: 104 cols 2^3, lde 4, 2 values/leaf -> LDE 115.387µs, tree 307.558µs
+  [timing] initial eq-poly build: 9.438µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 14.678µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 76.464µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 82.104µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^2, lde 4 -> LDE 10.490µs, tree 97.122µs, built in 110.418µs
+  [timing] OOD evaluation: 19.687µs
+  [timing] PoW grind (0 bits): 16.170µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 47.659µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 14.507µs
+  [timing] initial round total: 465.263µs
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 70.873µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 5.650µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 4.008µs
+  [timing] final round total: 118.423µs
+Fresh WHIR opening generated; verification still required
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running `target/debug/examples/near_wasm_constraint_whir /data/illia/nearproof/research/near-compression/results/direct-wasm-invalid-constraint-export.json /data/illia/nearproof/research/near-compression/results/direct-wasm-invalid-constraint-opening.json /data/illia/nearproof/research/near-compression/results/direct-wasm-invalid-constraint-handoff.json`
+[timing] base commit part: 104 cols 2^3, lde 4, 2 values/leaf -> LDE 114.805µs, tree 315.934µs
+  [timing] initial eq-poly build: 10.109µs
+Computing batched poly for proximity testing
+  [timing] gkr_storage release: 14.568µs
+  [timing] batching stage (base columns -> hypercube evals -> monomials): 77.415µs
+Initial round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 80.932µs
+  computing next RS code word oracle...
+  [timing] intermediate oracle 0: poly 2^2, lde 4 -> LDE 10.069µs, tree 97.934µs, built in 111.028µs
+  [timing] OOD evaluation: 16.831µs
+  [timing] PoW grind (0 bits): 15.890µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] round-0 base queries (8) served in 48.080µs
+  [timing] base oracle drop offloaded to background thread
+  [timing] eq-poly update: 12.784µs
+  [timing] initial round total: 444.625µs
+Initial queries and folding are complete, now can proceed into 0 internal rounds
+Final round: fold by 2
+  running sumcheck for 1 rounds...
+  [timing] round sumcheck+eq folds: 72.386µs
+Querying last RS code word oracle
+  [timing] PoW grind (0 bits): 7.174µs
+  generating 8 query indexes...
+  drawing 8 queries...
+  [timing] final-round queries (8) served in 4.588µs
+  [timing] final round total: 120.656µs
+Fresh WHIR opening generated; verification still required
