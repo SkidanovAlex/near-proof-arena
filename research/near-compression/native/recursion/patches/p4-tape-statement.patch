@@ -1,5 +1,5 @@
---- /tmp/opencode/verifier.rs.bak	2026-10-20 01:29:16.936920795 +0000
-+++ crates/recursion/src/nv/verifier.rs	2026-10-20 01:37:48.085326129 +0000
+--- a/crates/recursion/src/nv/verifier.rs	2026-10-20 02:03:30.837018449 +0000
++++ b/crates/recursion/src/nv/verifier.rs	2026-10-20 02:03:30.838018454 +0000
 @@ -463,6 +463,10 @@
      let mut pv_cells: Vec<Vec<V>> = vec![];
      // per AIR: extra commitments in opening order (preprocessed constant, then cached witnesses)
