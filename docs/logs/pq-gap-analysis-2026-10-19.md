@@ -41,16 +41,40 @@ never been built or measured, and because the sealed challenge excludes it (`e.g
 
 ## 2. What is missing, ordered by what blocks A
 
-### 2.1 HOST chip and buses (blocking)
-Design only (`pq-wasm-base` §14.2). Needed: `check` support for import calls, the HOST chip,
-`HOSTQ`/`HOSTR`/`HOSTB` buses, the register space, the `g_after` budget register, and the spec-side
-`callHost` simulation given a response oracle. Without it the Wasm proof cannot represent a run that
-makes any host call — and essentially every real contract does.
+### 2.1 HOST chip and buses — **first slice built** (`lane/pq-host-chip` `dfc18d04d`)
+A call of a declared import is now representable end to end: HOST chip (`HostChip.lean`), host-aware
+checker (`checkModuleH`), `step_host_ok`/`step_host_abort` under an abstract response oracle,
+`host_rowfacts`, Rust trace generation, and 77/77 KATs plus HOST tamper suites. `wasmBaseHostAir`
+appends HOST/HOSTO/HOSTT, so every proved F1/memory/globals/calls index is unchanged.
 
-### 2.2 Ed25519 / SHA-512 in-circuit (blocking, weeks)
-The classical D1 verifier runs `prepD1` natively (~3.6 ms/signature, ~15 s at 4,096 tx). For a
-succinct final verifier this must be a `sigV3` chip (or a separate sig proof). Nothing on the PQ
-stack verifies a signature today.
+Still open in this lane: the top-level `wasm_base_sound` is **not** extended, because a host call
+resynchronises `g := remaining`, so the invariant `R·S + g = g0` is false across it. The fix is a
+per-segment invariant carrying `g_after` between host boundaries; it appears in ~112 places, so it
+is mechanical but broad. Also unbuilt: `HOSTB` byte movement / MEMIO, the space-6 register space,
+and any state-side response.
+
+Bus ids were reconciled to **208/209** (`HOSTQ`/`HOSTR`) after a real three-way conflict
+(7/8/9 vs 200/201/202 vs 208/209/210); 200/201/202 *collided* with classical buses 72/73/74 after
+the port's `+128` shift, because the occupied range is 128–203, not 128–199.
+See `lane/pq-d3-join:research/near-compression/results/pq-d3-join/BUS-NUMBERING.md`.
+
+### 2.2 Ed25519 / SHA-512 in-circuit — **costed, recommended against in-AIR per chunk**
+`lane/pq-ed25519-air` (`7f0f927d3`) censused `Ed25519.verify` from the Lean spec with an executable
+transcription that reproduces all 7,265 oracle verdicts: **9,434 field muls typical / 12,217 worst**,
+6,114 / 8,143 add-sub, 1 inversion, 1 `sqrtRatio`, 512 doublings, 764 / 1,017 point adds, **1**
+SHA-512 invocation (not two — the second hash in the D1 path is SHA-256 of the tx body, outside
+`verify`).
+
+At a 149-cell `F_p` mul: **1,514,194 cells / 27,163 interactions per signature** typical,
+1,961,245 / 34,753 worst ≈ 143 SHA-512 compressions. Field arithmetic is 99.3 % of the cost.
+
+A working `FpChip.lean` prototype exists (15×17-bit limbs, 149 cells, 61 degree-2 constraints, two
+carry chains for `a·b = q·p + r`); `mul_identity` and the chain lemmas are proved under
+`[propext, Quot.sound]`, but the two exact recombination identities are **hypotheses**, and the
+trace generator / `r = a*b % p` are tested, not proved.
+
+Recommendation: a **separate signature proof layer**, not in-AIR per chunk (16–26 agent-days).
+Paying 1.5 M cells per signature in the chunk AIR would dominate it.
 
 ### 2.3 The join (blocking, 15–25 agent-days [E])
 Wasm proof + state proof over shared buses (`HOSTQ`/`HOSTR`/`HOSTB`), plus `code_root`/`func_root`/
@@ -134,8 +158,8 @@ Ed25519 (no signature if the transaction is a system receipt or the witness is s
 | D1's 7 tables on PQ + natural heights | 3–5 days | high |
 | statement plumbing (TAPE, interaction cap, height caps) | 3–5 days | high |
 | `holdsP_of_swirl` composition | 4–6 days | high |
-| HOST chip + buses + spec simulation | 10–15 days | medium |
-| Ed25519/SHA-512 AIR | weeks | medium |
+| HOST chip + buses + spec simulation | 10–15 days; **first slice done**, gas-invariant generalisation remains | medium |
+| Ed25519/SHA-512 AIR | weeks; **costed at 1.5 M cells/sig**, separate-layer recommended | medium |
 | the join + coverage theorem | 15–25 days | low |
 | **A: `G_α` chunk, <300 KB, end to end** | **~2–3 months** | medium |
 | segmentation/recursion to 1 Pgas + a 290× measurement | unknown, research | low |
