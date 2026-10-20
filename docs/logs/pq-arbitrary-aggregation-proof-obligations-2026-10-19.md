@@ -95,8 +95,8 @@ lemma, not left as "tests pass".
 |---|---|---|---|---|
 | N1 | `Theorem 6.4`: QROM straight-line KS for a *family* of layers, one database, truncated commitments | **hand** | `PROOF.md` Thm 6.4 | highest-value item to review/Lean |
 | N2 | `Theorem 7.4`: linear-chain composition, error independent of `d` | **hand** | `PROOF.md` Thm 7.4, given A-IC | |
-| N3 | **`Theorem 7.4-tree`**: composition over an arbitrary arity/depth tree, `(F3-tree)` | **sketch** | `DESIGN-BASE.md` §9.1 | **the central new theorem for "arbitrary aggregation"** |
-| N4 | Error independent of node count for arbitrary `S` | **sketch** | same | follows from N1's single database; must be stated and proved, not asserted |
+| N3 | **`Theorem 7.4-tree`**: composition over an arbitrary arity/depth tree, `(F3-tree)` | **semantic + structural half done (Lean)**; extraction premise open | `lane/pq-base-aggregation` `zk-formal/ZkFormal/PQ/Aggregation/{Tree,Statement,Shape,Compose}.lean`; results `ARBITRARY-AGGREGATION-LEAN.md` | Proved: the certified-tree induction (`ProofTree.certified_root`), the range-statement composition/rejection (`Stmt.compose_eq_root`, `Stmt.compose_rejects`), and shape independence of run, root and statement. The per-node extraction premise (`NodeOK`) is explicit and is where Theorem 6.4 is applied once — still paper-level |
+| N4 | Error independent of node count for arbitrary `S` | **done (Lean) at the composition level** | `ProofTree.node_count_irrelevant`, `Shape.tree_root_shape_irrelevant` | The composed predicate mentions only the root, so no per-node probability is carried. The numerical bound still rests on N1's single-database theorem |
 | N5 | A per-node union is *not* needed (or, if used, raise every target by ~8 bits) | **open** | `DESIGN-BASE.md` §9.1 caveat 2 | the current cross-check fails at 295 proofs; decide which route |
 | N6 | NV-faithful(i): the NV circuit arithmetises `V_{i−1}` exactly (`F1–F6`) | **open** (in progress) | `pq-nv-circuit-soundness` | `FAITHFUL.md`; needs the `T*` refinement (T5) folded in |
 | N7 | Program pinning: `V_d` checks the final program openings against the pinned program | **done** (measured) | `pq-e2e-slice`, G2 gate | 776-row forgery accepted without, rejected with |
@@ -177,7 +177,7 @@ cited theorem. The paper's "no proximity conjecture" claim is defensible once P4
 | Z1 | Size law: final size = f(W, L, opened columns, queries) | **hand + measured** | `pq-recursion-nv` README | matches within 0.2 % at the optimal shape (b=2 chain) |
 | Z2 | `V_d` accepts at the measured shape | **done** (measured) | G2 gate | 293,077 B, pinned program |
 | Z3 | Forgery control | **done** (measured) | G2 gate | |
-| Z4 | **Size independent of aggregation tree** (S, k, d) | **sketch** | `DESIGN-BASE.md` §5.4 | must be proved: final verifies an inner fixed-point proof; no node shape enters its bytes |
+| Z4 | **Size independent of aggregation tree** (S, k, d) | **statement half done (Lean)**; byte half sketch | `Shape.tree_root_shape_irrelevant`; `DESIGN-BASE.md` §5.4 | Proved that the digest/V_d statement is shape-independent. The byte argument (final verifies an inner fixed-point proof) is still the design-doc sketch |
 | Z5 | The fixed point exists for every aggregation tree | **sketch** | `DESIGN-BASE.md` §5.3/5.4 | T1/T2 shapes independent of S |
 | Z6 | Bound number with `bind = true` on the O-2 chain | **open** (measure) | 287,477 was `bind=false` | re-run; expect ≈293 KB |
 | Z7 | NvAir 2^18 headroom under program growth | **open** (measure) | gap analysis | a paired run already exceeded 2^18 |
@@ -324,8 +324,9 @@ aggregation). P4 is on a parallel path and is the only proximity item.
 
 ## 10. Immediate next actions (ordered)
 
-1. **Write N3/N4** (`Theorem 7.4-tree`) as a Lean statement plus proof, in
-   `lane/pq-final-soundness`. This is the paper's core new theorem and does not depend on the join.
+1. ~~Write N3/N4 (`Theorem 7.4-tree`) as a Lean statement plus proof.~~ **Done** in
+   `lane/pq-base-aggregation` (commit `d84193bc2`, `1e9c1e778`): `Tree`, `Statement`, `Shape`,
+   `Compose`. The extraction premise remains to be tied to `PROOF.md` Thm 6.4.
 2. **Write Z4/Z5** (tree-independent final size + fixed point existence); short, unblocks the
    "under 300 KB for any aggregation" phrasing.
 3. **Fix the gas invariant (B3)**; it is the true blocker for the join, ahead of the HOST chip.
