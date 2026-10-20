@@ -77,14 +77,14 @@ theorem host_msgs_air (nloc ngl : Nat) (tr : Trace) (pub : List F) (b : Nat) (s 
     msgs (wasmBaseHostAir nloc ngl) tr pub b s =
       msgs (wasmBaseAir nloc ngl) tr pub b s ++
       (part Host.table tr pub 22 b s ++ (part HostO.table tr pub 23 b s ++
-        part HostTab.table tr pub 24 b s)) := by
+        (part HostTab.table tr pub 24 b s ++ part HostB.table tr pub 25 b s))) := by
   rw [msgs_flatMap, msgs_flatMap]
   have e : (wasmBaseHostAir nloc ngl).tables =
-      (wasmBaseAir nloc ngl).tables ++ [Host.table, HostO.table, HostTab.table] := rfl
+      (wasmBaseAir nloc ngl).tables ++ [Host.table, HostO.table, HostTab.table, HostB.table] := rfl
   rw [e, List.zipIdx_append]
   simp only [List.flatMap_append, List.length_map, air_len, Nat.zero_add, part, List.flatMap_cons,
     List.flatMap_nil, List.append_nil, List.zipIdx_cons, Nat.reduceAdd]
-  rw [show ([].zipIdx 25 : List (Table × Nat)) = [] from rfl]
+  rw [show ([].zipIdx 26 : List (Table × Nat)) = [] from rfl]
   simp only [List.flatMap_nil, List.append_nil]
 
 /-- The occurrence list of the host AIR is the base AIR's plus the HOST table's. -/
@@ -93,15 +93,16 @@ theorem host_occs_air (nloc ngl : Nat) (tr : Trace) (pub : List F) :
       occs (wasmBaseAir nloc ngl) tr pub ++
       ((List.range (tr.height 22)).flatMap fun r => rowOccs Host.table tr pub 22 r) ++
       (((List.range (tr.height 23)).flatMap fun r => rowOccs HostO.table tr pub 23 r) ++
-        ((List.range (tr.height 24)).flatMap fun r => rowOccs HostTab.table tr pub 24 r)) := by
+        (((List.range (tr.height 24)).flatMap fun r => rowOccs HostTab.table tr pub 24 r) ++
+          ((List.range (tr.height 25)).flatMap fun r => rowOccs HostB.table tr pub 25 r))) := by
   unfold occs
   have e : (wasmBaseHostAir nloc ngl).tables =
-      (wasmBaseAir nloc ngl).tables ++ [Host.table, HostO.table, HostTab.table] := rfl
+      (wasmBaseAir nloc ngl).tables ++ [Host.table, HostO.table, HostTab.table, HostB.table] := rfl
   rw [e, List.zipIdx_append]
   simp only [List.flatMap_append, List.length_map, air_len, Nat.zero_add, List.zipIdx_cons,
     List.zipIdx_nil, List.flatMap_cons, List.flatMap_nil, List.append_nil, rowOccs, Nat.reduceAdd]
-  have h0 : ([].zipIdx 25 : List (Table × Nat)) = [] := rfl
-  simp only [show ([].zipIdx 25 : List (Table × Nat)) = [] from rfl, List.flatMap_nil,
+  have h0 : ([].zipIdx 26 : List (Table × Nat)) = [] := rfl
+  simp only [show ([].zipIdx 26 : List (Table × Nat)) = [] from rfl, List.flatMap_nil,
     List.append_nil, List.append_assoc]
 
 /-! ## The HOST row's STATE messages -/
@@ -145,14 +146,20 @@ theorem host_part_state_F (tr : Trace) (pub : List F) :
 
 theorem host_part_nil_env {nloc ngl : Nat} (tr : Trace) (pub : List F) (b : Nat) (s : Bool)
     (hb : b = busState ∨ b = busStk) :
-    part HostO.table tr pub 23 b s = [] ∧ part HostTab.table tr pub 24 b s = [] := by
-  constructor <;> (unfold part; rw [List.flatMap_eq_nil_iff]; intro r _)
+    part HostO.table tr pub 23 b s = [] ∧ part HostTab.table tr pub 24 b s = [] ∧
+      part HostB.table tr pub 25 b s = [] := by
+  refine ⟨?_, ?_, ?_⟩ <;> (unfold part; rw [List.flatMap_eq_nil_iff]; intro r _)
   · rw [rowMsgs_eq]
     rcases hb with rfl | rfl <;> cases s <;>
       simp [HostO.table, busState, busStk, busR16, busHostQ, busHostR]
   · rw [rowMsgs_eq]
     rcases hb with rfl | rfl <;> cases s <;>
-      simp [HostTab.table, busState, busStk, busR16, busHostT]
+      simp [HostTab.table, busState, busStk, busR16, busHostT, busHostQ, busHostR, busHostB]
+  · rw [rowMsgs_eq]
+    rcases hb with rfl | rfl <;> cases s <;>
+      simp only [HostB.table, HostB.inters, List.filter_cons, List.filter_nil,
+        List.flatMap_cons, List.flatMap_nil] <;>
+      (first | rfl | (rw [if_neg (by decide)]; rfl) | (rw [if_pos (by decide)]; intro h; exact absurd h (by decide)))
 
 /-! ## The STATE and CH messages of a host trace -/
 
@@ -168,10 +175,12 @@ theorem msgs_state_host {nloc ngl : Nat} (tr : Trace) (pub : List F) :
           if rowAct Host.table tr pub 22 r then [rowIn Host.table tr pub 22 r] else []) := by
   have h := host_part_nil_env (nloc := nloc) (ngl := ngl) tr pub
   constructor
-  · rw [host_msgs_air, (h busState true (Or.inl rfl)).1, (h busState true (Or.inl rfl)).2,
-      host_part_state_T, List.append_nil, List.append_nil]
-  · rw [host_msgs_air, (h busState false (Or.inl rfl)).1, (h busState false (Or.inl rfl)).2,
-      host_part_state_F, List.append_nil, List.append_nil]
+  · obtain ⟨e1, e2, e3⟩ := h busState true (Or.inl rfl)
+    rw [host_msgs_air, e1, e2, e3, host_part_state_T]
+    simp
+  · obtain ⟨e1, e2, e3⟩ := h busState false (Or.inl rfl)
+    rw [host_msgs_air, e1, e2, e3, host_part_state_F]
+    simp
 
 /-- The CH bus of a host trace: base boundary + base instruction rows, then the HOST rows' messages
 (`rowMsgs … busStk`), on each side. -/
@@ -184,10 +193,12 @@ theorem msgs_ch_host {nloc ngl : Nat} (tr : Trace) (pub : List F) :
         part Host.table tr pub 22 busStk false := by
   have h := host_part_nil_env (nloc := nloc) (ngl := ngl) tr pub
   constructor
-  · rw [host_msgs_air, (h busStk true (Or.inr rfl)).1, (h busStk true (Or.inr rfl)).2,
-      List.append_nil, List.append_nil]
-  · rw [host_msgs_air, (h busStk false (Or.inr rfl)).1, (h busStk false (Or.inr rfl)).2,
-      List.append_nil, List.append_nil]
+  · obtain ⟨e1, e2, e3⟩ := h busStk true (Or.inr rfl)
+    rw [host_msgs_air, e1, e2, e3]
+    simp
+  · obtain ⟨e1, e2, e3⟩ := h busStk false (Or.inr rfl)
+    rw [host_msgs_air, e1, e2, e3]
+    simp
 
 /-! ## The HOST rows' CH messages, decoded -/
 

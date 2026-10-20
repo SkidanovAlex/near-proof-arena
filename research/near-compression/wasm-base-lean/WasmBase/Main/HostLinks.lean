@@ -22,11 +22,11 @@ set_option maxRecDepth 4000
 
 /-! ## Table decomposition -/
 
-theorem host_air_len (nloc ngl : Nat) : (wasmBaseHostAir nloc ngl).tables.length = 25 := rfl
+theorem host_air_len (nloc ngl : Nat) : (wasmBaseHostAir nloc ngl).tables.length = 26 := rfl
 
 theorem host_air_append (nloc ngl : Nat) :
     (wasmBaseHostAir nloc ngl).tables =
-      (wasmBaseAir nloc ngl).tables ++ [Host.table, HostO.table, HostTab.table] := rfl
+      (wasmBaseAir nloc ngl).tables ++ [Host.table, HostO.table, HostTab.table, HostB.table] := rfl
 
 theorem host_air_get (nloc ngl t : Nat) (ht : t < 22) :
     (wasmBaseHostAir nloc ngl).tables[t]'(by rw [host_air_len]; omega) =
@@ -40,6 +40,8 @@ theorem host_air_23 (nloc ngl : Nat) :
     (wasmBaseHostAir nloc ngl).tables[23]'(by rw [host_air_len]; decide) = HostO.table := rfl
 theorem host_air_24 (nloc ngl : Nat) :
     (wasmBaseHostAir nloc ngl).tables[24]'(by rw [host_air_len]; decide) = HostTab.table := rfl
+theorem host_air_25 (nloc ngl : Nat) :
+    (wasmBaseHostAir nloc ngl).tables[25]'(by rw [host_air_len]; decide) = HostB.table := rfl
 
 theorem host_numPub (nloc ngl : Nat) :
     (wasmBaseHostAir nloc ngl).numPub = (wasmBaseAir nloc ngl).numPub := rfl
@@ -47,12 +49,12 @@ theorem host_numPub (nloc ngl : Nat) :
 /-- The occurrence list splits by table index (extended AIR). -/
 theorem host_occ_table {nloc ngl : Nat} {tr : Trace} {pub : List F} {o : Occ}
     (ho : o ∈ occs (wasmBaseHostAir nloc ngl) tr pub) :
-    ∃ t, ∃ _ht : t < 25, ∃ r, r < tr.height t ∧
+    ∃ t, ∃ _ht : t < 26, ∃ r, r < tr.height t ∧
       ∃ i ∈ ((wasmBaseHostAir nloc ngl).tables[t]'(by rw [host_air_len]; exact _ht)).inters,
         o = (i.bus, i.send, i.msg.map (·.eval (tr.row pub t r)), (i.count.eval (tr.row pub t r)).toNat) := by
   obtain ⟨t, ht, r, hr, i, hi, rfl⟩ := mem_occs.mp ho
-  have h25 : t < 25 := by simpa [host_air_len] using ht
-  exact ⟨t, h25, r, hr, i, by simpa using hi, rfl⟩
+  have h26 : t < 26 := by simpa [host_air_len] using ht
+  exact ⟨t, h26, r, hr, i, by simpa using hi, rfl⟩
 
 /-- An occurrence of the base AIR is an occurrence of the extended AIR. -/
 theorem occs_mono_host {nloc ngl : Nat} {tr : Trace} {pub : List F} {o : Occ}
@@ -78,6 +80,8 @@ theorem occs_host_of {nloc ngl : Nat} {tr : Trace} {pub : List F} {o : Occ} {r :
 theorem host_table_r16 : Host.inters.all (fun i => i.bus != busR16 || i.send) = true := by decide
 theorem hostO_table_r16 : HostO.table.inters.all (fun i => i.bus != busR16 || i.send) = true := by decide
 theorem hostTab_table_r16 : HostTab.table.inters.all (fun i => i.bus != busR16 || i.send) = true := by
+  decide
+theorem hostB_table_r16 : HostB.table.inters.all (fun i => i.bus != busR16 || i.send) = true := by
   decide
 
 theorem bnd_r16 (nloc ngl : Nat) :
@@ -127,10 +131,11 @@ theorem host_recv_only_range16 (nloc ngl : Nat) :
   rcases hT with h | h
   · exact base_recv_only_r16 nloc ngl T h hne i hi hb
   · simp only [List.mem_cons, List.mem_nil_iff, or_false] at h
-    rcases h with rfl | rfl | rfl
+    rcases h with rfl | rfl | rfl | rfl
     · exact table_r16_of_all host_table_r16 i hi hb
     · exact table_r16_of_all hostO_table_r16 i hi hb
     · exact table_r16_of_all hostTab_table_r16 i hi hb
+    · exact table_r16_of_all hostB_table_r16 i hi hb
 
 /-! ## R16 soundness on host traces -/
 
@@ -215,7 +220,7 @@ theorem host_r16_sound {nloc ngl : Nat} {pub : List F} {tr : Trace}
   intro o' ho' hb' hs' _
   obtain ⟨t, ht, r, hr, i, hi, rfl⟩ := host_occ_table ho'
   simp only at hb' hs' ⊢
-  rcases (show t < 22 ∨ t = 22 ∨ t = 23 ∨ t = 24 by omega) with h | rfl | rfl | rfl
+  rcases (show t < 22 ∨ t = 22 ∨ t = 23 ∨ t = 24 ∨ t = 25 by omega) with h | rfl | rfl | rfl | rfl
   · rw [host_air_get nloc ngl t h] at hi
     rcases (show t = 15 ∨ t ≠ 15 by omega) with rfl | h15
     · obtain ⟨hh, -⟩ := host_range16_values H
@@ -233,6 +238,8 @@ theorem host_r16_sound {nloc ngl : Nat} {pub : List F} {tr : Trace}
     exact absurd (table_r16_of_all hostO_table_r16 i hi hb') (by simp [hs'])
   · rw [host_air_24] at hi
     exact absurd (table_r16_of_all hostTab_table_r16 i hi hb') (by simp [hs'])
+  · rw [host_air_25] at hi
+    exact absurd (table_r16_of_all hostB_table_r16 i hi hb') (by simp [hs'])
 
 /-- The HOST row's `rb` limbs are 16-bit (each is queried on R16 with count `act`). -/
 theorem host_rb_limb {nloc ngl : Nat} {pub : List F} {tr : Trace}
