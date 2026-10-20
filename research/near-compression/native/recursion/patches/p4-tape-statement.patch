@@ -1,0 +1,72 @@
+--- a/crates/recursion/src/nv/verifier.rs	2026-10-20 02:03:30.837018449 +0000
++++ b/crates/recursion/src/nv/verifier.rs	2026-10-20 02:03:30.838018454 +0000
+@@ -463,6 +463,10 @@
+     let mut pv_cells: Vec<Vec<V>> = vec![];
+     // per AIR: extra commitments in opening order (preprocessed constant, then cached witnesses)
+     let mut extra_commits: Vec<Vec<DigestCells>> = vec![vec![]; num_airs];
++    // P4: every cached commitment in preamble order, with its already-loaded cells, so the
++    // statement digest can cover them without loading them twice.
++    let mut cached_cells: Vec<DigestCells> = vec![];
++    let mut cached_limbs: Vec<[F; super::fmt::NV_DIGEST]> = vec![];
+     for (a, avk) in mvk.per_air.iter().enumerate() {
+         if !avk.is_required {
+             let one = b.c(F::ONE);
+@@ -484,7 +488,10 @@
+         let cached = &proof.trace_vdata[a].as_ref().unwrap().cached_commitments;
+         assert_eq!(cached.len(), avk.params.width.cached_mains.len(), "cached commitments (proof shape)");
+         for &c in cached {
+-            extra_commits[a].push(b.load_commit(c));
++            let cells = b.load_commit(c);
++            extra_commits[a].push(cells);
++            cached_cells.push(cells);
++            cached_limbs.push(super::fmt::digest_limbs(c));
+         }
+         pv_cells.push(
+             proof.public_values[a]
+@@ -926,18 +933,43 @@
+         let d = limbs_digest(&limbs);
+         b.pv_digest(&DigestCells { lo, hi, digest: d });
+     } else {
+-        // statement digest (G1): SHA-384 (tag 8) of the app proof's public values
+-        let mut cells: Vec<V> = vec![b.c(F::from_usize(pv_cells.len()))];
++        // Statement digest (G1 + P4): SHA-384 (tag 8) over the app proof's public values **and
++        // its cached commitments**.  A cached table (TAPE, CODE, …) is bound to the base
++        // transcript, but its root is not a public value, so without this it never reaches the
++        // statement V_d checks — V_d would accept a proof whose cached table was anything.
++        //
++        // `statement_values` is `[#vecs, len_0.., flat..]`, so each cached commitment is appended
++        // to both the length list and the flat list.
++        let mut stmt: Vec<Vec<F>> = proof.public_values.clone();
++        stmt.extend(cached_limbs.iter().map(|l| l.to_vec()));
++        let mut cells: Vec<V> = vec![b.c(F::from_usize(pv_cells.len() + cached_limbs.len()))];
+         for p in &pv_cells {
+             let n = b.c(F::from_usize(p.len()));
+             cells.push(n);
+         }
++        for _ in &cached_limbs {
++            cells.push(b.c(F::from_usize(super::fmt::NV_DIGEST)));
++        }
+         cells.extend(pv_cells.iter().flatten().copied());
++        for dc in &cached_cells {
++            for k in 0..12 {
++                let mut basis = [F::ZERO; 12];
++                basis[k] = F::ONE;
++                let sel = b.ce(ef_from(basis));
++                cells.push(b.mul(dc.lo, sel));
++            }
++            for k in 0..6 {
++                let mut basis = [F::ZERO; 12];
++                basis[k] = F::ONE;
++                let sel = b.ce(ef_from(basis));
++                cells.push(b.mul(dc.hi, sel));
++            }
++        }
+         let job = b.job_start(crate::sha384::config::TAG_STATEMENT, 4 * cells.len());
+         for (i, &x) in cells.iter().enumerate() {
+             b.unit1(x, job, 2 + i as u32);
+         }
+-        let d = crate::sha384::config::statement_digest(&proof.public_values);
++        let d = crate::sha384::config::statement_digest(&stmt);
+         let dc = b.dig(job, d);
+         b.pv_digest(&dc);
+     }
