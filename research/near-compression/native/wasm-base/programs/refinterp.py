@@ -59,6 +59,8 @@ def binop(name, a, b):
 
 def run(prog, fuel=10 ** 8):
     """Runs function 0 (`prog`); `prog['funcs']` are functions 1, 2, ... (callable by `('call', i)`)."""
+    imports = prog.get('imports', [])
+    nimp = len(imports)
     funcs = [prog] + prog.get('funcs', [])
     glob = [v & (M32 if t == 'i32' else M64) for t, _, v in prog.get('globals', [])]
     mem = {}
@@ -75,6 +77,7 @@ def run(prog, fuel=10 ** 8):
     bodies = {}
 
     def prep(fi):
+        fi = fi - nimp
         if fi not in bodies:
             body = [i if isinstance(i, tuple) else (i,) for i in funcs[fi]['body']] + [('end',)]
             end_of, stack = {}, []
@@ -90,7 +93,25 @@ def run(prog, fuel=10 ** 8):
     def exec_fn(fi, args, depth):
         if depth > 2000:
             raise RuntimeError('call depth')
-        f = funcs[fi]
+        if fi < nimp:
+            # host functions of the fixed table; only the pure context getters and panic here
+            name = imports[fi][1]
+            if name == 'block_index':
+                return 10
+            if name == 'block_timestamp':
+                return 42
+            if name == 'epoch_height':
+                return 1
+            if name == 'storage_usage':
+                return 1000
+            if name == 'prepaid_gas':
+                return 0
+            if name == 'register_len':
+                return (1 << 64) - 1
+            if name == 'panic':
+                raise Trap('GuestPanic')
+            raise RuntimeError('host not modelled: ' + name)
+        f = funcs[fi - nimp]
         body, end_of = prep(fi)
         loc = list(args) + [0] * len(f.get('locals', []))
         st = []
@@ -135,12 +156,17 @@ def run(prog, fuel=10 ** 8):
             elif op == 'global.set':
                 glob[i[1]] = st.pop(); pc += 1
             elif op == 'call':
-                g = funcs[i[1]]
-                np = len(g.get('params', []))
+                fi = i[1]
+                if fi < nimp:
+                    _, hname, hparams, hres = imports[fi]
+                    np = len(hparams)
+                else:
+                    g = funcs[fi - nimp]
+                    np = len(g.get('params', []))
                 a = st[len(st) - np:] if np else []
                 del st[len(st) - np:]
-                r = exec_fn(i[1], a, depth + 1)
-                if g.get('result'):
+                r = exec_fn(fi, a, depth + 1)
+                if (hres if fi < nimp else funcs[fi - nimp].get('result')):
                     st.append(r)
                 pc += 1
             elif op in LOADS:
@@ -186,7 +212,7 @@ def run(prog, fuel=10 ** 8):
                 pc += 1
 
     try:
-        r = exec_fn(0, [], 0)
+        r = exec_fn(nimp, [], 0)
         return r, cnt[0]
     except Trap:
         return 'trap', cnt[0]

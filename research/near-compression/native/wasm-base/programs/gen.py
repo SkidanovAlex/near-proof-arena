@@ -277,6 +277,37 @@ def calltrap():
             'funcs': [d, w]}
 
 
+def hostkat(n):
+    """Calls one host import (the pure context getters) in a loop, plus an imported panic."""
+    imps = [('env', 'block_index', [], 'i64'), ('env', 'block_timestamp', [], 'i64')]
+    i, h = 0, 1
+    b = [
+        ('i64.const', 0), ('local.set', h),
+        ('loop',),
+          ('call', 0), ('local.get', h), 'i64.add', ('local.set', h),
+          ('call', 1), ('local.get', h), 'i64.add', ('local.set', h),
+          ('local.get', i), ('i32.const', 1), 'i32.add', ('local.tee', i),
+          ('i32.const', n), 'i32.lt_u', ('br_if', 0),
+        ('end',),
+        ('local.get', h),
+    ]
+    return {'name': f'hostkat{n}', 'result': 'i64', 'locals': ['i32', 'i64'], 'body': b, 'imports': imps}
+
+
+def hostarg():
+    """A host import with one argument (`register_len`), a missing register, and a subtract."""
+    imps = [('env', 'register_len', ['i64'], 'i64')]
+    b = [('i64.const', 0), ('call', 0), ('i64.const', 1), 'i64.sub', ('i64.const', 1), 'i64.add']
+    return {'name': 'hostarg', 'result': 'i64', 'locals': [], 'body': b, 'imports': imps}
+
+
+def hosttrap():
+    """An import call that aborts (the imported `panic`, which is in the fixed host table)."""
+    imps = [('env', 'block_index', [], 'i64'), ('env', 'panic', [], None)]
+    b = [('call', 0), ('drop',), ('call', 1), ('i64.const', 1)]
+    return {'name': 'hosttrap', 'result': 'i64', 'locals': [], 'body': b, 'imports': imps}
+
+
 def main():
     out = sys.argv[1]
     iters = [int(a) for a in sys.argv[2:]] or [8, 64]
@@ -288,6 +319,7 @@ def main():
     progs += [memkat()] + [memloop(n) for n in iters]
     progs += [globkat(n) for n in iters]
     progs += [callkat(n) for n in iters] + [fib(n) for n in (1, 10)] + [calltrap()]
+    progs += [hostkat(n) for n in iters[:2]] + [hostarg(), hosttrap()]
     for p in progs:
         res, steps = run(p)
         with open(os.path.join(out, p['name'] + '.wasm'), 'wb') as f:

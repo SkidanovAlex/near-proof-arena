@@ -38,6 +38,22 @@ pub struct Prep {
     pub stack_rem: u64,
     /// the module's function table (bus FUNC): `[entry, np + 128 nl, charge, prologue, m0..m3]`
     pub funcs: Vec<[u64; 8]>,
+    /// the fixed host call table `[id, np, ar, 0, 0, 0, 0, 0]` (cached HOSTT rows)
+    pub host_tab: Vec<[u64; 8]>,
+    /// the observed host responses, in call order
+    pub hosts: Vec<HostEv>,
+}
+
+/// One host call observed by the spec: signature, request arguments, outcome and `g_after`.
+#[derive(Clone, Debug)]
+pub struct HostEv {
+    pub hid: u64,
+    pub np: u64,
+    pub ar: u64,
+    pub args: Vec<u64>,
+    pub st: u64,
+    pub word: u64,
+    pub g_after: u64,
 }
 
 impl Prep {
@@ -88,6 +104,28 @@ impl Prep {
                 .get("funcs")
                 .and_then(|g| g.as_array())
                 .map(|g| g.iter().map(|r| nums(r).try_into().unwrap()).collect())
+                .unwrap_or_default(),
+            host_tab: v
+                .get("hostTab")
+                .and_then(|g| g.as_array())
+                .map(|g| g.iter().map(|r| nums(r).try_into().unwrap()).collect())
+                .unwrap_or_default(),
+            hosts: v
+                .get("hosts")
+                .and_then(|g| g.as_array())
+                .map(|g| {
+                    g.iter()
+                        .map(|e| HostEv {
+                            hid: e["hid"].as_u64().unwrap(),
+                            np: e["np"].as_u64().unwrap(),
+                            ar: e["ar"].as_u64().unwrap(),
+                            args: nums(&e["args"]),
+                            st: e["st"].as_u64().unwrap(),
+                            word: e["word"].as_u64().unwrap(),
+                            g_after: e["gAfter"].as_u64().unwrap(),
+                        })
+                        .collect()
+                })
                 .unwrap_or_default(),
         }
     }
@@ -320,6 +358,12 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     let mut sto = Tab::new(t("STORE"));
     let mut call = Tab::new(t("CALL"));
     let mut ret = Tab::new(t("RET"));
+    let has_host = air.tables.iter().any(|x| x.name == "HOST");
+    let mut host = if has_host { Some(Tab::new(&air.tables[air.index("HOST")])) } else { None };
+    let mut hosto = if has_host { Some(Tab::new(&air.tables[air.index("HOSTO")])) } else { None };
+    let mut hostt = if has_host { Some(Tab::new(&air.tables[air.index("HOSTT")])) } else { None };
+    let mut host_calls: Vec<u64> = vec![0; prep.host_tab.len()];
+    let mut host_ix = 0usize;
     let mut func_calls: Vec<u64> = vec![0; prep.funcs.len()];
     // dead callee locals `(space, slot, entry)`, left over in the channel after their frame returned
     let mut dead: Vec<(u64, u64, Ent)> = vec![];
@@ -360,6 +404,72 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
         let mut halted = false;
         let mut extra = 0u64;
         match op {
+            0x1FF if has_host => {
+                // HOST: `call` of a declared import; the response comes from the spec-observed table
+                let (hid, np, ar) = (rec[4], rec[5], rec[6]);
+                let ev = prep.hosts.get(host_ix).expect("host event").clone();
+                assert_eq!((ev.hid, ev.np, ev.ar), (hid, np, ar));
+                host_ix += 1;
+                if (hid as usize) < host_calls.len() {
+                    host_calls[hid as usize] += 1;
+                }
+                let sb2 = sb + h - np;
+                let mut args = vec![0u64; 2];
+                for j in 0..np {
+                    let a = stack.pop().unwrap();
+                    assert_eq!(a.tag, 1, "host arguments are i64");
+                    args[j as usize] = a.val;
+                }
+                assert_eq!(stack.len() as u64, sb2, "host call stack height");
+                let ga = ev.g_after;
+                let gl = limbs(ga);
+                let rl = limbs(ev.word);
+                let mut r = host.as_mut().unwrap().row();
+                hdr(&mut r);
+                r.u("act", 1).u("hid", hid).u("np", np).u("ar", ar).u("st", ev.st).u("nres", ev.ar * (1 - ev.st));
+                r.limbs("ga", gl);
+                r.limbs("r", rl);
+                for j in 0..2u64 {
+                    let pl = limbs(args[j as usize]);
+                    let present = (j < np) as u64;
+                    let tag = present; // i64
+                    r.u(&format!("pf{j}"), present).u(&format!("tagP{j}"), tag);
+                    r.limbs(&format!("P{j}_"), pl);
+                    r.u(&format!("tP{j}"), 0).u(&format!("hP{j}"), 0);
+                    if present == 1 {
+                        // producer time: the argument was pushed at some earlier time; we use the
+                        // row clock minus one (valid: `tchk` only needs tp < ts)
+                        let tp = ts - 1;
+                        let hp = st.tchk(ts, tp);
+                        r.u(&format!("tP{j}"), tp).u(&format!("hP{j}"), hp);
+                    }
+                }
+                for i in 0..4 {
+                    st.r16(gl[i]);
+                    st.r16(rl[i]);
+                }
+                for j in 0..2 {
+                    for i in 0..4 {
+                        st.r16(limbs(args[j])[i]);
+                    }
+                }
+                // HOSTO row: request + response
+                let mut o = hosto.as_mut().unwrap().row();
+                let req = [ts, hid, s, args[0], args[1], 0, 0, np];
+                for i in 0..8 {
+                    o.u(&format!("q{i}"), req[i]);
+                }
+                o.u("st", ev.st).limbs("r", rl).limbs("g", gl).u("ar", ar).u("mult", 1);
+                if ev.st == 0 && ar == 1 {
+                    stack.push(Ent { tag: 1, val: ev.word, tp: ts });
+                } else {
+                    assert!(ar == 0 || ev.st == 1);
+                    if ev.st == 1 {
+                        trapped = true;
+                    }
+                }
+                extra = 0;
+            }
             0x10 => {
                 // call: params -> callee locals (space 16 + ts), declared locals zeroed, call record
                 // (space 4, slot ts), budget decremented by the callee's charge
@@ -1134,6 +1244,27 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     for tb in [bnd, add, bit, mul, shift, cmp, cnst, stk, ctrl, loc, div, ld, sto, call, ret, rng, byt, code, drn, mi,
         dat, fun] {
         tabs.insert(tb.spec.name.clone(), tb);
+    }
+    if let (Some(h), Some(o), Some(ht)) = (host, hosto, hostt) {
+        // HOSTT: the fixed host table as a cached trace, multiplicities = calls per host id
+        let rows = {
+            let mut rows: Vec<[u64; 8]> = if prep.host_tab.is_empty() { vec![[0; 8]] } else { prep.host_tab.clone() };
+            let hgt = rows.len().max(4).next_power_of_two();
+            let last = *rows.last().unwrap();
+            rows.resize(hgt, last);
+            rows
+        };
+        let mut ht = ht;
+        for (j, rec) in rows.iter().enumerate() {
+            let mut r = ht.row();
+            for (k, name) in ["id", "np", "ar", "z0", "z1", "z2", "z3", "z4"].iter().enumerate() {
+                r.u(name, rec[k]);
+            }
+            r.u("mult", if j < host_calls.len() { host_calls[j] } else { 0 });
+        }
+        tabs.insert("HOSTT".into(), ht);
+        tabs.insert("HOST".into(), h);
+        tabs.insert("HOSTO".into(), o);
     }
     let mut mats = vec![];
     let mut rows_per_table = vec![];

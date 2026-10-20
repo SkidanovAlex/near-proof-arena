@@ -1,19 +1,27 @@
 import WasmBase.Check
+import WasmBase.HostChip
+import WasmBase.HostCheck
 /-!
 `wasmbase-tool` — exporter and verifier-side preparation for the direct-Wasm base layer.
 
 * `wasmbase-tool air <nloc> <ngl>`: the AIR `wasmBaseAir nloc ngl` as JSON (the Rust crate interprets it;
   `ngl` is the number of globals).
+* `wasmbase-tool airH <nloc> <ngl>`: `wasmBaseHostAir` (the same tables plus HOST, HOSTO, HOSTT).
 * `wasmbase-tool prep <file.wasm> <exportName> <g0>`: `prepare` (PV86), `check` of the exported function,
   and a reference execution with the spec's own `step` from the post-`enter` state with
   `gas.g = g0` (after the prologue charge), as JSON.
 * `wasmbase-tool eval <nloc> <ngl> <points>`: evaluate every constraint, interaction count and message
   of `wasmBaseAir nloc ngl` at the given points (difftest; selectors are free field values).
+* `wasmbase-tool evalH <nloc> <ngl> <points>`: the same for `wasmBaseHostAir`.
 -/
 open NearSpecV3.Wasm WasmBase ZkFormal.Algebra
 
 def jList (xs : List String) : String := "[" ++ ",".intercalate xs ++ "]"
-def jStr (s : String) : String := "\"" ++ s ++ "\""
+/-- JSON string literal, escaping `\` and `"` (host abort messages contain `rustDebugStr` quotes). -/
+def jStr (s : String) : String :=
+  "\"" ++ String.ofList (s.toList.flatMap fun c =>
+    if c = '"' then ['\\', '"'] else if c = '\\' then ['\\', '\\']
+    else if c = '\n' then ['\\', 'n'] else [c]) ++ "\""
 
 def WasmBase.Expr.toJson : WasmBase.Expr → String
   | .c n => s!"[\"c\",{n}]"
@@ -72,6 +80,71 @@ def runSteps (cfg : NearCfg) (p : Prepared) : Nat → St → Nat → (Nat × Res
     | .cont s' => runSteps cfg p k s' (n + 1)
     | r => (n + 1, r)
 
+/-- One observed host call: `ts` is filled in by the trace generator; the rest is the spec's
+outcome (`st = 0` success, `1` abort), the request arguments, the result word and the budget after
+`g := remaining`. -/
+structure HostEv where
+  hid : Nat
+  np : Nat
+  ar : Nat
+  args : List Nat
+  st : Nat
+  word : Nat
+  gAfter : Nat
+  deriving Inhabited
+
+def hostEvJson (e : HostEv) : String :=
+  "{\"hid\":" ++ toString e.hid ++ ",\"np\":" ++ toString e.np ++ ",\"ar\":" ++ toString e.ar ++
+  ",\"args\":" ++ natList e.args ++ ",\"st\":" ++ toString e.st ++ ",\"word\":" ++ toString e.word ++
+  ",\"gAfter\":" ++ toString e.gAfter ++ "}"
+
+/-- The signature of an import index, from the fixed host table. -/
+def hostSigOf (p : Prepared) (fi : Nat) : Option (Nat × Nat × Nat) :=
+  match hostOf p fi, sigOfH p fi with
+  | some hid, some (np, ar) => some (hid, np, ar)
+  | _, _ => none
+
+/-- The host call at the current pc, if any. -/
+def hostAt (p : Prepared) (s : St) : Option (Nat × Nat × Nat) :=
+  match s.frames with
+  | [] => none
+  | f :: _ =>
+    match p.funcs[f.fn]?, (p.funcs[f.fn]?).bind (fun pf => pf.code[f.pc]?) with
+    | some _, some (.call fi) => if fi < p.m.imports.size then hostSigOf p fi else none
+    | _, _ => none
+
+/-- Run the spec, recording the abstract host responses at every import call (the response is read
+off the spec's own outcome, so the trace generator reproduces the spec exactly). -/
+def runStepsH (cfg : NearCfg) (p : Prepared) :
+    Nat → St → Nat → List HostEv → (Nat × Res × List HostEv)
+  | 0, _, n, evs => (n, .unmodeled "tool fuel", evs)
+  | k + 1, s, n, evs =>
+    match hostAt p s with
+    | some (hid, np, ar) =>
+      let sb := s.stack.size - np
+      let args := (List.range np).map fun j =>
+        (match s.stack[sb + j]?.getD (.i32 0) with
+         | .i32 v => v.toNat
+         | .i64 v => v.toNat
+         | .ref _ => 0)
+      match step cfg p s with
+      | .cont os =>
+        let word := if ar = 1 then
+          (match os.stack.back?.getD (.i64 0) with
+           | .i32 v => v.toNat
+           | .i64 v => v.toNat
+           | .ref _ => 0) else 0
+        let ev : HostEv := { hid, np, ar, args, st := 0, word, gAfter := os.gas.g }
+        runStepsH cfg p k os (n + 1) (evs ++ [ev])
+      | .abort os e =>
+        let ev : HostEv := { hid, np, ar, args, st := 1, word := 0, gAfter := os.gas.g }
+        (n + 1, .abort os e, evs ++ [ev])
+      | r => (n + 1, r, evs)
+    | none =>
+      match step cfg p s with
+      | .cont s' => runStepsH cfg p k s' (n + 1) evs
+      | r => (n + 1, r, evs)
+
 def valLimbs : Val → (Nat × List Nat)
   | .i32 v => (0, limbs4 v.toNat)
   | .i64 v => (1, limbs4 v.toNat)
@@ -86,9 +159,10 @@ def prep (path exportName : String) (g0 : Nat) : IO Unit := do
     let some (_, _, fi) := p.m.exports.find? (fun (n, k, _) => n = exportName && k = 0)
       | throw (IO.userError "export not found")
     let fn := fi - nImp
-    match checkModule cfg p fn with
+    match checkModuleH cfg p fn with
     | none => IO.println "{\"eligible\":false}"
-    | some M =>
+    | some MH =>
+      let M := MH.mod
       let ck := M.cks.getD 0 default
       let gas : Gas := { Gas.init g0 with g := g0 }
       match instantiate cfg p gas with
@@ -98,7 +172,7 @@ def prep (path exportName : String) (g0 : Nat) : IO Unit := do
         match enter p s fi with
         | .cont s1 =>
           let g1 := s1.gas.g
-          let (n, r) := runSteps cfg p 100000000 s1 0
+          let (n, r, hevs) := runStepsH cfg p 100000000 s1 0 []
           let (status, stack, gf) := match r with
             | .fin s => ("fin", s.stack.toList, s.gas.g)
             | .abort s e => (s!"abort {e}", s.stack.toList, s.gas.g)
@@ -109,7 +183,7 @@ def prep (path exportName : String) (g0 : Nat) : IO Unit := do
           let de := dataEnd s1
           let img := (List.range de).map fun a => (readByte s1 a).toNat
           let gls := s1.globals.toList.map valLimbs
-          IO.println s!"\{\"eligible\":true,\"fn\":{fn},\"ncode\":{M.records.size},\"nfns\":{M.fns.length},\"localTags\":{natList ck.localTags},\"arity\":{ck.arity},\"resTag\":{ck.resTag},\"maxFee\":{M.maxFee},\"regularOpCost\":{cfg.regularOpCost},\"g0\":{g1},\"steps\":{n},\"status\":{jStr status},\"gFinal\":{gf},\"stack\":{jList (vals.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")},\"heights\":{natList ck.heights.toList},\"records\":{jList recs},\"mem\":{memBytes s1},\"dataEnd\":{de},\"data\":{natList img},\"stackRem\":{s1.stackRem},\"funcs\":{jList (M.funcs.map natList)},\"ngl\":{gls.length},\"globals\":{jList (gls.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")}}"
+          IO.println s!"\{\"eligible\":true,\"fn\":{fn},\"ncode\":{M.records.size},\"nfns\":{M.fns.length},\"localTags\":{natList ck.localTags},\"arity\":{ck.arity},\"resTag\":{ck.resTag},\"maxFee\":{M.maxFee},\"regularOpCost\":{cfg.regularOpCost},\"g0\":{g1},\"steps\":{n},\"status\":{jStr status},\"gFinal\":{gf},\"stack\":{jList (vals.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")},\"heights\":{natList ck.heights.toList},\"records\":{jList recs},\"mem\":{memBytes s1},\"dataEnd\":{de},\"data\":{natList img},\"stackRem\":{s1.stackRem},\"funcs\":{jList (M.funcs.map natList)},\"hosts\":{jList (hevs.map hostEvJson)},\"hostTab\":{jList (MH.hostRows.map natList)},\"ngl\":{gls.length},\"globals\":{jList (gls.map fun (t, l) => s!"\{\"tag\":{t},\"limbs\":{natList l}}")}}"
         | _ => throw (IO.userError "enter failed")
   | .prepErr v w => IO.println s!"\{\"eligible\":false,\"prepare\":{jStr v},\"why\":{jStr w}}"
   | .compileErr _ _ => IO.println "{\"eligible\":false,\"prepare\":\"compile\"}"
@@ -117,8 +191,8 @@ def prep (path exportName : String) (g0 : Nat) : IO Unit := do
   | .unmodeled w => IO.println s!"\{\"eligible\":false,\"prepare\":{jStr w}}"
 
 /-- `points` file: one point per line, `t sf sl st cur... | nxt... | pub...` as decimals. -/
-def evalPoints (nloc ncode : Nat) (path : String) : IO Unit := do
-  let A := wasmBaseAir nloc ncode
+def evalPoints (nloc ncode : Nat) (path : String) (hostAir : Bool := false) : IO Unit := do
+  let A := if hostAir then wasmBaseHostAir nloc ncode else wasmBaseAir nloc ncode
   let lines ← IO.FS.lines path
   for ln in lines do
     if ln.isEmpty then continue
@@ -141,6 +215,8 @@ def evalPoints (nloc ncode : Nat) (path : String) : IO Unit := do
 def main (args : List String) : IO Unit := do
   match args with
   | ["air", l, n] => IO.println (airJson (wasmBaseAir l.toNat! n.toNat!))
+  | ["airH", l, n] => IO.println (airJson (wasmBaseHostAir l.toNat! n.toNat!))
   | ["prep", path, exportName, g0] => prep path exportName g0.toNat!
   | ["eval", l, n, path] => evalPoints l.toNat! n.toNat! path
-  | _ => IO.eprintln "usage: wasmbase-tool air <nloc> <ngl> | prep <wasm> <exportName> <g0> | eval <nloc> <ngl> <points>"
+  | ["evalH", l, n, path] => evalPoints l.toNat! n.toNat! path true
+  | _ => IO.eprintln "usage: wasmbase-tool air|airH <nloc> <ngl> | prep <wasm> <exportName> <g0> | eval|evalH <nloc> <ngl> <points>"

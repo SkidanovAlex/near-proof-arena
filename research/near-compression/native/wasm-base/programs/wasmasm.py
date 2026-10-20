@@ -115,13 +115,23 @@ def func_body(f):
 
 
 def assemble(prog):
-    """Function 0 is `prog` (exported); `prog['funcs']` are functions 1, 2, ..."""
+    """Function 0 (`imports` count aside) is `prog` (exported); `prog['funcs']` are the following
+    functions.  `prog['imports']` is a list of `(module, name, params, result)`, in import order;
+    they occupy function indices `0 .. nimp-1`, so `prog` is function `nimp`."""
+    imports = prog.get('imports', [])
     funcs = [prog] + prog.get('funcs', [])
     types = []
+    for _, _, params, result in imports:
+        res = [] if result is None else [VT[result]]
+        types.append(b'\x60' + vec([bytes([VT[t]]) for t in params]) + vec([bytes([r]) for r in res]))
     for f in funcs:
         res = [] if f.get('result') is None else [VT[f['result']]]
         types.append(b'\x60' + vec([bytes([VT[t]]) for t in f.get('params', [])]) + vec([bytes([r]) for r in res]))
     name = prog.get('export', 'main').encode()
+    isec = b''
+    if imports:
+        isec = section(2, vec([uleb(len(m)) + m.encode() + uleb(len(n)) + n.encode() + b'\x00' + uleb(k)
+                               for k, (m, n, _, _) in enumerate(imports)]))
     data = prog.get('data', [])
     mem = b''
     if prog.get('memory') or data:
@@ -133,6 +143,7 @@ def assemble(prog):
     dsec = b''
     if data:
         dsec = section(11, vec([b'\x00\x41' + sleb(off) + b'\x0B' + uleb(len(bs)) + bytes(bs) for off, bs in data]))
-    return (b'\x00asm\x01\x00\x00\x00' + section(1, vec(types)) + section(3, vec([uleb(k) for k in range(len(funcs))])) +
-            mem + gsec + section(7, vec([uleb(len(name)) + name + b'\x00' + uleb(0)])) +
+    return (b'\x00asm\x01\x00\x00\x00' + section(1, vec(types)) + isec +
+            section(3, vec([uleb(len(imports) + k) for k in range(len(funcs))])) +
+            mem + gsec + section(7, vec([uleb(len(name)) + name + b'\x00' + uleb(len(imports))])) +
             section(10, vec([func_body(f) for f in funcs])) + dsec)

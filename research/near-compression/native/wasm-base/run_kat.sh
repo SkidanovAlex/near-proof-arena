@@ -14,21 +14,26 @@ pass=0; fail=0
 for w in "$OUT"/progs/*.wasm; do
   n=$(basename "$w" .wasm)
   "$TOOL" prep "$w" main $G0 > "$OUT/progs/$n.prep.json"
-  read -r nloc ngl <<<"$(python3 -c "import json;d=json.load(open('$OUT/progs/$n.prep.json'));print(len(d['localTags']),d.get('ngl',0))")"
-  [ -f "$OUT/air-$nloc-g$ngl.json" ] || "$TOOL" air "$nloc" "$ngl" > "$OUT/air-$nloc-g$ngl.json"
-  # Python reference vs Lean spec (value and step count)
-  python3 - "$OUT/progs/$n.json" "$OUT/progs/$n.prep.json" <<'PY'
+  read -r nloc ngl nimp <<<"$(python3 -c "import json;d=json.load(open('$OUT/progs/$n.prep.json'));print(len(d['localTags']),d.get('ngl',0),1 if d.get('hosts') else 0)")"
+  AIRK=air; [ "$nimp" = 1 ] && AIRK=airH
+  [ -f "$OUT/$AIRK-$nloc-g$ngl.json" ] || "$TOOL" $AIRK "$nloc" "$ngl" > "$OUT/$AIRK-$nloc-g$ngl.json"
+  # Python reference vs Lean spec (value and step count).  Host programs are not gas-modelled by the
+  # Python interpreter, so only the outcome is compared there.
+  python3 - "$OUT/progs/$n.json" "$OUT/progs/$n.prep.json" "$nimp" <<'PY'
 import json, sys
-ref = json.load(open(sys.argv[1])); sp = json.load(open(sys.argv[2]))
-assert sp['steps'] == ref['steps'], (sp['steps'], ref['steps'])
+ref = json.load(open(sys.argv[1])); sp = json.load(open(sys.argv[2])); host = sys.argv[3] == '1'
+if not host:
+    assert sp['steps'] == ref['steps'], (sp['steps'], ref['steps'])
 if ref['result'] == 'trap':
-    assert sp['status'].startswith('abort WasmTrap'), sp['status']
+    assert sp['status'].startswith('abort '), sp['status']
+    if not host:
+        assert sp['status'].startswith('abort WasmTrap'), sp['status']
 else:
     assert sp['status'] == 'fin', sp['status']
     l = sp['stack'][-1]['limbs']; v = l[0] | l[1] << 16 | l[2] << 32 | l[3] << 48
     assert v == ref['result'], (v, ref['result'])
 PY
-  if "$BIN" check "$OUT/air-$nloc-g$ngl.json" "$OUT/progs/$n.prep.json" > "$OUT/progs/$n.check.log" 2>&1; then
+  if "$BIN" check "$OUT/$AIRK-$nloc-g$ngl.json" "$OUT/progs/$n.prep.json" > "$OUT/progs/$n.check.log" 2>&1; then
     pass=$((pass+1))
   else
     fail=$((fail+1)); echo "FAIL $n"; tail -3 "$OUT/progs/$n.check.log"

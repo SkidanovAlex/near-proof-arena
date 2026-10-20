@@ -898,14 +898,45 @@ plus a length message per register. A host function that fills a register (conte
   code hash. The deploy and global-contract tables provide that hash; the roots are a deterministic
   function of the code (§9.1).
 
-### 14.3 What this lane would need to add (not started, per the scope note)
+### 14.3 What this lane adds — status 2026-10-20 (`research/results/pq-host-chip/`)
 
-* `check` support for import calls (OP_HOST records, a signature table).
-* The HOST chip and the MEMIO byte mover.
-* The register space.
-* The `g_after` budget register.
-* The spec-side simulation of `callHost` given a response oracle. The proof would be relative to an
-  abstract host-response function, discharged by the state proof.
+**Built and demonstrated** (branch `lane/pq-host-chip`, see `results/pq-host-chip/RESULTS.md`):
+* `check` support for import calls: `WasmBase.HostCheck` (`checkModuleH`, `analyzeH`, `verifyAtH`,
+  `recordAtH`) accepts `call` of a declared import, with the signature taken from the fixed host
+  table `Chips.hostFns` (`block_index`, `block_timestamp`, `epoch_height`, `storage_usage`,
+  `prepaid_gas`, `used_gas`, `register_len`, `panic`; `np ≤ 2`, `ar ≤ 1`).  Import calls get the code
+  record `[pc, 0x1FF, h, fee, hid, np, ar, 0]`, and the table is bound as a cached trace (`HOSTT`)
+  like FUNC.
+* The **HOST chip** (`WasmBase.HostChip`): consumes `np` i64 arguments from the operand stack, sends
+  `[ts, hid, S, a0lo, a0hi, a1lo, a1hi, np]` on `HOSTQ`, receives
+  `[ts, st, rlo, rhi, glo, ghi, ar, 0]` on `HOSTR`, pushes `(1−st)·ar` result words, moves to
+  `pc + 1` (or stays with `halted = 2` on abort), and advances `S` by the instruction `fee` only —
+  host ext costs are burnt by the state side and returned as `g_after`.  A witness oracle table
+  `HOSTO` answers the two buses inside one trace, which keeps the native bus pre-check exact.
+  `wasmBaseHostAir = wasmBaseAir ++ [HOST, HOSTO, HOSTT]`; `wasmBaseAir` is untouched, so every
+  proved F1/memory/globals/calls index is unchanged.
+* **Spec side** (`WasmBase.StepHost`): `step_host_ok` / `step_host_abort` prove the spec `step` from
+  an abstract `HostOracle` (status, word, `gAfter`, error).  No axioms (`#print axioms`: propext,
+  Classical.choice, Quot.sound).
+* **Row lemma** (`WasmBase.Main.RowHost`): `host_rowfacts` turns an active HOST row into its
+  field-level constraints (bits, `np = pf0+pf1`, `nres = (1−st)·ar`, argument padding) and the
+  exact input/output STATE messages.
+* **Rust**: trace generation for HOST/HOSTO/HOSTT rows (moved into the native crate), KAT programs
+  `hostkat8`, `hostkat64`, `hostarg`, `hosttrap`, and HOST-specific tamper cases.
+* **Measured**: 77/77 KAT programs pass the constraint+bus pre-check (73 previous + 4 host); a host difftest point set
+  (400 points, 10,224 constraint values, 7,408 interactions, 25 tables) agrees; real proofs of all three host
+  programs verify (268.2-bit soundness); 66/66, 59/59, 47/47 HOST tamper cases rejected; the
+  pre-existing F1/memory/globals/calls tamper suites still pass unchanged (91, 43, 45, 53, 73, 74
+  cases).
 
-Everything else (the semantics of each host function, storage, gas accounting, receipts) would be on
+**Not done** (deliberately, per the scope note):
+* **Full host-aware `wasm_base_sound`.**  A host call resynchronises `g := remaining`, so the
+  Wasm-only invariant `R·S_final + g = g0` no longer holds.  The top-level theorem needs a gas
+  invariant carrying the sum of resynchronisations (`R·(S − S_prev)` burnt per host interval plus
+  `g_after`); everything else in the row lemma is in place.  This is the smallest next step.
+* MEMIO byte movement (the `HOSTB` bus), the register space, and the state-side join.  The HOST
+  chip already carries key/value lengths in its request/response words, but no byte bus is emitted.
+* The semantics of each host function, storage, receipts: state side.
+
+Everything else (the semantics of each host function, storage, gas accounting, receipts) stays on
 the state side.

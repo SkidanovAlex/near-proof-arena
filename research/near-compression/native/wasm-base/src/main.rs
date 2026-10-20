@@ -170,13 +170,16 @@ fn cells(g: &Gen) -> usize {
 fn compare_with_spec(prep: &Prep, g: &Gen) {
     let trapped = g.pubs[8] == F::from_u64(2);
     if trapped {
-        assert!(prep.status.starts_with("abort WasmTrap"), "trace trapped, spec: {}", prep.status);
+        // a host abort is not a Wasm trap: `callHost` returns an abort with the host error
+        assert!(prep.status.starts_with("abort "), "trace trapped, spec: {}", prep.status);
     } else {
         assert_eq!(prep.status, "fin", "spec run did not finish normally");
     }
     assert_eq!(g.steps, prep.steps, "step count vs spec");
-    let spent = prep.g0 - prep.g_final;
-    assert_eq!(spent, prep.regular * g.s_units as u128, "gas vs spec");
+    if prep.hosts.is_empty() {
+        let spent = prep.g0 - prep.g_final;
+        assert_eq!(spent, prep.regular * g.s_units as u128, "gas vs spec");
+    }
     if trapped {
         return;
     }
@@ -524,6 +527,40 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
     if let Some(r) = (0..g.rows_per_table[td].1).find(|&r| g.mats[td].values[r * g.mats[td].width + col(td, "space")].as_canonical_u32() > 16) {
         cases.push((format!("DRAIN[callee local row {r}].act=0"), cell(td, r, col(td, "act"), Box::new(|_| F::ZERO))));
         cases.push((format!("DRAIN[callee local row {r}].tp+1"), cell(td, r, col(td, "tp"), plus1())));
+    }
+    // host calls (README §14): HOST row, response oracle, cached host table
+    let th = std::panic::catch_unwind(|| tb("HOST")).unwrap_or(usize::MAX);
+    if th != usize::MAX && g.rows_per_table.get(th).map(|x| x.1).unwrap_or(0) > 0 {
+        for c in ["hid", "np", "ar", "st", "nres", "ga0", "ga1", "ga2", "ga3", "r0", "r1", "r2", "r3",
+            "P0_0", "tagP0", "fr_sb", "fr_cid", "S", "fee"] {
+            cases.push((format!("HOST.{c}+1"), cell(th, 0, col(th, c), plus1())));
+        }
+        // `tP` of an *absent* argument is a free witness (its time check has count `pf = 0`), so
+        // target a row whose first argument is present.
+        let w = g.mats[th].width;
+        let (pf0, tp0) = (col(th, "pf0"), col(th, "tP0"));
+        if let Some(r) = (0..g.rows_per_table[th].1).find(|&r| g.mats[th].values[r * w + pf0] == F::ONE) {
+            cases.push((format!("HOST[row {r}].tP0+1"), cell(th, r, tp0, plus1())));
+        }
+        cases.push(("HOST.act=0".into(), cell(th, 0, col(th, "act"), Box::new(|_| F::ZERO))));
+    }
+    if let Ok(to) = std::panic::catch_unwind(|| tb("HOSTO")) {
+        if g.rows_per_table[to].1 > 0 {
+            for c in ["st", "r0", "g0", "g1", "ar", "mult"] {
+                cases.push((format!("HOSTO.{c}+1"), cell(to, 0, col(to, c), plus1())));
+            }
+        }
+    }
+    if let Ok(tt) = std::panic::catch_unwind(|| tb("HOSTT")) {
+        // only a row the trace actually queries (`mult > 0`) is pinned
+        let w = g.mats[tt].width;
+        let m = col(tt, "mult");
+        if let Some(r) = (0..g.rows_per_table[tt].1).find(|&r| g.mats[tt].values[r * w + m] != F::ZERO) {
+            for c in ["id", "np", "ar"] {
+                cases.push((format!("HOSTT[row {r}].{c}+1 (host table)"), cell(tt, r, col(tt, c), plus1())));
+            }
+            cases.push((format!("HOSTT[row {r}].mult+1"), cell(tt, r, m, plus1())));
+        }
     }
     // swap two ADD rows' timestamps (reorders execution)
     let ta = tb("ADD");
