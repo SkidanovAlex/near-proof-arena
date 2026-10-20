@@ -1,0 +1,125 @@
+log2|Ext12| = 370.88
+
+=== MCA bound: BCGM ePrint 2025/2051 Thm 9.2 (contract) ===
+T x15 final                                x15 m=3 n0=2^30.91 rho0=2^-10.91 q=[52, 52, 40, 33]
+    mu (d=W-1)= -274.4 fold (MCA + sumcheck)= -280.6 of which MCA= -280.6 out (OOD)= -323.9 shift (queries + gamma)= -269.2 fin (queries)= -271.6
+    worst non-query term 2^-274.4: margin to 2^-268 = +6.4 bits, to 2^-258 = +16.4
+T x15 final                                x15 m=8 n0=2^30.91 rho0=2^-10.91 q=[50, 50, 40, 33]
+    mu (d=W-1)= -265.5 fold (MCA + sumcheck)= -271.7 of which MCA= -271.7 out (OOD)= -321.1 shift (queries + gamma)= -268.3 fin (queries)= -276.1
+    worst non-query term 2^-265.5: margin to 2^-268 = -2.5 bits, to 2^-258 = +7.5
+T x15 penultimate                          x15 m=3 n0=2^30.91 rho0=2^-12.91 q=[44, 44, 38]
+    mu (d=W-1)= -269.4 fold (MCA + sumcheck)= -280.6 of which MCA= -280.6 out (OOD)= -324.9 shift (queries + gamma)= -274.2 fin (queries)= -274.8
+    worst non-query term 2^-269.4: margin to 2^-268 = +1.4 bits, to 2^-258 = +11.4
+T x15 penultimate                          x15 m=8 n0=2^30.91 rho0=2^-12.91 q=[43, 43, 37]
+    mu (d=W-1)= -260.5 fold (MCA + sumcheck)= -271.7 of which MCA= -271.7 out (OOD)= -322.1 shift (queries + gamma)= -273.7 fin (queries)= -272.5
+    worst non-query term 2^-260.5: margin to 2^-268 = -7.5 bits, to 2^-258 = +2.5
+L x15 final                                x15 m=3 n0=2^30.91 rho0=2^-10.91 q=[44, 44, 34, 28]
+    mu (d=W-1)= -274.6 fold (MCA + sumcheck)= -280.6 of which MCA= -280.6 out (OOD)= -323.9 shift (queries + gamma)= -260.9 fin (queries)= -262.5
+    worst non-query term 2^-274.6: margin to 2^-268 = +6.6 bits, to 2^-258 = +16.6
+L x15 final                                x15 m=8 n0=2^30.91 rho0=2^-10.91 q=[43, 43, 33, 28]
+    mu (d=W-1)= -265.6 fold (MCA + sumcheck)= -271.7 of which MCA= -271.7 out (OOD)= -321.1 shift (queries + gamma)= -258.6 fin (queries)= -266.2
+    worst non-query term 2^-265.6: margin to 2^-268 = -2.4 bits, to 2^-258 = +7.6
+L x15 penultimate                          x15 m=3 n0=2^30.91 rho0=2^-12.91 q=[38, 38, 33]
+    mu (d=W-1)= -269.6 fold (MCA + sumcheck)= -280.6 of which MCA= -280.6 out (OOD)= -324.9 shift (queries + gamma)= -268.8 fin (queries)= -270.6
+    worst non-query term 2^-269.6: margin to 2^-268 = +1.6 bits, to 2^-258 = +11.6
+L x15 penultimate                          x15 m=8 n0=2^30.91 rho0=2^-12.91 q=[38, 38, 33]
+    mu (d=W-1)= -260.6 fold (MCA + sumcheck)= -271.7 of which MCA= -271.7 out (OOD)= -322.1 shift (queries + gamma)= -273.9 fin (queries)= -275.1
+    worst non-query term 2^-260.6: margin to 2^-268 = -7.4 bits, to 2^-258 = +2.6
+T COMBO+E5 final                           x15 m=3 n0=2^30.91 rho0=2^-10.91 q=[52, 47, 35, 28]
+    mu (d=W-1)= -275.1 fold (MCA + sumcheck)= -270.1 of which MCA= -270.1 out (OOD)= -317.9 shift (queries + gamma)= -269.4 fin (queries)= -272.5
+    worst non-query term 2^-270.1: margin to 2^-268 = +2.1 bits, to 2^-258 = +12.1
+T COMBO+E5 final                           x15 m=8 n0=2^30.91 rho0=2^-10.91 q=[50, 46, 35, 28]
+    mu (d=W-1)= -266.1 fold (MCA + sumcheck)= -261.2 of which MCA= -261.2 out (OOD)= -315.1 shift (queries + gamma)= -268.3 fin (queries)= -276.2
+    worst non-query term 2^-261.2: margin to 2^-268 = -6.8 bits, to 2^-258 = +3.2
+T COMBO+E5 penultimate                     x15 m=3 n0=2^30.91 rho0=2^-11.91 q=[47, 44, 31]
+    mu (d=W-1)= -272.6 fold (MCA + sumcheck)= -273.1 of which MCA= -273.1 out (OOD)= -319.9 shift (queries + gamma)= -269.4 fin (queries)= -270.7
+    worst non-query term 2^-272.6: margin to 2^-268 = +4.6 bits, to 2^-258 = +14.6
+T COMBO+E5 penultimate                     x15 m=8 n0=2^30.91 rho0=2^-11.91 q=[46, 43, 31]
+    mu (d=W-1)= -263.6 fold (MCA + sumcheck)= -264.2 of which MCA= -264.2 out (OOD)= -317.1 shift (queries + gamma)= -269.8 fin (queries)= -274.8
+    worst non-query term 2^-263.6: margin to 2^-268 = -4.4 bits, to 2^-258 = +5.6
+L COMBO+E5 final                           x15 m=3 n0=2^30.91 rho0=2^-10.91 q=[44, 40, 30, 24]
+    mu (d=W-1)= -275.2 fold (MCA + sumcheck)= -270.1 of which MCA= -270.1 out (OOD)= -317.9 shift (queries + gamma)= -261.2 fin (queries)= -265.5
+    worst non-query term 2^-270.1: margin to 2^-268 = +2.1 bits, to 2^-258 = +12.1
+L COMBO+E5 final                           x15 m=8 n0=2^30.91 rho0=2^-10.91 q=[43, 39, 29, 23]
+    mu (d=W-1)= -266.3 fold (MCA + sumcheck)= -261.2 of which MCA= -261.2 out (OOD)= -315.1 shift (queries + gamma)= -260.1 fin (queries)= -258.9
+    worst non-query term 2^-261.2: margin to 2^-268 = -6.8 bits, to 2^-258 = +3.2
+L COMBO+E5 penultimate                     x15 m=3 n0=2^30.91 rho0=2^-12.91 q=[38, 36, 28]
+    mu (d=W-1)= -270.2 fold (MCA + sumcheck)= -273.1 of which MCA= -273.1 out (OOD)= -319.9 shift (queries + gamma)= -268.8 fin (queries)= -276.5
+    worst non-query term 2^-270.2: margin to 2^-268 = +2.2 bits, to 2^-258 = +12.2
+L COMBO+E5 penultimate                     x15 m=8 n0=2^30.91 rho0=2^-12.91 q=[38, 35, 27]
+    mu (d=W-1)= -261.3 fold (MCA + sumcheck)= -264.2 of which MCA= -264.2 out (OOD)= -317.1 shift (queries + gamma)= -272.3 fin (queries)= -271.4
+    worst non-query term 2^-261.3: margin to 2^-268 = -6.7 bits, to 2^-258 = +3.3
+stress: h+b=27, b=8                        x15 m=3 n0=2^30.91 rho0=2^-11.91 q=[47, 47, 38, 31]
+    mu (d=W-1)= -273.4 fold (MCA + sumcheck)= -279.1 of which MCA= -279.1 out (OOD)= -322.9 shift (queries + gamma)= -269.4 fin (queries)= -270.7
+    worst non-query term 2^-273.4: margin to 2^-268 = +5.4 bits, to 2^-258 = +15.4
+stress: h+b=27, b=8                        x1  m=3 n0=2^27.00 rho0=2^-8.00 q=[71, 71, 51, 40]
+    mu (d=W-1)= -287.0 fold (MCA + sumcheck)= -292.8 of which MCA= -292.8 out (OOD)= -330.7 shift (queries + gamma)= -268.2 fin (queries)= -271.1
+    worst non-query term 2^-287.0: margin to 2^-268 = +19.0 bits, to 2^-258 = +29.0
+stress: h+b=27, b=8                        x15 m=8 n0=2^30.91 rho0=2^-11.91 q=[46, 46, 37, 31]
+    mu (d=W-1)= -264.4 fold (MCA + sumcheck)= -270.2 of which MCA= -270.2 out (OOD)= -320.1 shift (queries + gamma)= -269.8 fin (queries)= -274.8
+    worst non-query term 2^-264.4: margin to 2^-268 = -3.6 bits, to 2^-258 = +6.4
+stress: h+b=27, b=8                        x1  m=8 n0=2^27.00 rho0=2^-8.00 q=[69, 69, 50, 39]
+    mu (d=W-1)= -278.1 fold (MCA + sumcheck)= -283.9 of which MCA= -283.9 out (OOD)= -327.9 shift (queries + gamma)= -270.0 fin (queries)= -269.6
+    worst non-query term 2^-278.1: margin to 2^-268 = +10.1 bits, to 2^-258 = +20.1
+
+=== MCA bound: BCHKS25 Thm 1.5 (backend calculator; comparison) ===
+T x15 final                                x15 m=3 n0=2^30.91 rho0=2^-10.91 q=[52, 52, 40, 33]
+    mu (d=W-1)= -307.9 fold (MCA + sumcheck)= -310.2 of which MCA= -310.2 out (OOD)= -323.9 shift (queries + gamma)= -269.2 fin (queries)= -271.6
+    worst non-query term 2^-307.9: margin to 2^-268 = +39.9 bits, to 2^-258 = +49.9
+T x15 final                                x15 m=8 n0=2^30.91 rho0=2^-10.91 q=[50, 50, 40, 33]
+    mu (d=W-1)= -301.5 fold (MCA + sumcheck)= -303.8 of which MCA= -303.8 out (OOD)= -321.1 shift (queries + gamma)= -268.3 fin (queries)= -276.1
+    worst non-query term 2^-301.5: margin to 2^-268 = +33.5 bits, to 2^-258 = +43.5
+T x15 penultimate                          x15 m=3 n0=2^30.91 rho0=2^-12.91 q=[44, 44, 38]
+    mu (d=W-1)= -302.9 fold (MCA + sumcheck)= -312.2 of which MCA= -312.2 out (OOD)= -324.9 shift (queries + gamma)= -274.2 fin (queries)= -274.8
+    worst non-query term 2^-302.9: margin to 2^-268 = +34.9 bits, to 2^-258 = +44.9
+T x15 penultimate                          x15 m=8 n0=2^30.91 rho0=2^-12.91 q=[43, 43, 37]
+    mu (d=W-1)= -296.5 fold (MCA + sumcheck)= -305.8 of which MCA= -305.8 out (OOD)= -322.1 shift (queries + gamma)= -273.7 fin (queries)= -272.5
+    worst non-query term 2^-296.5: margin to 2^-268 = +28.5 bits, to 2^-258 = +38.5
+L x15 final                                x15 m=3 n0=2^30.91 rho0=2^-10.91 q=[44, 44, 34, 28]
+    mu (d=W-1)= -308.1 fold (MCA + sumcheck)= -310.2 of which MCA= -310.2 out (OOD)= -323.9 shift (queries + gamma)= -260.9 fin (queries)= -262.5
+    worst non-query term 2^-308.1: margin to 2^-268 = +40.1 bits, to 2^-258 = +50.1
+L x15 final                                x15 m=8 n0=2^30.91 rho0=2^-10.91 q=[43, 43, 33, 28]
+    mu (d=W-1)= -301.7 fold (MCA + sumcheck)= -303.8 of which MCA= -303.8 out (OOD)= -321.1 shift (queries + gamma)= -258.6 fin (queries)= -266.2
+    worst non-query term 2^-301.7: margin to 2^-268 = +33.7 bits, to 2^-258 = +43.7
+L x15 penultimate                          x15 m=3 n0=2^30.91 rho0=2^-12.91 q=[38, 38, 33]
+    mu (d=W-1)= -303.1 fold (MCA + sumcheck)= -312.2 of which MCA= -312.2 out (OOD)= -324.9 shift (queries + gamma)= -268.8 fin (queries)= -270.6
+    worst non-query term 2^-303.1: margin to 2^-268 = +35.1 bits, to 2^-258 = +45.1
+L x15 penultimate                          x15 m=8 n0=2^30.91 rho0=2^-12.91 q=[38, 38, 33]
+    mu (d=W-1)= -296.7 fold (MCA + sumcheck)= -305.8 of which MCA= -305.8 out (OOD)= -322.1 shift (queries + gamma)= -273.9 fin (queries)= -275.1
+    worst non-query term 2^-296.7: margin to 2^-268 = +28.7 bits, to 2^-258 = +38.7
+T COMBO+E5 final                           x15 m=3 n0=2^30.91 rho0=2^-10.91 q=[52, 47, 35, 28]
+    mu (d=W-1)= -308.6 fold (MCA + sumcheck)= -302.7 of which MCA= -302.7 out (OOD)= -317.9 shift (queries + gamma)= -269.4 fin (queries)= -272.5
+    worst non-query term 2^-302.7: margin to 2^-268 = +34.7 bits, to 2^-258 = +44.7
+T COMBO+E5 final                           x15 m=8 n0=2^30.91 rho0=2^-10.91 q=[50, 46, 35, 28]
+    mu (d=W-1)= -302.2 fold (MCA + sumcheck)= -296.3 of which MCA= -296.3 out (OOD)= -315.1 shift (queries + gamma)= -268.3 fin (queries)= -276.2
+    worst non-query term 2^-296.3: margin to 2^-268 = +28.3 bits, to 2^-258 = +38.3
+T COMBO+E5 penultimate                     x15 m=3 n0=2^30.91 rho0=2^-11.91 q=[47, 44, 31]
+    mu (d=W-1)= -306.1 fold (MCA + sumcheck)= -305.7 of which MCA= -305.7 out (OOD)= -319.9 shift (queries + gamma)= -269.4 fin (queries)= -270.7
+    worst non-query term 2^-305.7: margin to 2^-268 = +37.7 bits, to 2^-258 = +47.7
+T COMBO+E5 penultimate                     x15 m=8 n0=2^30.91 rho0=2^-11.91 q=[46, 43, 31]
+    mu (d=W-1)= -299.7 fold (MCA + sumcheck)= -299.3 of which MCA= -299.3 out (OOD)= -317.1 shift (queries + gamma)= -269.8 fin (queries)= -274.8
+    worst non-query term 2^-299.3: margin to 2^-268 = +31.3 bits, to 2^-258 = +41.3
+L COMBO+E5 final                           x15 m=3 n0=2^30.91 rho0=2^-10.91 q=[44, 40, 30, 24]
+    mu (d=W-1)= -308.8 fold (MCA + sumcheck)= -302.7 of which MCA= -302.7 out (OOD)= -317.9 shift (queries + gamma)= -261.2 fin (queries)= -265.5
+    worst non-query term 2^-302.7: margin to 2^-268 = +34.7 bits, to 2^-258 = +44.7
+L COMBO+E5 final                           x15 m=8 n0=2^30.91 rho0=2^-10.91 q=[43, 39, 29, 23]
+    mu (d=W-1)= -302.4 fold (MCA + sumcheck)= -296.3 of which MCA= -296.3 out (OOD)= -315.1 shift (queries + gamma)= -260.1 fin (queries)= -258.9
+    worst non-query term 2^-296.3: margin to 2^-268 = +28.3 bits, to 2^-258 = +38.3
+L COMBO+E5 penultimate                     x15 m=3 n0=2^30.91 rho0=2^-12.91 q=[38, 36, 28]
+    mu (d=W-1)= -303.8 fold (MCA + sumcheck)= -305.7 of which MCA= -305.7 out (OOD)= -319.9 shift (queries + gamma)= -268.8 fin (queries)= -276.5
+    worst non-query term 2^-303.8: margin to 2^-268 = +35.8 bits, to 2^-258 = +45.8
+L COMBO+E5 penultimate                     x15 m=8 n0=2^30.91 rho0=2^-12.91 q=[38, 35, 27]
+    mu (d=W-1)= -297.3 fold (MCA + sumcheck)= -299.3 of which MCA= -299.3 out (OOD)= -317.1 shift (queries + gamma)= -272.3 fin (queries)= -271.4
+    worst non-query term 2^-297.3: margin to 2^-268 = +29.3 bits, to 2^-258 = +39.3
+stress: h+b=27, b=8                        x15 m=3 n0=2^30.91 rho0=2^-11.91 q=[47, 47, 38, 31]
+    mu (d=W-1)= -306.9 fold (MCA + sumcheck)= -308.7 of which MCA= -308.7 out (OOD)= -322.9 shift (queries + gamma)= -269.4 fin (queries)= -270.7
+    worst non-query term 2^-306.9: margin to 2^-268 = +38.9 bits, to 2^-258 = +48.9
+stress: h+b=27, b=8                        x1  m=3 n0=2^27.00 rho0=2^-8.00 q=[71, 71, 51, 40]
+    mu (d=W-1)= -316.6 fold (MCA + sumcheck)= -318.4 of which MCA= -318.4 out (OOD)= -330.7 shift (queries + gamma)= -268.2 fin (queries)= -271.1
+    worst non-query term 2^-316.6: margin to 2^-268 = +48.6 bits, to 2^-258 = +58.6
+stress: h+b=27, b=8                        x15 m=8 n0=2^30.91 rho0=2^-11.91 q=[46, 46, 37, 31]
+    mu (d=W-1)= -300.5 fold (MCA + sumcheck)= -302.3 of which MCA= -302.3 out (OOD)= -320.1 shift (queries + gamma)= -269.8 fin (queries)= -274.8
+    worst non-query term 2^-300.5: margin to 2^-268 = +32.5 bits, to 2^-258 = +42.5
+stress: h+b=27, b=8                        x1  m=8 n0=2^27.00 rho0=2^-8.00 q=[69, 69, 50, 39]
+    mu (d=W-1)= -310.2 fold (MCA + sumcheck)= -312.0 of which MCA= -312.0 out (OOD)= -327.9 shift (queries + gamma)= -270.0 fin (queries)= -269.6
+    worst non-query term 2^-310.2: margin to 2^-268 = +42.2 bits, to 2^-258 = +52.2

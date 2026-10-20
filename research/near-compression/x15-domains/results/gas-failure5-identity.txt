@@ -1,0 +1,11 @@
+# gas-failure5 re-proved on pinned backend + x15 patch (domain_odd_factor = 1), profile from results/native-packed-scaling/gas-failure5/native/report.json
+NATIVE_SHA384_PROFILE n_stack=15 k=3 log_blowup=7 all_list=1 queries=[82, 63, 51, 43, 37]
+NATIVE_SHA384_INTERACTION_LOG 26
+NATIVE_SHA384_KEYGEN_SECONDS 0.000814121
+NATIVE_SHA384_EXT12 target=268 min=268.7638209393418 logup=331.57533223384377 proximity=320.9308746090779 query=268.7638209393418
+NATIVE_SHA384_PROVE_SECONDS 10.819608372
+NATIVE_SHA384_VERIFY_SECONDS 0.014244321
+NATIVE_SHA384_EXT12_BYTES total=378849 gkr=8456 relations=31432 stacking=1840 whir=336260
+NATIVE_SHA384_EXT12_PASS public_mutations_rejected=6
+ba042e71b176b4f0fdeae6e846395f8d3144388b977d8c550a8071132ab5ad01  child.proof
+expected ba042e71b176b4f0fdeae6e846395f8d3144388b977d8c550a8071132ab5ad01 (report.json)

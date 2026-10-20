@@ -1,0 +1,4 @@
+COMMIT odd=1 log_blowup=2 log_h=16 w=64 k=4 domain=262144 rs_s=0.147 merkle_s=0.049 rs_ns_per_point_col=8.79 vm_hwm_mb=226
+COMMIT odd=1 log_blowup=5 log_h=16 w=64 k=4 domain=2097152 rs_s=0.979 merkle_s=0.407 rs_ns_per_point_col=7.30 vm_hwm_mb=1268
+COMMIT odd=1 log_blowup=6 log_h=16 w=64 k=4 domain=4194304 rs_s=3.563 merkle_s=1.452 rs_ns_per_point_col=13.27 vm_hwm_mb=2289
+COMMIT odd=15 log_blowup=2 log_h=16 w=64 k=4 domain=3932160 rs_s=1.755 merkle_s=1.337 rs_ns_per_point_col=6.97 vm_hwm_mb=2176

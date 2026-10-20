@@ -1,0 +1,970 @@
+diff --git a/crates/backend-tests/src/lib.rs b/crates/backend-tests/src/lib.rs
+index 08e139b..4f16cea 100644
+--- a/crates/backend-tests/src/lib.rs
++++ b/crates/backend-tests/src/lib.rs
+@@ -157,6 +157,7 @@ pub fn proof_shape_verifier_rng_system_params<E: StarkEngine<SC = SC>>() -> eyre
+                 m: 3,
+                 list_start_round: 1,
+             },
++            domain_odd_factor: 1,
+         };
+         let params = SystemParams {
+             l_skip,
+@@ -1262,6 +1263,7 @@ pub fn whir_test_config(k_whir: usize) -> WhirConfig {
+         folding_pow_bits: 1,
+         proximity: WhirProximityStrategy::UniqueDecoding, /* not relevant since `rounds` is
+                                                            * manually set above */
++        domain_odd_factor: 1,
+     }
+ }
+ 
+diff --git a/crates/stark-backend/src/config.rs b/crates/stark-backend/src/config.rs
+index c776e1c..dff3433 100644
+--- a/crates/stark-backend/src/config.rs
++++ b/crates/stark-backend/src/config.rs
+@@ -188,6 +188,20 @@ pub struct WhirConfig {
+     /// of queries in the `rounds` field. However we store it in `WhirConfig` for security analysis
+     /// purposes.
+     pub proximity: WhirProximityStrategy,
++    /// [x15 research] Odd factor `c` of every WHIR Reed-Solomon evaluation domain. `1` (default)
++    /// is the upstream protocol, byte for byte. For `c > 1` (`c | (p-1)`, odd; for BabyBear
++    /// `c in {3, 5, 15}`) the round-`i` domain is the multiplicative subgroup of order
++    /// `c * 2^(log_stacked_height + log_blowup - i)`, laid out coset-major as the `c` cosets
++    /// `zeta^a * H`, `zeta = GENERATOR^((p-1)/c)`. See `crate::odd_domain`.
++    ///
++    /// Not serialized (keeps the default VK pre-hash and postcard layout unchanged); when
++    /// `c > 1` the WHIR prover and verifier observe `c` into the transcript instead.
++    #[serde(skip, default = "default_domain_odd_factor")]
++    pub domain_odd_factor: usize,
++}
++
++fn default_domain_odd_factor() -> usize {
++    1
+ }
+ 
+ #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+@@ -252,7 +266,12 @@ impl ProximityRegime {
+     /// - `ListDecoding { m }`: finite-multiplicity Guruswami-Sudan threshold, `sqrt(ρ) (1 +
+     ///   1/(2m))`.
+     pub fn max_agreement(&self, log_inv_rate: usize) -> f64 {
+-        let rho = 2.0_f64.powf(-(log_inv_rate as f64));
++        self.max_agreement_f64(log_inv_rate as f64)
++    }
++
++    /// [`Self::max_agreement`] at a real-valued `-log2(rate)` (odd-factor domains).
++    pub fn max_agreement_f64(&self, log_inv_rate: f64) -> f64 {
++        let rho = 2.0_f64.powf(-log_inv_rate);
+         let max_agreement = match *self {
+             ProximityRegime::UniqueDecoding => (1.0 + rho) / 2.0,
+             ProximityRegime::ListDecoding { m } => {
+@@ -289,6 +308,21 @@ impl WhirConfig {
+         whir_params: WhirParams,
+         security_bits: usize,
+     ) -> Self {
++        Self::new_with_odd_domain(log_blowup, log_stacked_height, whir_params, security_bits, 1)
++    }
++
++    /// [x15 research] As [`Self::new`], with RS evaluation domains of size
++    /// `domain_odd_factor * 2^(..)`: queries are chosen at the exact rate
++    /// `2^-log_blowup / domain_odd_factor` (round `i`: `2^-(log_blowup + i(k-1)) / c`).
++    pub fn new_with_odd_domain(
++        log_blowup: usize,
++        log_stacked_height: usize,
++        whir_params: WhirParams,
++        security_bits: usize,
++        domain_odd_factor: usize,
++    ) -> Self {
++        assert!(domain_odd_factor >= 1 && domain_odd_factor % 2 == 1);
++        let log_odd = (domain_odd_factor as f64).log2();
+         let query_phase_pow_bits = whir_params.query_phase_pow_bits;
+         let protocol_security_level = security_bits.saturating_sub(query_phase_pow_bits);
+         let k_whir = whir_params.k;
+@@ -303,11 +337,19 @@ impl WhirConfig {
+             // Queries are set w.r.t. to old rate, while the rest to the new rate
+             let next_rate = log_inv_rate + (k_whir - 1);
+ 
+-            let num_queries = Self::queries(
+-                proximity.in_round(round),
+-                protocol_security_level,
+-                log_inv_rate,
+-            );
++            let num_queries = if domain_odd_factor == 1 {
++                Self::queries(
++                    proximity.in_round(round),
++                    protocol_security_level,
++                    log_inv_rate,
++                )
++            } else {
++                let per_query_bits = -proximity
++                    .in_round(round)
++                    .max_agreement_f64(log_inv_rate as f64 + log_odd)
++                    .log2();
++                ((protocol_security_level as f64) / per_query_bits).ceil() as usize
++            };
+             round_parameters.push(WhirRoundConfig { num_queries });
+ 
+             log_inv_rate = next_rate;
+@@ -320,6 +362,7 @@ impl WhirConfig {
+             query_phase_pow_bits,
+             folding_pow_bits: whir_params.folding_pow_bits,
+             proximity,
++            domain_odd_factor,
+         }
+     }
+ 
+diff --git a/crates/stark-backend/src/keygen/mod.rs b/crates/stark-backend/src/keygen/mod.rs
+index 3074dd0..9275db6 100644
+--- a/crates/stark-backend/src/keygen/mod.rs
++++ b/crates/stark-backend/src/keygen/mod.rs
+@@ -20,7 +20,7 @@ use crate::{
+     },
+     proof::CODEC_VERSION,
+     prover::{
+-        stacked_pcs::{stacked_commit, StackedPcsData},
++        stacked_pcs::{stacked_commit_odd, StackedPcsData},
+         ColMajorMatrix, MatrixDimensions,
+     },
+     AirRef, AnyAir, StarkProtocolConfig, SystemParams,
+@@ -332,12 +332,13 @@ impl<SC: StarkProtocolConfig> PrepKeygenData<SC> {
+         let preprocessed_trace = BaseAir::<SC::F>::preprocessed_trace(air);
+         let vpdata_opt = preprocessed_trace.map(|trace| {
+             let trace = ColMajorMatrix::from_row_major(&trace);
+-            let (commit, data) = stacked_commit(
++            let (commit, data) = stacked_commit_odd(
+                 hasher,
+                 params.l_skip,
+                 params.n_stack,
+                 params.log_blowup,
+                 params.k_whir(),
++                params.whir.domain_odd_factor,
+                 &[&trace],
+             )
+             .unwrap();
+diff --git a/crates/stark-backend/src/lib.rs b/crates/stark-backend/src/lib.rs
+index 8d78cee..95bb5d4 100644
+--- a/crates/stark-backend/src/lib.rs
++++ b/crates/stark-backend/src/lib.rs
+@@ -55,6 +55,8 @@ mod config;
+ mod engine;
+ #[cfg(feature = "multi-field-transcript")]
+ pub mod multi_field_packing;
++/// [x15 research] odd-factor RS evaluation domains.
++pub mod odd_domain;
+ pub use any_air::*;
+ pub use config::*;
+ pub use engine::*;
+diff --git a/crates/stark-backend/src/odd_domain.rs b/crates/stark-backend/src/odd_domain.rs
+new file mode 100644
+index 0000000..84d3de3
+--- /dev/null
++++ b/crates/stark-backend/src/odd_domain.rs
+@@ -0,0 +1,107 @@
++//! [x15 research] Reed-Solomon evaluation domains of size `c * 2^L` (`c` odd, `c | p - 1`).
++//!
++//! The domain is the multiplicative subgroup `D` of order `c * 2^L`. Since `gcd(c, 2^L) = 1`,
++//! `D = <zeta> x H` with `zeta = GENERATOR^((p-1)/c)` of order `c` and `H = <omega_L>` the
++//! two-adic subgroup of order `2^L`, i.e. `D` is the disjoint union of the `c` cosets
++//! `zeta^a * H`, `a in [0, c)`.
++//!
++//! Layout ("coset-major"): codeword position `a * 2^L + u` holds the value at `zeta^a * omega_L^u`.
++//! Coset `a` is an ordinary radix-2 coset LDE with shift `zeta^a`.
++//!
++//! WHIR folding uses `x -> x^(2^k)`, whose fibres are `x * <omega_{2^k}>`. With the layout above
++//! the fibre of `zeta^a * omega_L^u0` (`u0 < 2^(L-k)`) is the `2^k` positions
++//! `a * 2^L + u0 + j * 2^(L-k)` of coset `a`, so each fold coset lies inside one radix-2 block and
++//! the Merkle tree is built per block (upstream layout) and then joined across the `c` blocks.
++//! Query index `i = a * 2^(L-k) + u0` in `[0, c * 2^(L-k))`; the map
++//! `i -> (zeta^a omega_L^u0)^(2^k) = zeta^(a 2^k) omega_(L-k)^u0` is a bijection onto `D^(2^k)`
++//! (2 is invertible mod `c`), so a uniform index gives a uniform point of the folded domain,
++//! as WHIR's shift/final query analysis requires.
++//!
++//! For `c = 1` every function here reduces to the upstream power-of-two behaviour.
++
++use p3_dft::{Radix2DitParallel, TwoAdicSubgroupDft};
++use p3_field::{ExtensionField, Field, PrimeField64, TwoAdicField};
++use p3_maybe_rayon::prelude::*;
++
++use crate::{FiatShamirTranscript, StarkProtocolConfig};
++
++/// `ceil(log2(c))`, the extra Merkle depth of a `c`-coset tree (binary tree padded at the top).
++pub fn ceil_log2(c: usize) -> usize {
++    assert!(c >= 1);
++    (usize::BITS - (c - 1).leading_zeros()) as usize
++}
++
++/// Checks that `c` is a valid odd domain factor for `F`.
++pub fn check_odd_factor<F: PrimeField64>(c: usize) {
++    assert!(c >= 1 && c % 2 == 1, "domain odd factor must be odd, got {c}");
++    assert_eq!(
++        (F::ORDER_U64 - 1) % (c as u64),
++        0,
++        "domain odd factor {c} does not divide p - 1"
++    );
++}
++
++/// Generator `zeta` of the order-`c` subgroup: `GENERATOR^((p-1)/c)`.
++pub fn odd_root<F: Field + PrimeField64>(c: usize) -> F {
++    check_odd_factor::<F>(c);
++    F::GENERATOR.exp_u64((F::ORDER_U64 - 1) / (c as u64))
++}
++
++/// The fold-coset root `x = zeta^a * omega_L^u0` of query index `i = a * 2^(L-k) + u0`, where
++/// `log_domain = L` is the two-adic part of the current RS domain.
++pub fn query_root<F: TwoAdicField + PrimeField64>(
++    c: usize,
++    log_domain: usize,
++    k: usize,
++    index: usize,
++) -> F {
++    let omega = F::two_adic_generator(log_domain);
++    if c == 1 {
++        return omega.exp_u64(index as u64);
++    }
++    let log_q = log_domain - k;
++    let a = index >> log_q;
++    let u0 = index & ((1 << log_q) - 1);
++    debug_assert!(a < c);
++    odd_root::<F>(c).exp_u64(a as u64) * omega.exp_u64(u0 as u64)
++}
++
++/// Samples a WHIR query index. `c = 1`: upstream `sample_bits(log_q)`. `c > 1`: exactly uniform
++/// over `[0, c * 2^log_q)` by [`FiatShamirTranscript::sample_index_exact`].
++pub fn sample_query_index<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
++    transcript: &mut TS,
++    c: usize,
++    log_q: usize,
++) -> usize {
++    if c == 1 {
++        transcript.sample_bits(log_q) as usize
++    } else {
++        transcript.sample_index_exact((c as u64) << log_q) as usize
++    }
++}
++
++/// Reed-Solomon encodes the coefficient vector `coeffs` (length `<= 2^log_coset`) on the
++/// `c * 2^log_coset` domain, coset-major. `c = 1` is exactly the upstream `dft(coeffs)`.
++pub fn rs_encode<F, V>(mut coeffs: Vec<V>, log_coset: usize, c: usize) -> Vec<V>
++where
++    F: Field + PrimeField64,
++    V: TwoAdicField + ExtensionField<F> + Ord,
++{
++    let n = 1usize << log_coset;
++    assert!(coeffs.len() <= n);
++    coeffs.resize(n, V::ZERO);
++    let dft = Radix2DitParallel::default();
++    if c == 1 {
++        return dft.dft(coeffs);
++    }
++    let zeta = odd_root::<F>(c);
++    let shifts: Vec<F> = zeta.powers().take(c).collect();
++    let blocks: Vec<Vec<V>> = shifts
++        .into_par_iter()
++        .map(|shift| {
++            let dft = Radix2DitParallel::<V>::default();
++            dft.coset_dft(coeffs.clone(), V::from(shift))
++        })
++        .collect();
++    blocks.concat()
++}
+diff --git a/crates/stark-backend/src/prover/cpu_backend.rs b/crates/stark-backend/src/prover/cpu_backend.rs
+index c4c53ae..a09d051 100644
+--- a/crates/stark-backend/src/prover/cpu_backend.rs
++++ b/crates/stark-backend/src/prover/cpu_backend.rs
+@@ -13,7 +13,7 @@ use crate::{
+     prover::{
+         error::RefProverError,
+         prove_zerocheck_and_logup,
+-        stacked_pcs::{stacked_commit, StackedPcsData},
++        stacked_pcs::{stacked_commit_odd, StackedPcsData},
+         stacked_reduction::{prove_stacked_opening_reduction, StackedReductionCpu},
+         whir::WhirProver,
+         ColMajorMatrix, CommittedTraceData, DeviceDataTransporter, DeviceMultiStarkProvingKey,
+@@ -86,12 +86,13 @@ where
+         &self,
+         traces: &[&ColMajorMatrix<SC::F>],
+     ) -> Result<(SC::Digest, StackedPcsData<SC::F, SC::Digest>), Self::Error> {
+-        Ok(stacked_commit(
++        Ok(stacked_commit_odd(
+             self.config().hasher(),
+             self.params().l_skip,
+             self.params().n_stack,
+             self.params().log_blowup,
+             self.params().k_whir(),
++            self.params().whir.domain_odd_factor,
+             traces,
+         )?)
+     }
+diff --git a/crates/stark-backend/src/prover/matrix.rs b/crates/stark-backend/src/prover/matrix.rs
+index d3c67c8..47f4eab 100644
+--- a/crates/stark-backend/src/prover/matrix.rs
++++ b/crates/stark-backend/src/prover/matrix.rs
+@@ -66,6 +66,18 @@ pub struct StridedColMajorMatrixView<'a, F> {
+ }
+ 
+ impl<F> ColMajorMatrix<F> {
++    /// [x15 research] As [`Self::new`] without the power-of-two height check (RS codewords on
++    /// `c * 2^L` domains, `c` odd).
++    pub fn new_any_height(values: Vec<F>, width: usize) -> Self {
++        assert_eq!(values.len() % width, 0);
++        let height = values.len() / width;
++        Self {
++            values,
++            width,
++            height,
++        }
++    }
++
+     pub fn new(values: Vec<F>, width: usize) -> Self {
+         assert_eq!(values.len() % width, 0);
+         let height = values.len() / width;
+diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backend/src/prover/stacked_pcs.rs
+index 97271aa..b7ab6eb 100644
+--- a/crates/stark-backend/src/prover/stacked_pcs.rs
++++ b/crates/stark-backend/src/prover/stacked_pcs.rs
+@@ -87,6 +87,15 @@ pub struct MerkleTree<F, Digest> {
+     pub(crate) digest_layers: Vec<Vec<Digest>>,
+     #[getset(get_copy = "pub")]
+     pub(crate) rows_per_query: usize,
++    /// [x15 research] Number `c` of radix-2 coset blocks (coset-major layout, see
++    /// `crate::odd_domain`). `1` = upstream layout.
++    #[serde(default = "one_coset")]
++    #[getset(get_copy = "pub")]
++    pub(crate) num_cosets: usize,
++}
++
++fn one_coset() -> usize {
++    1
+ }
+ 
+ #[derive(Clone, Serialize, Deserialize, derive_new::new)]
+@@ -133,6 +142,36 @@ where
+     Ok((root, data))
+ }
+ 
++/// [x15 research] [`stacked_commit`] on the `domain_odd_factor * 2^(l_skip + n_stack +
++/// log_blowup)` RS domain (coset-major; `domain_odd_factor = 1` is exactly [`stacked_commit`]).
++#[instrument(level = "info", skip_all)]
++#[allow(clippy::type_complexity)]
++pub fn stacked_commit_odd<H: MerkleHasher>(
++    hasher: &H,
++    l_skip: usize,
++    n_stack: usize,
++    log_blowup: usize,
++    k_whir: usize,
++    domain_odd_factor: usize,
++    traces: &[&ColMajorMatrix<H::F>],
++) -> Result<(H::Digest, StackedPcsData<H::F, H::Digest>), StackedPcsError>
++where
++    H::F: TwoAdicField + Ord + p3_field::PrimeField64,
++    H::Digest: Copy,
++{
++    let (q_trace, layout) = stacked_matrix(l_skip, n_stack, traces)?;
++    let tree = if domain_odd_factor == 1 {
++        let rs_matrix = rs_code_matrix(l_skip, log_blowup, &q_trace)?;
++        MerkleTree::new(hasher, rs_matrix, 1 << k_whir)?
++    } else {
++        let rs_matrix = rs_code_matrix_odd(l_skip, log_blowup, domain_odd_factor, &q_trace)?;
++        MerkleTree::new_with_cosets(hasher, rs_matrix, 1 << k_whir, domain_odd_factor)?
++    };
++    let root = tree.root()?;
++    let data = StackedPcsData::new(layout, q_trace, tree);
++    Ok((root, data))
++}
++
+ impl StackedLayout {
+     /// Computes the layout of greedily stacking columns with dimension metadata given by `sorted`
+     /// into a stacked matrix.
+@@ -366,9 +405,37 @@ pub fn rs_code_matrix<F: TwoAdicField + Ord>(
+     Ok(ColMajorMatrix::new(codewords, eval_matrix.width()))
+ }
+ 
++/// [x15 research] RS encoding of every column on the `c * 2^(log2(height) + log_blowup)` domain,
++/// coset-major (see `crate::odd_domain`).
++#[instrument(skip_all)]
++pub fn rs_code_matrix_odd<F: TwoAdicField + Ord + p3_field::PrimeField64>(
++    l_skip: usize,
++    log_blowup: usize,
++    domain_odd_factor: usize,
++    eval_matrix: &ColMajorMatrix<F>,
++) -> Result<ColMajorMatrix<F>, StackedPcsError> {
++    let height = eval_matrix.height();
++    let log_rs = log2_strict_usize(height) + log_blowup;
++    let codewords: Vec<_> = eval_matrix
++        .values
++        .par_chunks_exact(height)
++        .map(|column_evals| {
++            let coeffs = eval_to_coeff_rs_message(l_skip, column_evals);
++            crate::odd_domain::rs_encode::<F, F>(coeffs, log_rs, domain_odd_factor)
++        })
++        .collect::<Vec<_>>()
++        .concat();
++    Ok(ColMajorMatrix::new_any_height(codewords, eval_matrix.width()))
++}
++
+ impl<F, Digest> MerkleTree<F, Digest> {
+     pub fn query_stride(&self) -> usize {
+-        self.digest_layers[0].len()
++        if self.num_cosets == 1 {
++            self.digest_layers[0].len()
++        } else {
++            // The joined layer may carry one top-padding digest; it is never a valid index.
++            self.backing_matrix.height() / self.rows_per_query
++        }
+     }
+ 
+     pub fn proof_depth(&self) -> usize {
+@@ -481,6 +548,78 @@ where
+             backing_matrix: matrix,
+             digest_layers,
+             rows_per_query,
++            num_cosets: 1,
++        })
++    }
++
++    /// [x15 research] Merkle tree over a coset-major matrix of `c` radix-2 blocks (height
++    /// `c * 2^L`). Each block is hashed exactly like [`Self::new`] down to its query-digest layer
++    /// (one digest per fold coset of `rows_per_query` rows at stride `2^L / rows_per_query`); the
++    /// `c` layers are concatenated (leaf `a * 2^L / rows_per_query + y`) and joined by a binary
++    /// tree in which every odd-length layer is padded with the fixed digest `hash_slice(&[])`.
++    /// Proof depth `L - log2(rows_per_query) + ceil(log2(c))`. `c = 1` is [`Self::new`].
++    pub fn new_with_cosets<H: MerkleHasher<Digest = Digest>>(
++        hasher: &H,
++        matrix: ColMajorMatrix<EF>,
++        rows_per_query: usize,
++        num_cosets: usize,
++    ) -> Result<Self, StackedPcsError>
++    where
++        EF: ExtensionField<H::F>,
++    {
++        if num_cosets == 1 {
++            return Self::new(hasher, matrix, rows_per_query);
++        }
++        let height = matrix.height();
++        assert!(num_cosets % 2 == 1 && height % num_cosets == 0);
++        let block = height / num_cosets;
++        assert!(block.is_power_of_two() && rows_per_query.is_power_of_two());
++        assert!(rows_per_query <= block);
++        let row_hashes: Vec<_> = (0..height)
++            .into_par_iter()
++            .map(|r| {
++                let hash_input: Vec<H::F> = Self::row_iter(&matrix, r)
++                    .flat_map(|ef| ef.as_basis_coefficients_slice().to_vec())
++                    .collect();
++                hasher.hash_slice(&hash_input)
++            })
++            .collect();
++        let qs = block / rows_per_query;
++        let mut joined = Vec::with_capacity(num_cosets * qs);
++        for a in 0..num_cosets {
++            let mut layer = row_hashes[a * block..(a + 1) * block].to_vec();
++            for _ in 0..log2_strict_usize(rows_per_query) {
++                let prev = layer;
++                layer = (0..prev.len() / 2)
++                    .into_par_iter()
++                    .map(|i| {
++                        let x = i / qs;
++                        let y = i % qs;
++                        hasher.compress(prev[2 * x * qs + y], prev[(2 * x + 1) * qs + y])
++                    })
++                    .collect();
++            }
++            debug_assert_eq!(layer.len(), qs);
++            joined.extend(layer);
++        }
++        let pad = hasher.hash_slice(&[]);
++        let mut digest_layers = vec![joined];
++        while digest_layers.last().unwrap().len() > 1 {
++            let prev = digest_layers.last_mut().unwrap();
++            if prev.len() % 2 == 1 {
++                prev.push(pad);
++            }
++            let layer: Vec<_> = prev
++                .par_chunks_exact(2)
++                .map(|pair| hasher.compress(pair[0], pair[1]))
++                .collect();
++            digest_layers.push(layer);
++        }
++        Ok(Self {
++            backing_matrix: matrix,
++            digest_layers,
++            rows_per_query,
++            num_cosets,
+         })
+     }
+ 
+@@ -508,6 +647,7 @@ where
+             backing_matrix,
+             digest_layers,
+             rows_per_query,
++            num_cosets: 1,
+         }
+     }
+ 
+@@ -524,9 +664,16 @@ where
+ 
+         let rows_per_query = self.rows_per_query;
+         let width = self.backing_matrix.width();
++        // Coset-major layout: index = a * qs + y, rows a * block + j * qs + y.
++        let (base, stride, index) = if self.num_cosets == 1 {
++            (0, query_stride, index)
++        } else {
++            let qs = query_stride / self.num_cosets;
++            ((index / qs) * qs * rows_per_query, qs, index % qs)
++        };
+         let mut preimage = Vec::with_capacity(rows_per_query);
+         for row_offset in 0..rows_per_query {
+-            let row_idx = row_offset * query_stride + index;
++            let row_idx = base + row_offset * stride + index;
+             let row = Self::row_iter(&self.backing_matrix, row_idx).collect_vec();
+             debug_assert_eq!(
+                 row.len(),
+diff --git a/crates/stark-backend/src/prover/whir.rs b/crates/stark-backend/src/prover/whir.rs
+index 6bdbaa8..30b687b 100644
+--- a/crates/stark-backend/src/prover/whir.rs
++++ b/crates/stark-backend/src/prover/whir.rs
+@@ -90,6 +90,13 @@ where
+     SC::EF: TwoAdicField + ExtensionField<SC::F> + Ord,
+     TS: FiatShamirTranscript<SC>,
+ {
++    // [x15 research] Bind the odd domain factor (not in the VK pre-hash) into the transcript.
++    let odd = whir_params.domain_odd_factor;
++    if odd != 1 {
++        crate::odd_domain::check_odd_factor::<SC::F>(odd);
++        transcript.observe(SC::F::from_usize(odd));
++    }
++
+     // Proof-of-work grinding before μ batching challenge.
+     // This amplifies soundness of the initial batching step.
+     let mu_pow_witness = transcript.grind(whir_params.mu_pow_bits);
+@@ -209,13 +216,28 @@ where
+         // f_evals is the evaluations of f^(alpha, \cdot) on hypercube
+         let g_mle = Mle::from_evaluations(&f_evals);
+         let (g_tree, z_0) = if !is_last_round {
+-            let dft = Radix2DitParallel::default();
+-            let mut g_coeffs = g_mle.coeffs().to_vec();
+-            debug_assert_eq!(g_coeffs.len(), 1 << (m - k_whir));
+-            g_coeffs.resize(1 << (log_rs_domain_size - 1), SC::EF::ZERO);
+-            // `g: \mathcal{L}^{(2)} \to \mathbb F`
+-            let g_rs = dft.dft(g_coeffs);
+-            let g_tree = MerkleTree::new(hasher, ColMajorMatrix::new(g_rs, 1), 1 << k_whir)?;
++            let g_tree = if odd == 1 {
++                let dft = Radix2DitParallel::default();
++                let mut g_coeffs = g_mle.coeffs().to_vec();
++                debug_assert_eq!(g_coeffs.len(), 1 << (m - k_whir));
++                g_coeffs.resize(1 << (log_rs_domain_size - 1), SC::EF::ZERO);
++                // `g: \mathcal{L}^{(2)} \to \mathbb F`
++                let g_rs = dft.dft(g_coeffs);
++                MerkleTree::new(hasher, ColMajorMatrix::new(g_rs, 1), 1 << k_whir)?
++            } else {
++                // `g` on `D^(2)`: odd * 2^(log_rs_domain_size - 1) points, coset-major.
++                let g_rs = crate::odd_domain::rs_encode::<SC::F, SC::EF>(
++                    g_mle.coeffs().to_vec(),
++                    log_rs_domain_size - 1,
++                    odd,
++                );
++                MerkleTree::new_with_cosets(
++                    hasher,
++                    ColMajorMatrix::new_any_height(g_rs, 1),
++                    1 << k_whir,
++                    odd,
++                )?
++            };
+             let g_commit = g_tree.root()?;
+             transcript.observe_commit(g_commit);
+             codeword_commits.push(g_commit);
+@@ -244,8 +266,12 @@ where
+         // Sample query indices first
+         for _ in 0..num_queries {
+             // This is the index of the leaf in the Merkle tree
+-            let index = transcript.sample_bits(log_rs_domain_size - k_whir);
+-            query_indices.push(index as usize);
++            let index = crate::odd_domain::sample_query_index::<SC, TS>(
++                transcript,
++                odd,
++                log_rs_domain_size - k_whir,
++            );
++            query_indices.push(index);
+         }
+         let mut zs = Vec::with_capacity(num_queries);
+         if !is_last_round {
+@@ -253,12 +279,18 @@ where
+             codeword_merkle_proofs.push(vec![]);
+         }
+         for (query_idx, index) in query_indices.into_iter().enumerate() {
+-            let z_i = omega.exp_u64(index as u64);
++            let z_i = if odd == 1 {
++                omega.exp_u64(index as u64)
++            } else {
++                crate::odd_domain::query_root::<SC::F>(odd, log_rs_domain_size, k_whir, index)
++                    .exp_power_of_2(k_whir)
++            };
+             // Get merkle proofs for in-domain samples necessary to evaluate Fold(f, \vec
+             // \alpha)(z_i)
+             zs.push(z_i);
+ 
+-            let depth = log_rs_domain_size.saturating_sub(k_whir);
++            let depth = log_rs_domain_size.saturating_sub(k_whir)
++                + crate::odd_domain::ceil_log2(odd);
+             // Row openings are different between first WHIR round (width > 1) and other rounds
+             // (width = 1):
+             // NOTE: merkle proof is deterministic from the index and merkle root, so the opened_row
+@@ -269,7 +301,7 @@ where
+                     debug_assert_eq!(initial_round_merkle_proofs[com_idx].len(), query_idx);
+                     let tree = &committed_mats[com_idx].1;
+                     let tree_height = tree.backing_matrix.height();
+-                    let expected = 1 << log_rs_domain_size;
++                    let expected = odd << log_rs_domain_size;
+                     if tree_height != expected {
+                         return Err(WhirProverError::TreeHeightMismatch {
+                             tree_height,
+diff --git a/crates/stark-backend/src/soundness/calculator.rs b/crates/stark-backend/src/soundness/calculator.rs
+index 7ba58fb..a32e602 100644
+--- a/crates/stark-backend/src/soundness/calculator.rs
++++ b/crates/stark-backend/src/soundness/calculator.rs
+@@ -100,7 +100,8 @@ impl SoundnessCalculator {
+         num_stacked_columns: usize,
+         n_logup: usize,
+     ) -> Self {
+-        let init_prox_gap = Self::whir_proximity_gap_security(
++        let init_prox_gap = Self::whir_proximity_gap_security_odd(
++            params.whir.domain_odd_factor,
+             params.whir.proximity.initial_round(),
+             challenge_field_bits,
+             params.log_stacked_height(),
+@@ -376,7 +377,9 @@ impl SoundnessCalculator {
+             num_stacked_columns >= 2,
+             "WHIR requires at least 2 stacked columns for μ batching"
+         );
+-        let mu_security = Self::whir_proximity_gap_security(
++        let odd = whir.domain_odd_factor;
++        let mu_security = Self::whir_proximity_gap_security_odd(
++            odd,
+             proximity.initial_round(),
+             challenge_field_bits,
+             log_stacked_height,
+@@ -401,7 +404,8 @@ impl SoundnessCalculator {
+             for _ in 0..k_whir {
+                 current_log_degree -= 1;
+ 
+-                let prox_gaps = Self::whir_proximity_gap_security(
++                let prox_gaps = Self::whir_proximity_gap_security_odd(
++                    odd,
+                     proximity_regime,
+                     challenge_field_bits,
+                     current_log_degree,
+@@ -438,19 +442,27 @@ impl SoundnessCalculator {
+             // `current_log_degree + log_inv_rate` here. `whir_query_security_biased` folds the
+             // `sample_bits` bias into the agreement-set bound.
+             let log_query_domain = current_log_degree + log_inv_rate;
+-            let query_bits =
++            let query_bits = if odd == 1 {
+                 Self::whir_query_security_biased(
+                     proximity_regime,
+                     round_config.num_queries,
+                     log_inv_rate,
+                     log_query_domain,
+                     base_field_order,
+-                ) + Self::effective_pow_bits(whir.query_phase_pow_bits, base_field_order);
++                )
++            } else {
++                // [x15 research] Exact (rejection) sampling: no bias term; rate is 2^-lir / odd.
++                -(round_config.num_queries as f64)
++                    * proximity_regime
++                        .max_agreement_f64(log_inv_rate as f64 + (odd as f64).log2())
++                        .log2()
++            } + Self::effective_pow_bits(whir.query_phase_pow_bits, base_field_order);
+             min_query_bits = min_query_bits.min(query_bits);
+ 
+             // ε_shift and ε_out reference m_i, ℓ_{i,0} where `i = round + 1` refers to the *next*
+             // round.
+-            let next_log2_list_size = Self::whir_proximity_gap_security(
++            let next_log2_list_size = Self::whir_proximity_gap_security_odd(
++                odd,
+                 proximity.in_round(round + 1),
+                 challenge_field_bits,
+                 current_log_degree,
+@@ -524,6 +536,71 @@ impl SoundnessCalculator {
+         (min_security, details)
+     }
+ 
++    /// [x15 research] [`Self::whir_proximity_gap_security`] on a domain of size
++    /// `odd * 2^(log_degree + log_inv_rate)` (rate `2^-log_inv_rate / odd`). `odd = 1` calls the
++    /// upstream function unchanged. For `odd > 1` the BCHKS25 Thm 1.5 reference degrees are
++    /// evaluated at the exact real-valued `n` and `rho` (Thm 1.5 holds for any evaluation set
++    /// `D`); the brute-force optimiser feature is not used.
++    pub fn whir_proximity_gap_security_odd(
++        odd: usize,
++        proximity_regime: ProximityRegime,
++        challenge_field_bits: f64,
++        log_degree: usize,
++        log_inv_rate: usize,
++        batch_size: usize,
++    ) -> ProximityGapSecurity {
++        if odd == 1 {
++            return Self::whir_proximity_gap_security(
++                proximity_regime,
++                challenge_field_bits,
++                log_degree,
++                log_inv_rate,
++                batch_size,
++            );
++        }
++        let lir = log_inv_rate as f64 + (odd as f64).log2();
++        let log2_n = log_degree as f64 + lir;
++        match proximity_regime {
++            ProximityRegime::UniqueDecoding => ProximityGapSecurity {
++                log2_err: challenge_field_bits
++                    - ((batch_size - 1) as f64).log2()
++                    - log_degree as f64
++                    - lir,
++                log2_list_size: 0.0,
++            },
++            ProximityRegime::ListDecoding { m } => {
++                let m_eff = m.max(1);
++                let rho = (-lir).exp2();
++                let sqrt_rho = rho.sqrt();
++                let eta = sqrt_rho / (2.0 * m_eff as f64);
++                let gamma = 1.0 - sqrt_rho - eta;
++                if (m_eff == 1 && rho >= 4.0 / 9.0) || gamma <= 0.0 {
++                    return ProximityGapSecurity {
++                        log2_err: f64::NEG_INFINITY,
++                        log2_list_size: f64::INFINITY,
++                    };
++                }
++                let log2_m_bar = (m_eff as f64 + 0.5).log2();
++                let log2_d_x = log2_m_bar + log2_n - 0.5 * lir;
++                let log2_d_y = log2_m_bar + 0.5 * lir;
++                let log2_d_z = (2.0 * log2_m_bar - 3.0_f64.log2() + lir).max(log2_d_y);
++                let log2_gamma_n_plus_1 = Self::log2_add(gamma.log2() + log2_n, 0.0);
++                let log2_a = Self::bchks25_log2_a_from_log2_degrees(
++                    log2_d_x,
++                    log2_d_y,
++                    log2_d_z,
++                    log2_gamma_n_plus_1,
++                )
++                .max(0.0);
++                let log2_a = log2_a.exp2().ceil().max(1.0).log2();
++                ProximityGapSecurity {
++                    log2_err: challenge_field_bits - ((batch_size - 1) as f64).log2() - log2_a,
++                    log2_list_size: log2_d_y,
++                }
++            }
++        }
++    }
++
+     /// Computes WHIR proximity gap security bits.
+     ///
+     /// Per WHIR paper: err*(C, ℓ, δ) = (ℓ - 1) · 2^m / (ρ · |F|)
+@@ -1011,6 +1088,7 @@ mod tests {
+                 query_phase_pow_bits: 16,
+                 folding_pow_bits: 10,
+                 proximity: WhirProximityStrategy::UniqueDecoding,
++                domain_odd_factor: 1,
+             },
+             logup: LogUpSecurityParameters {
+                 max_interaction_count: 1 << 20,
+diff --git a/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs b/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs
+index 8428705..75fa3d7 100644
+--- a/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs
++++ b/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs
+@@ -14,7 +14,7 @@ use crate::{
+     air_builders::PartitionedAirBuilder,
+     interaction::{BusIndex, InteractionBuilder},
+     prover::{
+-        stacked_pcs::stacked_commit, AirProvingContext, ColMajorMatrix, CommittedTraceData,
++        stacked_pcs::stacked_commit_odd, AirProvingContext, ColMajorMatrix, CommittedTraceData,
+         CpuColMajorBackend,
+     },
+     AirRef, PartitionedBaseAir, StarkProtocolConfig,
+@@ -211,12 +211,13 @@ impl<SC: StarkProtocolConfig> DummyInteractionChip<SC> {
+ 
+         let config = self.config.as_ref().expect("params required for partition");
+         let params = config.params();
+-        let (commit, data) = stacked_commit(
++        let (commit, data) = stacked_commit_odd(
+             config.hasher(),
+             params.l_skip,
+             params.n_stack,
+             params.log_blowup,
+             params.k_whir(),
++            params.whir.domain_odd_factor,
+             &[&cached_trace],
+         )
+         .unwrap();
+diff --git a/crates/stark-backend/src/test_utils/mod.rs b/crates/stark-backend/src/test_utils/mod.rs
+index e6d2fbd..9693475 100644
+--- a/crates/stark-backend/src/test_utils/mod.rs
++++ b/crates/stark-backend/src/test_utils/mod.rs
+@@ -18,7 +18,7 @@ use crate::{
+     keygen::types::{MultiStarkProvingKey, MultiStarkVerifyingKey},
+     proof::Proof,
+     prover::{
+-        stacked_pcs::stacked_commit, AirProvingContext, ColMajorMatrix, CommittedTraceData,
++        stacked_pcs::stacked_commit_odd, AirProvingContext, ColMajorMatrix, CommittedTraceData,
+         CpuColMajorBackend, DeviceDataTransporter, DeviceMultiStarkProvingKey, MatrixDimensions,
+         MultiRapProver, Prover, ProvingContext, TraceCommitter,
+     },
+@@ -85,12 +85,13 @@ fn commit_cached_trace<SC: StarkProtocolConfig>(
+     trace: ColMajorMatrix<SC::F>,
+ ) -> CommittedTraceData<CpuColMajorBackend<SC>> {
+     let params = config.params();
+-    let (commitment, data) = stacked_commit(
++    let (commitment, data) = stacked_commit_odd(
+         config.hasher(),
+         params.l_skip,
+         params.n_stack,
+         params.log_blowup,
+         params.k_whir(),
++        params.whir.domain_odd_factor,
+         &[&trace],
+     )
+     .unwrap();
+@@ -302,12 +303,13 @@ impl<SC: StarkProtocolConfig> TestFixture<SC> for CachedFixture11<SC> {
+                 (receiver_trace, receiver_cached_trace),
+             ]
+             .map(|(common, cached)| {
+-                let (commit, data) = stacked_commit(
++                let (commit, data) = stacked_commit_odd(
+                     config.hasher(),
+                     params.l_skip,
+                     params.n_stack,
+                     params.log_blowup,
+                     params.k_whir(),
++                    params.whir.domain_odd_factor,
+                     &[&cached],
+                 )
+                 .unwrap();
+diff --git a/crates/stark-backend/src/transcript/traits.rs b/crates/stark-backend/src/transcript/traits.rs
+index ecd6dec..69be0f7 100644
+--- a/crates/stark-backend/src/transcript/traits.rs
++++ b/crates/stark-backend/src/transcript/traits.rs
+@@ -51,6 +51,25 @@ where
+         rand_u64 & ((1 << bits) - 1)
+     }
+ 
++    /// [x15 research] Samples an integer exactly uniformly from `[0, n)`, for any `n` dividing
++    /// `p - 1` (BabyBear: `n = c * 2^j`, `c | 15`, `j <= 27`).
++    ///
++    /// Draws `x = sample()` (uniform on `[0, p)` for an ideal transcript) and rejects the single
++    /// value `p - 1`, so `x` is uniform on `[0, p - 1)`; since `n | p - 1`, `x mod n` is exactly
++    /// uniform. Rejection probability `1/p` per draw; the loop is unbounded but terminates with
++    /// probability 1 (an in-circuit verifier may instead reject the proof on `x = p - 1`, which
++    /// keeps soundness exact and costs completeness `1/p` per query).
++    fn sample_index_exact(&mut self, n: u64) -> u64 {
++        let p_minus_1 = SC::F::ORDER_U64 - 1;
++        assert!(n >= 1 && p_minus_1 % n == 0, "n must divide p - 1");
++        loop {
++            let x = self.sample().as_canonical_u64();
++            if x != p_minus_1 {
++                return x % n;
++            }
++        }
++    }
++
+     /// Checks a proof-of-work witness: observes `witness` into the transcript and accepts iff the
+     /// next [`Self::sample_bits`] is zero (probability `≈ 2^{-bits}` for a random witness, so
+     /// [`Self::grind`] tries `≈ 2^bits` witnesses to find one).
+diff --git a/crates/stark-backend/src/verifier/proof_shape.rs b/crates/stark-backend/src/verifier/proof_shape.rs
+index a3216a9..488ecef 100644
+--- a/crates/stark-backend/src/verifier/proof_shape.rs
++++ b/crates/stark-backend/src/verifier/proof_shape.rs
+@@ -717,7 +717,8 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+             }
+         }
+ 
+-        let merkle_depth = (log_stacked_height + mvk.params.log_blowup).saturating_sub(k_whir);
++        let merkle_depth = (log_stacked_height + mvk.params.log_blowup).saturating_sub(k_whir)
++            + crate::odd_domain::ceil_log2(mvk.params.whir.domain_odd_factor);
+         for (opened_idx, proof) in merkle_proofs.iter().enumerate() {
+             if proof.len() != merkle_depth {
+                 return ProofShapeError::invalid_whir(
+@@ -772,7 +773,8 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+             }
+         }
+ 
+-        let merkle_depth = log_stacked_height + mvk.params.log_blowup - k_whir - round;
++        let merkle_depth = log_stacked_height + mvk.params.log_blowup - k_whir - round
++            + crate::odd_domain::ceil_log2(mvk.params.whir.domain_odd_factor);
+         for (opened_idx, proof) in merkle_proofs.iter().enumerate() {
+             if proof.len() != merkle_depth {
+                 return ProofShapeError::invalid_whir(
+diff --git a/crates/stark-backend/src/verifier/transcript_extractor.rs b/crates/stark-backend/src/verifier/transcript_extractor.rs
+index 846ff0a..76e3475 100644
+--- a/crates/stark-backend/src/verifier/transcript_extractor.rs
++++ b/crates/stark-backend/src/verifier/transcript_extractor.rs
+@@ -20,6 +20,9 @@ pub enum TranscriptExtractionError {
+     #[error("transcript ended early at position {position}")]
+     UnexpectedEnd { position: usize },
+ 
++    #[error("[x15 research] odd-factor WHIR domains ({0}) are not supported by the extractor")]
++    UnsupportedOddDomain(usize),
++
+     #[error("expected a {expected} value at position {position}")]
+     UnexpectedEntryKind {
+         position: usize,
+@@ -159,6 +162,11 @@ where
+     SC: StarkProtocolConfig<F = F, Digest = [F; RATE]>,
+     F: PrimeField64,
+ {
++    if mvk.inner.params.whir.domain_odd_factor != 1 {
++        return Err(TranscriptExtractionError::UnsupportedOddDomain(
++            mvk.inner.params.whir.domain_odd_factor,
++        ));
++    }
+     let mut cursor = TranscriptCursor::new(log);
+     cursor.expect_observe_digest::<RATE>(mvk.pre_hash)?;
+ 
+diff --git a/crates/stark-backend/src/verifier/whir.rs b/crates/stark-backend/src/verifier/whir.rs
+index 756e26f..8d72274 100644
+--- a/crates/stark-backend/src/verifier/whir.rs
++++ b/crates/stark-backend/src/verifier/whir.rs
+@@ -44,6 +44,13 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+         .map(|v| v.len())
+         .collect::<Vec<_>>();
+ 
++    // [x15 research] Bind the odd domain factor (mirrors the prover).
++    let odd = params.whir.domain_odd_factor;
++    if odd != 1 {
++        crate::odd_domain::check_odd_factor::<SC::F>(odd);
++        transcript.observe(SC::F::from_usize(odd));
++    }
++
+     // Check proof-of-work before μ batching challenge
+     if !transcript.check_witness(params.whir.mu_pow_bits, whir_proof.mu_pow_witness) {
+         return Err(VerifyWhirError::MuPoWInvalid);
+@@ -162,8 +169,15 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+         }
+ 
+         let num_queries = round_params.num_queries;
+-        let query_indices =
+-            (0..num_queries).map(|_| transcript.sample_bits(log_rs_domain_size - k_whir));
++        let query_indices = (0..num_queries)
++            .map(|_| {
++                crate::odd_domain::sample_query_index::<SC, TS>(
++                    transcript,
++                    odd,
++                    log_rs_domain_size - k_whir,
++                ) as u64
++            })
++            .collect_vec();
+ 
+         let mut zs_round = Vec::with_capacity(num_queries);
+         let mut ys_round = Vec::with_capacity(num_queries);
+@@ -171,7 +185,16 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
+         let hasher = config.hasher();
+         let omega = SC::F::two_adic_generator(log_rs_domain_size);
+         for (query_idx, index) in query_indices.into_iter().enumerate() {
+-            let zi_root = omega.exp_u64(index);
++            let zi_root = if odd == 1 {
++                omega.exp_u64(index)
++            } else {
++                crate::odd_domain::query_root::<SC::F>(
++                    odd,
++                    log_rs_domain_size,
++                    k_whir,
++                    index as usize,
++                )
++            };
+             let zi = zi_root.exp_power_of_2(k_whir);
+ 
+             let yi = if is_initial_round {
