@@ -754,7 +754,7 @@ theorem extOwnMem_lt_of {k : List Nat} (hk : (hexPrefix k false).length < 429496
 theorem memHead_lt_of {m : Nat} (h : m < memHead) : m < 18446742974197923840 := by
   rwa [memHead_eq] at h
 
-/-! ## What is proved, and the exact remaining gap
+/-! ## What is proved
 
 Proved here (every `#print axioms` ⊆ `{propext, Classical.choice, Quot.sound}`):
 
@@ -765,22 +765,12 @@ Proved here (every `#print axioms` ⊆ `{propext, Classical.choice, Quot.sound}`
 * `splitLeaf`'s `wf` (`splitLeaf_wf`) and usage bound (`splitLeaf_memD_budget`);
 * the leaf upsert step (`upsert_wf_leaf_step`), which is the *whole* theorem when `t` is a leaf;
 * `extOwnMem`'s monotonicity in the key length, and `splitExt_memD_le` (`splitExt`'s usage is
-  `≤ m + budget`).
-
-**Not yet proved: the full `PTrie.upsert_wf` induction.**  The statement is true and the
-counterexamples above pin its exact hypotheses; what remains is mechanical bookkeeping, not a new
-invariant.  The two missing lemmas, each a direct restatement of the same induction at `memD`
-rather than `wf`:
-
-* `PTrie.upsert_memD_le` — a child's usage grows by at most `budget`:
-  `t.upsert key v = some t' → t'.memD ≤ t.memD + budget` (mutual with `Kids.upsert_memD_le`).
-  With `memOk`, the extension descend then preserves `wf` (`m + c'.memD − cm = extOwnMem k + c'.memD`,
-  below `2^64` because `c'.memD ≤ memHead + budget`).
-* `splitExt_wf` — the extension split's `wf` (the `splitExt` analogue of the proved
-  `splitLeaf_wf`; `splitExt_memD_le` is already proved).
-
-The branch case is `Kids.upsert_wf` (written and compiling modulo the `PTrie.upsert_wf` it is
-mutually defined with).  The exact final statement is:
+  `≤ m + budget`);
+* `splitExt_wf` — the extension split preserves `wf`.  Its hypothesis is `m < memHead`, **not**
+  `m < 2^64`: `splitExt` rebuilds the usage from the *stored* `m`, so the headroom is required (the
+  `m < 2^64` form is false — `not_splitExt_wf_64`);
+* `PTrie.upsert_memD_le` / `Kids.upsert_memD_le` — one upsert grows the usage by at most `budget`;
+* **`PTrie.upsert_wf` / `Kids.upsert_wf` — the full induction:**
 
 ```
 PTrie.upsert_wf :
@@ -789,7 +779,12 @@ PTrie.upsert_wf :
     v.length < 4294967296 → (hexPrefix key true).length < 4294967296 →
     t.upsert key v = some t' → t'.wf = true
 ```
+
+For an `ext` node the descend is `m + c'.memD − cm = extOwnMem k + c'.memD` (`memOk` makes the
+telescoping exact), below `2^64` because `cm < memHead` (`memLe` at the child) and
+`c'.memD ≤ cm + budget` (`upsert_memD_le`).
 -/
+
 
 
 /-- `extOwnMem` is monotone in the key's length (its hex prefix is `|k|/2 + 1`). -/
@@ -951,4 +946,498 @@ theorem splitExt_memD_le (k : List Nat) (c : PTrie) (m : Nat) (key : List Nat) (
           have hk6 : extOwnMem k < 68719476736 := by rw [← hsmall']; exact extOwnMem_lt_small hpk'
           have hy6 : leafMem ys v.length < 68719476736 := by rw [← hsmall']; exact hyv
           omega
+
+/-! ## `splitExt` preserves `wf`
+
+**The statement needs `m < memHead`, not `m < 2^64`.**  `splitExt` rebuilds the extension's usage
+from the *stored* `m` (`extOwnMem xs + (m - extOwnMem k)`), and then wraps a fresh branch whose
+usage is `50 + valueMem v + (m - extOwnMem k)` in an extension over the common prefix.  With only
+`m < 2^64` that sum overflows: at `m = 2^64 - 1` the result's leaf-branch usage is
+`2^64 + 99`, so `wf` is false (see `not_splitExt_wf_64`).  The headroom `m < memHead` is exactly
+what the induction supplies (`memLe memHead` at an `ext` node), and it is enough. -/
+
+/-- `50 + a + b < 2^64` for a fresh branch over an old child `b < memHead`. -/
+theorem branch_subMem_lt64 {a b : Nat} (ha : a < small) (hb : b < memHead) :
+    50 + a + b < 18446744073709551616 := by
+  have h1 : memHead = 18446742974197923840 := memHead_eq
+  have h2 : small = 68719476736 := small_eq
+  omega
+
+/-- `50 + a + b < 2^64` with the old child on the left. -/
+theorem branch_subMem_lt64' {a b : Nat} (ha : a < memHead) (hb : b < small) :
+    50 + a + b < 18446744073709551616 := by
+  have h1 : memHead = 18446742974197923840 := memHead_eq
+  have h2 : small = 68719476736 := small_eq
+  omega
+
+/-- `e + (50 + a + b) < 2^64` for a fresh extension `e` over a fresh branch. -/
+theorem ext_branch_subMem_lt64 {e a b : Nat} (he : e < small) (ha : a < small)
+    (hb : b < memHead) : e + (50 + a + b) < 18446744073709551616 := by
+  have h1 : memHead = 18446742974197923840 := memHead_eq
+  have h2 : small = 68719476736 := small_eq
+  have h3 := memHead_room
+  omega
+
+/-- The other order: `e + (50 + a + b) < 2^64` with the old child on the left. -/
+theorem ext_branch_subMem_lt64' {e a b : Nat} (he : e < small) (ha : a < memHead)
+    (hb : b < small) : e + (50 + a + b) < 18446744073709551616 := by
+  have h1 : memHead = 18446742974197923840 := memHead_eq
+  have h2 : small = 68719476736 := small_eq
+  have h3 := memHead_room
+  omega
+
+/-- `a + (m - b) ≤ max m a` when `a ≤ b`: either the subtraction is exact, or it is `0`. -/
+theorem add_sub_le_max {a b m : Nat} (hab : a ≤ b) : a + (m - b) ≤ max m a := by
+  by_cases h : b ≤ m
+  · have : a + (m - b) = a + m - b := by omega
+    rw [this]; omega
+  · have : m - b = 0 := by omega
+    rw [this, Nat.add_zero]; exact Nat.le_max_right _ _
+
+/-- `splitExt` preserves `wf`, under the headroom `m < memHead` the induction supplies. -/
+theorem splitExt_wf (k : List Nat) (c : PTrie) (m : Nat) (key : List Nat) (v : Bytes)
+    (hk : nibblesOk k = true) (hkey : nibblesOk key = true) (hc : c.wf = true)
+    (hm : m < memHead)
+    (hv : v.length < 4294967296)
+    (hpkey : (hexPrefix key true).length < 4294967296)
+    (hpk : (hexPrefix k false).length < 4294967296) :
+    (splitExt k c m key v).wf = true := by
+  have hm64 : m < 18446744073709551616 := by
+    have h1 : memHead = 18446742974197923840 := memHead_eq
+    omega
+  have hcppOk : nibblesOk (commonPrefix k key) = true := nibblesOk_commonPrefix hk
+  have hcppF : (hexPrefix (commonPrefix k key) false).length < 4294967296 := by
+    rw [hexPrefix_length]; rw [hexPrefix_length] at hpk
+    have := commonPrefix_len_le k key; omega
+  have hcppSmall : extOwnMem (commonPrefix k key) < small := extOwnMem_lt_small hcppF
+  unfold splitExt
+  dsimp only
+  generalize hkr : k.drop (commonPrefix k key).length = kr
+  generalize hyr : key.drop (commonPrefix k key).length = yr
+  have hyrOk : nibblesOk yr = true := hyr ▸ nibblesOk_drop' key _ hkey
+  have bndYs : ∀ ys y, yr = y :: ys → (hexPrefix ys true).length < 4294967296 := by
+    intro ys y hy
+    have e1 : key.drop (commonPrefix k key).length = y :: ys := by rw [hyr]; exact hy
+    have e3 : ys = key.drop ((commonPrefix k key).length + 1) := by
+      have := congrArg (List.drop 1) e1
+      simpa [List.drop_drop, Nat.add_comm] using this.symm
+    rw [e3]; exact hexPrefix_drop_lt hpkey _ true
+  have bndOkYs : ∀ ys y, yr = y :: ys → nibblesOk ys = true := by
+    intro ys y hy
+    have e1 : key.drop (commonPrefix k key).length = y :: ys := by rw [hyr]; exact hy
+    have e3 : ys = key.drop ((commonPrefix k key).length + 1) := by
+      have := congrArg (List.drop 1) e1
+      simpa [List.drop_drop, Nat.add_comm] using this.symm
+    rw [e3]; exact nibblesOk_drop' key _ hkey
+  cases kr with
+  | nil => exact ext_wf_of' hk hc hm64 hpk
+  | cons x xs =>
+    have hx : x < 16 := nibblesOk_head (hkr ▸ nibblesOk_drop' k _ hk) rfl
+    have hxsOk : nibblesOk xs = true := by
+      have e1 : k.drop (commonPrefix k key).length = x :: xs := hkr
+      have e3 : xs = k.drop ((commonPrefix k key).length + 1) := by
+        have := congrArg (List.drop 1) e1
+        simpa [List.drop_drop, Nat.add_comm] using this.symm
+      rw [e3]; exact nibblesOk_drop' k _ hk
+    have hxsF : (hexPrefix xs false).length < 4294967296 := by
+      have e1 : k.drop (commonPrefix k key).length = x :: xs := hkr
+      have e3 : xs = k.drop ((commonPrefix k key).length + 1) := by
+        have := congrArg (List.drop 1) e1
+        simpa [List.drop_drop, Nat.add_comm] using this.symm
+      rw [e3]; exact hexPrefix_drop_lt' hpk _ false
+    have hxs_le : extOwnMem xs ≤ extOwnMem k := by
+      apply extOwnMem_le_of_length
+      have h := congrArg List.length hkr
+      rw [List.length_drop] at h
+      simp only [List.length_cons] at h
+      omega
+    have hxsSmall : extOwnMem xs < small := extOwnMem_lt_small hxsF
+    cases xs with
+    | nil =>
+      have hsubHead : m - extOwnMem k < memHead := Nat.lt_of_le_of_lt (Nat.sub_le _ _) hm
+      cases yr with
+      | nil =>
+        show (wrapExt (commonPrefix k key) (.branch (some (.val v)) (kids1 x c)
+          (50 + valueMem v.length + (m - extOwnMem k)))).wf = true
+        have hbm : 50 + valueMem v.length + (m - extOwnMem k) < 18446744073709551616 :=
+          branch_subMem_lt64 (valueMem_lt_small hv) hsubHead
+        refine wrapExt_wf' hcppOk hcppF ?_ ?_
+        · apply branch_wf_of''
+          · intro s' hs'; cases hs'; simp [slotOk]; exact hv
+          · exact wf_kids1 hx hc
+          · exact hbm
+        · exact ext_branch_subMem_lt64 hcppSmall (valueMem_lt_small hv) hsubHead
+      | cons y ys =>
+        have hy : y < 16 := nibblesOk_head hyrOk rfl
+        have hysT := bndYs ys y rfl
+        have hysOk := bndOkYs ys y rfl
+        show (wrapExt (commonPrefix k key) (.branch none (kids2 x c y (newLeaf ys v))
+          (50 + (m - extOwnMem k) + leafMem ys v.length))).wf = true
+        have hbm : 50 + (m - extOwnMem k) + leafMem ys v.length < 18446744073709551616 :=
+          branch_subMem_lt64' hsubHead (leafMem_lt_small hysT hv)
+        refine wrapExt_wf' hcppOk hcppF ?_ ?_
+        · apply branch_wf_of''
+          · intro s' hs'; simp at hs'
+          · exact wf_kids2 hx hy hc (newLeaf_wf' hysOk hv hysT)
+          · exact hbm
+        · exact ext_branch_subMem_lt64' hcppSmall hsubHead (leafMem_lt_small hysT hv)
+    | cons a2 b2 =>
+      have hsubHead : extOwnMem (a2 :: b2) + (m - extOwnMem k) < memHead := by
+        have := add_sub_le_max (m := m) hxs_le
+        have hsmallHead : small < memHead := small_lt_memHead'
+        omega
+      have hsubwf : (PTrie.ext (a2 :: b2) c (extOwnMem (a2 :: b2) + (m - extOwnMem k))).wf =
+          true :=
+        ext_wf_of' hxsOk hc (extOwnMem_plus_lt64 hxsSmall (by
+          have h1 : memHead = 18446742974197923840 := memHead_eq
+          have h2 : small = 68719476736 := small_eq
+          omega)) hxsF
+      cases yr with
+      | nil =>
+        show (wrapExt (commonPrefix k key) (.branch (some (.val v)) (kids1 x
+          (.ext (a2 :: b2) c (extOwnMem (a2 :: b2) + (m - extOwnMem k))))
+          (50 + valueMem v.length + (extOwnMem (a2 :: b2) + (m - extOwnMem k))))).wf = true
+        have hbm :
+            50 + valueMem v.length + (extOwnMem (a2 :: b2) + (m - extOwnMem k)) <
+              18446744073709551616 :=
+          branch_subMem_lt64 (valueMem_lt_small hv) hsubHead
+        refine wrapExt_wf' hcppOk hcppF ?_ ?_
+        · apply branch_wf_of''
+          · intro s' hs'; cases hs'; simp [slotOk]; exact hv
+          · exact wf_kids1 hx hsubwf
+          · exact hbm
+        · exact ext_branch_subMem_lt64 hcppSmall (valueMem_lt_small hv) hsubHead
+      | cons y ys =>
+        have hy : y < 16 := nibblesOk_head hyrOk rfl
+        have hysT := bndYs ys y rfl
+        have hysOk := bndOkYs ys y rfl
+        show (wrapExt (commonPrefix k key) (.branch none (kids2 x
+          (.ext (a2 :: b2) c (extOwnMem (a2 :: b2) + (m - extOwnMem k))) y (newLeaf ys v))
+          (50 + (extOwnMem (a2 :: b2) + (m - extOwnMem k)) + leafMem ys v.length))).wf = true
+        have hbm :
+            50 + (extOwnMem (a2 :: b2) + (m - extOwnMem k)) + leafMem ys v.length <
+              18446744073709551616 :=
+          branch_subMem_lt64' hsubHead (leafMem_lt_small hysT hv)
+        refine wrapExt_wf' hcppOk hcppF ?_ ?_
+        · apply branch_wf_of''
+          · intro s' hs'; simp at hs'
+          · exact wf_kids2 hx hy hsubwf (newLeaf_wf' hysOk hv hysT)
+          · exact hbm
+        · exact ext_branch_subMem_lt64' hcppSmall hsubHead (leafMem_lt_small hysT hv)
+
+/-- **The `m < 2^64` form of `splitExt_wf` is false.**  An extension at `m = 2^64 - 1` over a
+small leaf, split by a sibling key, builds a branch whose usage is `≥ 2^64`. -/
+theorem not_splitExt_wf_64 :
+    (splitExt [1] (PTrie.leaf [] (.val []) 50) 18446744073709551615 [2] ([] : Bytes)).wf = false := by
+  decide +kernel
+
+end NearSpec
+
+namespace NearSpec
+
+/-! ## The usage gap: one upsert grows a node's usage by at most `budget`
+
+This is the second half of the induction.  It is stated at `memD` rather than `wf`, and `wf` is
+needed as a hypothesis: the *shape* of a split (`splitLeaf`/`splitExt`) depends on the stored slots
+and key encodings, so a leaf's `slotOk` and an extension's key bound must come from `wf`. -/
+
+theorem memD_of_mem? {t : PTrie} {cm : Nat} (h : t.mem? = some cm) : t.memD = cm := by
+  simp [PTrie.memD, h]
+
+theorem memD_branch_mem (bv : Option Slot) (cs : Kids) (m : Nat) :
+    (PTrie.branch bv cs m).memD = m := rfl
+
+theorem memD_leaf_mem (k : List Nat) (s : Slot) (m : Nat) :
+    (PTrie.leaf k s m).memD = m := rfl
+
+theorem memD_ext_mem (k : List Nat) (c : PTrie) (m : Nat) :
+    (PTrie.ext k c m).memD = m := rfl
+
+theorem memD_newLeaf (k : List Nat) (v : Bytes) : (newLeaf k v).memD = leafMem k v.length := rfl
+
+theorem valueMem_le_budget {n : Nat} (h : n < 4294967296) : valueMem n ≤ budget := by
+  have h1 := valueMem_lt_small h
+  have h2 : small = 68719476736 := small_eq
+  have h3 : budget = 343597383680 := rfl
+  omega
+
+theorem leafMem_le_budget {k : List Nat} {n : Nat} (hk : (hexPrefix k true).length < 4294967296)
+    (h : n < 4294967296) : leafMem k n ≤ budget := by
+  have h1 := leafMem_lt_small hk h
+  have h2 : small = 68719476736 := small_eq
+  have h3 : budget = 343597383680 := rfl
+  omega
+
+mutual
+/-- One upsert grows a trie's stored usage by at most `budget`. -/
+theorem PTrie.upsert_memD_le : ∀ (t : PTrie) (key : List Nat) (v : Bytes) (t' : PTrie),
+    t.wf = true → (hexPrefix key true).length < 4294967296 → v.length < 4294967296 →
+    t.upsert key v = some t' → t'.memD ≤ t.memD + budget
+  | .hash _, _, _, _, _, _, _, h => by simp [PTrie.upsert] at h
+  | .leaf k s m, key, v, t', hwf, hpkey, hv, h => by
+    simp only [PTrie.upsert] at h
+    obtain ⟨-, hs, -, hpk⟩ := wf_leaf_parts' hwf
+    by_cases e : k = key
+    · simp only [e, ↓reduceIte, Option.some.injEq] at h; subst h
+      show (newLeaf key v).memD ≤ (PTrie.leaf key s m).memD + budget
+      rw [memD_newLeaf, memD_leaf_mem]
+      have := leafMem_le_budget hpkey hv
+      omega
+    · simp only [e, ↓reduceIte, Option.some.injEq] at h; subst h
+      show (splitLeaf k s key v).memD ≤ (PTrie.leaf k s m).memD + budget
+      rw [memD_leaf_mem]
+      have h1 := splitLeaf_memD_budget k s key v hs hv hpk hpkey
+      omega
+  | .ext k c m, key, v, t', hwf, hpkey, hv, h => by
+    simp only [PTrie.upsert] at h
+    obtain ⟨-, hcwf, -, hpk⟩ := wf_ext_parts' hwf
+    by_cases hp : isPrefix k key = true
+    · simp only [hp, ↓reduceIte] at h
+      cases hm : c.mem? <;> cases hu : c.upsert (key.drop k.length) v <;> simp [hm, hu] at h
+      subst h
+      show (PTrie.ext k _ (m + _ - _)).memD ≤ (PTrie.ext k c m).memD + budget
+      rw [memD_ext_mem, memD_ext_mem]
+      have hkp : (hexPrefix (key.drop k.length) true).length < 4294967296 :=
+        hexPrefix_drop_lt hpkey _ true
+      have ih := PTrie.upsert_memD_le c (key.drop k.length) v _ hcwf hkp hv ‹_›
+      have hcm := memD_of_mem? hm
+      omega
+    · have hp' : isPrefix k key = false := by simpa using hp
+      simp only [hp', Bool.false_eq_true, ↓reduceIte, Option.some.injEq] at h; subst h
+      show (splitExt k c m key v).memD ≤ (PTrie.ext k c m).memD + budget
+      rw [memD_ext_mem]
+      exact splitExt_memD_le k c m key v hv (hexPrefix_false_of_true hpkey) hpk
+  | .branch bv cs m, [], v, t', hwf, _, hv, h => by
+    simp only [PTrie.upsert] at h
+    simp only [Option.some.injEq] at h; subst h
+    show (PTrie.branch _ cs _).memD ≤ (PTrie.branch bv cs m).memD + budget
+    rw [memD_branch_mem, memD_branch_mem]
+    have := valueMem_le_budget hv
+    omega
+  | .branch bv cs m, n :: rest, v, t', hwf, hpkey, hv, h => by
+    simp only [PTrie.upsert] at h
+    obtain ⟨-, hwfk, -⟩ := wf_branch_parts' hwf
+    cases hu : Kids.upsert cs n rest v with
+    | none => simp [hu] at h
+    | some r =>
+      simp only [hu, Option.map_some, Option.some.injEq] at h
+      subst h
+      show (PTrie.branch _ _ (m + r.2.2 - r.2.1)).memD ≤ (PTrie.branch bv cs m).memD + budget
+      rw [memD_branch_mem, memD_branch_mem]
+      have hrestP : (hexPrefix rest true).length < 4294967296 := by
+        have := hexPrefix_drop_lt hpkey 1 true
+        simpa using this
+      have ih := Kids.upsert_memD_le 16 cs n rest v r.1 r.2.1 r.2.2 hwfk hrestP hv hu
+      omega
+
+/-- One upsert into a child slot grows that child's stored usage by at most `budget`; the pair
+returned by `Kids.upsert` is `(old usage, new usage)`.  `N` is the slot count of `cs`. -/
+theorem Kids.upsert_memD_le : ∀ (N : Nat) (cs : Kids) (n : Nat) (key : List Nat) (v : Bytes)
+    (cs' : Kids) (a b : Nat),
+    Kids.wf cs N = true → (hexPrefix key true).length < 4294967296 →
+    v.length < 4294967296 → Kids.upsert cs n key v = some (cs', a, b) → b ≤ a + budget
+  | _, .nil, _, _, _, _, _, _, _, _, _, h => by simp [Kids.upsert] at h
+  | _, .none r, 0, key, v, cs', a, b, hw, hpkey, hv, h => by
+    simp only [Kids.upsert] at h
+    have hp : (Kids.some (newLeaf key v) r, 0, leafMem key v.length) = (cs', a, b) :=
+      Option.some.inj h
+    have ha : a = 0 := (congrArg (fun p : Kids × Nat × Nat => p.2.1) hp).symm
+    have hb : b = leafMem key v.length := (congrArg (fun p : Kids × Nat × Nat => p.2.2) hp).symm
+    rw [hb, ha]
+    show leafMem key v.length ≤ 0 + budget
+    have := leafMem_le_budget hpkey hv
+    omega
+  | N, .some c r, 0, key, v, cs', a, b, hw, hpkey, hv, h => by
+    simp only [Kids.wf, Bool.and_eq_true, Nat.zero_add] at hw
+    simp only [Kids.upsert] at h
+    cases hm : c.mem? with
+    | none => simp [hm] at h
+    | some cm =>
+      cases hu : c.upsert key v with
+      | none => simp [hm, hu] at h
+      | some c' =>
+        simp only [hm, hu] at h
+        have hp : (Kids.some c' r, cm, c'.memD) = (cs', a, b) := Option.some.inj h
+        have ha : a = cm := (congrArg (fun p : Kids × Nat × Nat => p.2.1) hp).symm
+        have hb : b = c'.memD := (congrArg (fun p : Kids × Nat × Nat => p.2.2) hp).symm
+        rw [hb, ha]
+        have ih := PTrie.upsert_memD_le c key v c' hw.1.2 hpkey hv hu
+        have hcm := memD_of_mem? hm
+        omega
+  | N, .none r, i + 1, key, v, cs', a, b, hw, hpkey, hv, h => by
+    simp only [Kids.wf, Bool.and_eq_true] at hw
+    simp only [Kids.upsert] at h
+    cases hu : Kids.upsert r i key v with
+    | none => simp [hu] at h
+    | some x =>
+      simp only [hu, Option.map_some] at h
+      have hp : (Kids.none x.1, x.2.1, x.2.2) = (cs', a, b) := Option.some.inj h
+      have ha : a = x.2.1 := (congrArg (fun p : Kids × Nat × Nat => p.2.1) hp).symm
+      have hb : b = x.2.2 := (congrArg (fun p : Kids × Nat × Nat => p.2.2) hp).symm
+      rw [hb, ha]
+      exact Kids.upsert_memD_le (N - 1) r i key v x.1 x.2.1 x.2.2 hw.2 hpkey hv hu
+  | N, .some c r, i + 1, key, v, cs', a, b, hw, hpkey, hv, h => by
+    simp only [Kids.wf, Bool.and_eq_true] at hw
+    simp only [Kids.upsert] at h
+    cases hu : Kids.upsert r i key v with
+    | none => simp [hu] at h
+    | some x =>
+      simp only [hu, Option.map_some] at h
+      have hp : (Kids.some c x.1, x.2.1, x.2.2) = (cs', a, b) := Option.some.inj h
+      have ha : a = x.2.1 := (congrArg (fun p : Kids × Nat × Nat => p.2.1) hp).symm
+      have hb : b = x.2.2 := (congrArg (fun p : Kids × Nat × Nat => p.2.2) hp).symm
+      rw [hb, ha]
+      exact Kids.upsert_memD_le (N - 1) r i key v x.1 x.2.1 x.2.2 hw.2 hpkey hv hu
+end
+
+/-! ## The full induction: `upsert` preserves `wf` -/
+
+theorem memD_lt_of_memLe {t : PTrie} {cm c : Nat} (h : t.mem? = some cm) (hl : t.memLe c) :
+    cm < c := by
+  cases t with
+  | hash _ => simp [PTrie.mem?] at h
+  | leaf k s m => simp only [PTrie.mem?, Option.some.injEq] at h; rw [← h]; exact hl
+  | ext k ch m => simp only [PTrie.mem?, Option.some.injEq] at h; simpa [← h] using hl.1
+  | branch b cs m => simp only [PTrie.mem?, Option.some.injEq] at h; simpa [← h] using hl.1
+
+theorem ext_descend_lt64 {e cm m' : Nat} (he : e < small) (hcm : cm < memHead)
+    (hm' : m' ≤ cm + budget) : e + m' < 18446744073709551616 := by
+  have h1 : memHead = 18446742974197923840 := memHead_eq
+  have h2 : small = 68719476736 := small_eq
+  have h3 : budget = 343597383680 := rfl
+  have h4 := memHead_budget
+  omega
+
+mutual
+theorem PTrie.upsert_wf : ∀ (t : PTrie) (key : List Nat) (v : Bytes) (t' : PTrie),
+    t.wf = true → t.memOk → t.memLe memHead → nibblesOk key = true →
+    v.length < 4294967296 → (hexPrefix key true).length < 4294967296 →
+    t.upsert key v = some t' → t'.wf = true
+  | .hash _, _, _, _, _, _, _, _, _, _, h => by simp [PTrie.upsert] at h
+  | .leaf k s m, key, v, t', hw, _, _, hk, hv, hp, h =>
+    upsert_wf_leaf_step hw hk hv hp h
+  | .ext k c m, key, v, t', hw, hmo, hml, hk, hv, hp, h => by
+    obtain ⟨hkn, hcwf, -, hpk⟩ := wf_ext_parts' hw
+    simp only [PTrie.upsert] at h
+    by_cases hpre : isPrefix k key = true
+    · simp only [hpre, ↓reduceIte] at h
+      cases hm : c.mem? with
+      | none => simp [hm] at h
+      | some cm =>
+        cases hu : c.upsert (key.drop k.length) v with
+        | none => simp [hm, hu] at h
+        | some c' =>
+          simp only [hm, hu, Option.some.injEq] at h
+          subst h
+          have hcmD : cm = c.memD := (memD_of_mem? hm).symm
+          have hcmlt : cm < memHead := memD_lt_of_memLe hm hml.2
+          have hmEq : m = extOwnMem k + cm := by
+            rcases hmo.1 with hnone | heq
+            · rw [hm] at hnone; cases hnone
+            · rw [heq, hcmD]
+          have hdrop : nibblesOk (key.drop k.length) = true := nibblesOk_drop' key _ hk
+          have hdropT : (hexPrefix (key.drop k.length) true).length < 4294967296 :=
+            hexPrefix_drop_lt hp _ true
+          have hc'wf : c'.wf = true :=
+            PTrie.upsert_wf c (key.drop k.length) v c' hcwf hmo.2 hml.2 hdrop hv hdropT hu
+          have hm' := PTrie.upsert_memD_le c (key.drop k.length) v c' hcwf hdropT hv hu
+          refine ext_wf_of' hkn hc'wf ?_ hpk
+          show m + c'.memD - cm < 18446744073709551616
+          have hown := extOwnMem_lt_small hpk
+          have heq2 : m + c'.memD - cm = extOwnMem k + c'.memD := by rw [hmEq]; omega
+          rw [heq2]
+          exact ext_descend_lt64 hown hcmlt (by rw [hcmD]; exact hm')
+    · have hpre' : isPrefix k key = false := by simpa using hpre
+      simp only [hpre', Bool.false_eq_true, ↓reduceIte, Option.some.injEq] at h
+      subst h
+      exact splitExt_wf k c m key v hkn hk hcwf hml.1 hv hp hpk
+  | .branch bv cs m, [], v, t', hw, _, hml, hk, hv, hp, h => by
+    simp only [PTrie.upsert, Option.some.injEq] at h
+    subst h
+    obtain ⟨hbv, hcs, hmw⟩ := wf_branch_parts' hw
+    refine branch_wf_of'' ?_ hcs ?_
+    · intro s' hs'
+      injection hs' with h'
+      subst h'
+      simp [slotOk]
+      exact hv
+    · show m + valueMem v.length - _ < 18446744073709551616
+      have hv' := valueMem_lt_small hv
+      have hmw' : m < 18446742974197923840 := hml.1
+      have h2 : small = 68719476736 := small_eq
+      omega
+  | .branch bv cs m, n :: rest, v, t', hw, hmo, hml, hk, hv, hp, h => by
+    simp only [PTrie.upsert] at h
+    obtain ⟨hbv, hcswf, hmw⟩ := wf_branch_parts' hw
+    cases hu : Kids.upsert cs n rest v with
+    | none => simp [hu] at h
+    | some r =>
+      simp only [hu, Option.map_some, Option.some.injEq] at h
+      subst h
+      refine branch_wf_of'' ?_ ?_ ?_
+      · intro s' hs'; exact hbv s' hs'
+      · exact Kids.upsert_wf 16 cs n rest v r.1 r.2.1 r.2.2 hcswf hmo.2 hml.2
+          (nibblesOk_cons.1 hk).2 hv (by simpa using hexPrefix_drop_lt hp 1 true) hu
+      · show m + r.2.2 - r.2.1 < 18446744073709551616
+        have hle := Kids.upsert_memD_le 16 cs n rest v r.1 r.2.1 r.2.2 hcswf
+          (by simpa using hexPrefix_drop_lt hp 1 true) hv hu
+        have h1 := memHead_budget
+        have h2 := hml.1
+        omega
+
+theorem Kids.upsert_wf : ∀ (N : Nat) (cs : Kids) (n : Nat) (key : List Nat) (v : Bytes)
+    (cs' : Kids) (a b : Nat),
+    Kids.wf cs N = true → Kids.memOk cs → Kids.memLe cs memHead → nibblesOk key = true →
+    v.length < 4294967296 → (hexPrefix key true).length < 4294967296 →
+    Kids.upsert cs n key v = some (cs', a, b) → Kids.wf cs' N = true
+  | _, .nil, _, _, _, _, _, _, _, _, _, _, _, _, h => by simp [Kids.upsert] at h
+  | N, .none r, 0, key, v, cs', a, b, hw, hmo, hml, hk, hv, hp, h => by
+    simp only [Kids.wf, Bool.and_eq_true] at hw
+    simp only [Kids.upsert] at h
+    have hp' : (Kids.some (newLeaf key v) r, 0, leafMem key v.length) = (cs', a, b) :=
+      Option.some.inj h
+    obtain ⟨rfl, -⟩ := Prod.mk.inj hp'
+    show Kids.wf (Kids.some (newLeaf key v) r) N = true
+    simp only [Kids.wf, hw.1, newLeaf_wf' hk hv hp, hw.2, Bool.and_true]
+  | N, .some c r, 0, key, v, cs', a, b, hw, hmo, hml, hk, hv, hp, h => by
+    simp only [Kids.wf, Bool.and_eq_true, Nat.zero_add] at hw
+    simp only [Kids.upsert] at h
+    cases hm : c.mem? with
+    | none => simp [hm] at h
+    | some cm =>
+      cases hu : c.upsert key v with
+      | none => simp [hm, hu] at h
+      | some c' =>
+        simp only [hm, hu] at h
+        have hp' : (Kids.some c' r, cm, c'.memD) = (cs', a, b) := Option.some.inj h
+        obtain ⟨rfl, -⟩ := Prod.mk.inj hp'
+        show Kids.wf (Kids.some c' r) N = true
+        have hc'wf := PTrie.upsert_wf c key v c' hw.1.2 hmo.1 hml.1 hk hv hp hu
+        simp only [Kids.wf, hw.1.1, hc'wf, hw.2, Bool.and_true]
+  | N, .none r, i + 1, key, v, cs', a, b, hw, hmo, hml, hk, hv, hp, h => by
+    simp only [Kids.wf, Bool.and_eq_true] at hw
+    simp only [Kids.upsert] at h
+    cases hu : Kids.upsert r i key v with
+    | none => simp [hu] at h
+    | some x =>
+      simp only [hu, Option.map_some] at h
+      have hp' : (Kids.none x.1, x.2.1, x.2.2) = (cs', a, b) := Option.some.inj h
+      obtain ⟨rfl, -⟩ := Prod.mk.inj hp'
+      show Kids.wf (Kids.none x.1) N = true
+      have := Kids.upsert_wf (N - 1) r i key v x.1 x.2.1 x.2.2 hw.2 hmo hml hk hv hp hu
+      simp only [Kids.wf, hw.1, this, Bool.and_true]
+  | N, .some c r, i + 1, key, v, cs', a, b, hw, hmo, hml, hk, hv, hp, h => by
+    simp only [Kids.wf, Bool.and_eq_true] at hw
+    simp only [Kids.upsert] at h
+    cases hu : Kids.upsert r i key v with
+    | none => simp [hu] at h
+    | some x =>
+      simp only [hu, Option.map_some] at h
+      have hp' : (Kids.some c x.1, x.2.1, x.2.2) = (cs', a, b) := Option.some.inj h
+      obtain ⟨rfl, -⟩ := Prod.mk.inj hp'
+      show Kids.wf (Kids.some c x.1) N = true
+      have := Kids.upsert_wf (N - 1) r i key v x.1 x.2.1 x.2.2 hw.2 hmo.2 hml.2 hk hv hp hu
+      simp only [Kids.wf, hw.1, hw.1.2, this, Bool.and_true]
+end
+
 end NearSpec

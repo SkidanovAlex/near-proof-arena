@@ -13,7 +13,8 @@ def UpsertPreservesWf : Prop :=
 ```
 
 This module **disproves** it (two independent machine-checked counterexamples) and records the
-corrected statement, `UpsertPreservesWfWithBounds`, proved in `NearSpec.TrieUpsertWf`.
+corrected statement, `UpsertPreservesWfWithBounds`, now a **theorem** (see
+`upsertPreservesWfWithBounds` below, discharged by `NearSpec.PTrie.upsert_wf`).
 
 ## Two independent failures
 
@@ -136,7 +137,8 @@ two inputs the recomputation genuinely needs (both hold for real chunk state):
 
 `NearSpec.PTrie.upsert_wf` proves a single upsert preserves `wf` under exactly these.  The
 statement below is that theorem at the `cdUpsert` entry point, so it is the form the write log
-(`applyLog`) can consume instead of the false `UpsertPreservesWf`. -/
+(`applyLog`) can consume instead of the false `UpsertPreservesWf`.  It is proved as
+`upsertPreservesWfWithBounds` at the bottom of this file. -/
 
 /-- The corrected write-path well-formedness obligation: `cdUpsert` preserves `wf` for a
 ContractData key whose path and value are bounded, on a canonical trie (`PTrie.memOk`) with usage
@@ -147,5 +149,14 @@ def UpsertPreservesWfWithBounds : Prop :=
     v.length < 4294967296 →
     (NearSpec.hexPrefix (NearSpec.nibbles (cdWriteKey account key)) true).length < 4294967296 →
     cdUpsert t account key v = some u → u.wf = true
+
+/-- **`UpsertPreservesWfWithBounds` is a theorem.**  The write path is a `PTrie.upsert` at the
+ContractData nibble path, whose nibbles are canonical (`cdWriteKey_nibblesOk`), so
+`NearSpec.PTrie.upsert_wf` applies directly. -/
+theorem upsertPreservesWfWithBounds : UpsertPreservesWfWithBounds := by
+  intro t u account key v hwf hmo hml hv hp hup
+  unfold cdUpsert at hup
+  exact NearSpec.PTrie.upsert_wf t _ v u hwf hmo hml
+    (cdWriteKey_nibblesOk account key) hv hp hup
 
 end ZkFormal.NearV3.D3
