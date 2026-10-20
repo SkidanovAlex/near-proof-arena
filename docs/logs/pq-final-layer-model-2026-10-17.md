@@ -438,3 +438,84 @@ re-pays its column openings (NvAir +6.6 KB, SHA +16 KB). Measured: committed wid
 real rows (gate-5 shape at 78 % fill: W 15 → 12, 353,497 → 350,789 B); saving = ΔW × (q0·2^k1·4 + 48),
 the W-proportional law the NV model uses, so its ≈ 9.7 KB (308.5 → 298.9 KB at L) applies, provided the
 NV AIRs' padding rows are zero-valid. Report: `results/pq-whir-levers/README.md` (round 3).
+||||||| d79998e78
+
+## Push to a measured recursive final layer — lanes started (2026-10-17)
+
+User: "continue until we have recursive last step under 300k". Three lanes off this branch:
+`lane/pq-recursion-sha384` (port OpenVM v2.1 `crates/recursion` — same stark-backend
+commit d667af5 — to SHA-384/Ext12 using the L3 SHA AIR), `lane/pq-whir-levers`
+(grinding, 42-B digests, k1, m, coset-as-one-message leaves; gate 2; gate 5 dummy
+final layer), `lane/pq-x15-domains` (gate 1 + prototype).
+
+**Gate 1 — ×15 domains: PASS on paper** (`lane/pq-x15-domains` @ `2cf46f1a4`,
+`x15-domains/SOUNDNESS.md`). WHIR's smoothness is used only via −x ∈ L, |L^(2^j)| =
+|L|/2^j, disjoint 2^k fibres and power-of-two degree; all hold for 15·2ᴺ. BCGM Thm 9.2
+and BCHKS25 Thm 1.5 are stated for arbitrary evaluation sets. One edit needed in
+WHIR Thm 5.2 ("smooth" → "coset of order c·2^K"), exact uniform query sampling
+(reject p−1, reduce mod 15·2^j). **Caveat: at |Ext12| = 2^370.88 and W ≈ 530–600
+stacked columns, m = 8 misses 2⁻²⁶⁸ by 2.4–7.5 bits (passes 2⁻²⁵⁸); m = 3 clears
+(≤ 2⁻²⁶⁹·⁴, 1.4-bit margin on the batching term) → use m = 3 (≈ +4 KB in model).**
+Prototype: `WhirConfig.domain_odd_factor` (default 1, byte-identical: gas-failure5
+re-proof ba042e71…), ×15 in every WHIR round, 55/55 tamper tests rejected; 15 coset
+DFTs are faster per point than one radix-2 DFT (2¹⁶×64: 5.6–8.5 s vs 11.3–11.9 s).
+Streamed LDE (modelled): 0.77–1.22 TB never materialised; ≤ 10 GiB/worker; 30–73 min
+on 8 threads, minutes on 192 cores. Open: recursion circuit needs the sampler, 15-point
+table, +4 Merkle depth; cpu/cuda backends not ported.
+
+**Gate 2 confirmed, gate 5 corrects the model** (`lane/pq-whir-levers` @ `f5dc91757`,
+report `results/pq-whir-levers/README.md`). All levers implemented natively behind
+parameters (defaults byte-identical to gas-failure5, 142 upstream tests pass): grinding
+(≤ z = 28; z ≥ 29 needs a 2-element witness), 42-B digests, k1, m, coset-as-one-message
+leaves, Merkle multiproof, non-halving domains. Gas-failure5 with grinding + 42 B + m=8 +
+coset + multiproof: 378,849 → 246,016 B, 10,227 → 4,898 verify compressions. **Gate 2:
+coset leaves 6,956 measured vs 6,947 predicted.** Grinding 3–5·10⁷ SHA-384/s on 8
+threads → z = 32 ≈ 1.5–2.5 min/round on this CPU. **Gate 5** (460-col dummy at the
+model's best shape, measured W ≤ 15, extrapolated with laws exact at 3 widths): WHIR
+matches the model (auth −0.5 %, initial/codeword/final exact) but three child-calibrated
+constants were low: **GKR = 72L² + 264L + 248 B** (L = log2 interactions; 44 KB at
+L = 23, model had 8.5 KB), stacking 1,984 + 48·W, relations +5.8 KB + 432 B/height
+doubling. E6 (one opening per column) gives nothing (next-row values needed).
+
+**Corrected model** (`l4-study/models-C/ext2.py`, `run_ext2.py` → `run-ext2.txt`;
+×15 + coset + multiproof + non-halving + pack, transcript +510 compressions):
+
+| c_sha | settings | combo | + Gruen GKR | + next-row only for 30 % cols | + 230-col final circuit |
+|---:|---|---:|---:|---:|---:|
+| 19,448 | today 268/48 B, m=3 | 408,800 | 394,976 | 379,520 | 365,600 |
+| 19,448 | z=32 + 42 B, m=3 | 345,176 | 331,352 | 315,896 | **301,976** |
+| 28,288 | z=32 + 42 B, m=3 | 359,154 | 345,330 | 329,874 | 315,954 |
+
+Sensitivity: each halving of final-circuit cells ≈ −12…−25 KB (the 15·2²⁷ domain cap
+then admits a larger final blowup); cells 2²⁵·⁶ → ≈ 275 KB with the same levers.
+So < 300 KB now needs, beyond the built levers: Gruen-style GKR (degree-(d−1) round
+polys), next-row openings only where referenced, a final circuit with few total columns,
+and fewer final cells (cheaper SHA AIR or fewer penultimate compressions). The real
+verifier circuit's column/interaction/non-SHA cell counts (recursion lane) decide it.
+
+**Recursion port measured** (`lane/pq-recursion-sha384` @ `5ea64c468`, report
+`results/pq-recursion-sha384/README.md`). OpenVM v2.1 `crates/recursion` ported to
+SHA-384/Ext12 (byte-identical transcript/Merkle vs `native_sha384_config.rs`, grinding
+implemented); verifies real SHA-384/Ext12 child proofs; 4 tamper classes rejected *by the
+circuit*. Stock Poseidon2 calibration: fixed point 8.79M cells, 256 KB at 100-bit, 1,537
+cols. Ported, proven 4-level chain at a 20-bit query target: 716 → 6,388 → 7,403 → 7,516
+compressions, 487–597 KB (compressions converge). 268-bit L1 proven: 1,318,194 B. 268-bit
+L2 trace: 30,332 compressions / 958M cells (model 19,688: second round-0 commit for the
+child vk/DAG + ≈ 3k blocks absorbing the child's column openings; proving needs ≈ 100 GB).
+**Blocker: OpenVM's 46-AIR verifier has 3,481–3,923 columns → 322–365 KB of column
+openings alone (+ ≈ 50 KB GKR, L = 25), independent of WHIR.** Columns cost twice:
+wire bytes in the final proof and transcript SHA in the parent. ⇒ The final (and
+penultimate) layer needs a purpose-built **narrow verifier circuit** (≤ ~500 opened
+columns incl. preprocessed, ≤ 2²² interactions, one narrow SHA AIR, Ext12 verifier logic
+as a small row-serial ALU), single round-0 commit (SHA `dag_commit`).
+
+**Levers round 2** (`lane/pq-whir-levers` @ `ab3cfd969`, laws in `native/levers_laws.py`):
+Gruen GKR + derived claims → **GKR = 48L² + 192L + 152 B** (measured, L = 23: 29,960 vs
+44,408 B); Gruen on batch-constraint sumcheck (< 1 KB); next-row openings only for
+referenced columns (vk mask; gas-failure5 −7.4 KB, but the L3 SHA AIR references 438/442
+columns at the next row → ≈ 0 there; ext2's "next 0.3" rows are void for that AIR);
+2-element PoW (z = 32 proves directly: 65.5 s/grind on 8 threads, z = 28 3.8 s);
+max_constraint_degree 8 → 4 saves ≈ 3.5 KB. Gate 5 re-measured: 459,923 B (268/48 B) /
+**389,561 B (z = 32 / 42 B, z proved)** at 2²⁶·⁴ cells, 460 cols. Model best point with
+measured laws: **≈ 325 KB** at 460 final columns. Remaining gap must come from the
+narrow verifier circuit (columns, next-row columns, interactions) and fewer cells.

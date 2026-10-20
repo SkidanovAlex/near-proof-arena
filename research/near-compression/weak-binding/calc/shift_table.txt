@@ -1,0 +1,30 @@
+generic 4x40 (268 b/round)               B=   64  n_min=324 (41 B)  K*=0  log2P=-128.68
+generic 4x40 (268 b/round)               B=  256  n_min=230 (29 B)  K*=3  log2P=-128.27
+generic 4x40 (268 b/round)               B= 1024  n_min=211 (27 B)  K*=6  log2P=-128.34
+generic 4x40 (268 b/round)               B= 4096  n_min=206 (26 B)  K*=9  log2P=-129.33
+generic 4x40 (268 b/round)               B=16384  n_min=204 (26 B)  K*=10  log2P=-128.32
+generic 4x40 (268 b/round)               zero tolerance K=0: n_min=324 (41 B) log2P=-128.68
+generic 4x50 (268 b/round)               B=   64  n_min=259 (33 B)  K*=1  log2P=-129.14
+generic 4x50 (268 b/round)               B=  256  n_min=218 (28 B)  K*=5  log2P=-128.95
+generic 4x50 (268 b/round)               B= 1024  n_min=207 (26 B)  K*=8  log2P=-129.53
+generic 4x50 (268 b/round)               B= 4096  n_min=204 (26 B)  K*=10  log2P=-129.41
+generic 4x50 (268 b/round)               B=16384  n_min=203 (26 B)  K*=11  log2P=-129.11
+generic 4x50 (268 b/round)               zero tolerance K=0: n_min=324 (41 B) log2P=-128.68
+generic 4x60 (268 b/round)               B=   64  n_min=239 (30 B)  K*=2  log2P=-128.49
+generic 4x60 (268 b/round)               B=  256  n_min=212 (27 B)  K*=6  log2P=-128.64
+generic 4x60 (268 b/round)               B= 1024  n_min=205 (26 B)  K*=9  log2P=-129.37
+generic 4x60 (268 b/round)               B= 4096  n_min=203 (26 B)  K*=11  log2P=-129.46
+generic 4x60 (268 b/round)               B=16384  n_min=202 (26 B)  K*=12  log2P=-128.58
+generic 4x60 (268 b/round)               zero tolerance K=0: n_min=324 (41 B) log2P=-128.68
+final 12k today 69/69/55/46 (268)        B=   64  n_min=324 (41 B)  K*=0  log2P=-128.68
+final 12k today 69/69/55/46 (268)        B=  256  n_min=221 (28 B)  K*=4  log2P=-128.74
+final 12k today 69/69/55/46 (268)        B= 1024  n_min=208 (26 B)  K*=8  log2P=-128.86
+final 12k today 69/69/55/46 (268)        B= 4096  n_min=205 (26 B)  K*=10  log2P=-130.13
+final 12k today 69/69/55/46 (268)        B=16384  n_min=203 (26 B)  K*=11  log2P=-128.05
+final 12k today 69/69/55/46 (268)        zero tolerance K=0: n_min=324 (41 B) log2P=-128.68
+final 12k levers 61/61/49/41 (236+z32)   B=   64  n_min=259 (33 B)  K*=1  log2P=-129.14
+final 12k levers 61/61/49/41 (236+z32)   B=  256  n_min=218 (28 B)  K*=5  log2P=-128.61
+final 12k levers 61/61/49/41 (236+z32)   B= 1024  n_min=207 (26 B)  K*=8  log2P=-128.98
+final 12k levers 61/61/49/41 (236+z32)   B= 4096  n_min=204 (26 B)  K*=10  log2P=-129.04
+final 12k levers 61/61/49/41 (236+z32)   B=16384  n_min=203 (26 B)  K*=11  log2P=-128.82
+final 12k levers 61/61/49/41 (236+z32)   zero tolerance K=0: n_min=324 (41 B) log2P=-128.68
