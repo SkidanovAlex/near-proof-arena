@@ -1,0 +1,150 @@
+diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
+--- a/crates/recursion/src/nv/mod.rs
++++ b/crates/recursion/src/nv/mod.rs
+@@ -25,3 +25,5 @@ mod prep_demo;
+ mod faithful_dof;
+ #[cfg(test)]
+ mod faithful_tests;
++#[cfg(test)]
++mod stream_tests;
+diff --git a/crates/recursion/src/nv/stream_tests.rs b/crates/recursion/src/nv/stream_tests.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/recursion/src/nv/stream_tests.rs
+@@ -0,0 +1,80 @@
++//! [stream research] SHA-384 / Ext12 configs: streamed commitments (codeword never materialised)
++//! give byte-identical proofs to the in-memory prover. Process SHA levers (42-B digests, coset
++//! leaves, T*) come from the env, as for the other NV tests.
++use openvm_stark_backend::{
++    codec::Encode,
++    prover::stream_pcs::set_stream_override,
++    test_utils::{FibFixture, InteractionsFixture11, TestFixture},
++    StarkEngine, WhirLevers,
++};
++
++use crate::sha384::{config::*, e2e_tests::with_levers};
++
++/// b = 2 (rate 1/4), small trace, every WHIR lever with the x15 domain and a wide query PoW;
++/// the final-layer engine too. Streamed (drop 0 / 3 / 4 levels) == in-memory, byte for byte.
++#[test]
++fn stream_commit_matches_in_memory_b2() {
++    let lv = WhirLevers {
++        k_first: 1,
++        keep_domain: true,
++        multiproof: true,
++        gruen_gkr: true,
++        gkr_derive_claims: true,
++        gruen_zerocheck: true,
++        next_mask: true,
++        wide_query_pow: true,
++        tight_heights: true,
++        whir_y: true,
++    };
++    for (name, lv, x15, k) in [("default", WhirLevers::default(), 1, 3), ("all+x15", lv, 15, 3), ("all+x15 k4", lv, 15, 4)] {
++        let mut p = openvm_stark_backend::test_utils::test_system_params_small(2, 10, k);
++        p.max_constraint_degree = 4;
++        p.log_blowup = 2;
++        let mut p = with_levers(p, lv, x15, 40);
++        if lv.wide_query_pow {
++            p.whir.query_phase_pow_bits = 8;
++        }
++        for fin in [false, true] {
++            for fx in 0..2 {
++                let prove = |stream: bool| -> Vec<u8> {
++                    set_stream_override(Some(stream));
++                    let e = if fin { Sha384CpuEngine::new_final(p.clone()) } else { Sha384CpuEngine::new(p.clone()) };
++                    let (vk, pr) = if fx == 0 {
++                        FibFixture::new(0, 1, 1 << 9).keygen_and_prove(&e)
++                    } else {
++                        InteractionsFixture11.keygen_and_prove(&e)
++                    };
++                    e.verify(&vk, &pr).expect("proof verifies");
++                    set_stream_override(None);
++                    let mut b = vec![];
++                    pr.encode(&mut b).unwrap();
++                    b
++                };
++                let mem = prove(false);
++                for drop in ["0", "3", "4"] {
++                    std::env::set_var("NEARPROOF_STREAM_DROP", drop);
++                    let st = prove(true);
++                    println!("STREAM_IDENTITY case={name} final={fin} fixture={fx} drop={drop} bytes={} identical={}", mem.len(), mem == st);
++                    assert_eq!(mem, st, "streamed proof differs: {name} final={fin} fixture {fx} drop {drop}");
++                }
++                std::env::remove_var("NEARPROOF_STREAM_DROP");
++            }
++        }
++    }
++}
++
++/// Prints the committed (tight) heights and component sizes of a saved proof (env PROOF=path).
++#[test]
++#[ignore]
++fn stream_proof_info() {
++    use openvm_stark_backend::{codec::Decode, proof::Proof};
++    let path = std::env::var("PROOF").expect("PROOF=<path>");
++    let bytes = std::fs::read(&path).unwrap();
++    let p = Proof::<Sha384Config>::decode(&mut std::io::Cursor::new(&bytes)).unwrap();
++    for (i, t) in p.trace_vdata.iter().enumerate() {
++        if let Some(t) = t {
++            println!("PROOF_INFO air={i} log_height={} committed_rows={:?}", t.log_height, t.tight_height);
++        }
++    }
++    println!("PROOF_INFO bytes={} {}", bytes.len(), crate::sha384::e2e_tests::proof_sizes(&p));
++}
+diff --git a/crates/recursion/src/nv/tests.rs b/crates/recursion/src/nv/tests.rs
+--- a/crates/recursion/src/nv/tests.rs
++++ b/crates/recursion/src/nv/tests.rs
+@@ -299,6 +299,21 @@ fn nv_opening_formula() {
+     assert_eq!(ok, 4);
+ }
+ 
++/// [stream research] The WHIR per-round regimes as bound in a vk (O-2 first-order / Johnson).
++fn print_vk_regimes(tag: &str, vk: &openvm_stark_backend::keygen::types::MultiStarkVerifyingKey<Sha384Config>) {
++    let w = &vk.inner.params.whir;
++    match &w.agreement {
++        Some(t) => println!(
++            "{tag}_VK_REGIMES m={} margin_milli={} target={} rounds(n,k,A,q,regime)={:?}",
++            t.m,
++            t.margin_milli,
++            t.target_bits,
++            t.rounds.iter().map(|r| (r.n, r.kdim, r.agree, r.queries, if r.first_order { "O2" } else { "J" })).collect::<Vec<_>>()
++        ),
++        None => println!("{tag}_VK_REGIMES none (plain list decoding) queries={:?}", w.rounds.iter().map(|r| r.num_queries).collect::<Vec<_>>()),
++    }
++}
++
+ /// NV-verifies-NV chain (ignored; env-driven).
+ ///   NV_LEVELS=4 NV_LOG_ROWS=17 PARENT_N_STACK=16 PARENT_BITS=20 PARENT_LIST_M=3 ...
+ #[test]
+@@ -430,6 +445,11 @@ fn nv_chain() {
+         fixed = if prev.is_empty() { hs.clone() } else { hs.iter().zip(&prev).map(|(a, b)| *a.max(b)).collect() };
+         prev = hs;
+     }
++    // [stream research] NV_FIXED_OVERRIDE: phase B heights given directly (phase A then only needs
++    // A1, for the level-1 app table; phase B asserts every level's natural heights equal these)
++    if let Ok(o) = std::env::var("NV_FIXED_OVERRIDE") {
++        fixed = o.split(',').map(|x| x.trim().parse().unwrap()).collect();
++    }
+     println!("NV_FIXED_HEIGHTS {fixed:?}");
+     if let Some(fe) = final_engine.as_ref().filter(|_| unbound_final) {
+         // UNBOUND measurement-only final layer: verifies the last phase-A proof without binding
+@@ -520,6 +540,18 @@ fn nv_chain() {
+     fcirc.program_part = false;
+     fcirc.tight_floor = None; // nobody verifies FINAL in-circuit
+     let (vkf, pf, _, words_f) = run_with(&fe, &fcirc, &vk, &p, "FINAL");
++    print_vk_regimes("FINAL", &vkf);
++    {
++        // [stream research] final proof digest (and the proof, with NV_SAVE_DIR)
++        use openvm_stark_backend::codec::Encode;
++        use sha2::Digest as _;
++        let mut bytes = vec![];
++        pf.encode(&mut bytes).unwrap();
++        println!("FINAL_PROOF_SHA256 {:x} bytes={}", sha2::Sha256::digest(&bytes), bytes.len());
++        if let Some(d) = &save_dir {
++            std::fs::write(format!("{d}/FINAL.proof"), &bytes).unwrap();
++        }
++    }
+     assert_eq!(words_f, last_words, "FINAL runs the same (fixed-point) program as its child");
+     let setup = super::vd::VdSetup { vk_final: vkf, program: words_f, level: levels as u32 + 1 };
+     super::vd::verify_final(&setup, &fe, &p0.public_values, &pf, false).expect("V_d (pinned program) accepts the final proof");

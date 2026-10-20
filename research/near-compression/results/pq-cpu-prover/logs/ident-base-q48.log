@@ -1,0 +1,12 @@
+NVL_PARAMS l_skip=2 n_stack=15 k=4 log_blowup=1 queries=[106, 87, 50, 36] pow(mu,fold,query,logup)=(0,0,0,0)
+NV_PHASE before_dag 1176
+NV_DAG air=0 nodes=21 rows_so_far=1226
+NV_PHASE after_dag 1239
+NV_PHASE after_stacking 1547
+NV_QCOST round=0 queries=10 rows=2880 per_query=288 nbits=8 k=3 merkle_nodes=150
+NV_QCOST round=1 queries=4 rows=1152 per_query=288 nbits=7 k=3 merkle_nodes=206
+NV_QCOST round=2 queries=2 rows=562 per_query=281 nbits=6 k=3 merkle_nodes=232
+
+thread 'main' (1339900) panicked at crates/recursion/src/nv/builder.rs:298:9:
+program exceeds 2^13 rows
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

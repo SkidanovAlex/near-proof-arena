@@ -1,0 +1,78 @@
+[1;32mINFO    [0m ｉ [info]: FibonacciAir         | Constraint Deg = 2  | Prep Cols = 0  | Main Cols = [2]      |    5 Constraints |   0 Interactions
+[1;32mINFO    [0m ｉ [info]: Actual max constraint degree across all AIRs (2) does not match configured max constraint degree (4)
+MEMPROF commit.stacked_matrix rss_gb=0.01 hwm_gb=0.01
+MEMPROF commit.tree rss_gb=0.01 hwm_gb=0.01
+MEMPROF prove.after_commit rss_gb=0.01 hwm_gb=0.01
+MEMPROF zerocheck.gkr_input rss_gb=0.01 hwm_gb=0.01
+MEMPROF zerocheck.after_gkr rss_gb=0.01 hwm_gb=0.01
+MEMPROF prove.after_rap_constraints rss_gb=0.01 hwm_gb=0.01
+MEMPROF openings.after_stacking rss_gb=0.01 hwm_gb=0.01
+MEMPROF whir.f_evals rss_gb=0.01 hwm_gb=0.01
+MEMPROF whir.round0.g_tree rss_gb=0.01 hwm_gb=0.01
+MEMPROF whir.round0.queries rss_gb=0.01 hwm_gb=0.01
+MEMPROF whir.round1.g_tree rss_gb=0.01 hwm_gb=0.01
+MEMPROF whir.round1.queries rss_gb=0.01 hwm_gb=0.01
+MEMPROF whir.round2.queries rss_gb=0.01 hwm_gb=0.01
+MEMPROF prove.after_openings rss_gb=0.01 hwm_gb=0.01
+[1;32mINFO    [0m stark_prove_excluding_trace [ 28.0ms | 50.59% / 100.00% ] phase: "prover"
+[1;32mINFO    [0m ┝━ ｉ [info]:  | num_airs_present: 1
+[1;32mINFO    [0m ┝━ prover.main_trace_commit [ 4.03ms | 0.01% / 14.37% ] phase: "prover"
+[1;32mINFO    [0m │  ┕━ trace_commit_cpu [ 4.02ms | 0.04% / 14.36% ]
+[1;32mINFO    [0m │     ┕━ stacked_commit_odd [ 4.01ms | 0.24% / 14.33% ]
+[1;32mINFO    [0m │        ┝━ rs_code_matrix [ 284µs | 1.01% ]
+[1;32mINFO    [0m │        ┕━ merkle_tree [ 3.66ms | 13.07% ]
+[1;32mINFO    [0m ┝━ prove_zerocheck_and_logup [ 725µs | 1.31% / 2.59% ]
+[1;32mINFO    [0m │  ┝━ fractional_sumcheck_with [ 171ns | 0.00% ]
+[1;32mINFO    [0m │  ┕━ prover.batch_constraints.mle_rounds [ 357µs | 1.27% ] phase: "prover"
+[1;32mINFO    [0m ┝━ prove_stacked_opening_reduction [ 8.66ms | 30.92% ]
+[1;32mINFO    [0m ┝━ merkle_tree [ 281µs | 1.00% ]
+[1;32mINFO    [0m ┕━ merkle_tree [ 148µs | 0.53% ]
+NVL_PARAMS l_skip=2 n_stack=15 k=4 log_blowup=1 queries=[106, 87, 50, 36] pow(mu,fold,query,logup)=(0,0,0,0)
+[1;32mINFO    [0m ｉ [info]: NvAir                | Constraint Deg = 9  | Prep Cols = 0  | Main Cols = [76]     |  561 Constraints |  48 Interactions
+[1;32mINFO    [0m ｉ [info]: Sha512Air4           | Constraint Deg = 9  | Prep Cols = 0  | Main Cols = [83]     |  177 Constraints |  17 Interactions
+[1;32mINFO    [0m ｉ [info]: TableAir4            | Constraint Deg = 8  | Prep Cols = 0  | Main Cols = [9]      |   21 Constraints |   2 Interactions
+[1;32mINFO    [0m ｉ [info]: ByteAir              | Constraint Deg = 3  | Prep Cols = 0  | Main Cols = [5]      |    9 Constraints |   1 Interactions
+NV_PHASE before_dag 1174
+NV_DAG air=0 nodes=21 rows_so_far=1224
+NV_PHASE after_dag 1237
+NV_PHASE after_stacking 1545
+NV_QCOST round=0 queries=10 rows=2080 per_query=208 nbits=8 k=3 merkle_nodes=80
+NV_QCOST round=1 queries=4 rows=836 per_query=209 nbits=7 k=3 merkle_nodes=108
+NV_QCOST round=2 queries=2 rows=406 per_query=203 nbits=6 k=3 merkle_nodes=120
+NV_PHASE end 7394
+MEMPROF commit.stacked_matrix rss_gb=0.08 hwm_gb=0.08
+MEMPROF commit.tree rss_gb=1.15 hwm_gb=1.29
+MEMPROF prove.after_commit rss_gb=1.15 hwm_gb=1.29
+MEMPROF zerocheck.gkr_input rss_gb=1.34 hwm_gb=1.34
+MEMPROF zerocheck.after_gkr rss_gb=1.37 hwm_gb=2.07
+MEMPROF prove.after_rap_constraints rss_gb=1.19 hwm_gb=2.07
+MEMPROF openings.after_stacking rss_gb=1.19 hwm_gb=2.07
+MEMPROF whir.f_evals rss_gb=1.20 hwm_gb=2.07
+MEMPROF whir.round0.g_tree rss_gb=1.41 hwm_gb=2.07
+MEMPROF whir.round0.queries rss_gb=1.41 hwm_gb=2.07
+MEMPROF whir.round1.g_tree rss_gb=1.59 hwm_gb=2.07
+MEMPROF whir.round1.queries rss_gb=1.41 hwm_gb=2.07
+MEMPROF whir.round2.g_tree rss_gb=1.61 hwm_gb=2.07
+MEMPROF whir.round2.queries rss_gb=1.43 hwm_gb=2.07
+MEMPROF whir.round3.queries rss_gb=1.26 hwm_gb=2.07
+MEMPROF prove.after_openings rss_gb=0.49 hwm_gb=2.07
+[1;32mINFO    [0m stark_prove_excluding_trace [ 202s | 2.74% / 100.00% ] phase: "prover"
+[1;32mINFO    [0m ┝━ ｉ [info]:  | num_airs_present: 4
+[1;32mINFO    [0m ┝━ prover.main_trace_commit [ 2.39s | 0.00% / 1.19% ] phase: "prover"
+[1;32mINFO    [0m │  ┕━ trace_commit_cpu [ 2.39s | 0.04% / 1.19% ]
+[1;32mINFO    [0m │     ┕━ stacked_commit_odd [ 2.32s | 0.50% / 1.15% ]
+[1;32mINFO    [0m │        ┕━ rs_code_matrix_odd [ 1.30s | 0.64% ]
+[1;32mINFO    [0m ┝━ prove_zerocheck_and_logup [ 191s | 13.66% / 94.79% ]
+[1;32mINFO    [0m │  ┝━ fractional_sumcheck_with [ 8.30s | 4.11% ]
+[1;32mINFO    [0m │  ┕━ prover.batch_constraints.mle_rounds [ 156s | 77.02% ] phase: "prover"
+[1;32mINFO    [0m ┕━ prove_stacked_opening_reduction [ 2.60s | 1.29% ]
+NVL_AIR 0 h=16384 w=76 int/row=48 deg=9
+NVL_AIR 1 h=65536 w=83 int/row=17 deg=9
+NVL_AIR 2 h=128 w=9 int/row=2 deg=8
+NVL_AIR 3 h=65536 w=5 int/row=1 deg=3
+NVL_PROOF_SHA256 565dc85a7d512c6c417177e92a0b8c6dab926dc1ea59e3334df14005e7d368bc
+NVL_SUMMARY wall_s=202.1 (keygen+tracegen+prove+verify) peak_rss_gb=2.07 cells=7013504 (2^22.74) program_rows=7394 proof_bytes=353519
+
+real	3m22.176s
+user	17m48.283s
+sys	0m1.323s

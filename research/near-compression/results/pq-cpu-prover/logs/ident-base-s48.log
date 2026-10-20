@@ -1,0 +1,15 @@
+NVL_PARAMS l_skip=2 n_stack=16 k=4 log_blowup=1 queries=[106, 87, 50, 36] pow(mu,fold,query,logup)=(0,0,0,0)
+NV_PHASE before_dag 1192
+NV_DAG air=0 nodes=21 rows_so_far=1242
+NV_PHASE after_dag 1255
+NV_PHASE after_stacking 1563
+NV_QCOST round=0 queries=10 rows=2880 per_query=288 nbits=8 k=3 merkle_nodes=150
+NV_QCOST round=1 queries=4 rows=1152 per_query=288 nbits=7 k=3 merkle_nodes=206
+NV_QCOST round=2 queries=2 rows=562 per_query=281 nbits=6 k=3 merkle_nodes=232
+NV_PHASE end 8684
+NVL_AIR 0 h=65536 w=77 int/row=51 deg=9
+NVL_AIR 1 h=65536 w=83 int/row=17 deg=9
+NVL_AIR 2 h=128 w=9 int/row=2 deg=8
+NVL_AIR 3 h=65536 w=5 int/row=1 deg=3
+NVL_PROOF_SHA256 0851b166c0d312e62235de1ce0fdf0f0425b735a7ba40af0163c64e67269dd2a
+NVL_SUMMARY wall_s=687.2 (keygen+tracegen+prove+verify) peak_rss_gb=5.22 cells=10814592 (2^23.37) program_rows=8684 proof_bytes=386869
