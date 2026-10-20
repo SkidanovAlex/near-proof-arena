@@ -1,0 +1,1 @@
+# totals: {'node_cells': 1042648, 'val_cells': 221, 'sha_cells': 924800, 'ups_cells': 537522, 'total_inters': 180906}; all=2686097

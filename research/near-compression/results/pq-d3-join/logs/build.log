@@ -1,0 +1,22 @@
+# lane pq-d3-join, 2026-10-19
+# Reused artifacts: /data/illia/nearproof-wt/pq-state-port @ 426b73deb (.lake copied into
+# formal-core, spec/lean, spec/lean/v3, zk-formal; no rebuild).
+
+$ cd zk-formal && lake build ZkFormal.NearV3.D3.ContractData ZkFormal.PQ.Join.Statement
+✔ [70/71] Built ZkFormal.NearV3.D3.ContractData (247ms)
+✔ [71/71] Built ZkFormal.PQ.Join.Statement (301ms)
+Build completed successfully (71 jobs).
+
+$ cd zk-formal && lake build
+✔ [1020/1021] Built ZkFormal (291ms)
+Build completed successfully (1021 jobs).
+
+$ #print axioms (via lake env lean)
+ZkFormal.NearV3.D3.nibbles_append          : [propext]
+ZkFormal.NearV3.D3.nibbles_length          : [propext, Quot.sound]
+ZkFormal.NearV3.D3.contractDataPath_length : [propext, Quot.sound]
+ZkFormal.NearV3.D3.contractDataPathSpec_holds : [propext, Quot.sound]
+ZkFormal.PQ.Join.host_bus_safe             : []
+
+$ make pin-check
+ok  challenges/drafts/near-chunk-v3.draft.json class d3-maxgas: ... rc=0

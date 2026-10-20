@@ -363,3 +363,6 @@ import ZkFormal.PQ.Aggregation.Tree
 import ZkFormal.PQ.Aggregation.Statement
 import ZkFormal.PQ.Aggregation.Shape
 import ZkFormal.PQ.Aggregation.Compose
+-- lane pq-d3-join: the ContractData key prefix/walk tables and the joint Wasm×state statement
+import ZkFormal.NearV3.D3.ContractData
+import ZkFormal.PQ.Join.Statement
