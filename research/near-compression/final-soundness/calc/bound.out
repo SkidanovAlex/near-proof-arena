@@ -1,0 +1,108 @@
+|F| = 2^370.88;  t = 2^64;  target 268 = 236 query bits + z = 32;  m = 3;  x15 domains;  digests 336 b;  FS state 384 b
+
+== final (layer d): log_h=19 b=8 k1=1 k=3 lf=9 W=141  queries [42, 38, 31, 26]  (= backend schedule)
+   round 0: k=1 rho=2^-11.91 n=2^30.91 1-delta=2^-5.731 q=42 -> query bits 240.70 + z = 272.70;  list m/rho = 2^13.49
+   round 1: k=3 rho=2^-12.91 n=2^30.91 1-delta=2^-6.231 q=38 -> query bits 236.78 + z = 268.78;  list m/rho = 2^14.49
+   round 2: k=3 rho=2^-15.91 n=2^30.91 1-delta=2^-7.731 q=31 -> query bits 239.66 + z = 271.66;  list m/rho = 2^17.49
+   round 3: k=3 rho=2^-18.91 n=2^30.91 1-delta=2^-9.231 q=26 -> query bits 240.01 + z = 272.01;  list m/rho = 2^20.49
+     -268.78  whir query r1 incl. grinding z=32 (L4.5, L5.1)
+     -269.64  whir fold r3.1 (L4.3)
+     -271.66  whir query r2 incl. grinding z=32 (L4.5, L5.1)
+     -272.01  whir query r3 incl. grinding z=32 (L4.5, L5.1)
+     -272.70  whir query r0 incl. grinding z=32 (L4.5, L5.1)
+     -273.01  whir mu batching, MCA d=W-1 (L4.2)
+     -305.71  logup alpha,beta (L3.1)
+     -318.90  whir OOD r3 (L4.4)
+     -321.90  whir OOD r2 (L4.4)
+     -324.90  whir OOD r1 (L4.4)
+     -345.39  whir gamma r2 (L4.6)
+     -345.39  constraint batching lambda (L3.4)
+     -347.57  stacking lambda (L3.7)
+     -348.11  whir gamma r1 (L4.6)
+     -350.96  whir gamma r0 (L4.6)
+     -351.35  zerocheck univariate round r_0 (L3.5)
+     -352.93  zerocheck multilinear round (L3.5)
+     -353.93  claim batching mu (L3.4)
+     -354.58  gkr sumcheck round + xi coordinate (L3.2, L3.3)
+     -354.81  stacking univariate u_0 (L3.7)
+     -355.07  gkr lambda_j / mu_j (L3.2)
+     -356.39  stacking round u_j (L3.7)
+     -366.13  whir final gamma r3 (L4.6)
+   worst move: whir query r1 incl. grinding z=32 (L4.5, L5.1)  2^-268.78
+
+== inner NV (layers 1..d-1): log_h=19 b=6 k1=1 k=4 lf=6 W=141  queries [50, 46, 33, 26]  (= backend schedule)
+   round 0: k=1 rho=2^-9.91 n=2^28.91 1-delta=2^-4.731 q=50 -> query bits 236.55 + z = 268.55;  list m/rho = 2^11.49
+   round 1: k=4 rho=2^-10.91 n=2^28.91 1-delta=2^-5.231 q=46 -> query bits 240.63 + z = 272.63;  list m/rho = 2^12.49
+   round 2: k=4 rho=2^-14.91 n=2^28.91 1-delta=2^-7.231 q=33 -> query bits 238.62 + z = 270.62;  list m/rho = 2^16.49
+   round 3: k=4 rho=2^-18.91 n=2^28.91 1-delta=2^-9.231 q=26 -> query bits 240.01 + z = 272.01;  list m/rho = 2^20.49
+     -268.55  whir query r0 incl. grinding z=32 (L4.5, L5.1)
+     -270.62  whir query r2 incl. grinding z=32 (L4.5, L5.1)
+     -272.01  whir query r3 incl. grinding z=32 (L4.5, L5.1)
+     -272.63  whir query r1 incl. grinding z=32 (L4.5, L5.1)
+     -273.64  whir fold r3.1 (L4.3)
+     -280.01  whir mu batching, MCA d=W-1 (L4.2)
+     -307.71  logup alpha,beta (L3.1)
+     -320.90  whir OOD r3 (L4.4)
+     -324.90  whir OOD r2 (L4.4)
+     -328.90  whir OOD r1 (L4.4)
+     -345.30  whir gamma r2 (L4.6)
+     -347.39  constraint batching lambda (L3.4)
+     -348.84  whir gamma r1 (L4.6)
+     -349.57  stacking lambda (L3.7)
+     -352.72  whir gamma r0 (L4.6)
+     -353.35  zerocheck univariate round r_0 (L3.5)
+     -354.93  zerocheck multilinear round (L3.5)
+     -355.93  claim batching mu (L3.4)
+     -356.58  gkr sumcheck round + xi coordinate (L3.2, L3.3)
+     -356.81  stacking univariate u_0 (L3.7)
+     -357.07  gkr lambda_j / mu_j (L3.2)
+     -358.39  stacking round u_j (L3.7)
+     -366.13  whir final gamma r3 (L4.6)
+   worst move: whir query r0 incl. grinding z=32 (L4.5, L5.1)  2^-268.55
+
+== base app (layer 0, stress): log_h=21 b=6 k1=1 k=4 lf=8 W=601  queries [50, 46, 33, 26]
+   round 0: k=1 rho=2^-9.91 n=2^30.91 1-delta=2^-4.731 q=50 -> query bits 236.55 + z = 268.55;  list m/rho = 2^11.49
+   round 1: k=4 rho=2^-10.91 n=2^30.91 1-delta=2^-5.231 q=46 -> query bits 240.63 + z = 272.63;  list m/rho = 2^12.49
+   round 2: k=4 rho=2^-14.91 n=2^30.91 1-delta=2^-7.231 q=33 -> query bits 238.62 + z = 270.62;  list m/rho = 2^16.49
+   round 3: k=4 rho=2^-18.91 n=2^30.91 1-delta=2^-9.231 q=26 -> query bits 240.01 + z = 272.01;  list m/rho = 2^20.49
+     -268.55  whir query r0 incl. grinding z=32 (L4.5, L5.1)
+     -269.64  whir fold r3.1 (L4.3)
+     -270.62  whir query r2 incl. grinding z=32 (L4.5, L5.1)
+     -272.01  whir query r3 incl. grinding z=32 (L4.5, L5.1)
+     -272.63  whir query r1 incl. grinding z=32 (L4.5, L5.1)
+     -273.91  whir mu batching, MCA d=W-1 (L4.2)
+     -291.90  logup alpha,beta (L3.1)
+     -318.90  whir OOD r3 (L4.4)
+     -322.90  whir OOD r2 (L4.4)
+     -326.90  whir OOD r1 (L4.4)
+     -333.90  constraint batching lambda (L3.4)
+     -334.90  stacking lambda (L3.7)
+     -340.32  claim batching mu (L3.4)
+     -341.85  zerocheck univariate round r_0 (L3.5)
+     -343.44  zerocheck multilinear round (L3.5)
+     -345.09  gkr sumcheck round + xi coordinate (L3.2, L3.3)
+     -345.30  whir gamma r2 (L4.6)
+     -345.31  stacking univariate u_0 (L3.7)
+     -345.58  gkr lambda_j / mu_j (L3.2)
+     -346.90  stacking round u_j (L3.7)
+     -348.84  whir gamma r1 (L4.6)
+     -352.72  whir gamma r0 (L4.6)
+     -366.13  whir final gamma r3 (L4.6)
+   worst move: whir query r0 incl. grinding z=32 (L4.5, L5.1)  2^-268.55
+
+eps_rbr-KS (max over all moves of all layers) = 2^-268.55   [inner NV (layers 1..d-1): whir query r0 incl. grinding z=32 (L4.5, L5.1)]
+
+Theorem 6.1 / 7.2 (one compressed database for all d+1 layers; T* transcript):
+   t' = 2t (Lemma 6.3) ; G^2 = 10 max(3t'/2^336, eps + 2^20(2t'+1)/2^384)
+   total soundness/extraction failure  <= 2^-135.23
+   conservative union over d+1 = 7 layers: 2^-132.42
+   conservative union over d+1 = 8 layers: 2^-132.23
+
+cross-checks (not used for the claim):
+   CMS19 Thm 8.6 constants 6(t^2 eps + 4t^3/2^336):        2^-137.52
+   CDHZ Thm 11.3 + 6.10 + 8.3 (w <= t, k = 200 rounds):   2^-130.40
+
+code as written (sequential squeeze chain, PoW bits in the absorb output):
+   no proven grinding credit -> eps = 2^-236.55 -> Thm 6.1 gives 2^-105.23  (and even this needs the one-call model [H-M])
+
+PASS: total <= 2^-128 with 4.42 bits margin (conservative 7-layer union), conditional on the assumptions listed in GAPS.md (A-IC, NV-faithful, Base-faithful, T* transcript).

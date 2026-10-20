@@ -1,0 +1,920 @@
+# End-to-end soundness of the PQ recursive SWIRL stack
+
+Lane `lane/pq-final-soundness`, 2026-10-18. Research and proof only; no backend change.
+Companion files: `calc/bound.py` (every number below; output in `calc/bound.out`) and
+`GAPS.md` (status of every step, and every code-vs-proof mismatch).
+
+Contract: V3-D3A-STUDY §D, rows U-2 (proven bounds only), U-6 (failure ≤ 2⁻¹²⁸ against
+≤ 2⁶⁴ quantum queries), U-7 (SHA-384 throughout), U-8, U-9, U-10 (42-B digests, z = 32,
+WHIR-Y).
+
+Tags used below:
+* **[P]** proven in a cited published source, whose statement matches the use here.
+* **[P′]** proven in a cited source that is a preprint or an unreviewed project note.
+* **[T]** proven in this document. Complete as written, not yet reviewed.
+* **[A]** an explicit assumption. Not proven; stated exactly.
+* **[C]** a fact about the code, with file:line.
+
+Code citations refer to the only tree that contains every lever: **U** =
+`/data/illia/nearproof-deps/pq-nv-soundness/stark-backend-unified/crates/stark-backend/src`
+(pinned v2.0.1 d667af5 + base patch + `stark-backend-unified.patch` from
+`lane/pq-recursion-sha384`, `native/recursion/patches/`), and **SHA** =
+`/data/illia/nearproof-deps/pq-recursion/levers-check/src/native_sha384_levers_config.rs`
+(the SHA-384 hasher/transcript; the in-circuit twin is `crates/recursion/src/sha384/config.rs`
+in the NV workspace). The levers-only and x15-only trees lack WHIR-Y and must not be used.
+
+---
+
+## 0. Result
+
+**Main Theorem (as proven here).** Let d ≤ 7 be the recursion depth. Assume:
+
+1. **T\*** — the transcript change of §6.2. Challenges, including the PoW bits, are derived
+   in counter mode from one post-absorb key per verifier move. The code as written derives
+   them through a sequential hash chain (§6.5, gaps G-1 and G-2).
+2. **NV-faithful(i)** for i = 1..d, in the exact form of Lemma 7.1. This is being proven
+   by the circuit lane.
+3. **Base-faithful**, Lemma 7.2: the layer-0 AIRs encode the chunk-validation statement.
+4. **A-IC** (Assumption 7.3): the SHA-384 evaluations that a valid NV witness certifies
+   *in-circuit* are treated as evaluations of the random oracle.
+
+Model SHA-384 (with the domain separation of §1.3) as a quantum random oracle. Then for every
+quantum adversary that makes at most t = 2⁶⁴ queries and outputs a final proof π_d, the
+probability that the native verifier V_d accepts π_d while the chunk-validation statement it
+names is false is at most
+
+  **ε_total ≤ (2t·G + 2⁻¹⁶⁰)² ≤ 2⁻¹³⁵·²**, where G² = 10·max(3·2t/2³³⁶, ε_rbr + 2²⁰(4t+1)/2³⁸⁴),
+
+and ε_rbr = 2⁻²⁶⁸·⁵⁵ is the largest per-move round-by-round knowledge error over all layers
+(§5). The worst move is the round-0 WHIR query move of the inner NV layers, with grinding.
+A union over 7 layers is not needed (Theorem 7.4 uses one database), but even with it the
+bound is 2⁻¹³²·⁴.
+
+**What this does and does not meet.**
+* Without A-IC, nothing is proven about the recursive statement (§8). **U-2 is not met on
+  that one point.** A-IC is the precise form of the `random-oracle-in-circuit` assumption that
+  U-1 adopted (U-7 moved it to SHA-384). The literature (§8.2) has no proven bound for in-circuit
+  hashing, and there is an impossibility result for the general "relativized" version
+  (Barbara–Chiesa–Guan, TCC 2025, Thm 4.1/5.1).
+* A single layer, e.g. a non-recursive base proof, needs no A-IC. Under T\* it meets U-2/U-6
+  outright: Theorem 6.4 gives ≤ 2⁻¹³⁵·².
+* **For the transcript as coded, no bound is proven.** This is not an attack. The QROM proof
+  technique needs every verifier move's randomness, including the PoW bits, to come from one
+  oracle call. Without the T\* fix, the grinding credit is not provable either. With no credit,
+  the same theorem gives only 2⁻¹⁰⁵ (`bound.py`, last block), which fails U-6.
+
+---
+
+## 1. Setting
+
+### 1.1 Fields and parameters
+* p = 15·2²⁷ + 1 (BabyBear). F = Ext12 = F_p[X]/(X¹² − 31), |F| = p¹² = 2^370.88.
+* Per-round target 268 bits, accounted as **236 query bits + z = 32 PoW bits**:
+  `protocol_security_level = security_bits − query_phase_pow_bits` (U config.rs:416), and
+  q_i = ⌈236 / (−log₂ α_i)⌉ with α_i = √ρ_i·(1 + 1/(2m)) (config.rs:332-346, 405-457).
+* m = 3 (ListDecoding). ρ_i = 2^(−lir_i)/15 (×15 domains, config.rs:447-452). lir₀ = b and
+  lir_{i+1} = lir_i + k_i (keep_domain). The first round folds k₁; the others fold k
+  (config.rs:472-478).
+* Shapes are those of the NV fixed point (`extrapolate_nv2.py`, 268/z = 32/42 B row):
+  * final layer: b = 8, log h = 19, k₁ = 1, k = 3, final length 2⁹, W = 141, queries
+    [42, 38, 31, 26];
+  * inner layers: b = 6, k = 4, final length 2⁶, queries [50, 46, 33, 26].
+
+  `bound.py` re-derives both schedules from the backend formula and asserts equality.
+
+### 1.2 The protocol
+One SWIRL layer proves, for a multi-AIR verifying key vk with public values x:
+
+> **R_vk(x; T):** T is a trace (one matrix per present AIR, height 2^{n_a}, rows at and
+> beyond the tight height H_a equal to zero) such that
+> (i) every AIR constraint polynomial vanishes on every row;
+> (ii) every bus balances modulo p: for every message value v, the multiplicities m with which
+> v is sent and received satisfy Σ m ≡ 0 (mod p);
+> (iii) the program/preprocessed columns equal the table fixed by vk (Lemma 3.6).
+
+The verifier's transcript order is fixed in §6.4 (it was audited line by line against U).
+The sub-protocols are:
+* the preamble;
+* LogUp with a fractional-sum GKR (Gruen rounds, derived claims);
+* the batch-constraint zerocheck with univariate skip (Gruen rounds);
+* the stacking reduction (tight heights, rotation mask);
+* WHIR (×15 domains, k₁, keep-domain, m = 3, multiproof, coset leaves, WHIR-Y, grinding).
+
+### 1.3 Hash, framing, oracles [C]
+* Every hash is SHA-384. A framed hash is
+  `H(tag, parts) = SHA-384(prefix32 ‖ tag_u8 ‖ Σ(le64(len) ‖ part))` (SHA:69-80), with
+  prefix32 = `nearproof-sha384-ext12-v5-w42-c1` under the 42-B lever.
+* Tags: 0 row leaf / vk pre-hash, 2 init, 3 flush, 4 commit, 5 squeeze, 6 coset leaf,
+  7 PoW. The tag byte is at a fixed offset.
+* A node is `SHA-384(np8 ‖ l₄₂ ‖ r₄₂)` truncated to 42 B (SHA:91-99). Under the lever,
+  np8 = `NPQ5 ‖ 0x2a ‖ C ‖ ND`, not `NPQ4NODE` as the task text states; `NPQ4NODE` is the
+  all-default prefix (SHA:35-37).
+* Leaf digests and the vk pre-hash are also truncated to 42 B. The 48-byte transcript state
+  is never truncated.
+
+**Lemma 1.1 (oracle split) [T].** The framed inputs fall into three pairwise disjoint,
+prefix-free sets:
+* the **narrow-leaf** set N_L: tags 0 and 6;
+* the **narrow-node** set N_N: node messages, all of length exactly 92 bytes;
+* the **wide** set W: tags 2, 3, 4, 5, 7.
+
+The framing is injective on each set. So, modelling SHA-384 as a random oracle H, the three
+restrictions are independent random oracles: H restricted to N_L and N_N truncated to
+336 bits, and H restricted to W at 384 bits.
+
+*Proof.* Node messages start with byte `N` (0x4E); framed messages start with `n` (0x6E). Inside
+the framed sets the tag byte at offset 32 separates leaf from transcript tags. The
+length-prefixed parts make the encoding injective, and node messages have a fixed length.
+Restrictions of a random function to disjoint domains are independent. A truncation of a
+uniform function is uniform. ∎
+
+Modelling the full SHA-384 (Merkle–Damgård, any message length) as one random oracle is the
+standard ROM idealisation and is part of U-6/U-7. It is not an extra assumption of this note.
+The *in-circuit* SHA-384 is a different matter (§8).
+
+---
+
+## 2. Round-by-round knowledge soundness: definitions
+
+An IOP verifier move samples a challenge c. A prover move sends a message a, possibly an
+oracle.
+
+**Definition 2.1 (rbr-KS, doom form).** An IOP for relation R has round-by-round knowledge
+error ε if there are a state function S(x, τ) ∈ {0,1} on partial transcripts and an extractor
+E with:
+* (K1) S(x, ∅) = 0 for every x.
+* (K2) **Prover moves:** if S(x, τ) = 0 and S(x, τ‖a) = 1, then E(x, τ‖a) ∈ R(x).
+* (K3) **Verifier moves:** if S(x, τ) = 0, then Pr_c[S(x, τ‖c) = 1] ≤ ε.
+* (K4) **Acceptance:** if V accepts the complete transcript τ, then S(x, τ) = 1.
+
+Consequence. For any accepting τ, look at the first prefix where S becomes 1. Either it
+follows a verifier move (a "lucky challenge"), or it follows a prover move and E succeeds on
+that prefix. Definition 2.1 implies CMS19's rbr knowledge soundness. It is the shape that
+Theorem 6.4 consumes. E need not be efficient for the soundness conclusion of the Main Theorem
+(§7.4); an efficient E exists here anyway (Guruswami–Sudan list decoding up to the Johnson
+radius used below).
+
+**Definition 2.2 (list states).** Let F = (F₁..F_W) be the stacked round-0 oracle, a word of
+the interleaved code RS^W[F, L₀, 2^{log h}]. Let δ₀ = J_m(ρ₀) := 1 − (1 + 1/2m)√ρ₀ and
+Λ₀ := Λ^W(F, δ₀), the codewords within relative distance δ₀. By the Johnson bound
+[P, WHIR Thm 4.3 and Lemma 4.4],
+
+  |Λ₀| ≤ ℓ₀ := 1/(2η√ρ₀) = m/ρ₀,  with η = √ρ₀/2m.
+
+For c ∈ Λ₀, write unstack(c) for the trace that c encodes. This is a deterministic map,
+given the layout (Lemma 3.7).
+
+**Lemma 2.3 (rbr soundness in list form ⇒ rbr-KS) [T].** Suppose the IOP's verifier moves
+after the round-0 commitment admit a soundness state function of list form:
+
+  S_snd(τ) = 1 ⟺ ∃ c ∈ Λ₀ : Claims_τ(c),
+
+where Claims_τ(c) is a predicate in c and the non-oracle part of τ, and Claims at the
+commitment is "unstack(c) ∈ R(x)". Later rounds may add conjunctions about later oracles,
+which is the WHIR form of §4. Prover moves after the commitment never turn S_snd from 0 to 1,
+and each verifier move turns it from 0 to 1 with probability at most ε. Then the IOP has
+rbr-KS error ε, with E(x, τ) := "list-decode F; return unstack(c) for the first c ∈ Λ₀ with
+unstack(c) ∈ R(x)".
+
+*Proof.*
+* Set S(∅) = 0 and, from the commitment on, S := S_snd. (K1) holds.
+* At the commitment prover move, S flips to 1 iff some c ∈ Λ₀ has unstack(c) ∈ R(x). Then E
+  succeeds, which is (K2). Later prover moves never flip S.
+* (K3) is the hypothesis.
+* (K4): acceptance satisfies every claim, by the definition of the states (checked per
+  sub-protocol in §3–§4). ∎
+
+**Lemma 2.4 (union over the list) [T; = HROB Lemma 4.7 at m = 0].** Suppose a verifier move
+satisfies, for each fixed c, Pr_ch[¬Claims_τ(c) ∧ Claims_{τ‖ch}(c)] ≤ ε_P. Then the move's
+list-form error is at most ℓ₀·ε_P.
+
+*Proof.* Λ₀ is fixed by the commitment, before the move. Take a union bound. ∎
+
+Every PIOP move (§3) precedes WHIR's first OOD sample. So its error is ℓ₀ times its usual
+per-candidate error (ℓ₀ = 2^13.5 for the final layer). With several round-0 commitments
+(app layers) the factor is the product of the lists; `bound.py` uses `commits = 2` for the
+app stress shape.
+
+**Lemma 2.5 (message restriction and derived messages) [T].**
+* (a) If a protocol V′ accepts a subset of the prover messages that V accepts, and is
+  otherwise identical, then any state function for V is one for V′, with the same errors.
+* (b) Suppose V′ omits a prover message a that V would check through an equation
+  E(a, τ) = 0 with a unique solution a = g(τ). Suppose V′ computes a := g(τ), absorbs it
+  exactly as V does, and rejects when g is undefined. Then accepting transcripts of V′ are in
+  bijection with accepting transcripts of V (insert a = g(τ)), with identical FS inputs. So V′
+  has V's state function and errors.
+
+*Proof.* (a) Restricting the prover can only lower the probability of each transition. (b)
+Bijection; V′ rejects only where V would also reject or g is undefined, which affects
+completeness only. ∎
+
+Lemma 2.5 covers:
+* Gruen GKR rounds: s(X) = eq_pre·eq₁(ξ_t, X)·t(X) with s(0) = claim − s(1). These are
+  restrictions to degree-3 polynomials with a known linear factor (U fractional_sumcheck_gkr.rs:224-247).
+* Derived GKR claims p₁ and q₀ (gkr.rs:95-113, 150-160).
+* Gruen zerocheck rounds: s(d+1) derived, last wire value forced to 0 and not absorbed
+  (batch_constraints.rs:369-412).
+* The next-row mask (Lemma 3.8).
+* WHIR-Y absorbing derived values (Lemma 4.6).
+
+The soundness of Gruen's tweak was stated only informally in Gruen (ePrint 2024/108, App. A.3,
+"V can compute what P would have sent"). Lemma 2.5 is the rbr form of that remark.
+
+---
+
+## 3. The PIOP before WHIR
+
+Throughout, c ranges over Λ₀, T_c = unstack(c), and errors are per candidate. Lemma 2.4
+multiplies them by ℓ₀.
+
+**Lemma 3.1 (LogUp: α, β) [T, standard; cf. Papini–Haböck ePrint 2023/1284, Prop. 2].**
+* Setting: N_int is the total number of interactions, and messages are tuples of length
+  ≤ ℓ_msg over F_p, fingerprinted as fp_β(v) = Σ_j β^j v_j (bus index included).
+* Suppose T_c violates (ii). Then with probability ≥ 1 − (ℓ_msg·N_int²/2 + 2N_int)/|F| over
+  (α, β), sampled consecutively with no prover message between them (one verifier move,
+  batch_constraints.rs:270-271), the true fractional sum Σ m/(α − fp_β(v)) of T_c is not 0,
+  or some denominator vanishes. The latter is a rejection.
+
+*Proof.*
+1. Distinct messages give distinct polynomials fp_·(v) of degree ≤ ℓ_msg. A union over the
+   < N_int²/2 pairs bounds Pr_β[some collision] by ℓ_msg·N_int²/(2|F|).
+2. Without collisions, an unbalanced bus gives a non-zero rational function Σ_v M_v/(X − fp_β(v)).
+   Here M_v ≢ 0 mod p for some v. It has ≤ N_int poles and ≤ N_int zeros.
+3. Pr_α[α is a zero or a pole] ≤ 2N_int/|F|.
+
+Condition (ii) is balance **mod p**. Whether mod-p balance means what an AIR intends (e.g.
+boolean multiplicities, < p total uses) is part of NV-faithful/Base-faithful (Lemma 7.1(F4)),
+not of this lemma. ∎
+
+**Lemma 3.2 (fractional-sum GKR, with Gruen and derived claims) [T, standard].**
+* Setting: L = l_skip + n_logup layers. Layer j runs j sumcheck rounds of degree 3, a batching
+  challenge λ_j and a line reduction μ_j.
+* Moves, in code order (gkr.rs:114-175): root claims observed, then μ₀; then per layer λ_j,
+  then the rounds r_t after s(1), s(2) [, s(3)], then the layer claims observed, then μ_j.
+* Errors per candidate: each sumcheck round ≤ 3/|F|; each λ_j ≤ 1/|F| (two claims combined
+  linearly); each μ_j ≤ 1/|F| (two evaluation claims on a line, linear in μ).
+
+*Proof.* State: "the current layer claims are the true layer values of T_c". These are the
+usual sumcheck and batching arguments (Schwartz–Zippel in one variable). Gruen and derived
+claims are covered by Lemma 2.5. ∎
+
+**Lemma 3.3 (implicit zerocheck claims at the GKR point) [T].**
+* The zerocheck point ξ is the GKR's final point, padded with fresh samples
+  (batch_constraints.rs:305-307).
+* Let Ẑ_c(Y, X) := Σ_{z∈D, x} L_z(Y)·eq(X, x)·C_c(z, x), where D is the univariate-skip
+  subgroup (|D| = 2^{l_skip}) and C_c is the λ-free vector of constraint values of T_c.
+* If T_c violates (i), Ẑ_c is a non-zero polynomial: degree < 2^{l_skip} in Y, multilinear in X.
+* Add to Claims_τ(c) the conjunct "Ẑ_c with the already-fixed coordinates of ξ substituted is
+  the zero polynomial".
+* Then every move that fixes one coordinate of ξ adds ≤ (2^{l_skip} − 1)/|F| (the Y coordinate)
+  or ≤ 1/|F| (an X coordinate) to that move's error.
+
+*Proof.* The values {C_c(z, x)} are recovered from Ẑ_c by Lagrange and multilinear
+interpolation, so Ẑ_c ≢ 0. Fixing variables one at a time: if P(fixed, rest) ≢ 0, then
+substituting a uniform value for one more variable gives ≢ 0 except with probability
+deg_var/|F|. The order in which coordinates are fixed does not matter. ∎
+
+`bound.py` adds (3 + 2^{l_skip})/|F| to every GKR round move and (1 + 2^{l_skip})/|F| to
+λ_j/μ_j. That is conservative.
+
+**Lemma 3.4 (λ and μ batching) [T].** λ is sampled before the per-AIR claims (p_a, q_a) are
+absorbed (batch_constraints.rs:311 vs 315-320). μ is sampled after them (329). The
+combination is (204-210)
+
+  evaluated = Σ_a μ^{2a}·num_a + μ^{2a+1}·den_a + Σ_a μ^{2N_air + a}·eq·Σ_j λ^j C_{a,j}.
+
+* Errors: λ ≤ (n_constraints − 1)/|F|; μ ≤ (3N_air − 1)/|F|.
+* **The order is sound.** The claims are chosen after λ, but λ enters only through
+  Λ_a(c) := Σ_j λ^j Ẑ_{a,j,c}(ξ), which does not depend on the claims. The claimed-minus-true
+  difference, as a polynomial in μ, is fixed before μ.
+
+*Proof.*
+* λ: if some Ẑ_{a,j,c}(ξ) ≠ 0, then Σ_j λ^j Ẑ_{a,j,c}(ξ) is a non-zero polynomial of degree
+  ≤ n_constraints − 1 in λ.
+* μ: the prover's claims (p_a, q_a) must pass the GKR-sum check (321-326). If the true per-AIR
+  values of T_c differ from the GKR output, some claim is false. If some Λ_a(c) ≠ 0, a
+  constraint term is non-zero.
+* Either way the true batched sum minus the claimed batched sum is a non-zero polynomial in μ
+  of degree ≤ 3N_air − 1, fixed before μ. ∎
+
+**Lemma 3.5 (batch-constraint sumcheck with univariate skip) [T, standard].**
+* The univariate round: s₀ has degree ≤ (d+1)(2^{l_skip} − 1), checked by
+  Σ_{z∈D} s₀(z) = |D|·Σ_k coeff_{k|D|}, an identity for a multiplicative subgroup D
+  (batch_constraints.rs:331-361).
+* The n_max multilinear rounds have degree d + 1. Here d = max_constraint_degree = 21 (the
+  k = 3 SHA AIR) and the eq factor adds 1.
+* Errors: (d+1)(2^{l_skip} − 1)/|F| and (d+1)/|F|.
+* The final check (batch_constraints.rs:211) compares the last claim with the constraint DAG
+  evaluated on the absorbed column openings.
+* After this lemma the claims about T_c are the column-opening claims {T̂_c,col(r),
+  rot-T̂_c,col(r)}.
+
+*Proof.* The standard sumcheck argument, per round. Gruen rounds are covered by Lemma 2.5. ∎
+
+**Lemma 3.6 (program binding as an implicit claim) [T].** The NV program is ordinary main
+columns (DESIGN §2.1). The native final verifier checks the final proof's program-column
+openings against P̂_NV(r) (NV-faithful requires the same check in-circuit for the child).
+Add "the program columns of T_c equal P" to R. If they differ, the multilinear difference is
+non-zero, and the moves fixing r's coordinates carry the implicit claim "difference with fixed
+coordinates substituted ≡ 0". As in Lemma 3.3, that costs ≤ 1/|F| per coordinate.
+
+*Proof.* As Lemma 3.3. ∎
+
+This is what makes the program part of the extracted relation, not merely a check on opened
+values. Without it, a valid trace with a *different* program could pair with false program
+openings.
+
+**Lemma 3.7 (stacking reduction, tight heights) [T for the multilinear identities; see G-6].**
+* The verifier samples λ_stack (stacked_reduction.rs:111), runs a univariate round
+  (degree ≤ 2(2^{l_skip} − 1)) and n_stack rounds of degree 2. That reduces all opening claims
+  to claims {Ĉ_w(u)} about the stacked columns, absorbed before WHIR.
+* Errors: (#claims − 1)/|F| for λ_stack, 2(2^{l_skip} − 1)/|F|, and 2/|F| per round.
+* Soundness requires the kernel identity below for every column v (length N = 2^n, real rows
+  [0, H), zero beyond). Take H = Σ_i 2^{e_i}, descending, each e_i ≥ l_skip, with offsets
+  o_i = Σ_{j<i} 2^{e_j}; each o_i is a multiple of 2^{e_i}.
+  * (a) v̂(r) = Σ_i c_i·ĉh_i(r_{<e_i}), with c_i = eq(r_{≥e_i}, bits(o_i/2^{e_i})).
+  * (b) With w(x) := v(x+1 mod N),
+    ŵ(r) = Σ_i [ c_i·rot(ĉh_i)(r_{<e_i}) + ch_i(0)·( eq(r, o_i − 1 mod N) − c_i·Π_{t<e_i} r_t ) ].
+
+*Proof.*
+* (a) Alignment gives bits(o_i + y) = (y, bits(o_i/2^{e_i})), so eq(r, o_i + y) factors.
+* (b) ŵ(r) = Σ_x eq(r, x − 1)·v(x). For x = o_i + y with y ≥ 1 the predecessor is inside the
+  chunk and contributes c_i·eq(r_{<e_i}, y − 1). The chunk's own cyclic kernel would assign
+  the y = 0 row the predecessor 2^{e_i} − 1, with weight c_i·eq(r_{<e_i}, 1^{e_i}) =
+  c_i·Π r_t. The true predecessor of row o_i is row o_i − 1 mod N.
+* Rows ≥ H contribute 0.
+* The sumcheck errors are standard. ∎
+
+(a) and (b) are exactly the code's `c_i` and `δ_i` (levers README "Mechanism";
+stacked_pcs.rs:90-103, stacked_reduction.rs:220-236), written in the multilinear encoding.
+The code uses the univariate-skip encoding (eq_D(ωr₀, ·) for the shift). Translating (b) into
+that encoding was not re-derived line by line here (G-6). For a whole column, (c, δ) = (1, 0)
+and (b) is the ordinary rotation kernel.
+
+H is prover-chosen and absorbed (mod.rs:149-152). By (a) and (b), the statement proven is R
+for the zero-padded trace, for every H. So tight heights cost nothing in soundness, provided
+the AIRs are meant to accept zero rows: that is NV-faithful's (F5).
+
+**Lemma 3.8 (next-row mask) [T].** The vk carries rot_mask (keygen/mod.rs:385-409;
+types.rs:105-131). For unmasked columns the verifier sets claim_rot = 0 and still absorbs it
+(batch_constraints.rs:104-105). The stacking reduction omits those claims.
+
+If the mask contains every column that the constraint DAG reads at offset 1, the final DAG
+evaluation never reads an unmasked rotated claim. So the protocol equals the unmasked protocol
+restricted to claim_rot = 0 on those columns (Lemma 2.5(a)), followed by dropping claims that
+nothing uses.
+
+*Proof.* Immediate. The hypothesis holds because keygen computes the mask from the DAG. In
+recursion the child's vk, mask included, is a constant of the parent program, so
+NV-faithful(F2) covers it. ∎
+
+---
+
+## 4. WHIR (×15 domains, m = 3, k₁, keep-domain, WHIR-Y, grinding)
+
+Notation as in WHIR (ePrint 2024/1586, Construction 5.1) with OpenVM round indexing:
+* round i folds f_i k_i times;
+* then it commits f_{i+1}, or sends the final polynomial;
+* then the OOD sample z_{i+1,0} and answer;
+* then the query PoW;
+* then t_i shift queries;
+* then the y_{i,·} are absorbed (WHIR-Y);
+* then γ_i (U whir.rs:130-330).
+
+δ_i = J_m(ρ_i), ℓ_i = m/ρ_i, n_i = |L_i| = 15·2^{log h + b} for every i (keep-domain).
+
+**Lemma 4.1 (WHIR on 15·2^K domains) [P′ x15-domains SOUNDNESS.md, checked here].** WHIR
+Thm 5.2 and its lemmas hold verbatim for evaluation domains that are cosets of order c·2^K
+(c odd, 2^{k_i} | |L_i|), with "smooth" replaced by "order c·2^K".
+
+Of the domain properties, WHIR uses only:
+* −x ∈ L;
+* |L^{(2^j)}| = |L|/2^j;
+* disjoint 2^k-fibres;
+* power-of-two degree.
+
+BCGM Thm 9.2 and the Johnson bound hold for arbitrary evaluation sets. The query terms need
+exactly uniform indices. **[C]** The index sampler rejects x = p − 1 and returns x mod 15·2^j
+(U traits.rs:62-71, odd_domain.rs:71-81). Since 15·2^j | p − 1, this is exactly uniform. The
+circuit rejects the proof on p − 1 instead (NV verifier.rs:244-249): that changes completeness
+by ≈ q/p and soundness not at all.
+
+I re-checked the four uses (x15 SOUNDNESS.md table) against WHIR §4–5 and agree. The one
+edit to WHIR Thm 5.2's hypothesis is the definitional one stated there.
+
+**Lemma 4.2 (μ batching of the W stacked columns) [P BCGM Thm 9.2; P′ HROB Lemma 4.8 at m = 0].**
+  ε_μ ≤ err⋆_{W−1}(δ₀) + ℓ₀(W − 1)/|F|,
+with err⋆_d(δ) = (m + ½)⁷/(3ρ^{3/2})·d·n²/|F| for δ ≤ J_m(ρ), m ≥ 3 (BCGM ePrint 2025/2051,
+Def 9.1 and Thm 9.2, for the powers generator of degree W − 1). The batched stacking claims
+are linear in the codeword, so Λ₀'s claims become one constrained-RS claim.
+
+**Lemma 4.3 (fold moves α_{i,s}) [P WHIR Thm 5.2 + BCGM Thm 9.2].**
+  ε_fold(i,s) ≤ err⋆_1(δ_i; n = n_i/2^{s−1}, ρ_i) + 3ℓ_i/|F|.
+The WHIR sumcheck polynomials have degree 2; using 3 is conservative.
+
+**Lemma 4.4 (OOD) [P WHIR Thm 5.2, ε^out].** ε_out(i) ≤ ℓ_i²/2 · 2^{m_i}/|F|, where m_i is
+the variable count of f_i.
+
+**Lemma 4.5 (shift queries) [P WHIR Thm 5.2, ε^shift and ε^fin; Lemma 4.1].** Without
+grinding,
+  Pr[query move flips S] ≤ (1 − δ_i)^{t_i}.
+At m = 0 the candidate set Y has |Y| ≤ 1 after the OOD sample (HROB §4.3 variant L at m = 0).
+In the final round Y ⊆ {p}. With grinding see Lemma 5.1.
+
+**Lemma 4.6 (γ combination, WHIR-Y) [P WHIR Thm 5.2; P′ HROB §4.4 at m = 0].**
+  ε_γ(i) ≤ ℓ_{i+1}(t_i + 1)/|F|; in the final round (t + 1)/|F|.
+
+**[C]** WHIR-Y is implemented in U: whir.rs:315-320 absorbs every y_{i,j} before γ
+(whir.rs:326), including the final round. The prover mirrors it (prover/whir.rs:368-377) and so
+does the circuit (NV verifier.rs:1389-1392).
+
+*Role of WHIR-Y at 42-B digests.* Under Theorem 6.4 (no tolerated collision, K = 0) every
+opened leaf equals the canonically extracted oracle, so the y_{i,j} are functions of the
+committed oracle. Absorbing them is Lemma 2.5(b) applied to values the verifier can derive,
+and WHIR Thm 5.2 applies with or without WHIR-Y. WHIR-Y is **necessary** only for digests
+< 256 bits: HROB Prop. 2.1 gives a ≈ t²/2ⁿ attack without it. At 336 bits it is harmless and
+keeps the narrower-digest route open.
+
+**Lemma 4.7 (WHIR rbr in list form) [P WHIR Thm 5.2 with Lemma 4.1].** The WHIR state
+function (HROB §3 table at m = 0: Ent_i, Fold_{i,s}, OOD_{i+1}, Qry_i) is of the list form
+required by Lemma 2.3. Every state is "∃ codeword in a list of the current oracle satisfying
+the current constraints". Prover moves set S(τ‖a) := S(τ). The moves' errors are Lemmas 4.2–4.6.
+(K4) holds: acceptance means all sumcheck and point checks pass and the final constraint holds
+(whir.rs:341-399).
+
+**Multiproof and coset leaves.** These are encoding choices.
+* A leaf is the whole fold coset as one tag-6 message (SHA:100-107). So the IOP alphabet is
+  "one fibre", which WHIR already reads as a unit.
+* Multiproof acceptance implies per-leaf path acceptance (Lemma 6.2).
+
+---
+
+## 5. One layer: round-by-round knowledge error
+
+**Lemma 5.1 (grinding inside one call) [T].** Under T\* (§6.2), the query move's challenge
+is one random-oracle output c = (c_pow, c_idx), with disjoint bits. The verifier rejects
+unless the z bits c_pow are zero. For a prefix with S = 0,
+
+  Pr_c[S(τ‖c) = 1] ≤ Pr[c_pow = 0]·Pr[c_idx makes all queries land in the agreement set]
+  = 2^{−z}·(1 − δ_i)^{t_i}.
+
+*Proof.* The PoW bits and the index words are disjoint, uniform, independent bits of one
+output. The rejection-sampled words give i.i.d. uniform F_p values: a word is accepted iff
+< 2p, and the value is n mod p, which is exact (SHA:160-171). Lemma 4.1's sampler then gives
+uniform indices. Lemma 4.5 bounds the second factor for every fixed c_pow = 0. ∎
+
+*What this does and does not say.* The z PoW bits multiply the move's rbr error by 2⁻ᶻ.
+Theorem 6.4 then charges t² against the product. So the per-round requirement is
+2^{−z}·(1−δ)^t ≤ 2⁻²⁶⁸, i.e. 236 query bits with z = 32. This is the code's accounting
+(config.rs:416). In the QROM this is Grover-tight: finding a c with a density-2^{−z}ε property
+costs Θ(√(2^z/ε)) queries.
+
+It does **not** hold for the code as written. There the PoW bits are bits of the absorb output
+s′ = H(7, σ‖w) and the indices come from later calls H(5, s′), H(5, H(5, s′)), … (SHA:142-186).
+The flip then happens at a later oracle point, conditioned on an already-good s′, and the
+QROM technique (§6.5) cannot combine the two densities. Pure grinding in isolation is bounded
+by DFMS22 Prop. 3.5 (Pr ≤ 152(q+1)²·2^{−z}) [P], but that bound does not compose with the query
+move.
+
+**Theorem 5.2 (rbr-KS of one SWIRL layer) [T, assembling §2–§5].** Under T\*, one SWIRL layer
+(all levers) has rbr knowledge error
+
+  ε_rbr = max over moves of {
+    ℓ₀·(ℓ_msg·N_int²/2 + 2N_int)/|F|,
+    ℓ₀·(3 + 2^{l_skip})/|F|,
+    ℓ₀·(n_constraints − 1)/|F|,
+    ℓ₀·(3N_air − 1)/|F|,
+    ℓ₀·(d + 1)(2^{l_skip} − 1)/|F|,
+    ℓ₀·(2·#cols − 1)/|F|,
+    ε_μ (Lemma 4.2),
+    ε_fold(i,s), ε_out(i), ε_γ(i) (Lemmas 4.3, 4.4, 4.6),
+    2^{−z}(1 − δ_i)^{t_i} (Lemma 5.1)
+  }
+
+for relation R_vk (§1.2, including Lemma 3.6).
+
+*Proof.* Lemmas 2.3 and 2.4 with §3, §4 and Lemma 5.1. The preamble has no verifier move
+before the commitment, and the statement (vk pre-hash, commitments, heights, public values)
+is absorbed before the first challenge (mod.rs:129-164). ∎
+
+**Numbers** (`calc/bound.py`, shapes of §1.1):
+
+| layer | worst move | 2nd | WHIR μ (W = 141) | PIOP worst | per-round query+z |
+|---|---|---|---|---|---|
+| final | query r1: **2⁻²⁶⁸·⁷⁸** | fold r3.1 (MCA, ρ = 2⁻¹⁸·⁹, n = 2³⁰·⁹): 2⁻²⁶⁹·⁶⁴ | 2⁻²⁷³·⁰ | LogUp 2⁻³⁰⁵·⁷ | 272.7 / 268.8 / 271.7 / 272.0 |
+| inner NV | query r0: **2⁻²⁶⁸·⁵⁵** | query r2: 2⁻²⁷⁰·⁶ | 2⁻²⁸⁰·⁰ | LogUp 2⁻³⁰⁷·⁷ | 268.6 / 272.6 / 270.6 / 272.0 |
+| base (stress, W = 601) | query r0: 2⁻²⁶⁸·⁵⁵ | fold r3.1: 2⁻²⁶⁹·⁶⁴ | 2⁻²⁷³·⁹ | LogUp 2⁻²⁹¹·⁹ | as inner |
+
+**ε_rbr = 2⁻²⁶⁸·⁵⁵.**
+* The worst round is a WHIR query move: by design it sits at the 268-bit target, rounded up.
+* The binding non-query term is the late-round fold MCA under keep-domain, at 2⁻²⁶⁹·⁶⁴. It is
+  1.1 bits below the query term. ρ^{−3/2} grows by 2^{4.5} per round while n stays fixed (as
+  x15 SOUNDNESS.md predicted).
+* m = 8 would push it above 2⁻²⁶⁸, so m = 3 is required.
+
+---
+
+## 6. Fiat–Shamir in the QROM
+
+### 6.1 Oracle model
+H is a quantum random oracle (Lemma 1.1). The adversary makes ≤ t superposition queries.
+Analysis uses Zhandry's compressed oracle; notation as in weak-binding ANALYSIS.md §2–3
+(database D, ⊥, Lemma 1 there).
+
+### 6.2 The transcript T\* (the protocol proven)
+T\* differs from the code only in how challenge words are produced:
+* **(T\*-1) Squeeze.** Let κ be the state right after the last absorb of a verifier move
+  (flush H3, commit H4). Challenge blocks are B_j := H(5, κ‖le32(j)) for j = 1, 2, …,
+  consumed with the existing rejection rule. When the next absorb happens, its input state is
+  the last block consumed.
+* **(T\*-2) PoW.** For a query move with witness w: B_j := H(7, σ‖w‖le32(j)), j ≥ 1, where σ
+  is the state after flush. Accept iff the first z bits of B₁ are zero. Index words start
+  after the PoW bits. The next state is the last block consumed.
+
+T\* costs no proof bytes and no extra verifier compressions: the squeeze input grows by
+4 bytes and stays inside one SHA-384 block. The honest grinding cost is unchanged: one
+compression, B₁, per attempt.
+
+**Code today [C]:** σ_{j+1} = H(5, σ_j) (SHA:160-171). The PoW is checked on s′ = H(7, σ‖w)
+itself, with indices from H(5, s′), … (SHA:142-186).
+
+### 6.3 Lemmas
+
+**Lemma 6.1 (domain separation).** Lemma 1.1.
+
+**Lemma 6.2 (multiproof ⇒ per-leaf paths) [T].** The multiproof verifier (whir.rs:470-515)
+works as follows:
+* it processes levels leaf → root over the known indices in ascending order;
+* it pulls a sibling digest from the stream when the sibling is unknown;
+* it requires the stream to be consumed and the root to match.
+
+If it accepts, then for every queried leaf there is an authentication path whose every node
+value the verifier computed as node_hash of its two children. So every evaluated point is a
+(node input, output) pair that the verifier checks against H, exactly as with individual
+paths. Duplicate indices must carry equal leaf digests, which the code checks.
+
+*Proof.* Induction on the level: each known node is either a computed parent or a leaf, and
+each parent's children are known or streamed. ∎
+
+**Lemma 6.3 (counter mode is one call) [T].** Let G(κ) := (H(5, κ‖1), …, H(5, κ‖J)). Its
+components are independent random functions, so G is a random function with J·384-bit
+output. Any t-query algorithm with oracle H can be simulated perfectly by a 2t-query algorithm
+with oracle access to G (and to H on the other domains). The same holds for
+(σ, w) ↦ (H(7, σ‖w‖j))_{j≤J}.
+
+*Proof.* To answer a query |κ, j, y⟩: compute G(κ) into an ancilla, XOR component j into y,
+and uncompute with a second query. J is a cap; a proof needing more than J = 2²⁰ blocks in
+one move is rejected, which affects completeness only (probability ≤ (1/16)^{12·2²⁰}). ∎
+
+### 6.4 Theorem: QROM straight-line knowledge soundness for families of layers
+
+**Setting.** A finite family of IOPs {IOP_v} indexed by vk pre-hash v: all layers of the stack
+and the base layer. Each has a state function S_v and extractor E_v as in Definition 2.1, with
+errors ≤ ε. The BCS compilation uses T\*, 42-B Merkle trees and the framing of §1.3. A
+transcript in D is a chain in D that starts at σ₀ = H(2) and alternates:
+* absorb entries (σ, msg) ↦ κ, prover moves, where commitments are digests whose preimages
+  are read from D;
+* challenge entries κ ↦ G(κ) (or (σ, w) ↦ G₇(σ, w)), verifier moves.
+
+Oracle strings are canonically extracted from D's narrow entries: unique preimage at each
+reached node, default for unreached nodes.
+
+**Theorem 6.4 [T; the K = 0 case of weak-binding Theorem 4 (ANALYSIS.md §4, reviewed once in
+REVIEW-1), extended here to rbr-KS, two-level chains and IOP families].** Let a quantum
+adversary make ≤ t queries to H and output (v, x, π). Let ℓ_V be the number of oracle points
+V_v evaluates on π. Then
+
+  Pr[V_v^H accepts (x, π) ∧ for every prefix τ of π's extracted transcript with S_v(τ) flipping
+  at a prover move, E_v(x, τ) ∉ R_v(x)] ≤ (t′·G + √(ℓ_V/2³³⁶))²,
+
+where t′ = 2t (Lemma 6.3) and G² = max(10·3t′/2³³⁶, 10·(ε + J(2t′+1)/2³⁸⁴)).
+
+More strongly, with the same bound on probability, the measured database D contains **no**
+transcript (for any v and any x) that is accepting, or has a first flip at a verifier move.
+
+*Proof.*
+1. **Simulation.** Replace H on the squeeze and PoW domains by G, G₇ (Lemma 6.3). The
+   adversary becomes a t′-query algorithm against independent oracles: narrow (336-bit), wide
+   absorb (384-bit), and challenge (long output). Run it against the compressed oracle; ψ_s is
+   the joint state after s queries.
+2. **Potential.** Define κ(D) ∈ {0, 1}, with κ = 1 iff one of:
+   * (a) **narrow collision:** two narrow entries with equal outputs;
+   * (b) **wide-bad:** two wide state outputs are equal; some state output equals σ₀; or some
+     state output equals the state part of the input of another entry. Wide state outputs are
+     absorb outputs κ and the blocks B_j;
+   * (c) some transcript in D has its first S-flip at a verifier move.
+   κ(∅) = 0.
+3. **Narrow points.** Fix a narrow point x and D₋ₓ. Let Chg be the union of:
+   * the narrow outputs of D₋ₓ;
+   * both 42-byte halves of every node input in D₋ₓ;
+   * every digest inside an absorb input of D₋ₓ.
+
+   So |Chg| ≤ 3t′.
+   * If r ∉ Chg, then x is unreached, creates no collision and changes no canonical
+     extraction, so κ_r = κ_⊥.
+   * By ANALYSIS Lemma 1 (CFHL21 Lemma 4.3 entries; checked in REVIEW-1 item 1), its
+     "Chg consequence" gives ‖Π_{κ=1} cO_{xŷ} Π_{κ=0}‖² ≤ 10|Chg|/2³³⁶.
+4. **Absorb points** x = (σ, msg) ↦ κ.
+   * If κ ∈ Bad := (state outputs of D₋ₓ) ∪ (state parts of inputs of D₋ₓ) ∪ {σ₀}, anything
+     may happen. |Bad| ≤ 2t′ + 1.
+   * Otherwise, by ¬(b) at most one transcript prefix ends at σ, and the new entry extends it
+     by a prover message. G(κ) is undefined, because κ ∉ Bad, so no verifier move completes.
+     A prover move cannot create a first flip at a verifier move (Definition 2.1(K2) is about
+     prover moves).
+   * Adding the entry is monotone, so ANALYSIS Lemma 1(a) gives G² ≤ 10(2t′+1)/2³⁸⁴.
+5. **Challenge points** x = κ ↦ (B₁..B_J), and the PoW variant.
+   * If some B_j ∈ Bad, anything may happen: probability ≤ J(2t′+1)/2³⁸⁴.
+   * Otherwise at most one transcript prefix τ′ ends at κ: its preimage is unique by ¬(b), and
+     there is no prediction. If S(τ′) = 0, the new transcript τ′‖c has S = 1 with probability
+     ≤ ε over the fresh uniform c (K3 and Lemma 5.1). Nothing else changes. If S(τ′) = 1
+     already, any first flip lies earlier, so (c) is unchanged.
+   * Monotone, so Lemma 1(a) gives G² ≤ 10(ε + J(2t′+1)/2³⁸⁴).
+6. **Accumulation.** By the triangle inequality over the t′ queries (Lemma 2 of ANALYSIS
+   with K = 0: a single chain 0 → 1), ‖Π_{κ=1} ψ_{t′}‖ ≤ t′·G.
+7. **From the real oracle to D.** By Zhandry / CFHL21 Cor 4.2 (ANALYSIS Fact A), with the
+   ℓ_V verifier points pairwise distinct (Lemma 6.2; mixed widths give Σ 1/M ≤ ℓ_V/2³³⁶):
+   √Pr[accept ∧ bad] ≤ √Pr[D contains an accepting D-consistent proof ∧ bad] + √(ℓ_V/2³³⁶).
+8. **κ = 0 and a D-consistent accepting proof imply extraction.**
+   * With no narrow collision, every opened leaf equals the canonical extraction: the first
+     deviating node would be a collision.
+   * So the IOP transcript τ read from D is accepting, and S(τ) = 1 by (K4).
+   * Its first flip is not at a verifier move, because κ = 0. So it is at a prover move, and by
+     (K2) E succeeds on that prefix.
+   * The same argument applies to every transcript in D, whether or not the adversary output
+     it. That gives the stronger statement. ∎
+
+**Extractor.** E_BCS runs the adversary once against the compressed oracle, measures D,
+reads π's transcript from D, and applies E_v to the prefix where S flips. This is CMS19
+§8.5.2's extractor. It is **straight-line**: no rewinding, one run. For the Main Theorem only
+the probability statement about D is used (§7.4).
+
+**Corollary 6.5 (single layer).** For one layer under T\*, with ε = 2⁻²⁶⁸·⁵⁵ and t = 2⁶⁴, the
+failure is ≤ 2⁻¹³⁵·². This is fully proven (with Theorem 6.4 [T]) and needs no A-IC.
+
+**Cross-checks** (`bound.py`; the theorem above is the one claimed):
+* CMS19 Thm 8.6's explicit 6(t²ε + 4t³/2^λ) evaluates to 2⁻¹³⁷·⁵. It does not apply verbatim:
+  it fixes one λ-bit challenge per round and its own chain (REVIEW-1 item 10).
+* Fractal (Chiesa–Ojha–Spooner, Eurocrypt 2020) Thm 10.1 gives *adaptive* QROM knowledge
+  O(t²κ_rbr + t³2^{−λ}), with 6t²κ_rbr explicit in §10.5.
+* Chiesa–Di–Hu–Zheng (ePrint 2025/2166, Mar 2026) Thm 11.3 with Thm 6.10 and Thm 8.3 gives an
+  adaptive straight-line QROM bound for BCS with Merkle trees, 4κ_sr + 4κ_ext + 8κ_off +
+  4κ_on with κ_sr ≤ 80(t+k+1)(w+k)ε_RBR + …. It evaluates to 2⁻¹³⁰·⁴. It also models one
+  function call per round.
+
+All three give the same t²ε shape. None covers a multi-call squeeze chain.
+
+### 6.5 Transcript order vs code (which messages are absorbed before which challenges)
+Audited against U, in execution order (file:line in `verifier/`):
+
+| challenge | must be bound before it | absorbed in code before it? |
+|---|---|---|
+| α_logup, β_logup (batch_constraints.rs:270-271) | vk pre-hash, common-main commitment, per-AIR presence, heights, tight heights, cached commitments, public values (mod.rs:129-164) | **yes**. The logup PoW (265) has bits = 0 in the configs seen; an unabsorbed witness at bits = 0 is malleability only. |
+| μ₀ (gkr.rs:134) | q0_claim and root (p0, q0, p1, q1), derived as in Lemma 2.5 (114-117) | yes |
+| λ_j (141); r_t (228) | layer claims; s(1), s(2) [, s(3)] (224-226) | yes |
+| μ_j (175) | layer claims, p₁ derived (156-162) | yes |
+| ξ padding (305-307) | — | — |
+| λ (311) | — (per-AIR claims may follow, Lemma 3.4) | sound as is |
+| μ (329) | per-AIR (p_a, q_a) (315-320) | yes |
+| r₀ (347); r (421) | univariate coefficients (342-344); round evaluations (383-389, Gruen value derived) | yes |
+| λ_stack (stacked_reduction.rs:111) | column openings, masked rotated claims as zeros (batch_constraints.rs:101-121) | yes |
+| u₀, u_j (146, 161-170) | stacking univariate coefficients and s_j(1), s_j(2) | yes |
+| μ_whir (whir.rs:59) | stacking openings (stacked_reduction.rs:248); c (whir.rs:51) | yes |
+| α_{i,s} (146) | ev1, ev2 (139-140) | yes |
+| z_{i+1,0} (166) | commitment g_{i+1} (164) | yes |
+| query indices (187-196) | OOD answer y₀ (171) or final polynomial (157-159); PoW witness (175-185) | yes, **but via a multi-call chain: G-1, G-2** |
+| γ_i (326) | y_{i,·} under WHIR-Y (315-320) | yes (WHIR-Y on) |
+
+**No missing absorption** was found. In particular:
+* the statement is fully bound before the first challenge;
+* every prover message that a later check uses is absorbed before the next challenge;
+* the y_{i,·} are absorbed before γ_i in every round, including the final one.
+
+The opened rows and Merkle siblings are never absorbed. That is the standard BCS pattern,
+covered by the root binding of Theorem 6.4.
+
+**Code-vs-proof mismatches** (details and ratings in GAPS.md):
+* **G-1 (open).** Every verifier move's randomness is squeezed through a sequential chain
+  σ_{j+1} = H(5, σ_j). Query moves need 4–7 blocks; an Ext12 sample needs a second block with
+  probability ≈ 1 − (15/16)¹² ≈ 0.54.
+
+  CMS19-type arguments, CDHZ and Theorem 6.4 all need the move's challenge to be one oracle
+  output. With a chain, the flip happens at the last block, with the earlier blocks already
+  fixed in D. The worst-case-over-D transition bound then degrades to ≈ ε^{1/k}.
+
+  This is a proof gap, not an attack. A nested amplitude-amplification heuristic suggests the
+  true loss is poly(k), but no theorem says so (Chiesa–Orrù ePrint 2025/536 is classical
+  ideal-permutation only and lists the QROM case as open, §1.3). **Fix: T\*-1.**
+* **G-2 (open).** The PoW bits are in the absorb output s′, and the query indices are in a
+  separate later call. **Fix: T\*-2.** Without it, the provable per-round error is the
+  ungrinded 2⁻²³⁶·⁵⁵, which gives 2⁻¹⁰⁵.
+* Minor, not soundness bugs: G-9 (the tight-height None/Some ambiguity when common_main = 0),
+  G-10 (`c` not in the pre-hash; the pre-hash not recomputed by the verifier), G-11 (PoW
+  malleability at bits = 0), G-12 (the calculator ignores hash terms).
+
+---
+
+## 7. Recursive composition
+
+### 7.1 Interfaces
+
+**Lemma 7.1 (NV-faithful(i)) — required form [A here; to be proven by the circuit lane].**
+For i = 1..d, let vk_i be NV_i's verifying key and P_i its program table: P_1 is the
+app-verifier program, and P_i = P_NV for i ≥ 2. Let T be any trace with T ∈ R_{vk_i}(x_i)
+(§1.2: constraints on all rows, including zero rows beyond tight heights; buses balanced mod p;
+program columns = P_i). Then, with fixed deterministic maps dec_i and pv_i:
+
+* (F1) **Verifier correctness.** π_{i−1} := dec_i(T) and x_{i−1} := pv_i(T) satisfy
+  V_{i−1}^{SHA-384}(vk_{i−1}, x_{i−1}, π_{i−1}) = 1. Here V_{i−1} is the native verifier of
+  §1.2/§6.4 with the T\* transcript, WHIR-Y, the ×15 sampler (rejecting p − 1), multiproof,
+  coset leaves, 42-B digests and grinding z = 32, run with vk_{i−1}'s constants.
+* (F2) **Constants.** vk_{i−1} is a constant of P_i: its pre-hash, all params including
+  c = 15, m, target, z, k₁, k, b, l_skip, n_stack, rot_mask, max_constraint_degree and the
+  interaction limit. The program/app binding of Lemma 3.6 is checked for the child, against
+  P_NV when the child's level is ≥ 2 and against P_1 when it is 1. The extended verifier
+  V′_{i−1} = V_{i−1} ∧ [child program openings = P̂_{i−1}(r)] is what is arithmetised.
+* (F3) **Public values.** level(x_i) = level(x_{i−1}) + 1, the app-mode flag is 0 iff
+  level(x_{i−1}) = 1, and the base-statement digest passes through unchanged.
+* (F4) **Bus semantics.** Balance mod p of every bus (Lemma 3.1) suffices for (F1). For
+  example, multiplicities are boolean or range-checked, and per-message uses < p.
+* (F5) **Zero rows.** Rows beyond each tight height are all-zero, and (F1)–(F4) hold for every
+  such T. Zero rows must be inert.
+* (F6) **Hash rows.** Every SHA-384 evaluation that (F1) uses to verify π_{i−1} is a row
+  sequence of NV_i's SHA AIR in T. Call the set of these message/digest pairs Q_i(T). This is
+  what A-IC (7.3) refers to.
+
+The native final verifier V_d checks:
+* π_d under vk_d with the T\* transcript;
+* level(x_d) = d;
+* π_d's program openings = P̂_NV(r) (Lemma 3.6);
+* that the base-statement digest equals the claimed chunk statement.
+
+**Lemma 7.2 (Base-faithful) [A here].** For every T ∈ R_{vk_0}(x_0), the chunk-validation
+statement named by x_0 holds.
+
+**Assumption 7.3 (A-IC(τ): in-circuit SHA-384 is the oracle, for adversaries running in time ≤ τ = 2¹²⁸; U-12).** Without the time bound the assumption is false in the query-only model of Thm 6.4 (Thm O, `lane/pq-aic-research` LEMMA.md). Let D be the measured database
+of Theorem 6.4. For every i ≥ 1 and every T ∈ R_{vk_i}(x_i) such that T = unstack(c) for
+some c in the list Λ₀ of an accepting layer-i transcript in D, every pair (m, y) ∈ Q_i(T) is
+D-consistent: m ∈ dom(D) and D(m) = y, in the domain-separated oracle of Lemma 1.1.
+
+### 7.2 Why A-IC is needed
+* In the QROM, H is a random function independent of SHA-384. The NV AIR checks
+  y = SHA-384(m) arithmetically: a concrete function.
+* If H ≠ SHA-384, an inner proof whose hashes are SHA-384 values is, with overwhelming
+  probability, not even V^H-consistent. The recursive statement "NV_i accepts" then says
+  nothing about V_{i−1}^H.
+* If instead SHA-384 inside circuits is replaced by an oracle gate, the AIR can no longer
+  check it, so the IOP relation is undefined.
+
+So the pure QROM has no coherent model in which the recursive statement is meaningful and
+provable. Any identification of the in-circuit function with the oracle is an assumption
+outside the ROM. A-IC is that identification, stated at the single point where the proof uses
+it: membership of inner-proof hash evaluations in the adversary's oracle database.
+
+### 7.3 The composition theorem
+
+**Theorem 7.4 [T, given 7.1–7.3 and T\*].** Under the hypotheses of the Main Theorem,
+Pr[V_d accepts π_d ∧ the chunk statement is false] ≤ (t′G + √(ℓ_V/2³³⁶))², with ε = the
+maximum rbr-KS error over the layer family {vk_0, …, vk_d}.
+
+*Proof.*
+1. Apply Theorem 6.4 to the family. Outside an event of the stated probability, κ(D) = 0, and
+   π_d is D-consistent and accepting. By the stronger form, **every** accepting transcript in D
+   has its first flip at a prover move: the round-0 commitment, so its Λ₀ contains a valid
+   witness.
+2. **Induction on i = d, d−1, …, 1.** The layer-i transcript is accepting and in D, so some
+   T_i ∈ Λ₀ satisfies T_i ∈ R_{vk_i}(x_i), with program = P_i (Lemma 3.6).
+   * By NV-faithful (F1)–(F3), π_{i−1} = dec_i(T_i) is accepted by V′_{i−1}^{SHA-384}, with
+     x_{i−1} linked to x_i.
+   * By A-IC, every hash in Q_i(T_i), and so every FS-chain entry and Merkle node of π_{i−1},
+     is D-consistent. So π_{i−1}'s transcript is an accepting transcript **in D**.
+   * By step 1, it has a valid witness T_{i−1}.
+3. At i = 0, T_0 ∈ R_{vk_0}(x_0), and by Base-faithful the statement holds.
+4. Statement linkage: by (F3), x_0's statement digest equals x_d's, which V_d compares with
+   the claimed chunk statement. ∎
+
+**Properties.**
+* **Straight-line.** There is one run, one database measurement and no rewinding. That
+  matters because rewinding quantum provers is the obstacle that rules out classical
+  recursive-extraction arguments in the QROM. The extracted chain T_d → π_{d−1} → T_{d−1} → …
+  is a deterministic function of (D, π_d).
+* **Error accumulation.** None beyond the family maximum ε and the shared query budget t. The
+  bad event "D contains a non-extractable accepting transcript" is one event for all layers. A
+  per-layer union bound, (d+1)× the single-layer bound, is also valid and gives 2⁻¹³²·⁴ at
+  d + 1 = 7.
+* **Extractor efficiency is not needed.** The conclusion is the truth of the base statement,
+  and the inner extractions are existential (list membership). An efficient extractor exists
+  anyway (GS list decoding), which gives knowledge soundness with a poly(n) extractor for every
+  layer.
+
+### 7.4 What d contributes
+d enters only through:
+* the family of state functions: ε is the max over layer shapes;
+* the number of A-IC applications (d);
+* the NV-faithful obligations.
+
+The number 2⁻¹³⁵·² does not depend on d.
+
+---
+
+## 8. In-circuit SHA-384 vs SHA-384 as a random oracle
+
+### 8.1 The problem (stated in §7.2)
+Recursion runs V_{i−1}, including its random-oracle calls, inside the AIR of layer i.
+RO-model proofs treat the hash as an oracle with no circuit. So the RO-model soundness of
+layer i says nothing about statements that mention the hash's code.
+
+### 8.2 Literature (each checked in the full text by a research agent; PDFs in the session scratchpad)
+
+| work | model | what it proves for our structure |
+|---|---|---|
+| Chiesa–Ojha–Spooner, Fractal, Eurocrypt 2020 (ePrint 2019/1076) | ROM/QROM for one SNARG | Thm 10.1: adaptive KS O(t²κ + t³2^{−λ}) in the QROM. Recursion (Thm 11.5, constant depth) only "assuming a secure instantiation": heuristic. |
+| Barbara–Chiesa–Guan, "Relativized Succinct Arguments in the ROM Do Not Exist", TCC 2025 (ePrint 2024/728) | ROM | **Impossibility**: Thm 4.1/Cor 4.2, Thm 5.1/Cor 5.2. No succinct argument for oracle-NP relative to a random oracle. So a proof of recursion that treats the inner hash as the same oracle cannot exist in general, and A-IC cannot be a ROM theorem for arbitrary relations. |
+| Chen–Chiesa–Gur–O'Connor–Spooner, AROM, Eurocrypt 2023 (ePrint 2023/587) | arithmetized RO, classical | Thm 9.4: unbounded-depth PCD by straight-line extraction, for a different construction in which circuits query an oracle with a low-degree arithmetization. Asymptotic only; no quantum version. Our SHA AIR is not an AROM. |
+| Chiesa–Guan–Samocha–Yogev, TCC 2024 (ePrint 2023/1646) | any oracle model, classical | Thm 5.1, Remark 5.2: κ_PCD ≤ κ_ARG(…) from straight-line extractors. In the pure ROM the PCD predicate must not query the oracle (Q = 0), i.e. the in-circuit hash is a heuristic instantiation. Classical. The closest analogue of Theorem 7.4. |
+| Arc (ePrint 2024/1731) Thm 4.3; WARP (ePrint 2025/753) Thm 10.3; Bünz–Mishra–Nguyen–Wang (ePrint 2024/474) | ROM, classical | Accumulation schemes only. PCD "by heuristic instantiation"; 2024/474 §3.3: "we do not know how to build secure PCD schemes in the ROM". WARP's QROM status is conjectured (footnote 1). |
+| Chiesa–Di–Hu–Zheng (ePrint 2025/2166) | QROM | Thm 11.3: one BCS reduction step with adaptive straight-line extraction. No composition. |
+| Hall-Andersen–Nielsen, Eurocrypt 2023 (IVC impossibility in the ROM) | ROM | Not re-checked here (theorem numbers unverified). |
+
+**Verdict.**
+* No known result gives a proven bound for depth-d recursion with the verifier's hash in the
+  circuit, classical or quantum.
+* For the general relativized version there is a proven impossibility (BCG).
+* The weakest explicit assumption that completes the proof with a concrete, straight-line,
+  depth-independent bound is **A-IC** (7.3).
+
+### 8.3 Why A-IC is the weakest workable form
+* It is used once per layer, for one purpose: inner-proof hash evaluations are recorded oracle
+  points. It does not assume knowledge soundness of anything. All extraction is proven
+  (Theorem 6.4).
+* Alternative 1: per-layer standard-model knowledge assumptions ("the SHA-384-instantiated
+  SWIRL is KS with error ε_i against size-s adversaries"). This needs extractors whose size
+  feeds the next layer's adversary. At concrete security that is unknown, and it forces the
+  assumption at budgets ≫ 2⁶⁴: it is stronger and not concrete.
+* Alternative 2: AROM. That needs a different construction and has no quantum analysis.
+* A-IC is false for contrived relations (BCG), as the RO heuristic is false for contrived
+  schemes (Canetti–Goldreich–Halevi). It is a heuristic about this specific scheme, of the same
+  kind as U-1's adopted R-a.
+
+### 8.4 Contract status
+* **U-2 ("proven soundness bounds only") is not fully met** for the recursive statement. The
+  recursion step rests on A-IC.
+* U-1, amended by U-7, already adopted the in-circuit random-oracle assumption by name. A-IC
+  is its exact form.
+* The user should decide whether that adoption satisfies U-2 for the recursive layer. A fully
+  proven alternative is the non-recursive base proof (Corollary 6.5), but it is far above
+  300 KB.
+
+---
+
+## 9. Final numeric bound (every term)
+
+For t = 2⁶⁴, T\*, z = 32, m = 3, ×15, 42-B digests. Output of `calc/bound.py`:
+
+| term | value (log₂) | source |
+|---|---:|---|
+| worst per-move rbr-KS error ε (inner NV, WHIR query r0, 236.55 + 32 bits) | −268.55 | Lemma 5.1 |
+| next: final layer query r1 | −268.78 | Lemma 5.1 |
+| worst non-query: fold MCA, round 3, keep-domain (n = 2³⁰·⁹¹, ρ = 2⁻¹⁸·⁹¹) | −269.64 | Lemma 4.3, BCGM Thm 9.2 |
+| WHIR μ batching, W = 141 / 601 | −273.0 / −273.9 | Lemma 4.2 |
+| worst PIOP (LogUp, ℓ₀ = 2¹³·⁵) | −291.9 (app stress) / −305.7 | Lemma 3.1 |
+| OOD / γ / GKR / zerocheck / stacking | ≤ −318.9 | §3–§4 |
+| narrow transition 10·3t′/2³³⁶ | −266.1 → below ε-term | Thm 6.4 step 3 |
+| wide transition 10·J(2t′+1)/2³⁸⁴ | −294.7 | Thm 6.4 steps 4–5 |
+| challenge transition 10(ε + …) | −265.23 | Thm 6.4 step 5 |
+| Fact A √(ℓ_V/2³³⁶), ℓ_V ≤ 2¹⁶ | −160 | Thm 6.4 step 7 |
+| simulation factor t → 2t | +1 bit on t | Lemma 6.3 |
+| **total (one database, all layers)** | **−135.23** | Thm 7.4 |
+| total, union over 7 layers | −132.42 | — |
+| contract | −128 | U-6 |
+| margin | 7.2 bits (4.4 with the union) | |
+
+**Conditional on:** T\* (G-1, G-2), NV-faithful, Base-faithful, A-IC (open), and review of
+Theorem 6.4 [T]. See GAPS.md.
+
+---
+
+## References
+* [ACFY] Arnon, Chiesa, Fenzi, Yogev. WHIR. ePrint 2024/1586 (21 Nov 2024). Thm 5.2, Thm 4.3,
+  Lemma 4.4, Construction 5.1.
+* [BCGM] Bordage, Chiesa, Guan, Manzur. All polynomial generators preserve distance with
+  mutual correlated agreement. CCC 2026; ePrint 2025/2051 (19 May 2026). Def 9.1, Thm 9.2.
+* [BCIKS20] Proximity gaps for RS codes. ePrint 2020/654. Thm 5.1.
+* [CMS19] Chiesa, Manohar, Spooner. Succinct arguments in the QROM. TCC 2019; ePrint 2019/834.
+  Thm 8.6, §8.5.1–8.5.2, Lemmas 4.9, 5.13, 6.11, 8.13.
+* [CFHL21] Chung, Fehr, Huang, Liao. Eurocrypt 2021; arXiv 2010.11658. Lemma 4.3, Cor 4.2.
+* [Zha19] Zhandry. How to record quantum queries. ePrint 2018/276.
+* [DFMS22] Don, Fehr, Majenz, Schaffner. Online-extractability in the QROM. ePrint 2021/280.
+  Prop 3.5.
+* [COS20] Chiesa, Ojha, Spooner. Fractal. ePrint 2019/1076. Thm 10.1, Thm 11.5.
+* [BCG25] Barbara, Chiesa, Guan. Relativized succinct arguments in the ROM do not exist.
+  TCC 2025; ePrint 2024/728. Thm 4.1, 5.1.
+* [CCGOS23] AROM PCD. ePrint 2023/587. Thm 9.4.
+* [CGSY24] Security bounds for PCD from straightline extractors. ePrint 2023/1646. Thm 5.1.
+* [CDHZ26] Chiesa, Di, Hu, Zheng. ePrint 2025/2166 (2 Mar 2026). Thms 6.9, 6.10, 8.3, 11.3.
+* [CO25] Chiesa, Orrù. A Fiat–Shamir transformation from duplex sponges. ePrint 2025/536.
+  §1.3, Thms 6.1/6.2.
+* [Gru24] Gruen. ePrint 2024/108. App. A.3.
+* [PH23] Papini, Haböck. LogUp-GKR. ePrint 2023/1284. Props 1–2.
+* Project notes [P′]: weak-binding ANALYSIS.md (Lemma 1, Lemma 2, Fact A, Thm 4),
+  REVIEW-1.md, HROB.md (Thm R, Lemmas 4.7–4.8, Prop 2.1); x15-domains SOUNDNESS.md; levers
+  README (spec, tight heights); recursion-nv DESIGN/README.

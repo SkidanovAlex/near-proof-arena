@@ -519,3 +519,56 @@ max_constraint_degree 8 → 4 saves ≈ 3.5 KB. Gate 5 re-measured: 459,923 B (2
 **389,561 B (z = 32 / 42 B, z proved)** at 2²⁶·⁴ cells, 460 cols. Model best point with
 measured laws: **≈ 325 KB** at 460 final columns. Remaining gap must come from the
 narrow verifier circuit (columns, next-row columns, interactions) and fewer cells.
+
+**Weak-binding digests** (`lane/pq-weak-binding` @ `5af744ce6`, `weak-binding/ANALYSIS.md`):
+41 B proven now (CMS19 constants and new Thm 4 with K = 0; −3 KB). 26–28 B proven *in
+the note* (new, unreviewed Thm 4: QROM BCS with tolerated block equivocation via a
+compressed-oracle potential) **conditional on H-rob** (block-robust WHIR rbr) → net
+−35…−41 KB; needs position-indexed nodes, 48-B top levels, user U-7 decision. Running:
+H-rob proof attempt; adversarial review of Thm 4.
+
+**Slimmer SHA AIR** (`lane/pq-sha384-air2` @ `ed1ddf946`): base-8 digit words (k = 3),
+bus residuals instead of operand columns, polynomial carry range checks: **7,524
+cells/compression (was 19,448), 171+13 columns (was 442+18), 144 next-row (was 438),
+14 interactions/row (was 43), degree 21**. All tests pass (10k vs sha2, 5,921/5,921
+mutations, 13/13 bus forgeries). Modelled final layer (ext2 fixed point + measured
+laws, 100 other columns): **283,692 B** at z = 32 + 42 B (was 336,453), 335,116 B at
+today's settings. Cost: SHA-only prove 10× slower on CPU (degree-21 interpreted Ext12
+DAG; k = 2: 291,389 B, 2.4× slower). Non-SHA budget for the narrow verifier: ≈ 100 columns.
+
+**H-rob** (`lane/pq-weak-binding` @ `70bbb8c2e`, `weak-binding/HROB.md`; review 1 in
+`REVIEW-1.md`: no fatal flaw in Thm 4, fixes 1–5 applied, H-rob(strong) dropped).
+H-rob **fails for WHIR as specified/built**: shift-query answers y_{i,j} are not absorbed
+before γ_i, so one equivocated leaf chosen after γ solves the combination equation
+(quantum attack ≈ t²/2ⁿ ⇒ no digest < 32 B sound with today's order; 41/42 B unaffected).
+**Fix WHIR-Y**: observe y_{i,·} before sampling γ_i (incl. final round): 0 proof bytes,
+≈ +90 verifier compressions. With WHIR-Y, Thm R proves H-rob(shift) [T, unreviewed]:
+26–27 B digests (c = 11–12, K = 5–7), net −34.8 KB (z = 32 levers) / −39 KB (268-bit).
+Residual: [H-M], [H-outer] (outer protocol reads columns via the list at δ₀ + K/B₀),
+reviews of Thm 4/Thm R, user U-7 decisions (WHIR-Y, position-indexed nodes, dedup,
+48-B top levels, 384-bit FS chain).
+
+**Narrow verifier circuit NV — measured fixed point** (`lane/pq-recursion-sha384` @
+`f6596503d`, `results/pq-recursion-nv/README.md`). All non-SHA logic in one 69-column
+role-multiplexed AIR (NvAir: verifier program, program binding, hashing glue, transcript
+chain, sampling; degree 8, 48 interactions/row) + 5-col byte table + k = 3 SHA AIR:
+**258 opened columns (OpenVM port: 3,481–3,923)**. Measured chain at a T = 20 test target,
+all proofs verify natively, 7 tamper classes rejected in-circuit: fixed point A2 = A3 →
+L1–L3 at **171,797 B** (510 cols incl. both SHA instances in that build, 2²⁵ interactions,
+62.9M cells); step-6 build 168,437 B (2²⁴ interactions). 3 h 07 min for six levels,
+19.3 GB. **Modelled final layer** (`extrapolate_nv.py`: measured NvAir structure and
+per-query program costs + levers, ×15, coset, 42 B, z = 32, multiproof — levers not yet in
+the circuit): **308,547 B** (power-of-two heights) / **298,881 B** (padding-free heights);
+268-bit no-grinding: 363,519 / 359,535 B. Breakdown: WHIR 215–223 KB (≈ 2²⁵·⁹ cells),
+relations 45 KB (25 KB openings, 17 KB degree-21 sumcheck). Remaining levers: next-row
+mask (≈ 3 KB), 41-B digests (3 KB), 43-row SHA (≈ 1 KB), padding-free heights (≈ 10 KB),
+weak-binding reserve (≈ 35 KB, conditional). Gaps: L2 doesn't yet check L1's app-verifier
+program; levers not in circuit (needs levers backend on the CPU backend); real run needs
+a ~2^38.8-element streamed LDE (multi-GPU / 100+ GB host).
+
+**User decision 2026-10-17: approve 42-B digests, grinding z = 32, and WHIR-Y; keep going.**
+Recorded as U-10 in `docs/zk-formal/V3-D3A-STUDY.md` §D (amends U-7 for the PQ track).
+Padding-free heights implemented (`lane/pq-whir-levers` @ `561c934f7`, `tight_heights`:
+commit only up to the last non-zero row in power-of-two chunks; zerocheck/GKR unchanged
+over a virtual zero tail; measured exact on the dummy) — needs zero-row-valid AIRs; NV
+model 308.5 → 298.9 KB.

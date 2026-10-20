@@ -1,0 +1,171 @@
+|F| = 2^370.88; per-round target 268 = 236 query bits + z = 32; non-query budget 2^-270.0
+
+==== O-1: Johnson radius, backend ListDecoding(m = 64) ====
+-- final [J m=64, batching bchks46]  queries [40, 37, 30, 25]  (sum 132)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-11.91 a/sqrt(rho)=1.00781 bits/query=5.942 q=40 -> 237.69+32; list<=2^11.94; fold MCA max 2^-309.61 m_DKT=64
+   r1: J    rho=2^-12.91 a/sqrt(rho)=1.00781 bits/query=6.442 q=37 -> 238.36+32; list<=2^12.44; fold MCA max 2^-308.62 m_DKT=64
+   r2: J    rho=2^-15.91 a/sqrt(rho)=1.00781 bits/query=7.942 q=30 -> 238.27+32; list<=2^13.95; fold MCA max 2^-305.63 m_DKT=64
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00781 bits/query=9.442 q=25 -> 236.06+32; list<=2^15.43; fold MCA max 2^-302.63 m_DKT=64
+   worst non-query move: 2^-280.54  [whir mu batching (BCHKS25 Thm 4.6 powers) (L4.2)]
+   worst move:           2^-268.06  [whir query r3 incl. grinding z=32 (L4.5, L5.1)]
+-- final [J m=64, batching tensor]  queries [40, 37, 30, 25]  (sum 132)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-11.91 a/sqrt(rho)=1.00781 bits/query=5.942 q=40 -> 237.69+32; list<=2^11.94; fold MCA max 2^-309.61 m_DKT=64
+   r1: J    rho=2^-12.91 a/sqrt(rho)=1.00781 bits/query=6.442 q=37 -> 238.36+32; list<=2^12.44; fold MCA max 2^-308.62 m_DKT=64
+   r2: J    rho=2^-15.91 a/sqrt(rho)=1.00781 bits/query=7.942 q=30 -> 238.27+32; list<=2^13.95; fold MCA max 2^-305.63 m_DKT=64
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00781 bits/query=9.442 q=25 -> 236.06+32; list<=2^15.43; fold MCA max 2^-302.63 m_DKT=64
+   worst non-query move: 2^-302.63  [whir fold r3.3 (L4.3)]
+   worst move:           2^-268.06  [whir query r3 incl. grinding z=32 (L4.5, L5.1)]
+-- final [J m=64, batching first-curve]  queries [40, 37, 30, 25]  (sum 132)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-11.91 a/sqrt(rho)=1.00781 bits/query=5.942 q=40 -> 237.69+32; list<=2^11.94; fold MCA max 2^-309.61 m_DKT=64
+   r1: J    rho=2^-12.91 a/sqrt(rho)=1.00781 bits/query=6.442 q=37 -> 238.36+32; list<=2^12.44; fold MCA max 2^-308.62 m_DKT=64
+   r2: J    rho=2^-15.91 a/sqrt(rho)=1.00781 bits/query=7.942 q=30 -> 238.27+32; list<=2^13.95; fold MCA max 2^-305.63 m_DKT=64
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00781 bits/query=9.442 q=25 -> 236.06+32; list<=2^15.43; fold MCA max 2^-302.63 m_DKT=64
+   worst non-query move: 2^-289.74  [whir mu batching (DKT26 first-order curve, ell=W-1) (L4.2)]
+   worst move:           2^-268.06  [whir query r3 incl. grinding z=32 (L4.5, L5.1)]
+-- inner NV [J m=64, batching bchks46]  queries [48, 44, 32, 25]  (sum 149)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-9.91 a/sqrt(rho)=1.00781 bits/query=4.942 q=48 -> 237.23+32; list<=2^10.91; fold MCA max 2^-313.59 m_DKT=64
+   r1: J    rho=2^-10.91 a/sqrt(rho)=1.00781 bits/query=5.442 q=44 -> 239.46+32; list<=2^11.43; fold MCA max 2^-312.60 m_DKT=64
+   r2: J    rho=2^-14.91 a/sqrt(rho)=1.00781 bits/query=7.442 q=32 -> 238.15+32; list<=2^13.45; fold MCA max 2^-308.62 m_DKT=64
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00781 bits/query=9.442 q=25 -> 236.06+32; list<=2^15.37; fold MCA max 2^-304.83 m_DKT=61
+   worst non-query move: 2^-285.54  [whir mu batching (BCHKS25 Thm 4.6 powers) (L4.2)]
+   worst move:           2^-268.06  [whir query r3 incl. grinding z=32 (L4.5, L5.1)]
+-- inner NV [J m=64, batching tensor]  queries [48, 44, 32, 25]  (sum 149)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-9.91 a/sqrt(rho)=1.00781 bits/query=4.942 q=48 -> 237.23+32; list<=2^10.91; fold MCA max 2^-313.59 m_DKT=64
+   r1: J    rho=2^-10.91 a/sqrt(rho)=1.00781 bits/query=5.442 q=44 -> 239.46+32; list<=2^11.43; fold MCA max 2^-312.60 m_DKT=64
+   r2: J    rho=2^-14.91 a/sqrt(rho)=1.00781 bits/query=7.442 q=32 -> 238.15+32; list<=2^13.45; fold MCA max 2^-308.62 m_DKT=64
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00781 bits/query=9.442 q=25 -> 236.06+32; list<=2^15.37; fold MCA max 2^-304.83 m_DKT=61
+   worst non-query move: 2^-304.83  [whir fold r3.4 (L4.3)]
+   worst move:           2^-268.06  [whir query r3 incl. grinding z=32 (L4.5, L5.1)]
+-- inner NV [J m=64, batching first-curve]  queries [48, 44, 32, 25]  (sum 149)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-9.91 a/sqrt(rho)=1.00781 bits/query=4.942 q=48 -> 237.23+32; list<=2^10.91; fold MCA max 2^-313.59 m_DKT=64
+   r1: J    rho=2^-10.91 a/sqrt(rho)=1.00781 bits/query=5.442 q=44 -> 239.46+32; list<=2^11.43; fold MCA max 2^-312.60 m_DKT=64
+   r2: J    rho=2^-14.91 a/sqrt(rho)=1.00781 bits/query=7.442 q=32 -> 238.15+32; list<=2^13.45; fold MCA max 2^-308.62 m_DKT=64
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00781 bits/query=9.442 q=25 -> 236.06+32; list<=2^15.37; fold MCA max 2^-304.83 m_DKT=61
+   worst non-query move: 2^-293.63  [whir mu batching (DKT26 first-order curve, ell=W-1) (L4.2)]
+   worst move:           2^-268.06  [whir query r3 incl. grinding z=32 (L4.5, L5.1)]
+-- base stress [J m=64, batching bchks46]  queries [48, 44, 32, 25]  (sum 149)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-9.91 a/sqrt(rho)=1.00781 bits/query=4.942 q=48 -> 237.23+32; list<=2^10.91; fold MCA max 2^-311.59 m_DKT=64
+   r1: J    rho=2^-10.91 a/sqrt(rho)=1.00781 bits/query=5.442 q=44 -> 239.46+32; list<=2^11.43; fold MCA max 2^-310.60 m_DKT=64
+   r2: J    rho=2^-14.91 a/sqrt(rho)=1.00781 bits/query=7.442 q=32 -> 238.15+32; list<=2^13.45; fold MCA max 2^-306.62 m_DKT=64
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00781 bits/query=9.442 q=25 -> 236.06+32; list<=2^15.43; fold MCA max 2^-302.63 m_DKT=64
+   worst non-query move: 2^-281.44  [whir mu batching (BCHKS25 Thm 4.6 powers) (L4.2)]
+   worst move:           2^-268.06  [whir query r3 incl. grinding z=32 (L4.5, L5.1)]
+-- base stress [J m=64, batching tensor]  queries [48, 44, 32, 25]  (sum 149)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-9.91 a/sqrt(rho)=1.00781 bits/query=4.942 q=48 -> 237.23+32; list<=2^10.91; fold MCA max 2^-311.59 m_DKT=64
+   r1: J    rho=2^-10.91 a/sqrt(rho)=1.00781 bits/query=5.442 q=44 -> 239.46+32; list<=2^11.43; fold MCA max 2^-310.60 m_DKT=64
+   r2: J    rho=2^-14.91 a/sqrt(rho)=1.00781 bits/query=7.442 q=32 -> 238.15+32; list<=2^13.45; fold MCA max 2^-306.62 m_DKT=64
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00781 bits/query=9.442 q=25 -> 236.06+32; list<=2^15.43; fold MCA max 2^-302.63 m_DKT=64
+   worst non-query move: 2^-293.06  [logup alpha,beta (L3.1)]
+   worst move:           2^-268.06  [whir query r3 incl. grinding z=32 (L4.5, L5.1)]
+-- base stress [J m=64, batching first-curve]  queries [48, 44, 32, 25]  (sum 149)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-9.91 a/sqrt(rho)=1.00781 bits/query=4.942 q=48 -> 237.23+32; list<=2^10.91; fold MCA max 2^-311.59 m_DKT=64
+   r1: J    rho=2^-10.91 a/sqrt(rho)=1.00781 bits/query=5.442 q=44 -> 239.46+32; list<=2^11.43; fold MCA max 2^-310.60 m_DKT=64
+   r2: J    rho=2^-14.91 a/sqrt(rho)=1.00781 bits/query=7.442 q=32 -> 238.15+32; list<=2^13.45; fold MCA max 2^-306.62 m_DKT=64
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00781 bits/query=9.442 q=25 -> 236.06+32; list<=2^15.43; fold MCA max 2^-302.63 m_DKT=64
+   worst non-query move: 2^-287.53  [whir mu batching (DKT26 first-order curve, ell=W-1) (L4.2)]
+   worst move:           2^-268.06  [whir query r3 incl. grinding z=32 (L4.5, L5.1)]
+
+==== O-1: Johnson radius, backend ListDecoding(m = 1024) ====
+-- final [J m=1024, batching bchks46]  queries [40, 37, 30, 25]  (sum 132)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-11.91 a/sqrt(rho)=1.00049 bits/query=5.953 q=40 -> 238.11+32; list<=2^15.93; fold MCA max 2^-297.64 m_DKT=1022
+   r1: J    rho=2^-12.91 a/sqrt(rho)=1.00049 bits/query=6.453 q=37 -> 238.75+32; list<=2^16.43; fold MCA max 2^-296.65 m_DKT=1020
+   r2: J    rho=2^-15.91 a/sqrt(rho)=1.00049 bits/query=7.953 q=30 -> 238.58+32; list<=2^17.90; fold MCA max 2^-293.78 m_DKT=993
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00049 bits/query=9.453 q=25 -> 236.32+32; list<=2^19.13; fold MCA max 2^-291.61 m_DKT=820
+   worst non-query move: 2^-260.58  [whir mu batching (BCHKS25 Thm 4.6 powers) (L4.2)]
+   worst move:           2^-260.58  [whir mu batching (BCHKS25 Thm 4.6 powers) (L4.2)]
+-- final [J m=1024, batching tensor]  queries [40, 37, 30, 25]  (sum 132)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-11.91 a/sqrt(rho)=1.00049 bits/query=5.953 q=40 -> 238.11+32; list<=2^15.93; fold MCA max 2^-297.64 m_DKT=1022
+   r1: J    rho=2^-12.91 a/sqrt(rho)=1.00049 bits/query=6.453 q=37 -> 238.75+32; list<=2^16.43; fold MCA max 2^-296.65 m_DKT=1020
+   r2: J    rho=2^-15.91 a/sqrt(rho)=1.00049 bits/query=7.953 q=30 -> 238.58+32; list<=2^17.90; fold MCA max 2^-293.78 m_DKT=993
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00049 bits/query=9.453 q=25 -> 236.32+32; list<=2^19.13; fold MCA max 2^-291.61 m_DKT=820
+   worst non-query move: 2^-291.61  [whir fold r3.3 (L4.3)]
+   worst move:           2^-268.32  [whir query r3 incl. grinding z=32 (L4.5, L5.1)]
+-- inner NV [J m=1024, batching bchks46]  queries [48, 44, 32, 25]  (sum 149)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-9.91 a/sqrt(rho)=1.00049 bits/query=4.953 q=48 -> 237.73+32; list<=2^14.90; fold MCA max 2^-301.62 m_DKT=1022
+   r1: J    rho=2^-10.91 a/sqrt(rho)=1.00049 bits/query=5.453 q=44 -> 239.92+32; list<=2^15.41; fold MCA max 2^-300.64 m_DKT=1020
+   r2: J    rho=2^-14.91 a/sqrt(rho)=1.00049 bits/query=7.453 q=32 -> 238.49+32; list<=2^17.36; fold MCA max 2^-296.91 m_DKT=964
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00049 bits/query=9.453 q=25 -> 236.32+32; list<=2^18.45; fold MCA max 2^-295.65 m_DKT=512
+   worst non-query move: 2^-265.58  [whir mu batching (BCHKS25 Thm 4.6 powers) (L4.2)]
+   worst move:           2^-265.58  [whir mu batching (BCHKS25 Thm 4.6 powers) (L4.2)]
+-- inner NV [J m=1024, batching tensor]  queries [48, 44, 32, 25]  (sum 149)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-9.91 a/sqrt(rho)=1.00049 bits/query=4.953 q=48 -> 237.73+32; list<=2^14.90; fold MCA max 2^-301.62 m_DKT=1022
+   r1: J    rho=2^-10.91 a/sqrt(rho)=1.00049 bits/query=5.453 q=44 -> 239.92+32; list<=2^15.41; fold MCA max 2^-300.64 m_DKT=1020
+   r2: J    rho=2^-14.91 a/sqrt(rho)=1.00049 bits/query=7.453 q=32 -> 238.49+32; list<=2^17.36; fold MCA max 2^-296.91 m_DKT=964
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00049 bits/query=9.453 q=25 -> 236.32+32; list<=2^18.45; fold MCA max 2^-295.65 m_DKT=512
+   worst non-query move: 2^-295.65  [whir fold r3.4 (L4.3)]
+   worst move:           2^-268.32  [whir query r3 incl. grinding z=32 (L4.5, L5.1)]
+-- base stress [J m=1024, batching bchks46]  queries [48, 44, 32, 25]  (sum 149)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-9.91 a/sqrt(rho)=1.00049 bits/query=4.953 q=48 -> 237.73+32; list<=2^14.91; fold MCA max 2^-299.61 m_DKT=1024
+   r1: J    rho=2^-10.91 a/sqrt(rho)=1.00049 bits/query=5.453 q=44 -> 239.92+32; list<=2^15.42; fold MCA max 2^-298.62 m_DKT=1024
+   r2: J    rho=2^-14.91 a/sqrt(rho)=1.00049 bits/query=7.453 q=32 -> 238.49+32; list<=2^17.42; fold MCA max 2^-294.71 m_DKT=1009
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00049 bits/query=9.453 q=25 -> 236.32+32; list<=2^19.13; fold MCA max 2^-291.61 m_DKT=820
+   worst non-query move: 2^-261.47  [whir mu batching (BCHKS25 Thm 4.6 powers) (L4.2)]
+   worst move:           2^-261.47  [whir mu batching (BCHKS25 Thm 4.6 powers) (L4.2)]
+-- base stress [J m=1024, batching tensor]  queries [48, 44, 32, 25]  (sum 149)  OOD [1, 1, 1, 1]
+   r0: J    rho=2^-9.91 a/sqrt(rho)=1.00049 bits/query=4.953 q=48 -> 237.73+32; list<=2^14.91; fold MCA max 2^-299.61 m_DKT=1024
+   r1: J    rho=2^-10.91 a/sqrt(rho)=1.00049 bits/query=5.453 q=44 -> 239.92+32; list<=2^15.42; fold MCA max 2^-298.62 m_DKT=1024
+   r2: J    rho=2^-14.91 a/sqrt(rho)=1.00049 bits/query=7.453 q=32 -> 238.49+32; list<=2^17.42; fold MCA max 2^-294.71 m_DKT=1009
+   r3: J    rho=2^-18.91 a/sqrt(rho)=1.00049 bits/query=9.453 q=25 -> 236.32+32; list<=2^19.13; fold MCA max 2^-291.61 m_DKT=820
+   worst non-query move: 2^-285.07  [logup alpha,beta (L3.1)]
+   worst move:           2^-268.32  [whir query r3 incl. grinding z=32 (L4.5, L5.1)]
+
+==== today: BCGM m = 3 ====
+-- final [BCGM m=3]  queries [42, 38, 31, 26]  (sum 137)  OOD [1, 1, 1, 1]
+   r0: bcgm rho=2^-11.91 a/sqrt(rho)=1.16667 bits/query=5.731 q=42 -> 240.70+32; list<=2^13.49; fold MCA max 2^-280.14 
+   r1: bcgm rho=2^-12.91 a/sqrt(rho)=1.16667 bits/query=6.231 q=38 -> 236.78+32; list<=2^14.49; fold MCA max 2^-278.64 
+   r2: bcgm rho=2^-15.91 a/sqrt(rho)=1.16667 bits/query=7.731 q=31 -> 239.66+32; list<=2^17.49; fold MCA max 2^-274.14 
+   r3: bcgm rho=2^-18.91 a/sqrt(rho)=1.16667 bits/query=9.231 q=26 -> 240.01+32; list<=2^20.49; fold MCA max 2^-269.64 
+   worst non-query move: 2^-269.64  [whir fold r3.3 (L4.3)]
+   worst move:           2^-268.78  [whir query r1 incl. grinding z=32 (L4.5, L5.1)]
+-- inner NV [BCGM m=3]  queries [50, 46, 33, 26]  (sum 155)  OOD [1, 1, 1, 1]
+   r0: bcgm rho=2^-9.91 a/sqrt(rho)=1.16667 bits/query=4.731 q=50 -> 236.55+32; list<=2^11.49; fold MCA max 2^-287.14 
+   r1: bcgm rho=2^-10.91 a/sqrt(rho)=1.16667 bits/query=5.231 q=46 -> 240.63+32; list<=2^12.49; fold MCA max 2^-285.64 
+   r2: bcgm rho=2^-14.91 a/sqrt(rho)=1.16667 bits/query=7.231 q=33 -> 238.62+32; list<=2^16.49; fold MCA max 2^-279.64 
+   r3: bcgm rho=2^-18.91 a/sqrt(rho)=1.16667 bits/query=9.231 q=26 -> 240.01+32; list<=2^20.49; fold MCA max 2^-273.64 
+   worst non-query move: 2^-273.64  [whir fold r3.4 (L4.3)]
+   worst move:           2^-268.55  [whir query r0 incl. grinding z=32 (L4.5, L5.1)]
+-- base stress [BCGM m=3]  queries [50, 46, 33, 26]  (sum 155)  OOD [1, 1, 1, 1]
+   r0: bcgm rho=2^-9.91 a/sqrt(rho)=1.16667 bits/query=4.731 q=50 -> 236.55+32; list<=2^11.49; fold MCA max 2^-283.14 
+   r1: bcgm rho=2^-10.91 a/sqrt(rho)=1.16667 bits/query=5.231 q=46 -> 240.63+32; list<=2^12.49; fold MCA max 2^-281.64 
+   r2: bcgm rho=2^-14.91 a/sqrt(rho)=1.16667 bits/query=7.231 q=33 -> 238.62+32; list<=2^16.49; fold MCA max 2^-275.64 
+   r3: bcgm rho=2^-18.91 a/sqrt(rho)=1.16667 bits/query=9.231 q=26 -> 240.01+32; list<=2^20.49; fold MCA max 2^-269.64 
+   worst non-query move: 2^-269.64  [whir fold r3.4 (L4.3)]
+   worst move:           2^-268.55  [whir query r0 incl. grinding z=32 (L4.5, L5.1)]
+
+==== O-2: first-order certificates (dkt_certs.json) ====
+-- final [O-1+O-2 per-round best]  queries [38, 35, 29, 24]  (sum 126)  OOD [1, 1, 1, 1]
+   r0: F    rho=2^-11.91 a/sqrt(rho)=0.83500 bits/query=6.214 q=38 -> 236.12+32; list<=2^40.04; fold MCA max 2^-289.18 
+   r1: F    rho=2^-12.91 a/sqrt(rho)=0.81800 bits/query=6.743 q=35 -> 236.01+32; list<=2^40.99; fold MCA max 2^-288.99 
+   r2: F    rho=2^-15.91 a/sqrt(rho)=0.87899 bits/query=8.140 q=29 -> 236.05+32; list<=2^38.55; fold MCA max 2^-292.58 
+   r3: F    rho=2^-18.91 a/sqrt(rho)=0.76791 bits/query=9.834 q=24 -> 236.03+32; list<=2^43.37; fold MCA max 2^-280.74 
+   worst non-query move: 2^-271.91  [whir OOD r1 x1 (L4.4)]
+   worst move:           2^-268.01  [whir query r1 incl. grinding z=32 (L4.5, L5.1)]
+-- inner NV [O-1+O-2 per-round best]  queries [45, 41, 31, 24]  (sum 141)  OOD [1, 1, 1, 1]
+   r0: F    rho=2^-9.91 a/sqrt(rho)=0.81700 bits/query=5.245 q=45 -> 236.03+32; list<=2^39.56; fold MCA max 2^-290.15 
+   r1: F    rho=2^-10.91 a/sqrt(rho)=0.80900 bits/query=5.759 q=41 -> 236.13+32; list<=2^39.82; fold MCA max 2^-290.67 
+   r2: F    rho=2^-14.91 a/sqrt(rho)=0.89497 bits/query=7.614 q=31 -> 236.02+32; list<=2^35.94; fold MCA max 2^-296.81 
+   r3: F    rho=2^-18.91 a/sqrt(rho)=0.76763 bits/query=9.835 q=24 -> 236.04+32; list<=2^41.37; fold MCA max 2^-287.17 
+   worst non-query move: 2^-274.25  [whir OOD r1 x1 (L4.4)]
+   worst move:           2^-268.02  [whir query r2 incl. grinding z=32 (L4.5, L5.1)]
+
+==== end-to-end (PROOF.md Thm 6.4 / 7.4, unchanged accounting) ====
+   ('base stress', 'J', 1024, 'bchks46')         eps_rbr = 2^-261.47  total 2^-128.15  (7-layer union 2^-125.34)
+   ('base stress', 'J', 1024, 'tensor')          eps_rbr = 2^-268.32  total 2^-135.00  (7-layer union 2^-132.19)
+   ('base stress', 'J', 64, 'bchks46')           eps_rbr = 2^-268.06  total 2^-134.73  (7-layer union 2^-131.93)
+   ('base stress', 'J', 64, 'first-curve')       eps_rbr = 2^-268.06  total 2^-134.73  (7-layer union 2^-131.93)
+   ('base stress', 'J', 64, 'tensor')            eps_rbr = 2^-268.06  total 2^-134.73  (7-layer union 2^-131.93)
+   ('base stress', 'bcgm')                       eps_rbr = 2^-268.55  total 2^-135.23  (7-layer union 2^-132.42)
+   ('final', 'F')                                eps_rbr = 2^-268.01  total 2^-134.69  (7-layer union 2^-131.89)
+   ('final', 'J', 1024, 'bchks46')               eps_rbr = 2^-260.58  total 2^-127.26  (7-layer union 2^-124.45)
+   ('final', 'J', 1024, 'tensor')                eps_rbr = 2^-268.32  total 2^-135.00  (7-layer union 2^-132.19)
+   ('final', 'J', 64, 'bchks46')                 eps_rbr = 2^-268.06  total 2^-134.73  (7-layer union 2^-131.93)
+   ('final', 'J', 64, 'first-curve')             eps_rbr = 2^-268.06  total 2^-134.73  (7-layer union 2^-131.93)
+   ('final', 'J', 64, 'tensor')                  eps_rbr = 2^-268.06  total 2^-134.73  (7-layer union 2^-131.93)
+   ('final', 'bcgm')                             eps_rbr = 2^-268.78  total 2^-135.46  (7-layer union 2^-132.65)
+   ('inner NV', 'F')                             eps_rbr = 2^-268.02  total 2^-134.70  (7-layer union 2^-131.89)
+   ('inner NV', 'J', 1024, 'bchks46')            eps_rbr = 2^-265.58  total 2^-132.26  (7-layer union 2^-129.45)
+   ('inner NV', 'J', 1024, 'tensor')             eps_rbr = 2^-268.32  total 2^-135.00  (7-layer union 2^-132.19)
+   ('inner NV', 'J', 64, 'bchks46')              eps_rbr = 2^-268.06  total 2^-134.73  (7-layer union 2^-131.93)
+   ('inner NV', 'J', 64, 'first-curve')          eps_rbr = 2^-268.06  total 2^-134.73  (7-layer union 2^-131.93)
+   ('inner NV', 'J', 64, 'tensor')               eps_rbr = 2^-268.06  total 2^-134.73  (7-layer union 2^-131.93)
+   ('inner NV', 'bcgm')                          eps_rbr = 2^-268.55  total 2^-135.23  (7-layer union 2^-132.42)

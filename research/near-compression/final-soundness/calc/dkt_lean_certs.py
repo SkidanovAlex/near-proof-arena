@@ -1,0 +1,258 @@
+#!/usr/bin/env python3
+"""Generate the Lean files that re-check the 36 DKT26 first-order certificates in ArkLib.
+
+The certificate parameters (n, k, A, ell, m, B_d, B_jet, B_Z) are read from dkt_certs.json; the
+check itself is ArkLib's own decidable checker (quangvdao/ArkLib@a5aa2677):
+  * `LineProfile.CurveVerification` (Prop 5.10 surplus / row test, support counts recomputed),
+  * the factorwise-squarefree exceptional count `retainedSquarefreeCurveMCASharpRawAt`
+    (Lemma 5.6 with independent ordinary threshold L0 and regular threshold L),
+  * the squarefree list envelope (Lemma 5.11 / Cor 7.5),
+all evaluated by the Lean kernel (`decide +kernel`).  No code of the authors' Python is used.
+
+  python3 -I dkt_lean_certs.py eval  > ../lean/DKTCertsEval.lean   # stage 1: find L0, L by #eval!
+  python3 -I dkt_lean_certs.py proof <eval-output> > ../lean/DKTCerts.lean   # stage 2: kernel proofs
+Environment: DKT_JSON=<certificate json> (default dkt_certs.json; dkt_certs_o2.json for the O-2
+table), DKT_CHUNK=i/N (only every N-th certificate starting at i, to bound kernel memory),
+DKT_KEYS=<file> (only the keys listed in it, applied before DKT_CHUNK).
+"""
+import json
+import os
+import re
+import sys
+from fractions import Fraction as Fr
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+P = 15 * 2**27 + 1
+
+
+JSON = os.environ.get('DKT_JSON', os.path.join(HERE, 'dkt_certs.json'))
+CHUNK = os.environ.get('DKT_CHUNK')       # 'i/N': only the i-th of N interleaved slices (Lean memory)
+
+
+def certs():
+    d = json.load(open(JSON))
+    out = []
+    for key in sorted((k for k in d if not k.startswith('_')),
+                      key=lambda s: [int(x) for x in s.split(',')]):
+        n, k, A, ell = map(int, key.split(','))
+        c = d[key]
+        out.append(dict(key=key, n=n, k=k, A=A, ell=ell, m=c['m'], M=c['B_d'], mu=c['B_jet'],
+                        H=c['H'], E=Fr(c['E']), list=Fr(c['list'])))
+    if os.environ.get('DKT_KEYS'):      # only the keys listed (one per line) in this file
+        keep = set(open(os.environ['DKT_KEYS']).read().split())
+        out = [c for c in out if c['key'] in keep]
+    if CHUNK:
+        i, nchunks = map(int, CHUNK.split('/'))
+        out = out[i::nchunks]
+    return out
+
+
+HEADER = r'''import ArkLib.Data.CodingTheory.ReedSolomon.MutualCorrelatedAgreement.FirstOrder.Squarefree.Sharp
+import ArkLib.Data.CodingTheory.ReedSolomon.ListDecodability.FirstOrder.Profile
+open ReedSolomon.CurveProfile ReedSolomon.CurveCertificate ReedSolomon.FirstOrder.Squarefree
+open ReedSolomon ReedSolomon.HiddenDerivative Polynomial
+'''
+
+EVAL_DEFS = r'''
+namespace DKTEval
+def mkProfile (n k A ell m M mu H : ℕ) : LineProfile :=
+  let D := k - 1
+  let dim := firstOrderDimensionCount D A m M mu
+  let slots := firstOrderHeightSlotCount D A m M mu H
+  ⟨n, k, A, m, M, mu, ell, dim, certifiedEnlargedRankBound 1 m M 0, dim * (H + 1) - slots, H, slots⟩
+def argminConvex (f : ℕ → ℚ) : ℕ → ℕ → ℕ → ℕ
+  | 0, lo, _ => lo
+  | fuel + 1, lo, hi =>
+    if lo < hi then
+      let mid := (lo + hi) / 2
+      if f mid ≤ f (mid + 1) then argminConvex f fuel lo mid else argminConvex f fuel (mid + 1) hi
+    else lo
+def ordAt (p : LineProfile) (L0 : ℕ) : ℚ :=
+  retainedSquarefreeOrdinaryCurveMCAAt p.n p.D p.batchingDegree L0 p.agreement p.totalJetCap
+    p.firstDerivativeCap p.height
+def regAt (p : LineProfile) (L : ℕ) : ℚ :=
+  regularSymbolicCurveMCADerivativeBoundTwo p.n p.batchingDegree (p.D + 1) (p.D + 1) L p.agreement
+    p.totalJetCap p.firstDerivativeCap p.height (hybridTau p.D)
+def listQ (p : LineProfile) : ℚ :=
+  (firstOrderCurveFiberStageOne p.k p.totalJetCap p.firstDerivativeCap (hybridTau (p.k - 1)) : ℚ) *
+    ((p.n - p.k + 1 : ℕ) : ℚ) / ((p.agreement - p.k + 1 : ℕ) : ℚ) +
+  (ordinaryDegreeEnvelope p.totalJetCap p.firstDerivativeCap : ℚ)
+def report (tag : String) (n k A ell m M mu H : ℕ) : String :=
+  let p := mkProfile n k A ell m M mu H
+  let L0 := argminConvex (ordAt p) 80 (p.D + 1) A
+  let L := argminConvex (regAt p) 80 k A
+  let e := ordAt p L0 + regAt p L
+  let lq := listQ p
+  s!"CERT {tag} dim={p.supportDimension} rank={p.localRank} colw={p.columnY₀Weight} slots={p.heightSlots} rows={p.shiftedRowSlots ell} hs={p.shiftedHeightSlots ell} verified={decide p.CurveVerification} L0={L0} L={L} E={e.num}/{e.den} list={lq.num}/{lq.den} tightlist={(tightListEnvelope p).num}/{(tightListEnvelope p).den}"
+end DKTEval
+'''
+
+
+def gen_eval():
+    print(HEADER + EVAL_DEFS)
+    for c in certs():
+        print(f'#eval! IO.println (DKTEval.report "{c["key"]}" {c["n"]} {c["k"]} {c["A"]} {c["ell"]} '
+              f'{c["m"]} {c["M"]} {c["mu"]} {c["H"]})')
+
+
+def parse_eval(path):
+    rows = {}
+    for line in open(path):
+        m = re.match(r'CERT (\S+) (.*)', line.strip())
+        if not m:
+            continue
+        kv = dict(x.split('=', 1) for x in m.group(2).split())
+        rows[m.group(1)] = kv
+    return rows
+
+
+def ceil_fr(x):
+    return -((-x.numerator) // x.denominator)
+
+
+def gen_proof(evalpath):
+    rows = parse_eval(evalpath)
+    cs = certs()
+    print(f'/-\nDKT26 verification (lane/pq-dkt-verify): the {len(cs)} first-order certificates of\n'
+          f'calc/{os.path.basename(JSON)}{" (slice " + CHUNK + ")" if CHUNK else ""} re-checked by the Lean kernel with ArkLib\'s own decidable checker.\n'
+          'Generated by calc/dkt_lean_certs.py from dkt_certs.json and DKTCertsEval.out (which only\n'
+          'supplies the support counts and the thresholds L0, L; the kernel re-derives everything).\n'
+          'For each certificate: `verified_i` (support/surplus row test, Prop 5.10), `mca_i` (an actual\n'
+          'exceptional set of size <= ceil(E_json) with full agreement-set recovery, over every field of\n'
+          'characteristic p = 15*2^27+1), and for line certificates `list_i` (every finite family of\n'
+          'close polynomials has size <= list_json).\n-/')
+    print(HEADER)
+    print('set_option maxRecDepth 100000\nset_option maxHeartbeats 0\n')
+    print(PROOF_DEFS)
+    for i, c in enumerate(cs):
+        r = rows[c['key']]
+        assert r['verified'] == 'true', (c['key'], r)
+        Eb = ceil_fr(c['E'])
+        Lb = c['list']
+        L0, L = int(r['L0']), int(r['L'])
+        print(f'-- {c["key"]}  (n,k,A,ell);  E_json = {c["E"]},  list_json = {Lb}')
+        print(f'def prof{i} : LineProfile := ⟨{c["n"]}, {c["k"]}, {c["A"]}, {c["m"]}, {c["M"]}, {c["mu"]}, '
+              f'{c["ell"]}, {r["dim"]}, {r["rank"]}, {r["colw"]}, {c["H"]}, {r["slots"]}⟩')
+        D, A, m, M, mu, H, n, ell = c['k'] - 1, c['A'], c['m'], c['M'], c['mu'], c['H'], c['n'], c['ell']
+        args5 = f'{D} {A} {m} {M} {mu}'
+        print(f'theorem dim{i} : firstOrderDimensionCount {args5} = {r["dim"]} := by')
+        print(f'  simp only [firstOrderDimensionCount, sum_range_eq_sumTo]; decide +kernel')
+        print(f'theorem slots{i} : firstOrderHeightSlotCount {args5} {H} = {r["slots"]} := by')
+        print(f'  simp only [firstOrderHeightSlotCount, sum_range_eq_sumTo]; decide +kernel')
+        print(f'theorem rows{i} : firstOrderCurveShiftedRowSlotBound {args5} {n} {ell} {H} = {r["rows"]} := by')
+        print(f'  simp only [firstOrderCurveShiftedRowSlotBound, firstOrderGradedRankBound, sum_range_eq_sumTo]')
+        print(f'  decide +kernel')
+        print(f'theorem hs{i} : firstOrderCurveShiftedHeightSlotCount {args5} {ell} {H} = {r["hs"]} := by')
+        print(f'  simp only [firstOrderCurveShiftedHeightSlotCount, sum_range_eq_sumTo]; decide +kernel')
+        print(f'theorem verified{i} : prof{i}.CurveVerification := by')
+        print(f'  refine ⟨by decide, by decide, by decide, ?_, ?_, by decide +kernel, by decide, ?_, by decide +kernel⟩')
+        print(f'  · show firstOrderCurveShiftedRowSlotBound {args5} {n} {ell} {H} <')
+        print(f'      firstOrderCurveShiftedHeightSlotCount {args5} {ell} {H}')
+        print(f'    rw [rows{i}, hs{i}]; decide +kernel')
+        print(f'  · exact dim{i}')
+        print(f'  · exact slots{i}')
+        print(f'theorem envelope{i} : envAt prof{i} {L0} {L} ≤ ({Eb} : ℚ) := by decide +kernel')
+        print('open Classical in')
+        print(f'theorem mca{i} {{F E : Type}} [Field F] [Field E] [IsAlgClosed E] (hF : ringChar F = p)')
+        print(f'    (domain : Fin prof{i}.n ↪ F) (values : Fin (prof{i}.batchingDegree + 1) → Fin prof{i}.n → F)')
+        print(f'    (iota : F →+* E) :')
+        print(f'    ∃ exceptional : Finset F, (exceptional.card : ℚ) ≤ {Eb} ∧')
+        print(f'      ∀ z ∉ exceptional, ∀ P : F[X], P.degree < prof{i}.k →')
+        print(f'        prof{i}.agreement ≤ (polynomialAgreementSet domain (powerBatchedWord values z) P).card →')
+        print(f'        HasExactPowerAgreement domain values (RingHom.id F) prof{i}.k z P :=')
+        print(f'  mca_of verified{i} {L0} {L} {Eb} (by decide) (by decide) (by decide) (by decide) (by decide)')
+        print(f'    (by decide) (by decide) (by decide) envelope{i} hF (by decide) domain values iota')
+        if c['ell'] == 1:
+            print(f'theorem listq{i} : listQ prof{i} ≤ ({Lb.numerator} / {Lb.denominator} : ℚ) := by decide +kernel')
+            print(f'theorem list{i} {{F : Type}} [Field F] (hF : ringChar F = p) (domain : Fin prof{i}.n ↪ F)')
+            print(f'    (received : Fin prof{i}.n → F) (S : Finset F[X])')
+            print(f'    (hS : ∀ P ∈ S, IsAgreementSolution domain received prof{i}.k prof{i}.agreement P) :')
+            print(f'    (S.card : ℝ) ≤ (({Lb.numerator} / {Lb.denominator} : ℚ) : ℝ) :=')
+            print(f'  list_of verified{i} (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)')
+            print(f'    listq{i} hF (by decide) domain received S hS')
+        print()
+    print('end DKTCerts\n')
+    for i, c in enumerate(cs):
+        print(f'#print axioms DKTCerts.mca{i}')
+        if c['ell'] == 1:
+            print(f'#print axioms DKTCerts.list{i}')
+
+
+PROOF_DEFS = r'''
+namespace DKTCerts
+
+/-- BabyBear prime: every challenge field used (Ext12 of F_p) has characteristic `p`. -/
+def p : ℕ := 2013265921
+
+/-- Factorwise-squarefree count at explicit ordinary (`L0`) and regular (`L`) thresholds. -/
+def envAt (q : LineProfile) (L0 L : ℕ) : ℚ :=
+  retainedSquarefreeOrdinaryCurveMCAAt q.n q.D q.batchingDegree L0 q.agreement q.totalJetCap
+      q.firstDerivativeCap q.height +
+    regularSymbolicCurveMCADerivativeBoundTwo q.n q.batchingDegree (q.D + 1) (q.D + 1) L
+      q.agreement q.totalJetCap q.firstDerivativeCap q.height (hybridTau q.D)
+
+/-- Rational form of `squarefreeListEnvelope`. -/
+def listQ (q : LineProfile) : ℚ :=
+  (firstOrderCurveFiberStageOne q.k q.totalJetCap q.firstDerivativeCap (hybridTau (q.k - 1)) : ℚ) *
+    ((q.n - q.k + 1 : ℕ) : ℚ) / ((q.agreement - q.k + 1 : ℕ) : ℚ) +
+  (ordinaryDegreeEnvelope q.totalJetCap q.firstDerivativeCap : ℚ)
+
+/-- Structural sum: kernel-evaluable without the `Finset.range` multiset machinery, which
+exhausts memory on the large supports (`B_jet` up to 14,697). -/
+def sumTo (f : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 0
+  | n + 1 => sumTo f n + f n
+
+theorem sum_range_eq_sumTo (f : ℕ → ℕ) (n : ℕ) : ∑ i ∈ Finset.range n, f i = sumTo f n := by
+  induction n with
+  | zero => simp [sumTo]
+  | succ n ih => rw [Finset.sum_range_succ, ih, sumTo]
+
+theorem opt_le_envAt (q : LineProfile) (L0 L : ℕ) (h1 : q.D < L0) (h2 : L0 ≤ q.agreement) :
+    squarefreeSharpOptimizedCurveEnvelope q L ≤ envAt q L0 L := by
+  unfold squarefreeSharpOptimizedCurveEnvelope retainedSquarefreeCurveMCASharpOptimizedRaw envAt
+  exact add_le_add (retainedSquarefreeOrdinaryCurveMinimum_le h1 h2) le_rfl
+
+theorem listEnvelope_eq (q : LineProfile) : squarefreeListEnvelope q = ((listQ q : ℚ) : ℝ) := by
+  unfold squarefreeListEnvelope listQ
+  push_cast
+  ring
+
+open Classical in
+theorem mca_of {F E : Type} [Field F] [Field E] [IsAlgClosed E] {q : LineProfile}
+    (hq : q.CurveVerification) (L0 L B : ℕ) (h1 : q.D < L0) (h2 : L0 ≤ q.agreement)
+    (hs1 : q.k ≤ L) (hs2 : L ≤ q.agreement) (hs3 : q.agreement ≤ q.n)
+    (hk : 2 ≤ q.k) (hkn : q.k < q.n) (hell : 0 < q.batchingDegree)
+    (henv : envAt q L0 L ≤ (B : ℚ)) (hF : ringChar F = p)
+    (hguard : max (q.k - 1) q.firstDerivativeCap < p ∧ 1 ≤ q.firstDerivativeCap ∧
+      q.firstDerivativeCap ≤ q.totalJetCap)
+    (domain : Fin q.n ↪ F) (values : Fin (q.batchingDegree + 1) → Fin q.n → F) (iota : F →+* E) :
+    ∃ exceptional : Finset F, (exceptional.card : ℚ) ≤ B ∧
+      ∀ z ∉ exceptional, ∀ P : F[X], P.degree < q.k →
+        q.agreement ≤ (polynomialAgreementSet domain (powerBatchedWord values z) P).card →
+        HasExactPowerAgreement domain values (RingHom.id F) q.k z P := by
+  obtain ⟨ex, hcard, hgood⟩ := exists_exceptional_exact_powerAgreement_squarefree_sharp_optimized
+    hq L ⟨hs1, hs2, hs3⟩ hk hkn hell hguard.2.1 hguard.2.2 domain values iota
+    (Or.inr (by rw [hF]; exact hguard.1))
+  exact ⟨ex, hcard.trans ((opt_le_envAt q L0 L h1 h2).trans henv), hgood⟩
+
+theorem list_of {F : Type} [Field F] {q : LineProfile} (hq : q.CurveVerification)
+    (hell : q.batchingDegree = 1) (hkn : q.k ≤ q.n) (hkA : q.k ≤ q.agreement)
+    (hAn : q.agreement ≤ q.n) (hM : 0 < q.firstDerivativeCap)
+    (hMμ : q.firstDerivativeCap ≤ q.totalJetCap) {B : ℚ} (hB : listQ q ≤ B)
+    (hF : ringChar F = p) (hguard : max (q.k - 1) q.firstDerivativeCap < p)
+    (domain : Fin q.n ↪ F) (received : Fin q.n → F) (S : Finset F[X])
+    (hS : ∀ P ∈ S, IsAgreementSolution domain received q.k q.agreement P) :
+    (S.card : ℝ) ≤ ((B : ℚ) : ℝ) := by
+  have h := finiteSquarefreeListBound_of_profile hq hell hkn hkA hAn hM hMμ domain received
+    (Or.inr (by rw [hF]; exact hguard)) S hS
+  rw [listEnvelope_eq] at h
+  exact h.trans (by exact_mod_cast hB)
+'''
+
+
+if __name__ == '__main__':
+    if sys.argv[1] == 'eval':
+        gen_eval()
+    else:
+        gen_proof(sys.argv[2])
