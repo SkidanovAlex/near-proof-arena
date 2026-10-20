@@ -26,14 +26,23 @@ So the join's AIR-side risk is gone.  What is left is one new chip plus two theo
 | family | buses | who fixes it |
 |---|---|---|
 | Wasm `STATE`/`FETCH`/`STK`/`R16`/`BYTE`/`DATA`/`FUNC` | 0–6 | `WasmBase/Chips.lean:35-41` |
-| classical state tables, after the port's `+128` | 128–199 | `Join.lean` (proved `< 128` before the shift) |
-| **new** `HOSTQ` (Wasm → state, requests) | **200** | this doc |
-| **new** `HOSTR` (state → Wasm, responses) | **201** | this doc |
-| **new** `HOSTB` (byte payloads, both ways) | **202** | this doc |
-| free | 7–127, 203+ | reserved |
+| classical state tables, after the port's `+128` | 128–203 | `Join.lean` (proved `< 128` before the shift) |
+| **new** `HOSTQ` (Wasm → state, requests) | **208** | this doc (revised) |
+| **new** `HOSTR` (state → Wasm, responses) | **209** | this doc (revised) |
+| **new** `HOSTB` (byte payloads, both ways) | **210** | this doc (revised) |
+| free | 10–127, 204–207, 211+ | reserved |
 
-`BUS_OFFSET = 128` in the driver and `busOffset` in the Lean tool already produce 128–199, so the
-new buses start at 200 and need no change to either family.
+**Revision (2026-10-20).** The first version of this table said the classical range was
+`128–199` and put the host buses at `200/201/202`.  That was **wrong and unsound**: the 33-table
+D1-a7b export uses classical buses **72–75** (`v3-d1-a7b/conformance/out-v2/nearAirV3D1.json`),
+so after `+128` the classical range reaches **203**, and `200/201/202` would have collided with
+classical buses 72/73/74.  A colliding bus merges two unrelated multiset constraints, which is a
+soundness bug.  The 25-table D0a and 30-table D1 exports do stop at bus 71 (range 128–199), which
+is why the mistake was not caught here; `pq-d3-join`'s `results/pq-d3-join/BUS-NUMBERING.md`
+caught it.  The corrected allocation is **208/209/210**, matching `PQ/Join/Statement.lean`.
+
+`BUS_OFFSET = 128` in the driver and `busOffset` in the Lean tool produce 128–203 across the
+variants (a7b reaches bus 75), so the new buses start at 208 and need no change to either family.
 
 **Why one `HOSTB` and not one per direction.**  The bytes of a request (key, value, args) and of a
 response (register contents, `storage_read` value) never travel in the same host call, and `ts`

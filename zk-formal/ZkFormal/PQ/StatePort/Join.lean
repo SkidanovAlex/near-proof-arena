@@ -59,17 +59,40 @@ theorem nearAirV3D1_buses_below_128 :
       T.interactions.all fun i => i.bus < 128) = true := by
   decide +kernel
 
-/-- The direct-Wasm bus range, from `WasmBase/Chips.lean` (`busState` … `busFunc`).  Kept here as
-a constant so the partition is stated in one place on the classical side. -/
-def wasmBusMax : Nat := 6
+/-- The direct-Wasm bus range.  `WasmBase/Chips.lean` uses `busState` … `busFunc` = 0–6; the HOST
+chip (`lane/pq-host-chip`) adds `HOSTQ`/`HOSTR`/`HOSTT` = 7–9, so the family now reaches 9.  Kept
+here as a constant so the partition is stated in one place on the classical side. -/
+def wasmBusMax : Nat := 9
 
 /-- **The partition.**  With the port's offset of 128, every translated classical bus is
-`≥ 128`, and every Wasm bus is `≤ 6`; the two ranges can never meet. -/
+`≥ 128`, and every Wasm bus is `≤ 9`; the two ranges can never meet. -/
 theorem join_partition (bWasm bClassical : Nat)
     (hW : bWasm ≤ wasmBusMax) (hC : bClassical < 128) :
     bWasm ≠ 128 + bClassical := by
+  -- `bClassical < 128` is enough here: `bWasm ≤ 9` and `128 + bClassical ≥ 128`.
   intro h
-  have hwm : wasmBusMax = 6 := rfl
+  have hwm : wasmBusMax = 9 := rfl
+  have hW9 : bWasm ≤ 9 := hwm ▸ hW
   omega
+
+/-- The largest classical bus actually used, across the 25-, 30- and 33-table exports.  `D0a` and
+`D1` stop at 71; the 33-table a7b variant uses **72–75**, so 75 is the real bound (`< 128` alone is
+too loose: it would allow 127, and `128 + 127 = 255`). -/
+def classicalBusMax : Nat := 75
+
+/-- **The host buses fit above both families.**  The classical range after `+128` reaches at most
+`128 + 75 = 203`, so the cross-proof host buses start at 208.  This is the corrected allocation: an
+earlier version of `JOIN-INTERFACE.md` put them at 200–202, which would have collided with classical
+buses 72–74. -/
+theorem host_buses_clear (bClassical bWasm : Nat)
+    (hC : bClassical ≤ classicalBusMax) (hW : bWasm ≤ wasmBusMax) :
+    bWasm < 208 ∧ 128 + bClassical < 208 := by
+  have hwm : wasmBusMax = 9 := rfl
+  have hcm : classicalBusMax = 75 := rfl
+  have hW9 : bWasm ≤ 9 := hwm ▸ hW
+  have hC75 : bClassical ≤ 75 := hcm ▸ hC
+  have h1 : bWasm < 208 := by omega
+  have h2 : 128 + bClassical < 208 := by omega
+  exact ⟨h1, h2⟩
 
 end ZkFormal.PQ.StatePort

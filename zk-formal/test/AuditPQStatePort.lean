@@ -34,6 +34,7 @@ open ZkFormal.PQ.StatePort
 #check @nearAirV3_buses_below_128
 #check @nearAirV3D1_buses_below_128
 #check @join_partition
+#check @host_buses_clear
 #check @tapeNet_canon
 #check @join_additive
 #check @WasmRunStmt
@@ -56,5 +57,6 @@ open ZkFormal.PQ.StatePort
 #print axioms ZkFormal.PQ.StatePort.canonKeys_nodup
 #print axioms ZkFormal.PQ.StatePort.nearAirV3_buses_below_128
 #print axioms ZkFormal.PQ.StatePort.join_partition
+#print axioms ZkFormal.PQ.StatePort.host_buses_clear
 #print axioms ZkFormal.PQ.StatePort.tapeNet_canon
 #print axioms ZkFormal.PQ.StatePort.join_additive

@@ -276,7 +276,7 @@ that the state `RelD1a` is preserved when every `FunctionCall` action is backed 
 useful shape it records is `join_additive`: the join does not weaken or change the state relation,
 it only *requires* the Wasm backing.  That is why the state tables port unchanged.
 
-`Join.lean` proves the static half (the bus partition).  `JOIN-INTERFACE.md` fixes the rest of the
+`Join.lean` proves the static half (the bus partition), including that the host buses at 208/209/210 clear both families (`host_buses_clear`, with the real classical bound of 75, not 127).  `JOIN-INTERFACE.md` fixes the rest of the
 contract between the two lanes: the new bus ids, the `HOSTQ`/`HOSTR`/`HOSTB` message shapes, the
 HOST chip's columns and constraints, the two theorem signatures to compose
 (`pq_d1_rel` and a relative `wasm_base_sound_host`), and the dependency order.
