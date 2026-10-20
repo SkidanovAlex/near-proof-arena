@@ -17,7 +17,9 @@ available; anything here that must enter a certificate still has to be re-proved
 |---|---|---|
 | `Qrom/Transition.lean` | `block_le_a`, `block_le_b`, `block_le_c` — the three cases of the one-query transition bound `‖A·cO·B‖²` | §3 **Lemma 1** |
 | `Qrom/Path.lean` | `Ahat_step` (the recursion holds with equality, by Pascal's rule) and `path_bound` (the induction `a ≤ Â`, giving `‖Π_{κ≥K+1}ψ_t‖ ≤ A_t`) | §3 **Lemma 2** |
+| `Qrom/Main.lean` | **`qrom_bound`** — the whole chain assembled: Lemma 1 bounds ⇒ operator norm ⇒ mass recurrence ⇒ Lemma 2 ⇒ Fact A | Thm 6.4 conclusion shape |
 | `Qrom/FactA.lean` | `hits_le` / `fibre_card` (the finite counting step: hitting any of `ℓ` coordinates has `≤ ℓ·N^(t−1)`-many oracles) and `fact_a` (the square-root form, with the Zhandry/CFHL21 replacement as an explicit hypothesis) | §3 **Fact A** |
+| `Qrom/Operator.lean` | `matL` (a matrix as a linear map), `restr`/`restr_idem` (level projection), `block_sq_le` and **`block_norm_le`** (entrywise bound ⇒ block operator norm) | §3 "the max over the block norms" |
 | `Qrom/Instantiate.lean` | Hilbert-space model: `proj`/`projL`, `norm_proj_sq`/`norm_proj_le`/`norm_proj_mono`, `proj_idem`, `mass`, `mass_antitone`, **`mass_recurrence`** (block operator norms ⇒ the per-level recurrence), `instantiate` (Lemma 2 for a real state) | §3 "for diagonal Π, ‖Π_{≥j} cO Π_{=i}‖ is the max of the block norms", Lemma 2, step 6 |
 
 Axioms: `propext`, `Classical.choice`, `Quot.sound` only. No `sorry`.
@@ -75,19 +77,42 @@ block bound controls `cO` applied to `Π_{=i}ψ`, not to `ψ`, so the chain need
 `instantiate` then applies Lemma 2 to `mass lev ∘ ψ`, with nonnegativity supplied by
 `mass_nonneg` rather than assumed.
 
-## What is *not* proved (and why it matters for the paper)
+## Status: the chain is closed except two cited modelling facts
 
-1. **The Zhandry/CFHL21 replacement inequality itself** (`Replace` in `fact_a`). The counting and
-   the square-root algebra are proved; the statement that the real oracle and the measured
-   compressed database differ by `ℓ/N` in squared distance is cited, not derived.
-2. **Constructing the concrete operator `cO`.** `mass_recurrence` takes the block bounds
-   `‖Π_j ∘ cO ∘ Π_{=i}‖ ≤ g_i` as a hypothesis. Those come from Lemma 1 (`block_le_*`) plus the
-   compressed-oracle's definition; the assembly for the actual `cO` is not done.
-3. **Theorem 4 / Theorem 6.4** end to end, and the weak-binding Theorem R.
+The full chain is now proved and assembled in `Qrom/Main.lean:qrom_bound`:
 
-So this package proves the two *quantitative* lemmas (Lemma 1, Lemma 2), the counting half of
-Fact A, and the composition of Lemma 2 with a `Step` interface. It does not prove the QROM game
-end to end, and the paper must keep saying the composition is hand-proved.
+```
+Lemma 1 entrywise bounds   (block_le_a/b/c)          proved
+  ⇒ block operator norm    (block_norm_le)           proved
+  ⇒ per-level recurrence   (mass_recurrence)         proved (needs projector idempotence)
+  ⇒ chain-sum bound        (path_bound)              proved
+  ⇒ Fact A square roots    (fact_a)                  counting + algebra proved
+  ⇒ qrom_bound                                        proved
+```
+
+**Two inputs remain cited, not derived.** They are named explicitly at the top of `Qrom/Main.lean`
+and are not hidden behind vague hypotheses:
+
+1. **`OracleModel`** (ANALYSIS Fact B / CFHL21 Lemma 4.3): that the compressed oracle's
+   one-point transition has the matrix entries whose squared bounds `block_le_*` analyse. The
+   *consequent* bounds are proved; that the entries are the right ones is the modelling step.
+2. **`Replace`** (CFHL21 Cor 4.2): the real-oracle-to-measured-database inequality
+   `√p ≤ √p' + √(ℓ/N)`. Its counting half (`hits_le`, `fibre_card`) and its square-root algebra
+   (`sqrt_add_le`, `fact_a`) are proved; the inequality itself needs the compressed-oracle
+   purification, which is not formalized here.
+
+So this is **not** yet a proof of `PROOF.md` Theorem 6.4: the two cited facts are exactly the
+places where the paper cites Zhandry and CFHL21. What the package does prove is that those two
+citations are the *only* remaining gaps — every other step of Lemmas 1 and 2, the operator
+assembly, and the final composition are machine-checked. The paper must keep saying the QROM
+composition rests on CFHL21 Cor 4.2 and Fact B.
+
+### Finding worth recording
+
+The step ANALYSIS states in one sentence ("for diagonal `Π`, `‖Π_{≥j} cO Π_{=i} P_{≤s}‖` is the
+maximum over the block norms of Lemma 1") is **false without idempotence** of the level operators:
+the block bound controls `cO` applied to `Π_{=i}ψ`, not `ψ`. `mass_recurrence` therefore takes
+`P i ∘L P i = P i` explicitly, and `proj_idem`/`restr_idem` discharge it.
 
 ## Build
 
