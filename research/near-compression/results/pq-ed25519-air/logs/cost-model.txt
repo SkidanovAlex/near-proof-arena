@@ -1,0 +1,27 @@
+SHA-512 AIR: 83 cols x 128 rows = 10624 cells, 2176 interactions per compression
+D1 blocks (msg=32B): 1;  widest fixture (msg=1087B): 10
+
+case                          muls  add/sub  blocks         N=100         N=120         N=149         N=200
+typical (125,126)             9434     6114       1     1,051,928     1,240,608     1,514,194     1,995,328
+typical, worst msg            9434     6114      10     1,147,544     1,336,224     1,609,810     2,090,944
+worst-case (252,252)         12217     8138       1     1,362,612     1,606,952     1,961,245     2,584,312
+
+N=100  typical D1: field  1,041,304 + sha  10,624 =  1,051,928 cells; interactions  24,987 + 2,176 =  27,163
+N=120  typical D1: field  1,229,984 + sha  10,624 =  1,240,608 cells; interactions  24,987 + 2,176 =  27,163
+N=149  typical D1: field  1,503,570 + sha  10,624 =  1,514,194 cells; interactions  24,987 + 2,176 =  27,163
+N=200  typical D1: field  1,984,704 + sha  10,624 =  1,995,328 cells; interactions  24,987 + 2,176 =  27,163
+
+Breakdown of the census for the typical case:
+{
+  "point_adds": 764,
+  "doublings": 512,
+  "muls": 9434,
+  "addsub": 6114,
+  "negs": 5,
+  "inv": 1,
+  "sqrt": 1,
+  "exp_255_minus_2": 1,
+  "exp_p5_over_8": 1
+}
+
+delta: each F_p mul cell costs 9,434 cells per signature
