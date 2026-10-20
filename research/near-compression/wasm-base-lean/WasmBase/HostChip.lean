@@ -32,9 +32,15 @@ namespace WasmBase
 namespace Chips
 open Expr
 
-/-- Cross-proof host request / response, and the cached host table. -/
-def busHostQ : Nat := 7
-def busHostR : Nat := 8
+/-- Cross-proof host request / response, and the cached host table.
+
+`HOSTQ`/`HOSTR` are **cross-proof** buses: the state side must use the same ids. They sit above
+every shifted classical bus (the port maps classical bus `b` to `128 + b`, and the widest classical
+AIR uses bus 75, so the occupied range is 128-203) and above every Wasm bus (0-9): hence 208/209.
+`HOSTT` is a Wasm-internal cached table, not a cross-proof bus, and stays in the low range.
+See `lane/pq-d3-join:research/near-compression/results/pq-d3-join/BUS-NUMBERING.md`. -/
+def busHostQ : Nat := 208
+def busHostR : Nat := 209
 def busHostT : Nat := 9
 
 /-- Fixed host table `(id, name, #params, #results)`; `np ≤ 2`, `ar ≤ 1` (the message shape). -/
