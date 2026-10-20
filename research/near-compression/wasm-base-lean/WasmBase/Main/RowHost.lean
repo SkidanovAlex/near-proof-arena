@@ -65,6 +65,14 @@ theorem host_rowOut {pub : List F} {tr : Trace} {r : Nat} :
     Expr.eval_add', Expr.eval_mul', Expr.eval_ofNat', Lean.Grind.Semiring.natCast_mul, cell_cast,
     Trace.row, Host.st, Host.kSb, Host.kCid, cPc, cTs, cS, cFee]
 
+/-- The activity count of an active HOST row, as a natural. -/
+theorem host_act_nat {pub : List F} {tr : Trace} {r : Nat}
+    (hact : rowAct Host.table tr pub 22 r) : rowNat tr 22 r Host.act = 1 := by
+  have := hact
+  simp only [rowAct, Host.table, Host.inters, stateIn, List.cons_append, List.getD_cons_zero,
+    v, Expr.eval_col, Trace.row, rowNat] at this
+  exact this
+
 theorem host_rowfacts {nloc ngl : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseHostAir nloc ngl) pub tr) {r : Nat} (hr : r < tr.height 22)
     (hact : rowAct Host.table tr pub 22 r) : HostRowFacts pub tr r := by

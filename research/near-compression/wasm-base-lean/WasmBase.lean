@@ -41,3 +41,6 @@ import WasmBase.HostCheck
 import WasmBase.StepHost
 import WasmBase.Main.RowHost
 import WasmBase.Main.Host
+import WasmBase.Main.HostLinks
+import WasmBase.Main.RowHostSpec
+import WasmBase.Main.ExecHost
