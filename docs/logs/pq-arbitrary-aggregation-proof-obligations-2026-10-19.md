@@ -93,7 +93,7 @@ lemma, not left as "tests pass".
 
 | id | obligation | status | where | notes |
 |---|---|---|---|---|
-| N1 | `Theorem 6.4`: QROM straight-line KS for a *family* of layers, one database, truncated commitments | **hand** | `PROOF.md` Thm 6.4 | highest-value item to review/Lean |
+| N1 | `Theorem 6.4`: QROM straight-line KS for a *family* of layers, one database, truncated commitments | **family step now Lean; QROM potential hand** | `zk-formal/ZkFormal/Bcs/Family.lean` (`layer_sound_of_family`, `union_bound_over_layers`, `family_no_worse_than_union`); `PROOF.md` Thm 6.4 | The "one database, no union over d" claim is now proved (`layer_sound_of_family`'s conclusion has no layer count). The compressed-oracle potential itself is the existing `ZkFormal.Bcs` development, hand-reviewed |
 | N2 | `Theorem 7.4`: linear-chain composition, error independent of `d` | **hand** | `PROOF.md` Thm 7.4, given A-IC | |
 | N3 | **`Theorem 7.4-tree`**: composition over an arbitrary arity/depth tree, `(F3-tree)` | **semantic + structural half done (Lean)**; extraction premise open | `lane/pq-base-aggregation` `zk-formal/ZkFormal/PQ/Aggregation/{Tree,Statement,Shape,Compose}.lean`; results `ARBITRARY-AGGREGATION-LEAN.md` | Proved: the certified-tree induction (`ProofTree.certified_root`), the range-statement composition/rejection (`Stmt.compose_eq_root`, `Stmt.compose_rejects`), and shape independence of run, root and statement. The per-node extraction premise (`NodeOK`) is explicit and is where Theorem 6.4 is applied once — still paper-level |
 | N4 | Error independent of node count for arbitrary `S` | **done (Lean) at the composition level** | `ProofTree.node_count_irrelevant`, `Shape.tree_root_shape_irrelevant` | The composed predicate mentions only the root, so no per-node probability is carried. The numerical bound still rests on N1's single-database theorem |
@@ -157,8 +157,8 @@ authors chose; A1 shows there is no alternative in this model.
 |---|---|---|---|---|
 | P1 | WHIR Thm 5.2 (corrected, `Puš26` Thm 5.3) applies to our protocol | **cited external** | `PROOF.md` §4 | refereed + thesis |
 | P2 | BCGM Thm 9.2 / BCHKS25 Thm 1.5 hold for arbitrary evaluation sets | **cited external** | x15 `SOUNDNESS.md` | |
-| P3 | `c·2^K` domain lemma (smoothness edit) | **hand** | x15 `SOUNDNESS.md` Lemma 3.1 | four properties; review |
-| P4 | **DKT26 → WHIR lift** (RS-level MCA/list ⇒ WHIR rbr) | **open (paper-level)** | GAPS S-28 | the main missing proximity step |
+| P3 | `c·2^K` domain lemma (smoothness edit) | **done (Lean) for P1/P2 + sampler; P3 arithmetic** | `zk-formal/ZkFormal/Udr/CosetDomain.lean` (`neg_mem_coset_index`, `sq_periodic`, `halve_card`, `higher_split`, `sampler_uniform`) | Also records that `Udr.Setup` never asks for a power of two. The fibre-injectivity closed form is arithmetic bookkeeping the argument does not use |
+| P4 | **DKT26 → WHIR lift** (RS-level MCA/list ⇒ WHIR rbr) | **done (Lean, parametric in the DKT26 count)** | `zk-formal/ZkFormal/Udr/McaToGap.lean` (`mca_count_to_gap`, `strong_from_mca`, `fold_union`) | The lift is proved as a *composition*: the DKT26 integer count `E` is a hypothesis, and the file shows MCA count ⇒ `LineGap` ⇒ containment, plus additivity over folds. The DKT26 count itself is unchanged (Lean, `DKT-VERIFY.md`) |
 | P5 | DKT26 Thm 5.12 + Cor 7.7/7.8 (O-1), Lean | **done** (Lean) | ArkLib pin, `DKTGlue.lean` | |
 | P6 | DKT26 first-order certificates (O-2), 129/129 deployed | **done** (Lean) | `DKTCertsO2_*` | six shapes |
 | P7 | 9/44 penultimate certificates kernel-blocked at 24 GB | **open** (resource) | `DKTCertsO2_big.keys` | needs 32–48 GB, or document the exclusion |
