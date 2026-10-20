@@ -51,9 +51,12 @@ A `PreprocessedAndCachedFixture` child (one cached main — the TAPE shape):
 
 ### Inertness (the G2 gate's shape)  [measured]
 
-For a child with no cached table and no height cap, the program is byte-identical: 8,018 rows for
-the small Fib fixture, and `statement == statement_digest(public_values)`
-(`nv_statement_inert_without_cached_roots`).  So the recorded G2 proofs stay valid (§4).
+For a child with no cached table and no height cap, the generated program is unchanged: the cap
+check emits no instruction, and the root fold is a loop over an empty list, so the statement cells,
+the SHA job and every later instruction are the ones the G1 code emitted.  `nv_statement_inert_without_cached_roots`
+asserts the emitted program (8,018 rows for the small Fib fixture) exposes exactly
+`statement_digest(public_values)`, with `StatementClaim::new(..).digest()` equal to it — the pre-P4
+statement.  That, plus the gate pinning 2^28 (§3), is why the recorded G2 proofs stay valid (§4).
 
 ## 2. Per-AIR height cap `log_height <= maxLog_t`  [measured]
 
