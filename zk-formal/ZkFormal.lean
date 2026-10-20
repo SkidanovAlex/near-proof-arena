@@ -378,4 +378,7 @@ import ZkFormal.NearV3.D3.CdBus
 import ZkFormal.NearV3.D3.StateRead
 import ZkFormal.NearV3.D3.StateWrite
 import ZkFormal.NearV3.D3.UpsertWf
+import ZkFormal.NearV3.D3.StateOps
+import ZkFormal.NearV3.D3.StateUsage
+import ZkFormal.NearV3.D3.StateIter
 import ZkFormal.PQ.CdStorage.Link
