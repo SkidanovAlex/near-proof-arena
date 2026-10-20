@@ -1,0 +1,9 @@
+AGGN_TOTAL_CELLS 166527808 program_rows=136988 merkle_nodes=1048
+AGGN_TOTAL_CELLS 166527808 program_rows=136988 merkle_nodes=1048
+AGG_TAMPER rejected: node: wrong preimage
+AGGN_TOTAL_CELLS 166527808 program_rows=136988 merkle_nodes=1048
+AGG_TAMPER rejected: node: swapped children
+AGGN_TOTAL_CELLS 166527808 program_rows=136988 merkle_nodes=1048
+AGG_TAMPER rejected: node: duplicated child
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 42 filtered out; finished in 2044.11s
+	Maximum resident set size (kbytes): 5278880

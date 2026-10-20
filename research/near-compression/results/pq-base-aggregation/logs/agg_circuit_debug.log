@@ -1,0 +1,10 @@
+test nv::agg_tests::agg_circuit_debug has been running for over 60 seconds
+AGG_TAMPER rejected: statement digest limb
+AGG_TAMPER rejected: level
+AGG_TAMPER rejected: chain start removed
+AGG_TAMPER rejected: chain start forged
+AGG_TAMPER rejected: circuit: swapped children
+AGG_TAMPER rejected: circuit: broken continuity
+AGG_TAMPER rejected: circuit: dropped child
+test nv::agg_tests::agg_circuit_debug ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 41 filtered out; finished in 143.68s
