@@ -1,0 +1,55 @@
+TAMPER honest proof verifies and its code_root matches
+
+thread 'main' (1385226) panicked at src/air.rs:148:57:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'main' (1385226) panicked at src/air.rs:148:57:
+called `Option::unwrap()` on a `None` value
+
+thread 'main' (1385226) panicked at src/air.rs:148:57:
+called `Option::unwrap()` on a `None` value
+TAMPER ADD.r0+1                     REJECTED (constraint: ADD row 0 constraint 16 = 2013265920)
+TAMPER ADD.c0+1                     REJECTED (constraint: ADD row 0 constraint 10 = 2)
+TAMPER MUL.rb0+1                    REJECTED (constraint: MUL row 0 constraint 18 = 2013265920)
+TAMPER MUL.cy0+1                    REJECTED (constraint: MUL row 0 constraint 18 = 2013265665)
+TAMPER BIT.rb0+1                    REJECTED (bus: unbalanced: [((4, [3, 37, 0, 38]), 1), ((2, [0, 0, 1, 8998, 33826, 40164, 52210,)
+TAMPER SHIFT.P0+1                   REJECTED (constraint: SHIFT row 0 constraint 53 = 2013265920)
+TAMPER SHIFT.kb0+1                  REJECTED (constraint: SHIFT row 0 constraint 7 = 2)
+TAMPER CMP.d0+1                     REJECTED (constraint: CMP row 0 constraint 33 = 2013265920)
+TAMPER CMP.br0+1                    REJECTED (constraint: CMP row 0 constraint 33 = 65536)
+TAMPER CMP[row 0].inv+1             REJECTED (constraint: CMP row 0 constraint 37 = 1556418045)
+TAMPER CONST.imm0+1                 REJECTED (bus: unbalanced: [((1, [0, 66, 0, 4, 8998, 33826, 40164, 52210]), 1), ((2, [0, 0, 1, )
+TAMPER LOCAL.L0+1                   REJECTED (bus: unbalanced: [((2, [16, 1, 1, 0, 0, 0, 0, 0]), 1), ((2, [16, 1, 1, 1, 0, 0, 0, 0])
+TAMPER CTRL.tgt+1                   REJECTED (bus: unbalanced: [((1, [4, 257, 0, 0, 0, 0, 0, 0]), -1), ((1, [4, 257, 0, 0, 1, 0, 0,)
+TAMPER STACK[select row 0].V1_0+1   REJECTED (bus: unbalanced: [((2, [0, 0, 1, 57125, 31184, 15749, 54256, 297]), -1), ((2, [0, 0, )
+TAMPER STACK.A0+1                   REJECTED (constraint: STACK row 0 constraint 12 = 1)
+TAMPER ADD.ta+1                     REJECTED (bus: unbalanced: [((2, [0, 0, 0, 42590, 38191, 0, 0, 25]), 1), ((2, [0, 0, 0, 42590, )
+TAMPER ADD.h+1                      REJECTED (bus: unbalanced: [((2, [0, 0, 0, 8215, 13159, 0, 0, 27]), -1), ((2, [0, 0, 0, 42590, )
+TAMPER ADD.fee+1                    REJECTED (bus: unbalanced: [((0, [27, 28, 32, 0, 0, 0]), -1), ((0, [27, 28, 33, 0, 0, 0]), 1), )
+TAMPER CMP.S+1                      REJECTED (bus: unbalanced: [((0, [31, 32, 33, 0, 0, 0]), -1), ((0, [32, 33, 32, 0, 0, 0]), -1),)
+TAMPER DRAIN.v0+1                   REJECTED (bus: unbalanced: [((2, [5, 0, 0, 65428, 3, 0, 0, 0]), 1), ((2, [5, 0, 0, 65429, 3, 0,)
+TAMPER DRAIN.act+1                  REJECTED (constraint: DRAIN row 0 constraint 0 = 2)
+TAMPER ADD.fr_sb+1                  REJECTED (bus: unbalanced: [((2, [0, 1, 0, 42590, 38191, 0, 0, 25]), -1), ((2, [0, 1, 0, 31161,)
+TAMPER ADD.fr_cid+1                 REJECTED (bus: unbalanced: [((0, [27, 28, 32, 0, 0, 0]), -1), ((0, [26, 27, 32, 0, 0, 1]), -1),)
+TAMPER LOCAL.fr_cid+1               REJECTED (constraint: LOCAL row 0 constraint 10 = 1887436801)
+TAMPER LOCAL.inv_sp+1               REJECTED (constraint: LOCAL row 0 constraint 10 = 16)
+TAMPER CTRL.fr_cid+1                REJECTED (bus: unbalanced: [((0, [4, 5, 4, 0, 0, 1]), -1), ((0, [4, 5, 4, 0, 0, 0]), 1), ((0, [)
+TAMPER BOUNDARY.sbf+1               REJECTED (bus: unbalanced: [((0, [53, 305, 299, 1, 1, 0]), -1), ((0, [53, 305, 299, 1, 0, 0]), )
+TAMPER BOUNDARY.cidf+1              REJECTED (bus: unbalanced: [((0, [53, 305, 299, 1, 0, 1]), -1), ((0, [53, 305, 299, 1, 0, 0]), )
+TAMPER DRAIN.space+1                REJECTED (constraint: DRAIN row 0 constraint 1 = 1610612737)
+TAMPER CTRL[jif row 2].c0+1         REJECTED (constraint: CTRL row 2 constraint 6 = 2013265919)
+TAMPER CODE.mult[0]+1               REJECTED (bus: unbalanced: [((1, [0, 66, 0, 4, 8997, 33826, 40164, 52210]), -1)])
+TAMPER RANGE16.v[5]+1               REJECTED (constraint: RANGE16 row 4 constraint 1 = 1)
+TAMPER BYTE.x0[1] flip              REJECTED (constraint: BYTE row 0 constraint 17 = 2013265920)
+TAMPER pub.N+1                      REJECTED (bus: unbalanced: [((0, [53, 306, 299, 1, 0, 0]), -1), ((0, [53, 305, 299, 1, 0, 0]), )
+TAMPER pub.S+1                      REJECTED (bus: unbalanced: [((0, [53, 305, 299, 1, 0, 0]), 1), ((0, [53, 305, 300, 1, 0, 0]), -)
+TAMPER pub.result+1                 REJECTED (bus: unbalanced: [((2, [0, 0, 1, 48361, 7874, 27128, 28562, 303]), -1), ((2, [0, 0, 1)
+TAMPER pub.status 1<->2             REJECTED (bus: unbalanced: [((2, [0, 0, 1, 48360, 7874, 27128, 28562, 303]), 1), ((0, [53, 305,)
+TAMPER CODE.op[0]+1                 REJECTED (bus: unbalanced: [((1, [0, 67, 0, 4, 8997, 33826, 40164, 52210]), -1), ((1, [0, 66, 0)
+TAMPER DATA.byte[0]+1 (data_root)   REJECTED (PRECHECK PASSES)
+TAMPER CODE.h[0]+1                  REJECTED (bus: unbalanced: [((1, [0, 66, 0, 4, 8997, 33826, 40164, 52210]), 1), ((1, [0, 66, 1,)
+TAMPER CODE[pad row 54].x0+1 (code_root) REJECTED (PRECHECK PASSES)
+TAMPER DRAIN[budget row 0].v0+1     REJECTED (bus: unbalanced: [((2, [5, 0, 0, 65428, 3, 0, 0, 0]), 1), ((2, [5, 0, 0, 65429, 3, 0,)
+TAMPER ADD swap ts rows 0,1         REJECTED (bus: unbalanced: [((3, [2013265913]), 1), ((3, [2013265912]), 1), ((0, [27, 37, 32, 0)
+TAMPER summary 43/43 rejected

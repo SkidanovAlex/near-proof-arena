@@ -1,0 +1,37 @@
+TABLE BOUNDARY  width  20 rows      1 height      4 cells        80 constraints   0 interactions   9 degree 1
+TABLE ADD       width  28 rows   5120 height   8192 cells    229376 constraints  20 interactions  14 degree 3
+TABLE BIT       width  37 rows   2048 height   2048 cells     75776 constraints  19 interactions  18 degree 2
+TABLE MUL       width  43 rows   1024 height   1024 cells     44032 constraints  26 interactions  30 degree 3
+TABLE SHIFT     width  80 rows      0 height      4 cells       320 constraints  69 interactions  32 degree 8
+TABLE CMP       width  42 rows   1024 height   1024 cells     43008 constraints  38 interactions  16 degree 5
+TABLE CONST     width  11 rows  10242 height  16384 cells    180224 constraints   4 interactions   4 degree 2
+TABLE STACK     width  28 rows      1 height      4 cells       112 constraints  13 interactions  13 degree 3
+TABLE CTRL      width  16 rows   1027 height   2048 cells     32768 constraints   7 interactions   6 degree 4
+TABLE LOCAL     width  23 rows  13316 height  16384 cells    376832 constraints  10 interactions  11 degree 2
+TABLE DIV       width  95 rows   6144 height   8192 cells    778240 constraints 106 interactions  45 degree 6
+TABLE RANGE16   width   2 rows  65536 height  65536 cells    131072 constraints   3 interactions   1 degree 2
+TABLE BYTE      width  20 rows  65536 height  65536 cells   1310720 constraints  19 interactions   4 degree 2
+TABLE CODE      width   9 rows     64 height     64 cells       576 constraints   0 interactions   1 degree 1
+TABLE DRAIN     width   8 rows      0 height      4 cells        32 constraints   1 interactions   1 degree 2
+STEPS 39946 S_UNITS 40967 CELLS_TOTAL 3203168 CELLS_ACTIVE 2767634
+PARAMS n_stack 18 log_h 20 w_stack 8 degree 8 queries [589, 281, 91, 55] pow 0
+VK BOUNDARY  degree 1 constraints 0 interactions 9 dag_nodes 41
+VK ADD       degree 3 constraints 20 interactions 14 dag_nodes 124
+VK BIT       degree 2 constraints 19 interactions 18 dag_nodes 121
+VK MUL       degree 3 constraints 26 interactions 30 dag_nodes 213
+VK SHIFT     degree 8 constraints 69 interactions 32 dag_nodes 574
+VK CMP       degree 5 constraints 38 interactions 16 dag_nodes 267
+VK CONST     degree 2 constraints 4 interactions 4 dag_nodes 26
+VK STACK     degree 3 constraints 13 interactions 13 dag_nodes 97
+VK CTRL      degree 4 constraints 7 interactions 6 dag_nodes 82
+VK LOCAL     degree 2 constraints 10 interactions 11 dag_nodes 86
+VK DIV       degree 6 constraints 106 interactions 45 dag_nodes 601
+VK RANGE16   degree 2 constraints 3 interactions 1 dag_nodes 15
+VK BYTE      degree 2 constraints 19 interactions 4 dag_nodes 242
+VK CODE      degree 1 constraints 0 interactions 1 dag_nodes 10
+VK DRAIN     degree 2 constraints 1 interactions 1 dag_nodes 16
+SOUNDNESS total=268.4 logup=333.3 proximity=316.2 query=268.4
+PROOF total=1072346 gkr=34328 relations=32208 stacking=2324 whir=1003108
+STATEMENT code_root 350acde41b956386ebb6917a794925f47d8ac65e48539d16cdf4d3517dcec0ff0c7c3274f2bd0baf00000000000056e3 code_hash - (V_d: recomputed root matches the proof's cached CODE commitment)
+TIME tracegen 0.174s keygen 0.001s prove 34.461s verify 0.0305s threads 8 peak_rss_kib 1389032
+PROVE OK steps 39946 result Some((1, 12661438867304380917))
