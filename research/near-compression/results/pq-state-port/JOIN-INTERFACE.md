@@ -183,10 +183,19 @@ level induction over the action list, not a new AIR fact.
    - the HOST chip itself (§2), the MEMIO byte mover, register space 6, the `g_after` budget.
    - a trace generator + KATs, as `pq-wasm-base` did for families 2–4.
 2. **`HostOK` / `HostResp` + `wasm_base_sound_host`** (part of 1's Lean work).
-3. **The state-side host tables**: contract-data storage reads/writes on the trie buses.
-   This is the reuse of `WalkV3`/`val`/`ups` under a contract-data key prefix, plus the
-   `RealStore.writes` ordering (`D3/FunctionCall.lean` §4).
-4. **The `runCall` fold / coverage theorem** (§4.3).
+3. ~~**The state-side host tables**: contract-data storage reads/writes on the trie buses.~~
+   **Proved for the walk half** (`PQ/Join/ContractDataView.lean`): `cdWalkV3` is `walkV3` with the
+   key-nibble bus renamed, and the rename is *inert* on every other bus (`rowInterSum_rename_other`,
+   `cdWalkV3_inert`), so all `walkV3` constraint/width/`maxLog`/traffic lemmas transfer verbatim.
+   `W_CD = 2^21` clears every D1 walk id (`W_CD_clear`, no axioms), so a contract-data walk cannot
+   be confused with a transaction/local/access-key/queue walk on `FINAL`.  The nibble-stream
+   length is fixed by the key (`cdKey_nibble_count`).  The `val`/`ups` halves and the
+   `RealStore.writes` ordering remain with the state render lemmas.
+4. **The `runCall` fold / coverage theorem** (§4.3).  **Shape proved**
+   (`PQ/Join/RunCallFold.lean`): `d3_only_execution` shows `d3Hooks` and `d2Hooks` agree on every
+   action except `FunctionCall`, so the fold is a plain list induction (`fold_step`, `fold_of_all`)
+   whose only interesting hypothesis is the `FunctionCall` arm.  What remains is that arm's
+   relation (`WasmHalf` + `StateHalf`), not the fold structure.
 5. **Statement plumbing**: carry `code_root`/`func_root`/`data_root` and the TAPE root up to V_d
    (the TAPE Lean side is done; the NV passthrough is Rust).
 
