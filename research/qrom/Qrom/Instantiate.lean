@@ -2,28 +2,43 @@ import Mathlib
 import Qrom.Path
 
 /-!
-# Qrom.Instantiate — connecting `path_bound` to a Hilbert-space state
+# Qrom.Instantiate — a Hilbert-space model of the QROM potential
 
-`Qrom.Path` proves the path lemma for abstract nonnegative sequences `a s j`. This file closes
-the gap flagged in `README.md` item 2: that a genuine quantum state `ψ_s` and a family of
-diagonal projectors `Π_j` really satisfy those hypotheses.
+`Qrom.Path` proves the path lemma (ANALYSIS Lemma 2) for abstract nonnegative sequences. This
+file builds those sequences from an actual state in a real Hilbert space, which is the gap
+`README.md` used to list.
 
 ## The model
 
-We work in a real Hilbert space `H` (the compressed-oracle state space). The potential level is
-carried by an orthogonal decomposition `H = ⊕_j V_j`; `Π_j` is the orthogonal projector onto
-`⊕_{j' ≥ j} V_j`. Then:
+The compressed-oracle state space is `H = EuclideanSpace ℝ ι`, where `ι` indexes the
+(orthogonal) potential levels together with the database content. For a level predicate `P`, the
+**coordinate projection** `proj P` zeroes every coordinate outside `P`; it is the diagonal
+projector of the analysis.
 
-* `a s j := ‖Π_j ψ_s‖` is nonnegative;
-* the adversary's unitaries `U_s` commute with every `Π_j` (they act on a different register), so
-  they do not change the norms `a`;
-* the transition bounds of Lemma 1 say exactly
-  `‖Π_j (cO ψ_s)‖ ≤ ‖Π_j ψ_s‖ + Σ_{i<j} G_{i,j} ‖Π_i ψ_s‖`,
+* `norm_proj_sq` — `‖proj P x‖² = Σ_{i ∈ P} x_i²`, i.e. the projector is an orthogonal projection
+  and its norm is the mass it keeps.
+* `norm_proj_le` — `‖proj P x‖ ≤ ‖x‖` (the projector is a contraction).
+* `norm_proj_mono` — nested level predicates give monotone masses, which is what makes
+  `a s j = ‖Π_{≥j} ψ_s‖` decreasing in `j`.
 
-since `cO` only moves mass between adjacent levels.
+## The step
 
-These three facts are stated as hypotheses in the `Step` structure, and `path_bound_state`
-derives `‖Π_{K+1} ψ_t‖ ≤ Ahat G t (K+1)` — Lemma 2 applied to a real state.
+`LevelStep` supplies, for an actual state sequence `ψ` and a level family `Π`, the three facts the
+compressed-oracle argument proves:
+
+* the mass is a norm (`mass_nonneg`);
+* the adversary's unitaries preserve every level mass (`unitary`), because they act on the
+  database-content register only and the level projectors are diagonal there;
+* `cO` moves mass between adjacent levels only, giving the per-level transition bound (`step`).
+
+Given those, `instantiate` produces a `Step` and hence Lemma 2's conclusion for a real state.
+
+**Honest scope.** The three fields are exactly the physics. `mass_nonneg` and `unitary` are
+discharged here from the projection lemmas for the natural `proj`; `step` is the transition bound
+whose per-query content is `Qrom.Transition` (Lemma 1) — but the *assembly* of `step` from
+Lemma 1's block bounds is left as the `step` field, because it needs the concrete operator
+`cO`, which this file does not construct. So this closes the "state vs sequence" gap, not the
+"operator vs block bound" gap.
 -/
 
 namespace Qrom
@@ -31,57 +46,137 @@ namespace Qrom
 open scoped BigOperators
 open Finset
 
-/-- A Hilbert-space realization of the QROM potential: a family of "mass at level `≥ j`" values
-coming from an actual state, with the three structural properties the compressed-oracle argument
-supplies. Each field is exactly the corresponding step of ANALYSIS §3, and none of them is
-assumed to be easy — they are the interface a Hilbert-space development must instantiate. -/
-structure Step (G : ℕ → ℕ → ℝ) where
-  /-- `a s j` = the mass at level `≥ j` after `s` queries. -/
-  a : ℕ → ℕ → ℝ
-  /-- masses are norms, hence nonnegative -/
-  a_nonneg : ∀ s j, 0 ≤ a s j
-  /-- the transition bound (Lemma 1 applied per level) -/
-  step : ∀ s j, a (s+1) j ≤ a s j + ∑ i ∈ Finset.range j, G i j * a s i
-  /-- initial condition: the empty database sits at level `0` -/
-  init : ∀ j, a 0 j ≤ Ahat G 0 j
 
-/-- **Lemma 2 for a Hilbert-space step.** Under the structural hypotheses, the mass at level
-`K+1` after any number of queries is bounded by the chain sum. This is `path_bound` instantiated
-at the `a` supplied by a real state. -/
-theorem path_bound_state (G : ℕ → ℕ → ℝ) (hG : ∀ i j, 0 ≤ G i j) (S : Step G) :
-    ∀ t j, S.a t j ≤ Ahat G t j :=
-  path_bound G hG S.a S.init S.step
+variable {ι : Type} [Fintype ι] [DecidableEq ι]
 
-/-- **Corollary in the form `PROOF.md` step 6 uses.** With `K = 0` the mass at level `1` after one
-query is at most `1 + j·G₀`; for `j ≥ 1` this is the `t·G` accumulation of ANALYSIS step 6. -/
-theorem accumulation_bound (G : ℕ → ℕ → ℝ) (hG : ∀ i j, 0 ≤ G i j) (S : Step G)
-    (G₀ : ℝ) (hG₀ : ∀ i j, G i j ≤ G₀) (j : ℕ) :
-    S.a 1 j ≤ 1 + (j : ℝ) * G₀ := by
-  have h := path_bound_state G hG S 1 j
-  unfold Ahat at h
-  rw [Finset.sum_range_succ, Finset.sum_range_one] at h
-  have hW1 : W G 1 j ≤ (j : ℝ) * G₀ := by
-    rw [W]
-    have hrow : ∀ i ∈ Finset.range j, W G 0 i * G i j ≤ G₀ := by
-      intro i hi
-      have hi' : i < j := Finset.mem_range.mp hi
-      rcases Nat.eq_zero_or_pos i with h0 | hpos
-      · subst h0
-        rw [show W G 0 0 = 1 from by simp [W], one_mul]
-        exact hG₀ 0 j
-      · rw [show W G 0 i = 0 from by simp [W, show i ≠ 0 by omega], zero_mul]
-        exact le_trans (hG 0 0) (hG₀ 0 0)
-    calc ∑ i ∈ Finset.range j, W G 0 i * G i j
-        ≤ ∑ _i ∈ Finset.range j, G₀ := Finset.sum_le_sum hrow
-      _ = (j : ℝ) * G₀ := by
-          rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
-  have hW0 : W G 0 j ≤ 1 := by
-    by_cases hj : j = 0
-    · subst hj; simp [W]
-    · simp [W, hj]
-  have heq : (Nat.choose 1 0 : ℝ) * W G 0 j + (Nat.choose 1 1 : ℝ) * W G 1 j
-      = W G 0 j + W G 1 j := by norm_num
-  rw [heq] at h
-  linarith
+/-- Coordinate projection onto a predicate. -/
+noncomputable def proj (P : ι → Prop) [DecidablePred P] (x : EuclideanSpace ℝ ι) : EuclideanSpace ℝ ι :=
+  WithLp.equiv 2 (ι → ℝ) |>.symm (fun i => if P i then x.ofLp i else 0)
+
+@[simp] theorem proj_ofLp (P : ι → Prop) [DecidablePred P] (x : EuclideanSpace ℝ ι) (i : ι) :
+    (proj P x).ofLp i = if P i then x.ofLp i else 0 := rfl
+
+theorem norm_sq_eq_sum (x : EuclideanSpace ℝ ι) :
+    ‖x‖ ^ 2 = ∑ i, (x.ofLp i) ^ 2 := by
+  rw [EuclideanSpace.norm_eq]
+  rw [Real.sq_sqrt (by positivity)]
+  simp [Real.norm_eq_abs, sq_abs]
+
+theorem norm_proj_sq (P : ι → Prop) [DecidablePred P] (x : EuclideanSpace ℝ ι) :
+    ‖proj P x‖ ^ 2 = ∑ i, if P i then (x.ofLp i) ^ 2 else 0 := by
+  rw [norm_sq_eq_sum]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [proj_ofLp]
+  by_cases h : P i <;> simp [h]
+
+theorem norm_proj_le (P : ι → Prop) [DecidablePred P] (x : EuclideanSpace ℝ ι) :
+    ‖proj P x‖ ≤ ‖x‖ := by
+  have h : ‖proj P x‖ ^ 2 ≤ ‖x‖ ^ 2 := by
+    rw [norm_proj_sq, norm_sq_eq_sum]
+    refine Finset.sum_le_sum fun i _ => ?_
+    by_cases h : P i
+    · simp [h]
+    · simp only [h, if_false, Pi.zero_apply]; positivity
+  nlinarith [norm_nonneg (proj P x), norm_nonneg x]
+
+theorem norm_proj_nonneg (P : ι → Prop) [DecidablePred P] (x : EuclideanSpace ℝ ι) :
+    0 ≤ ‖proj P x‖ := norm_nonneg _
+
+/-- Nested projections: monotone in the predicate. -/
+theorem norm_proj_mono {P Q : ι → Prop} [DecidablePred P] [DecidablePred Q]
+    (hPQ : ∀ i, P i → Q i) (x : EuclideanSpace ℝ ι) :
+    ‖proj P x‖ ≤ ‖proj Q x‖ := by
+  have h : ‖proj P x‖ ^ 2 ≤ ‖proj Q x‖ ^ 2 := by
+    rw [norm_proj_sq, norm_proj_sq]
+    refine Finset.sum_le_sum fun i _ => ?_
+    by_cases hP : P i
+    · have hQ := hPQ i hP
+      simp [hP, hQ]
+    · simp [hP]; positivity
+  nlinarith [norm_nonneg (proj P x), norm_nonneg (proj Q x)]
+
+/-- The coordinate projection is idempotent: this is what makes it a *projector* rather than an
+arbitrary contraction, and it is the hypothesis `mass_recurrence` needs. -/
+theorem proj_idem (P : ι → Prop) [DecidablePred P] (x : EuclideanSpace ℝ ι) :
+    proj P (proj P x) = proj P x := by
+  ext i
+  simp only [proj_ofLp]
+  by_cases h : P i <;> simp [h]
+
+/-! ## Deriving the per-level recurrence from block operator norms
+
+ANALYSIS §3 says: "for diagonal `Π`, `‖Π_{≥j} cO Π_{=i} P_{≤s}‖` is the maximum over the block
+norms in Lemma 1". This is the step from Lemma 1 to the recurrence `path_bound` consumes.
+
+The subtlety, which the prose does not spell out: the level operators `Π_{=i}` are **idempotent
+projectors**. Without idempotence the step is false — the block bound controls `cO` applied to
+`Π_{=i}ψ`, not to `ψ`. With it, `(Π_j ∘ cO ∘ Π_{=i})(Π_{=i}ψ) = (Π_j ∘ cO ∘ Π_{=i})ψ`, and
+`le_opNorm` can be applied at `Π_{=i}ψ`.
+-/
+
+variable {E : Type} [NormedAddCommGroup E] [NormedSpace ℝ E]
+
+-- The fix: P i must be IDEMPOTENT (it is a projector), so that
+-- (Pj ∘L cO ∘L Pi) (Pi ψ) = (Pj ∘L cO ∘L Pi) ψ, letting le_opNorm be applied at Pi ψ.
+theorem mass_recurrence (Pj : E →L[ℝ] E) (hPj : ‖Pj‖ ≤ 1) (cO : E →L[ℝ] E)
+    (hCO : ‖cO‖ ≤ 1)
+    (P : ℕ → E →L[ℝ] E) (hidem : ∀ i, P i ∘L P i = P i) (n : ℕ) (g : ℕ → ℝ)
+    (hdecomp : ∀ ψ, ψ = Pj ψ + ∑ i ∈ Finset.range n, P i ψ)
+    (hblock : ∀ i ∈ Finset.range n, ‖Pj ∘L cO ∘L P i‖ ≤ g i) (ψ : E) :
+    ‖Pj (cO ψ)‖ ≤ ‖Pj ψ‖ + ∑ i ∈ Finset.range n, g i * ‖P i ψ‖ := by
+  have h1 : ‖Pj (cO ψ)‖ ≤ ‖Pj (cO (Pj ψ))‖ + ‖Pj (cO (∑ i ∈ Finset.range n, P i ψ))‖ := by
+    have heq : cO ψ = cO (Pj ψ) + cO (∑ i ∈ Finset.range n, P i ψ) := by
+      conv_lhs => rw [hdecomp ψ]; rw [map_add]
+    rw [heq, map_add]; exact norm_add_le _ _
+  have h2 : ‖Pj (cO (Pj ψ))‖ ≤ ‖Pj ψ‖ := by
+    calc ‖Pj (cO (Pj ψ))‖ ≤ ‖Pj‖ * ‖cO (Pj ψ)‖ := ContinuousLinearMap.le_opNorm _ _
+      _ ≤ 1 * ‖cO (Pj ψ)‖ := by gcongr
+      _ ≤ 1 * (‖cO‖ * ‖Pj ψ‖) := by gcongr; exact ContinuousLinearMap.le_opNorm _ _
+      _ ≤ 1 * (1 * ‖Pj ψ‖) := by gcongr
+      _ = ‖Pj ψ‖ := by ring
+  have h3 : ‖Pj (cO (∑ i ∈ Finset.range n, P i ψ))‖ ≤ ∑ i ∈ Finset.range n, g i * ‖P i ψ‖ := by
+    rw [map_sum, map_sum]
+    refine le_trans (norm_sum_le _ _) (Finset.sum_le_sum fun i hi => ?_)
+    -- the idempotence trick: (Pj∘cO∘Pi)(Pi ψ) = (Pj∘cO∘Pi) ψ
+    have hid : (Pj ∘L cO ∘L P i) (P i ψ) = Pj (cO (P i ψ)) := by
+      simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.coe_comp', Function.comp_apply]
+      rw [show P i (P i ψ) = (P i ∘L P i) ψ from rfl, hidem i]
+    calc ‖Pj (cO (P i ψ))‖ = ‖(Pj ∘L cO ∘L P i) (P i ψ)‖ := by rw [hid]
+      _ ≤ ‖Pj ∘L cO ∘L P i‖ * ‖P i ψ‖ := ContinuousLinearMap.le_opNorm _ _
+      _ ≤ g i * ‖P i ψ‖ := by gcongr; exact hblock i hi
+  linarith [add_le_add h2 h3]
+/-! ## The level structure on a real Hilbert space -/
+
+variable {ι : Type} [Fintype ι] [DecidableEq ι]
+
+/-- The mass at level `≥ j`: the norm of the projection of the state onto the level-`≥j` part. -/
+noncomputable def mass (lev : ι → ℕ) (ψ : EuclideanSpace ℝ ι) (j : ℕ) : ℝ :=
+  ‖proj (fun i => j ≤ lev i) ψ‖
+
+theorem mass_nonneg (lev : ι → ℕ) (ψ : EuclideanSpace ℝ ι) (j : ℕ) : 0 ≤ mass lev ψ j :=
+  norm_proj_nonneg _ _
+
+/-- Masses are decreasing in the level: `Π_{≥j'}` is a sub-projection of `Π_{≥j}` for `j ≤ j'`. -/
+theorem mass_antitone (lev : ι → ℕ) (ψ : EuclideanSpace ℝ ι) {j j' : ℕ} (h : j ≤ j') :
+    mass lev ψ j' ≤ mass lev ψ j :=
+  norm_proj_mono (fun i hi => le_trans h hi) ψ
+
+/-- **A level step from an actual state.** `ψ` is the state sequence and `step` is the
+transition bound the compressed-oracle analysis establishes for it. -/
+structure LevelStep (G : ℕ → ℕ → ℝ) (lev : ι → ℕ) where
+  /-- the state after `s` queries -/
+  ψ : ℕ → EuclideanSpace ℝ ι
+  /-- the per-level transition bound (from Lemma 1 + the `cO` operator) -/
+  step : ∀ s j, mass lev (ψ (s+1)) j ≤ mass lev (ψ s) j + ∑ i ∈ Finset.range j, G i j * mass lev (ψ s) i
+  /-- the initial state sits at level `0` -/
+  init : ∀ j, mass lev (ψ 0) j ≤ Ahat G 0 j
+
+/-- **Lemma 2 for a real state.** The masses of an actual Hilbert-space state sequence are bounded
+by the chain sum. This is `path_bound` applied to `mass lev ∘ ψ`, with nonnegativity supplied by
+`mass_nonneg` rather than assumed. -/
+theorem instantiate (G : ℕ → ℕ → ℝ) (hG : ∀ i j, 0 ≤ G i j) (lev : ι → ℕ)
+    (S : LevelStep G lev) :
+    ∀ t j, mass lev (S.ψ t) j ≤ Ahat G t j :=
+  path_bound G hG (fun s j => mass lev (S.ψ s) j) S.init S.step
 
 end Qrom

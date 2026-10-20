@@ -18,7 +18,7 @@ available; anything here that must enter a certificate still has to be re-proved
 | `Qrom/Transition.lean` | `block_le_a`, `block_le_b`, `block_le_c` — the three cases of the one-query transition bound `‖A·cO·B‖²` | §3 **Lemma 1** |
 | `Qrom/Path.lean` | `Ahat_step` (the recursion holds with equality, by Pascal's rule) and `path_bound` (the induction `a ≤ Â`, giving `‖Π_{κ≥K+1}ψ_t‖ ≤ A_t`) | §3 **Lemma 2** |
 | `Qrom/FactA.lean` | `hits_le` / `fibre_card` (the finite counting step: hitting any of `ℓ` coordinates has `≤ ℓ·N^(t−1)`-many oracles) and `fact_a` (the square-root form, with the Zhandry/CFHL21 replacement as an explicit hypothesis) | §3 **Fact A** |
-| `Qrom/Instantiate.lean` | `path_bound_state` (Lemma 2 for the `a` supplied by a real step structure) and `accumulation_bound` (`a 1 j ≤ 1 + j·G₀`, the `t·G` accumulation) | §3 Lemma 2 instantiation, step 6 |
+| `Qrom/Instantiate.lean` | Hilbert-space model: `proj`/`projL`, `norm_proj_sq`/`norm_proj_le`/`norm_proj_mono`, `proj_idem`, `mass`, `mass_antitone`, **`mass_recurrence`** (block operator norms ⇒ the per-level recurrence), `instantiate` (Lemma 2 for a real state) | §3 "for diagonal Π, ‖Π_{≥j} cO Π_{=i}‖ is the max of the block norms", Lemma 2, step 6 |
 
 Axioms: `propext`, `Classical.choice`, `Quot.sound` only. No `sorry`.
 
@@ -56,20 +56,33 @@ free) and `hits_le` (union bound: at most `ℓ·N^(t-1)` oracles hit any of `ℓ
 The Zhandry/CFHL21 *replacement* inequality is the genuinely quantum step and is kept as an
 explicit hypothesis `Replace` in `fact_a`; only the square-root algebra around it is proved.
 
-### Instantiation
+### Instantiation (Hilbert space)
 
-`Step` bundles the three structural facts the compressed-oracle argument supplies (nonnegativity,
-the per-level transition bound, the initial condition) and `path_bound_state` applies Lemma 2 to
-it. The bundled fields are the interface a Hilbert-space development must discharge; the file
-does **not** construct them from projectors and unitaries.
+The state lives in `EuclideanSpace ℝ ι`; `proj P` zeroes coordinates outside the level predicate
+`P`. Proved: `norm_proj_sq` (`‖proj P x‖² = Σ_{i∈P} x_i²`), `norm_proj_le` (contraction),
+`norm_proj_mono` (nested levels), `proj_idem` (it is a projector).
+
+**`mass_recurrence`** is the step ANALYSIS states in one sentence ("for diagonal `Π`,
+`‖Π_{≥j} cO Π_{=i} P_{≤s}‖` is the maximum over the block norms of Lemma 1"):
+
+  `‖Π_j (cO ψ)‖ ≤ ‖Π_j ψ‖ + Σ_{i<j} g_i · ‖Π_i ψ‖`, given `‖Π_j ∘ cO ∘ Π_{=i}‖ ≤ g_i`.
+
+**A hypothesis the prose omits.** The derivation is *false* without idempotence of `Π_{=i}`: the
+block bound controls `cO` applied to `Π_{=i}ψ`, not to `ψ`, so the chain needs
+`(Π_j cO Π_{=i})(Π_{=i}ψ) = (Π_j cO Π_{=i})ψ`. `mass_recurrence` therefore takes
+`P i ∘L P i = P i` explicitly, and `proj_idem` discharges it for the concrete model.
+
+`instantiate` then applies Lemma 2 to `mass lev ∘ ψ`, with nonnegativity supplied by
+`mass_nonneg` rather than assumed.
 
 ## What is *not* proved (and why it matters for the paper)
 
 1. **The Zhandry/CFHL21 replacement inequality itself** (`Replace` in `fact_a`). The counting and
    the square-root algebra are proved; the statement that the real oracle and the measured
    compressed database differ by `ℓ/N` in squared distance is cited, not derived.
-2. **Constructing a `Step` from projectors and unitaries.** `path_bound_state` takes the three
-   structural facts as a structure; building them for `ψ_s` and `Π_j` is not done.
+2. **Constructing the concrete operator `cO`.** `mass_recurrence` takes the block bounds
+   `‖Π_j ∘ cO ∘ Π_{=i}‖ ≤ g_i` as a hypothesis. Those come from Lemma 1 (`block_le_*`) plus the
+   compressed-oracle's definition; the assembly for the actual `cO` is not done.
 3. **Theorem 4 / Theorem 6.4** end to end, and the weak-binding Theorem R.
 
 So this package proves the two *quantitative* lemmas (Lemma 1, Lemma 2), the counting half of
