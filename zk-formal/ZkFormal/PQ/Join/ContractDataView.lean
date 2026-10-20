@@ -43,13 +43,14 @@ open ZkFormal.Air ZkFormal.Near ZkFormal.NearV3 ZkFormal.NearV3.D3 ZkFormal.Alge
 /-- A bus rename is inert on every bus that is neither the source nor the destination of the
 rename.  This is the per-row interaction sum, the inner loop of `tableBusCount`. -/
 theorem rowInterSum_rename_other (is : List Interaction) (tr : Trace Fp) (t r : Nat) (pub : List Fp)
-    (src dst b : Nat) (hb : b ≠ src) (hd : b ≠ dst) (send : Bool) (m : List Fp) :
-    (is.map (fun i => if i.bus = src then { i with bus := dst } else i)).foldr (fun i acc =>
+    (src dst b : Nat) (hb : b ≠ src) (hd : b ≠ dst) (send : Bool) (m : List Fp)
+    (acc : Nat) :
+    (is.map (fun i => if i.bus = src then { i with bus := dst } else i)).foldr (fun i z =>
       (if i.bus = b ∧ i.send = send ∧ i.msgVal tr t r pub = m then i.multNat tr t r pub else 0)
-        + acc) 0
-      = is.foldr (fun i acc =>
+        + z) acc
+      = is.foldr (fun i z =>
       (if i.bus = b ∧ i.send = send ∧ i.msgVal tr t r pub = m then i.multNat tr t r pub else 0)
-        + acc) 0 := by
+        + z) acc := by
   induction is with
   | nil => rfl
   | cons x xs ih =>
@@ -62,6 +63,19 @@ theorem rowInterSum_rename_other (is : List Interaction) (tr : Trace Fp) (t r : 
       exact ih
     · rw [if_neg hx]
       exact congrArg (fun z => _ + z) ih
+
+/-- The same at the `tableBusCount` level: on every bus other than `KEYNIB`/`CDKEYNIB`,
+`cdWalkV3`'s traffic count is `walkV3`'s, row for row.  This is what lets every `walkV3` traffic
+lemma transfer to the contract-data walk unchanged. -/
+theorem cdWalkV3_busCount (tr : Trace Fp) (t : Nat) (pub : List Fp) (b : Nat)
+    (hb : b ≠ B_KEYNIB) (hd : b ≠ B_CDKEYNIB) (send : Bool) (m : List Fp) :
+    tableBusCount cdWalkV3.interactions tr t pub b send m
+      = tableBusCount WalkV3.table.interactions tr t pub b send m := by
+  unfold tableBusCount
+  congr 1
+  funext r acc
+  exact rowInterSum_rename_other WalkV3.table.interactions tr t r pub B_KEYNIB B_CDKEYNIB b hb hd
+    send m acc
 
 /-- **`cdWalkV3` is inert on every bus except `KEYNIB`/`CDKEYNIB`.**  So on `EDGE`, `BMAP` and
 `FINAL` its traffic is `walkV3`'s exactly, and the only stream that changes is the key nibbles. -/
