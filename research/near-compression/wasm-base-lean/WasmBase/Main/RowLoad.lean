@@ -387,7 +387,7 @@ theorem load_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       obtain ⟨i, _, rfl⟩ := hx
       have := congrArg Msg.space hy; simp [mb, encB] at this
   -- the spec step
-  intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
+  intro E s f tps tpl t pc S live S_seg segb R hin hlive ht1 hS hg64
   rw [hIn] at hin
   obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
   have hpcl := R.pcLt
@@ -896,7 +896,7 @@ theorem store_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     exact List.pairwise_map.mpr ((List.pairwise_lt_range).imp fun h e => by
       have := congrArg Msg.slot e; simp only [encB_slot] at this; omega)
   -- the spec step
-  intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
+  intro E s f tps tpl t pc S live S_seg segb R hin hlive ht1 hS hg64
   rw [hIn] at hin
   obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
   have hpcl := R.pcLt

@@ -497,7 +497,7 @@ theorem call_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       simp only [List.mem_filter, List.mem_range, decide_eq_true_eq] at hj'
       omega
   -- the spec step
-  intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
+  intro E s f tps tpl t pc S live S_seg segb R hin hlive ht1 hS hg64
   rw [hIn] at hin
   obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
   have hpcl := R.pcLt
@@ -631,7 +631,7 @@ theorem call_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   refine ⟨_, hstep, ?_⟩
   rw [← hnpE] at hrel
   rw [hCons, hProd]
-  refine (congrArg (Rel X _ _ _ _ _ _ _) (stepLive_congr ?_ ?_)).mp hrel
+  refine (Rel_congr hrel (stepLive_congr ?_ ?_))
   · intro x
     simp only [List.mem_append, List.mem_cons, List.mem_map, List.mem_range, List.mem_nil_iff, or_false]
     constructor

@@ -7,6 +7,8 @@ argument shows are live) and the produced messages with the local semantic guara
 (`*_sound` in `WasmBase.Local.*`), and returns the spec step and the relation at `t + 1`.
 -/
 namespace WasmBase
+
+variable {S_seg segb : Nat}
 open NearSpecV3.Wasm
 set_option linter.unusedSimpArgs false
 
@@ -15,9 +17,15 @@ theorem stepLive_congr {live : Msg → Prop} {c1 c2 p1 p2 : List Msg}
     stepLive live c1 p1 = stepLive live c2 p2 := by
   funext x; simp only [stepLive, hc, hp]
 
+theorem Rel_congr {X : Ctx} {s : St} {t k pc S sb cid : Nat} {live live' : Msg → Prop} {S_seg segb : Nat}
+    (h : Rel X s t k pc S sb cid live S_seg segb) (e : live = live') :
+    Rel X s t k pc S sb cid live' S_seg segb := by
+  obtain ⟨E, f, tps, tpl, h1, h2, h3, hw⟩ := h
+  exact ⟨E, f, tps, tpl, h1, h2, h3, e ▸ hw⟩
+
 theorem Rel_of_RelW_congr {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live live' : Msg → Prop} (h : RelW X E s f tps tpl t pc S live) (e : live = live') :
-    Rel X s t E.k pc S E.sb E.cid live' := ⟨E, f, tps, tpl, rfl, rfl, rfl, e ▸ h⟩
+    {live live' : Msg → Prop} (h : RelW X E s f tps tpl t pc S live S_seg segb) (e : live = live') :
+    Rel X s t E.k pc S E.sb E.cid live' S_seg segb := ⟨E, f, tps, tpl, rfl, rfl, rfl, e ▸ h⟩
 
 theorem isFamilyNum_of_binop {op : Nat} (h : isBinop op) : isFamilyNum op = true ∧ numPops op = 2 := by
   simp only [isBinop, binops, List.mem_cons, List.mem_nil_iff, or_false] at h
@@ -25,9 +33,9 @@ theorem isFamilyNum_of_binop {op : Nat} (h : isBinop op) : isFamilyNum op = true
   subst h <;> decide
 
 theorem step_binop (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb)
     {op fee : Nat} (hins : (X.pfOf E.k).code[pc]? = some (.num op)) (hop : isBinop op)
-    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee - S_seg) ≤ segb)
     (hg64 : X.g0 < 2 ^ 64)
     (ma mb mr : Msg) (hma : live ma) (hmb : live mb)
     (sa : ma.space = 0 ∧ ma.slot = s.stack.size - 2)
@@ -36,7 +44,7 @@ theorem step_binop (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
       mr.tag = (if opW op = 64 then 1 else 0))
     (sem : ma.ok → mb.ok → mr.ok ∧ Num.binop (opW op) (opK op) ma.val mb.val = some mr.val) :
     ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [ma, mb] [mr]) := by
+      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [ma, mb] [mr]) S_seg segb := by
   have F := (X.factsOf R.kLt)
   obtain ⟨hfam, hpops⟩ := isFamilyNum_of_binop hop
   have hv := F.verify pc R.pcLt
@@ -124,19 +132,20 @@ end WasmBase
 
 namespace WasmBase
 open NearSpecV3.Wasm
+variable {S_seg segb : Nat}
 
 /-- A trapping binary op (div/rem by zero, signed overflow): the spec step aborts, having charged
 the fee. -/
 theorem step_binop_trap (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb)
     {op fee : Nat} (hins : (X.pfOf E.k).code[pc]? = some (.num op)) (hop : isBinop op)
-    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0)
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee - S_seg) ≤ segb)
     (hg64 : X.g0 < 2 ^ 64)
     (ma mb : Msg) (hma : live ma) (hmb : live mb)
     (sa : ma.space = 0 ∧ ma.slot = s.stack.size - 2)
     (sb : mb.space = 0 ∧ mb.slot = s.stack.size - 1)
     (sem : ma.ok → mb.ok → Num.binop (opW op) (opK op) ma.val mb.val = none) :
-    ∃ sN e, step X.cfg X.p s = .abort sN e ∧ X.R * (S + fee) + sN.gas.g = X.g0 := by
+    ∃ sN e, step X.cfg X.p s = .abort sN e ∧ X.R * (S + fee - S_seg) + sN.gas.g = segb := by
   have F := (X.factsOf R.kLt)
   obtain ⟨hfam, hpops⟩ := isFamilyNum_of_binop hop
   have hv := F.verify pc R.pcLt
@@ -168,9 +177,6 @@ theorem step_binop_trap (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat 
   refine ⟨{ s with gas := { s.gas with g := s.gas.g - X.R * fee } }, trapStr "IllegalArithmetic", ?_, ?_⟩
   · have htr : (trapStr "IllegalArithmetic").startsWith "WasmTrap" = true := by decide +kernel
     simp only [exec, execNum_binop _ _ hop, hpopb, hpopa, hbin, htr, ite_true]
-  · have hgas := R.gas
-    simp only
-    rw [Nat.mul_add] at hg ⊢
-    omega
+  · exact R.step_gas hg rfl
 
 end WasmBase

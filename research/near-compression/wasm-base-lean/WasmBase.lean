@@ -40,3 +40,4 @@ import WasmBase.HostChip
 import WasmBase.HostCheck
 import WasmBase.StepHost
 import WasmBase.Main.RowHost
+import WasmBase.Main.Host

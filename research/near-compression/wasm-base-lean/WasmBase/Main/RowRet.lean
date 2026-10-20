@@ -277,7 +277,7 @@ theorem ret_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     · simp at hx
   · rw [hProd]; split <;> simp
   -- the spec step
-  intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
+  intro E s f tps tpl t pc S live S_seg segb R hin hlive ht1 hS hg64
   rw [hIn] at hin
   obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
   have hpcl := R.pcLt
@@ -370,7 +370,7 @@ theorem ret_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     have hmBl : live (budMsg s.stackRem tpb0) := hmB ▸ hlive mB (by simp)
     have h1 : cc Ret.fRet + cc Ret.fRif * N = 1 := by
       simp only [cc, show rowNat tr 14 r Ret.fRet = 1 from eR, show rowNat tr 14 r Ret.fRif = 0 from eI]; grind
-    by_cases hg : X.R * (S + fee) ≤ X.g0
+    by_cases hg : X.R * (S + fee - S_seg) ≤ segb
     · obtain ⟨fc, rest', cS, hrest, hmeq, s', hstep, hrel⟩ :=
         step_return X R hins hkind hfee hg hg64 hcid hmR rfl pcid hmBl
       have f3 := congrArg Msg.l0 hmeq; have f4 := congrArg Msg.l1 hmeq; have f5 := congrArg Msg.l2 hmeq
@@ -411,7 +411,7 @@ theorem ret_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     have hmBl : live (budMsg s.stackRem tpb0) := hmB ▸ hlive mB (by simp)
     have h1' : cc Ret.fRet + cc Ret.fRif * N = 1 := by
       simp only [cc, show rowNat tr 14 r Ret.fRet = 0 from eR, show rowNat tr 14 r Ret.fRif = 1 from eI, eN]; grind
-    by_cases hg : X.R * (S + fee) ≤ X.g0
+    by_cases hg : X.R * (S + fee - S_seg) ≤ segb
     · obtain ⟨fc, rest', cS, hrest, hmeq, s', hstep, hrel⟩ :=
         (step_returnIf X R hl' hins hfee hg hg64 hcid mC hmC sc).1 (fun h => hnz0 (hval.mp h)) hmR rfl pcid hmBl
       have f3 := congrArg Msg.l0 hmeq; have f4 := congrArg Msg.l1 hmeq; have f5 := congrArg Msg.l2 hmeq

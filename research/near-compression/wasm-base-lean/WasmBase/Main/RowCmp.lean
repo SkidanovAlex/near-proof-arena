@@ -300,14 +300,15 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     subst hx
     exact ⟨hcP 1, by rw [hIn1]⟩
   have hprodNd : (rowProd Cmp.table tr pub 5 r).Nodup := by rw [hProd]; simp
-  have spec_pre : ∀ (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat) (live : Msg → Prop),
-      RelW X E s f tps tpl t pc S live → rowIn Cmp.table tr pub 5 r = stMsg (X.offOf E.k + pc) t S 0 E.sb E.cid →
+  have spec_pre : ∀ (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat) (live : Msg → Prop)
+      (S_seg segb : Nat),
+      RelW X E s f tps tpl t pc S live S_seg segb → rowIn Cmp.table tr pub 5 r = stMsg (X.offOf E.k + pc) t S 0 E.sb E.cid →
       t + 1 < P → S + X.maxFee < P → q = E.k ∧ l = pc ∧ pc0 = X.offOf E.k + pc ∧ rowNat tr 5 r 1 = t ∧
         (1 ≤ s.stack.size - E.sb → (tr.cell 5 r 42 + tr.cell 5 r 3 - ((1 : Nat) : F)).toNat = s.stack.size - 1) ∧
         (2 ≤ s.stack.size - E.sb + rowNat tr 5 r 5 →
           (tr.cell 5 r 42 + tr.cell 5 r 3 - ((2 : Nat) : F) + tr.cell 5 r 5).toNat = s.stack.size + rowNat tr 5 r 5 - 2) ∧
         rowOut Cmp.table tr pub 5 r = stMsg (X.offOf E.k + (pc + 1)) (t + 1) (S + fee) 0 E.sb E.cid := by
-    intro E s f tps tpl t pc S live R hin ht1 hS
+    intro E s f tps tpl t pc S live S_seg segb R hin ht1 hS
     rw [hIn] at hin
     obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
     have hpcl := R.pcLt
@@ -403,8 +404,8 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     · rw [hCons, hIn1]
       simp only [List.mem_cons, List.mem_nil_iff, or_false, forall_eq]
       exact tA
-    intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
-    obtain ⟨hqk, hlpc, hpc, p1, slot1, slotA, hout⟩ := spec_pre E s f tps tpl t pc S live R hin ht1 hS
+    intro E s f tps tpl t pc S live S_seg segb R hin hlive ht1 hS hg64
+    obtain ⟨hqk, hlpc, hpc, p1, slot1, slotA, hout⟩ := spec_pre E s f tps tpl t pc S live S_seg segb R hin ht1 hS
     subst q
     subst l
     obtain ⟨ls0, hL0, -⟩ := R.labels
@@ -451,8 +452,8 @@ theorem cmp_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     · rw [hCons, hIn1]
       simp only [List.mem_cons, List.mem_nil_iff, or_false, forall_eq_or_imp, forall_eq]
       exact ⟨tA, tB⟩
-    intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
-    obtain ⟨hqk, hlpc, hpc, p1, slot1, slotA, hout⟩ := spec_pre E s f tps tpl t pc S live R hin ht1 hS
+    intro E s f tps tpl t pc S live S_seg segb R hin hlive ht1 hS hg64
+    obtain ⟨hqk, hlpc, hpc, p1, slot1, slotA, hout⟩ := spec_pre E s f tps tpl t pc S live S_seg segb R hin ht1 hS
     subst q
     subst l
     obtain ⟨ls0, hL0, -⟩ := R.labels

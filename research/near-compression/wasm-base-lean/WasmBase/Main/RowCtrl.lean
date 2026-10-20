@@ -136,7 +136,7 @@ theorem ctrl_view_pop (a : Array Val) (tps : Nat → Nat) (h : 1 ≤ a.size) (x 
     simp [enc] at this; omega
 
 theorem ctrl_brIf_h {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {l : Nat}
+    {live : Msg → Prop} {S_seg segb : Nat} (R : RelW X E s f tps tpl t pc S live S_seg segb) {l : Nat}
     (hins : (X.pfOf E.k).code[pc]? = some (.brIf l)) : 1 ≤ s.stack.size - E.sb := by
   have hv := (X.factsOf R.kLt).verify pc R.pcLt
   unfold verifyAt at hv
@@ -261,7 +261,7 @@ theorem ctrl_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       exact tchk hw
     · simp at hx
   -- the spec step
-  intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
+  intro E s f tps tpl t pc S live S_seg segb R hin hlive ht1 hS hg64
   rw [hIn] at hin
   obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
   have hpcl := R.pcLt
@@ -305,10 +305,10 @@ theorem ctrl_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     intro pc' hb e1 e2
     rw [hOut, e1, e2]
     simp only [stMsg, cc, p1, p2, efee', psb, pcid, Lean.Grind.Semiring.natCast_add]
-  have hgN : ∀ sN stk, Halted X s sN fee stk → X.R * (S + fee) ≤ X.g0 → X.R * (S + fee) + sN.gas.g = X.g0 := by
+  have hgN : ∀ sN stk, Halted X s sN fee stk → X.R * (S + fee - S_seg) ≤ segb →
+      X.R * (S + fee - S_seg) + sN.gas.g = segb := by
     rintro sN stk ⟨-, -, hgg⟩ hg
-    have := R.gas
-    rw [hgg]; rw [Nat.mul_add] at hg ⊢; omega
+    exact R.step_gas hg hgg
   have c1F : cc 0 = ((X.offOf E.k + pc : Nat) : F) := by simp only [cc, p0]
   -- the condition (when consumed)
   have hcnd : ∀ l, (X.pfOf E.k).code[pc]? = some (.brIf l) → rowNat tr 8 r 7 + rowNat tr 8 r 9 = 1 →

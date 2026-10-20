@@ -155,12 +155,13 @@ theorem stack_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   have hprodNd : (rowProd Stack.table tr pub 7 r).Nodup := by
     rw [rowProd, rawProd]; split <;> simp
   -- the spec step: shared prefix
-  have spec_pre : ∀ (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat) (live : Msg → Prop),
-      RelW X E s f tps tpl t pc S live → rowIn Stack.table tr pub 7 r = stMsg (X.offOf E.k + pc) t S 0 E.sb E.cid →
+  have spec_pre : ∀ (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat) (live : Msg → Prop)
+      (S_seg segb : Nat),
+      RelW X E s f tps tpl t pc S live S_seg segb → rowIn Stack.table tr pub 7 r = stMsg (X.offOf E.k + pc) t S 0 E.sb E.cid →
       t + 1 < P → S + X.maxFee < P → q = E.k ∧ l = pc ∧ pc0 = X.offOf E.k + pc ∧ rowNat tr 7 r 1 = t ∧
         (∀ k, k ≤ s.stack.size - E.sb → (tr.cell 7 r 28 + tr.cell 7 r 3 - ((k : Nat) : F)).toNat = s.stack.size - k) ∧
         rowOut Stack.table tr pub 7 r = stMsg (X.offOf E.k + (pc + 1)) (t + 1) (S + fee) 0 E.sb E.cid := by
-    intro E s f tps tpl t pc S live R hin ht1 hS
+    intro E s f tps tpl t pc S live S_seg segb R hin ht1 hS
     rw [hIn] at hin
     obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
     have hpcl := R.pcLt
@@ -205,8 +206,8 @@ theorem stack_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     · rw [hCons, hIn1]
       simp only [List.mem_cons, List.mem_nil_iff, or_false, forall_eq]
       exact tA
-    intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
-    obtain ⟨hqk, hlpc, hpc, p1, slot, hout⟩ := spec_pre E s f tps tpl t pc S live R hin ht1 hS
+    intro E s f tps tpl t pc S live S_seg segb R hin hlive ht1 hS hg64
+    obtain ⟨hqk, hlpc, hpc, p1, slot, hout⟩ := spec_pre E s f tps tpl t pc S live S_seg segb R hin ht1 hS
     subst q
     subst l
     obtain ⟨ls0, hL0, -⟩ := R.labels
@@ -257,8 +258,8 @@ theorem stack_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
     · rw [hCons, hIn1]
       simp only [List.mem_cons, List.mem_nil_iff, or_false, forall_eq_or_imp, forall_eq]
       exact ⟨tA, t2, t1⟩
-    intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
-    obtain ⟨hqk, hlpc, hpc, p1, slot, hout⟩ := spec_pre E s f tps tpl t pc S live R hin ht1 hS
+    intro E s f tps tpl t pc S live S_seg segb R hin hlive ht1 hS hg64
+    obtain ⟨hqk, hlpc, hpc, p1, slot, hout⟩ := spec_pre E s f tps tpl t pc S live S_seg segb R hin ht1 hS
     subst q
     subst l
     obtain ⟨ls0, hL0, -⟩ := R.labels
