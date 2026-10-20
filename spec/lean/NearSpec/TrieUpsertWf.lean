@@ -718,6 +718,42 @@ theorem ext_descend_eq {k : List Nat} {c c' : PTrie} {m cm : Nat}
     (hmo : (PTrie.ext k c m).memOk) (hm : c.mem? = some cm) (hcm : m = extOwnMem k + cm) :
     m + c'.memD - cm = extOwnMem k + c'.memD := by
   rw [hcm]; omega
+/-! ## Pre-resolved numeric bounds (all below `2^64`) -/
+
+theorem valueMem_lt64 {n : Nat} (h : n < 4294967296) : valueMem n < 18446744073709551616 := by
+  have := valueMem_lt_small h; have hs : small = 68719476736 := small_eq; omega
+
+theorem leafMem_lt64 {k : List Nat} {n : Nat} (hk : (hexPrefix k true).length < 4294967296)
+    (h : n < 4294967296) : leafMem k n < 18446744073709551616 := by
+  have := leafMem_lt_small hk h; have hs : small = 68719476736 := small_eq; omega
+
+theorem extOwnMem_lt64 {k : List Nat} (hk : (hexPrefix k false).length < 4294967296) :
+    extOwnMem k < 18446744073709551616 := by
+  have := extOwnMem_lt_small hk; have hs : small = 68719476736 := small_eq; omega
+
+/-- A fresh branch over an old child at `m < memHead` with two fresh nodes `< small` fits. -/
+theorem sub_branch_lt64 {m e c d : Nat} (hm : m < 18446742974197923840) (hc : c < 68719476736)
+    (hd : d < 68719476736) : c + (m - e) + d < 18446744073709551616 := by
+  have h := Nat.sub_le m e; omega
+
+/-- A branch's own usage plus a fresh node fits (used for `branch_wf_of''`). -/
+theorem branchOwn_plus_lt64 {c : Nat} (hc : c < 68719476736) {d : Nat} :
+    50 + c + d < 18446744073709551616 ∨ 50 + c < 18446744073709551616 := Or.inr (by omega)
+
+theorem valueMem_lt_of {n : Nat} (h : n < 4294967296) : valueMem n < 68719476736 := by
+  have := valueMem_lt_small h; rwa [small_eq] at this
+
+theorem leafMem_lt_of {k : List Nat} {n : Nat} (hk : (hexPrefix k true).length < 4294967296)
+    (h : n < 4294967296) : leafMem k n < 68719476736 := by
+  have := leafMem_lt_small hk h; rwa [small_eq] at this
+
+theorem extOwnMem_lt_of {k : List Nat} (hk : (hexPrefix k false).length < 4294967296) :
+    extOwnMem k < 68719476736 := by
+  have := extOwnMem_lt_small hk; rwa [small_eq] at this
+
+theorem memHead_lt_of {m : Nat} (h : m < memHead) : m < 18446742974197923840 := by
+  rwa [memHead_eq] at h
+
 /-! ## What is proved, and the exact remaining gap
 
 Proved here (every `#print axioms` ⊆ `{propext, Classical.choice, Quot.sound}`):
