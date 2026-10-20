@@ -307,6 +307,7 @@ import ZkFormal.PQ.StatePort.D1
 import ZkFormal.PQ.StatePort.Tape
 import ZkFormal.PQ.StatePort.TapeCollapse
 import ZkFormal.PQ.StatePort.Join
+import ZkFormal.PQ.StatePort.JoinFold
 -- v3 ChaCha20 / RNG / shuffle tables (docs/zk-formal/STATUS-V3-CHACHA.md)
 import ZkFormal.Chacha.Bus
 import ZkFormal.Chacha.Complete.All

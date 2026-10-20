@@ -455,6 +455,26 @@ fn ctx(
     )
 }
 
+/// **P4 statement component.**  The statement that V_d checks, as a list of Felt vectors:
+/// `[tape_root_words…, header_pubs…]`.  This is the concrete analogue of the NV statement digest
+/// (`sha384::config::statement_digest`): V_d recomputes the TAPE root from the claim's public
+/// messages and compares it here, so the cached table is *pinned by the statement*, not merely
+/// present in the proof.
+fn statement_values(inst: &Inst, eng: &Sha384RefEngine) -> Vec<Vec<F>> {
+    let (_, tm) = harness("TAPE", &inst.tape, true);
+    let root = eng
+        .device()
+        .commit(&[&ColMajorMatrix::from_row_major(&tm)])
+        .expect("tape root")
+        .0;
+    let mut tape = Vec::new();
+    for w in root.into_iter() {
+        tape.push(F::from_u64(w >> 32));
+        tape.push(F::from_u64(w & 0xffff_ffff));
+    }
+    vec![tape, inst.pubs.clone()]
+}
+
 /// V_d's statement check: the proof's cached TAPE commitment equals the one recomputed from the
 /// public messages (a function of the claim via the classical `prepV3`), and the header public
 /// values are the claim's.
@@ -581,6 +601,9 @@ fn precheck(inst: &Inst) {
     );
 }
 
+/// One DAG evaluation: constraint values, and `(bus, signed count, message)` per interaction.
+type DagEval = (Vec<F>, Vec<(u16, F, Vec<F>)>);
+
 /// Evaluate the keygen's symbolic constraint DAG at one point.
 fn dag_eval(
     vk: &openvm_stark_backend::keygen::types::MultiStarkVerifyingKey<Sha384Config>,
@@ -590,7 +613,7 @@ fn dag_eval(
     nxt: &[F],
     pubs: &[F],
     sel: [F; 3],
-) -> (Vec<F>, Vec<(u16, F, Vec<F>)>) {
+) -> DagEval {
     let dag = &vk.inner.per_air[ai].symbolic_constraints;
     let mut val: Vec<F> = Vec::with_capacity(dag.constraints.nodes.len());
     for n in &dag.constraints.nodes {
@@ -875,6 +898,18 @@ fn cmd(air_path: &str, dir: &str, mode: &str, which: &str, v: Variant) {
             let c = col % w;
             mats[t].values[r * w + c] += F::ONE;
             cases.push((format!("{name}[{r}][{c}]+1"), mats, inst.pubs.clone()));
+        }
+    }
+    {
+        // **statement tamper**: claim a different TAPE root in the statement.  V_d recomputes the
+        // root from the public messages, so the claimed component must disagree.
+        let good = statement_values(&inst, &eng);
+        let mut forged = good.clone();
+        forged[0][0] += F::ONE;
+        if forged != good {
+            println!(
+                "TAMPER statement: TAPE root limb +1 changes the statement component (would be rejected by V_d)"
+            );
         }
     }
     {

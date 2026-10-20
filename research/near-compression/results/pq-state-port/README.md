@@ -18,7 +18,7 @@ Labels: **[M]** measured here, **[K]** kernel-checked in Lean, **[E]** estimate.
 | 3 | D1: all 30 tables, no stand-in, prove + verify + tamper | **done** | §4 |
 | 3b | P4 TAPE commitment binding: Lean `tapeNet_canon` **proved**; NV cached-root passthrough remains (recursion lane) | **done on this side** | §2.2 |
 | 4 | Ed25519 / hint design options | **written, not implemented** | §5 |
-| 5 | Wasm join: bus partition proved + interface fixed (`JOIN-INTERFACE.md`); HOST chip and coverage fold remain | **partly done** | §6 |
+| 5 | Wasm join: bus partition proved, interface + coverage stmt fixed (`JOIN-INTERFACE.md`, `JoinFold.lean`); HOST chip remains | **partly done** | §6 |
 
 ## 1. D0a port [M]
 
@@ -198,8 +198,16 @@ be on the **translated** buses.  The first version of `canonKeys`/`canonMsgs` us
 `pubMsgs` buses and could never have satisfied `TapeNet`.  The definitions and every lemma above
 are now offset-correct.
 
-**What remains for P4** is not Lean: the cached TAPE root must be carried up through every NV level
-(L1…FINAL) to V_d, which is Rust work in the recursion lane (envelope study M2, 3–5 days).
+**Rust side (this lane's driver).**  `statement_values` makes the TAPE root a *statement component*
+next to the header public values — the concrete analogue of the NV statement digest.  The tamper
+suite now also forges that component (`TAMPER statement: TAPE root limb +1 …`), so the binding is
+exercised, not just asserted.
+
+**What remains for P4** is the NV passthrough: carrying the statement (including the TAPE root) up
+through L1…FINAL so the pinned `VdSetup` checks it.  That is `pq-stream-commit`'s `vd.rs` /
+`nv/verifier.rs`, where `statement_digest(statement_values(pvs))` already exists and the per-level
+program is already bound; the TAPE root simply needs to be one of the app public-value vectors fed
+to `L1`.  3–5 days per the envelope study (M2), and outside this worktree's deps tree.
 
 ## 3. D1 [M]
 
@@ -260,6 +268,13 @@ Recommendation: **A** if in-circuit signature verification is in scope for the n
 otherwise **B**, with the same AIRs.  Do not pick C for the succinct target.
 
 ## 5. Wasm join [K partly]
+
+`JoinFold.lean` additionally fixes the **coverage statement**: `HostAnswer` (status, results,
+`g_after`, bytes), `HostResp` (the abstract host `ts ↦ answer`), `WasmRunStmt` (a `run` plus the
+host-call times and responses the HOST chip is responsible for), and `JoinStmt` — the proposition
+that the state `RelD1a` is preserved when every `FunctionCall` action is backed by a Wasm run.  The
+useful shape it records is `join_additive`: the join does not weaken or change the state relation,
+it only *requires* the Wasm backing.  That is why the state tables port unchanged.
 
 `Join.lean` proves the static half (the bus partition).  `JOIN-INTERFACE.md` fixes the rest of the
 contract between the two lanes: the new bus ids, the `HOSTQ`/`HOSTR`/`HOSTB` message shapes, the
