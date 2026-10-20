@@ -133,3 +133,17 @@ same finite-difference / Horner evaluation with room to run).
 * **Host-wire commitments**: they are cached mains like TAPE, so this lane's mechanism carries
   them with no further change — but they do not exist yet (`JOIN-INTERFACE.md` step 1–3).
 * **Re-pin the G2 gate** only if a future change is not inert; `reproduce.sh` compares the hashes.
+
+## 4. Wiring `maxLog` from the ported tables  [built, end-to-end run blocked]
+
+`native/pq-state-port/src/air.rs` now returns the Lean export's per-table `maxLog` from
+`PartitionedBaseAir::max_log_trace_height`, so the cap reaches the vk, the native proof-shape check,
+the NV generator and V_d for every ported state table. Builds clean.
+
+**Not validated end to end here.** `run_demo.sh` panics earlier, inside the classical trace dump:
+`statedump: srcp: classical constraint failure [(118, 0), (118, 161), (118, 322)]`. That failure is
+**pre-existing** — it reproduces with the `max_log_trace_height` method stashed, on both
+`00-h10004-s3` and the default fixture — so it is a statedump/`srcp` issue, not a consequence of the
+cap. The cap mechanism itself is tested upstream by `nv_air_height_cap` (nv-tape, real chain:
+"native rejected: AIR 0 should have log_height <= 4 (its maxLog), but has 5"). Follow-up: fix the
+`srcp` dump, then re-run `run_demo.sh prove` to exercise the cap on a real D0a trace.
