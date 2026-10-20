@@ -572,3 +572,269 @@ Padding-free heights implemented (`lane/pq-whir-levers` @ `561c934f7`, `tight_he
 commit only up to the last non-zero row in power-of-two chunks; zerocheck/GKR unchanged
 over a virtual zero tail; measured exact on the dummy) — needs zero-row-valid AIRs; NV
 model 308.5 → 298.9 KB.
+
+## 2026-10-18 — correctness proofs; A-IC decision; full-memory run
+
+* Box freed for the real run (arena workers w1–w3 stopped; zkbuild.slice 104G/108G; watchdog LOW=10). Restore afterwards.
+* Protocol proof (`lane/pq-final-soundness` @ ae0ae8a7b; PROOF.md, GAPS.md, calc/bound.py): 2⁻¹³⁵·² end to end (2⁻¹³²·⁴ union over 7 layers), straight-line extraction, worst round 2⁻²⁶⁸·⁵⁵ (WHIR round 0, 236.55 + z). Conditional on T\* (G-1 multi-block squeeze not covered by any QROM FS theorem; G-2 PoW bits not tied to query blocks → 2⁻¹⁰⁵ without fix), NV-faithful, Base-faithful, A-IC. Minor: G-9/G-10/G-11.
+* Circuit proof (`lane/pq-nv-circuit-soundness`; FAITHFUL.md): NV-faithful F1, F2, F4–F6 proven at 3c9d479ab after 6 soundness fixes (B1 fractional B-field, B2 child height, B3 free base-load coefficients → vacuous PoW / forgeable PVs, B4 42-B tail framing, B5 squeeze ids, B6 job swap; commits 2e36b0228, 09fead0bc, 274fe5ccf). ε_LogUp ≈ 2⁻³¹⁷·⁹. Single-cell perturbation over ~77M cells: no relevant undetected cell. **G1: the app statement was not passed up the recursion** — adopted fix: SHA-384 statement digest at level 1, re-exposed at every level, checked by V_d.
+* User decision: accept A-IC as U-11 and fund research for a proven bound (research lane opened).
+* Sent to the recursion lane: merge B1–B6 on top of 32fb63327, statement passthrough, T\*, then the real-settings chain.
+* A-IC research (`lane/pq-aic-research` @ 0079ed29a, REPORT.md, LEMMA.md): no proven bound can remove A-IC in a query-only oracle model (Thm O; one case of Lemma E.3 sketched). BCG TCC'25, AROM, ROM PCD/accumulation, standard-model FS: none applies. User decision U-12: time-bounded recursive claim (τ = 2¹²⁸), A-IC(τ); final layer gets its own hash prefix. Lane closed.
+* **Size regression (2026-10-18):** NV phase-2 `extrapolate_nv2.py` (lane/pq-recursion-sha384 @ 32fb63327+) gives final **323,955 B** at 268/z32/42 B (WHIR 242,562; GKR 32,408 L=24; relations 43,232; stacking 5,680) because the verifier program grew to 181,754 rows → 2^18 (NvAir 341,773 rows, cells 2^26.22). Supersedes the phase-1 298,881 B. 258-bit: 313,359 B. Directed: program < 2^17, tight_heights in the model, next-row-only openings, fewer interactions; MCA upgrade lane (O-1/O-2, −15…−45 KB est.).
+* Prover latency (`lane/pq-prover-latency` @ d1a208ef7, LATENCY.md): critical path = zerocheck+GKR of the degree-21 SHA AIR in Ext12 (94–97 % of NV layer time). 4 sequential recursive layers ≈ 2.6 s mid / 0.8 s optimistic on 32 H200; end to end after execution, typical chunk, 32 H200: 0.83 / 2.7 / 15 s (opt/mid/pess). 2^32 grind = 125 s mean on 32 CPU threads (p99 2.5×). z = 24 inner, z = 32 final recommended. Design G (shared base proof) is the only real-time option. Biggest latency lever: cheaper SHA AIR (degree × DAG).
+* Literature catalogue + NOVEL-FINDINGS register: lane/research-catalog @ 484ea27f8; prior art lane/novelty-prior-art @ 34920925e.
+* Base + aggregation (`lane/pq-base-aggregation` @ 364aa29b3, DESIGN-BASE.md): design G adopted (one shared-transcript base proof over all GPUs → L1 → T1 → T2 → FINAL); no n-to-1 NV layer needed for segments (continuity = global bus terms; base PVs = chunk statement, hashed at L1 under tag 8). k-to-1 L1 (`build_l1_linked`) only for side proofs (P-PERF-8); 2-to-1 L1 measured 21.1M cells, 139,609 B, 845–932 s CPU, ≤5.5 GB; tamper tests pass. Base params pinned (b=1, m=16, k1=1/k=4, 2^24 per slice, z=24 base/inner, z=32 final): bound.py PASS 2^−134.88. MCA upgrade (`lane/pq-mca-upgrade` @ 6841b5f56): DKT26 m=64 → 313,759 B; + beyond-Johnson → 300,733 B (nv2); verification lane/pq-dkt-verify running. Risks: no cluster-wide shared-transcript SWIRL prover; NV can't verify preprocessed children; Base-faithful open for real segment AIRs.
+* DKT26 verified (`lane/pq-dkt-verify` @ d9dc1c0e3) and **adopted by the user as U-13** (O-1 m = 64 + O-2 per-round table).
+* **First measured real-settings chain** (`lane/pq-recursion-sha384` @ 6af52d94f, 7cdc8c90e; all levers, T\*, B1–B6, statement passthrough, final prefix; m = 3): A1 401,337 B → A2 473,565 → A3 481,125 (fixed point, program 259,430 rows) → **FINAL 416,171 B** at b = 2, log_h 21 (memory-limited; 64.9 GB peak, 45 min). Model matches every component within 0.5 %. Best final shape b = 7–8 needs ≈ 1 TB unstreamed: model 326,547 (m=3) / 316,351 (m=64) / 303,701 (O-2) / **299,277 B (O-2 + program cut)**. GKR L = 25 (full power-of-two heights; model corrected +2.5 KB). Biggest structural lever left: SHA AIR at degree 8 with ≤ 40 rotated columns (≈ −17.5 KB; proof opens 455 columns, 144 rotated from the SHA AIR). NvAir < 2^18 rows or 55 → 49 interactions/row: −2.5 KB.
+
+## 2026-10-18 — O-2 implemented, NvAir L=24 (lane/pq-recursion-sha384 @ ee8fa9c99)
+
+* U-13 O-2 implemented: per-round agreement table (code size, A_i, q_i; bound_mca.py rule,
+  margin 0.05, m ≤ 64) serialised into the vk pre-hash; native verifier rejects non-canonical
+  tables; NV reads q_i from the child vk. Default for PQ path (`PARENT_O2=0` disables).
+  Test `o2_agreement_table` (altered entry / weaker self-consistent table rejected).
+  gas-failure5 byte-identical without table (`ba042e71…`).
+* NvAir 55 → 49 interactions/row (sample role reads GLUE digest rows directly): total
+  2^24.98 → GKR L = 24. Margin is thin: any new NvAir interaction returns L = 25.
+  Test `nv_sample_word_source_tamper`. Re-audit items: GLUE `dx` word sends, sample `w0`,
+  O-2 table check.
+* Extrapolation (best shape): m=3 324,003 / m=64 313,807 / **O-2 301,157 B**
+  (WHIR 219,908, GKR 32,408, relations 43,280, stacking 5,344). Still 1.2 KB over;
+  SHA AIR v4 (≈ −17.5 KB) is the closing lever.
+* Open: check A_i for the real shapes against the DKT certificate grid (lane/pq-dkt-verify).
+
+## 2026-10-18 — O-2 not yet certificate-backed (lane/pq-recursion-sha384 @ cf2262a24)
+
+* With program cut: O-2 + L=24 = 299,277 B (cut worth only −1.9 KB at L=24; L=23 needs
+  ≤ ~36 interactions/row + NvAir < 2^18 rows → 296,829 B).
+* `dkt_cert_check.py`: no real shape's O-2 thresholds are covered by dkt_certs.json —
+  grid A off by one from the backend rule at 2^19/2^20, fold sub-codes s=3,4 missing,
+  no canonical certificates off 15·2^27. Until fixed only O-1 (≈313.8 KB) is backed.
+* Actions: certificate-gated table with O-1 fallback (soundness fix, adopted; NV lane);
+  new certification run on lane/pq-dkt-verify for the exact backend rule and shapes.
+
+## 2026-10-18 — NV re-audit clean (lane/pq-nv-circuit-soundness @ c3c9393e0)
+
+* Re-audit through 2bf42f573 (later commits to cf2262a24 don't touch the circuit): no new
+  soundness bugs. Program binding re-anchored on Acc's early row (unpadded program);
+  Invariant D* (hash rows = native T* oracle calls) proven; statement passthrough F3
+  implemented + proven (`nv_statement_passthrough`). ε_LogUp ≈ 2^-317.6.
+* Tests: all nv_ tests except nv_chain/nv_app_binding (over memory cap) pass in both digest
+  modes; full perturbation sweep ~75M cells + 8.6M sampled at level 2: clean.
+* Harness bug D1 (allowlist masking unnamed cols) fixed; revealed T* ctr/nwit undetected but
+  benign. Open: GKR/batch/stacking on differential tests only; lo6 pinned by consumers only;
+  carry bounds k=3 only. Re-audit needed if "4 program rows per binding row" lands.
+
+## 2026-10-18 — cert-gated O-2 (59831ffb1) and SHA AIR v4 (lane/pq-sha384-air3 @ 34a427692)
+
+* O-2 table now certificate-gated (fallback Johnson m=64 per round, rule recorded per round
+  in vk). Backed figure with no certs: 313,807 B (311,745 B with program cut).
+* SHA AIR v4: degree 9 (deg 8 costs +8.7 KB), 2 words/row, 83 cols / 73 rotated (v2.1 171/144),
+  128 rows/compression, 17 interactions/row. KAT 1,008 compressions, 6,321/6,321 mutations,
+  19 forgeries + padding attacks rejected; NV suite 42/42 both modes. FAITHFUL-v4.md unaudited.
+* Bytes vs old v2.1 baseline (L=25, 55 int/row): m=3 315,811 / m=64 304,895 / O-2 292,541 /
+  O-2+cut 288,117 (≈ −11.2 KB, not −17.5). Latency tail 2.67 → 2.32 s; CPU 1,024 compressions
+  465 s vs 892 s.
+* Next: merge v4 into NV with L=24 change, combined bytes (backed O-1 case likely ≈ 300 KB —
+  borderline); audit FAITHFUL-v4.
+
+## 2026-10-18 — v4 merged into NV (lane/pq-recursion-sha384 @ f59bc0770)
+
+* Fast NV suite 51/51 both modes. SHA trace 2^20 rows × 17 int → with NvAir 2^19 × 49 total
+  2^25.38 (L=25); program cut (NvAir < 2^18 rows) → 2^24.87 (L=24). L=23 out of reach.
+* Combined: O-1 backed 304,943 B (no cut, L=25) / 300,399 B (cut, L=24);
+  O-2 certified 292,589 / 288,165 B. Program cut is NOT yet implemented → now the priority;
+  one certified O-2 round (~3 KB) would also close the gap.
+* v4 audit (lane/pq-nv-circuit-soundness d043aa16f §V): no bug; standalone sweep 0 undetected;
+  NV-port sweep pending.
+* v4 NV-port audit done (lane/pq-nv-circuit-soundness @ 912187d21 §V): full sweep 4 fixtures ×
+  2 modes, Sha512Air4/TableAir4 0 undetected; 44/44 + 43/43 tests; port reproducible byte for
+  byte; ε_LogUp ≈ 2^-316.8. Next re-audit trigger: program-cut ops on the recursion lane.
+
+## 2026-10-18 — O-2 certified for real shapes (lane/pq-dkt-verify @ 69e5df327)
+
+* 129 certificates (93 round/fold sub-codes + 36 round-0 batching curves) for the backend's
+  exact rule `AgreementTable::canonical`; Lean kernel 129/129 (222 theorems, std axioms).
+  Old grid off-by-one was a bug in the --grid script. File calc/dkt_certs_o2.json.
+* Final b7h20/b8h19, inner b6h19, both b2 chain shapes: covered and full bound passes →
+  final O-2 bytes are certificate-backed.
+* Base stress b6h21: round 0 must be J(64) (squared O-2 list with 2 commitments → 2^-231.8);
+  +2 base queries; needs bound-aware per-round regime (soundness fix, adopted, NV lane).
+* E2E vertical slice lane started (lane/pq-e2e-slice, user choice); GPU: CPU-only for now.
+
+## 2026-10-18 — streamed commit: best-shape final measured (lane/pq-stream-commit @ 117d85604)
+
+* All WHIR codewords streamed (recompute on query, top Merkle levels kept, no disk).
+  b=2 final streamed is byte-identical (sha256 e5e526a2…), peak 64.4 → 35.5 GB.
+* Best shape b=7, ×15, log_h 20, on the measured 7cdc8c90e chain (no O-2/v4/cut):
+  m=3 339,747 B (model 339,370), m=64 330,149 B (model 329,478); peak ~39 GB, ~61 min.
+  Model validated within 0.2 % at the target shape. GKR temp tables now set the peak.
+* Next: re-run the ~3 h chain on the recursion lane's final circuit (v4 + program cut +
+  cert-gated O-2) and prove the streamed final → the measured < 300 KB number.
+
+## 2026-10-18 — program cut done (lane/pq-recursion-sha384 @ 3c4324e8c)
+
+* Program rows (Fib probe) 125,782 → 79,840 (−36.5 %): Merkle level 10→5 rows, butterfly 7→5,
+  factorised eq, Horner final poly, Horn2 round-0 leaves, cheaper x15 index. NvAir 74 cols,
+  49 int, deg 9, 40 ops (table full). Tests: backend 230, fast NV 54 ×2 modes.
+* Model at fixed point: NvAir 255,702 rows (< 2^18, margin 2.4 %, relies on v4 DAG correction),
+  interactions 2^24.87, L=24 → **O-2 287,037 B / O-1 297,999 B** (penultimate on Johnson).
+* Next: stream lane runs the real chain + streamed final on this head (measured number);
+  auditor re-audits new ops (§W); DKT lane certifies penultimate b8/n18/k1=2.
+* Program-cut re-audit clean (lane/pq-nv-circuit-soundness @ 90d08fa4f §W): binding unchanged,
+  Horner-chain completeness argued + builder hardening `assert_horner_chains`, x15 index unique
+  (p−1 rejected, completeness loss ≤ #q/p); tests 49/49 + 46/46; sweep 5 fixtures × 2 modes clean
+  (new Horn2 fixture; harness `wit` allowlist gap fixed).
+
+## 2026-10-19 — penultimate certification (lane/pq-dkt-verify @ fb0efdb11)
+
+* The modelled penultimate b8 h20 k1=2 is infeasible (domain 15·2^28 > 15·2^27); size_cut3.py
+  lacked the log_h+b ≤ 27 bound. Buildable best b7 h20 k1=2 lf6: certified, final stays 287,037 B.
+* dkt_certs_o2.json: 173 entries, 164 Lean-kernel proved; 9 round-3 codes (k=2^10, h20 k1=2)
+  only engine/#eval checked (kernel OOM at 24 GB) → gated to J64 (+1 query, ≈0 B).
+  Decision (soundness rule): certificate gating uses kernel-proved entries only.
+* lane/pq-recursion-sha384 @ 819beab10: domain bound in search; penultimate b7 h20 k1=2 lf6
+  (q [41,35,27,22→23]); kernel-only gating via NEARPROOF_DKT_EXCLUDE (DKTCertsO2_big.keys);
+  loader bug fixed (no longer counts keys inside `_no_certificate`); auditor hardening merged;
+  slow app-binding/opening tests pass (17.4 GB). Model 287,037 B; NvAir 255,976 (2^17.97).
+  Without O-2: 301,743 B at L=25 — the < 300 KB result now depends on the certificates.
+
+## 2026-10-19 — E2E slice result (lane/pq-e2e-slice @ 480bf27f4)
+
+* Test size, end to end: real direct-Wasm call (Lean fixture) → base (EXEC/CODE/RANGE + STUB
+  ChunkStmtAir) → L1 → L2 (bound) → FINAL (bound, fixed point) → native V_d with new
+  `check_final_program`. Accepts honest; rejects wrong S_S/ctx/S_0, swapped chunks, tampered
+  PV, inner-domain proof, wrong pinned level/program. Sizes: base 54,061 B, NV levels 136,089 B.
+* **G1 critical:** with child PoW, the NV program depends on the proof (PoW job ids from global
+  squeeze-block count; rejection sampling). Chunks A/B L1 programs differ in 4,609 rows; can't
+  pin program → V_d unsound (forged 776-row verify-nothing final accepted without the check).
+  Fix assigned to recursion lane (soundness fix, adopted). Stream-lane measurement provisional.
+* **G2 high:** real pinned base proof 921,857 B ([536,256,83,50,36]); L1 over it is 623,802
+  program rows (ISA ceiling 2^21 NvAir), ~190–230 GB est. — not provable here; app-table
+  binding makes L2 carry the L1 program. Needs a size-independent binding mechanism.
+* Claim to verify: measured 416 KB chain ran with program binding off at phase A/FINAL.
+* G3/G4 stubs (ctx, roots, receipt); G5/G6 code in statement, base vk varies with code length;
+  G7 build_l1_linked not ported (28 rejected hunks).
+
+## 2026-10-19 — measured final 287,477 B, provisional (lane/pq-stream-commit @ 89a0045de)
+
+* Chain on 819beab10 + streamed overlays, certs + kernel-only exclude: penultimate b7 h20 k1=2
+  q[41,35,27,23(J)], final b7 h20 k1=1 q[41,38,29,23] all O-2. FINAL **287,477 B** vs model
+  287,037 (+0.15 %): WHIR 224,610 / GKR 32,408 / relations 24,244 / stacking 6,016.
+  NvAir A3 248,964, FINAL 252,636 rows (3.6 % under 2^18); interactions 2^24.87 → L=24.
+  1 h 55 min, 25.6 GB peak. A3 child saved (sha256 9ad8ad51…).
+* PROVISIONAL: `bind` (child-program binding check) off at A1–FINAL (app table rows present);
+  G1 (program depends on child PoW) unfixed. Re-run after G1 + binding-on.
+* Infeasible shapes found: b8/h20 (domain), b8/h19 (v4 SHA trace 2^20 > stacked 2^19 → penultimate
+  needs log_h ≥ 20; add to model). Backend soundness print (255.1) ignores the O-2 table — fix.
+
+## 2026-10-19 — WASM base first family proven (lane/pq-wasm-base @ 2ba1e2fe7)
+
+* Lean `wasm_base_sound` (no sorry, std axioms): checker-accepted fn + AIR relation + derived PIs
+  ⇒ spec `NearSpecV3.Wasm.run` finishes in N−1 steps, gas R·S, stack = public result; explicit
+  domain conditions D1–D5, N·(maxFee+1) < p, R·S ≤ g0 < 2^64. Lean→JSON→Rust replay + difftest.
+* Proof found a real SHIFT AIR bug (range-checked w·q instead of q) — fixed, no cost change.
+* Tests: 47/47 KAT (Python/Lean/Rust), 29/29 tamper; pinned 2^24 proof 948,706 B, 240 s, 9.9 GB.
+* Cost: 349 cell-eq/op active (529 padded); worst family op ~500–600 (≈ model 546); univariate
+  ≈ 1.6–1.7× cheaper. SHIFT/CMP 2× PERF drafts → first optimisation targets.
+* Checkpoint: preprocessed (or PREP-linked) code table REQUIRED before full ISA (code binding via
+  PV interactions grows with program; vk per program) → NV must verify preprocessed children
+  (also needed for G2 binding). Memory: stack/locals channel proven under D3 (no-discard).
+
+## 2026-10-19 — G1 fixed, binding on everywhere (lane/pq-recursion-sha384 @ 717eb518e)
+
+* G1: PoW witness carried in hash rows, run blocks reuse first block's witness via chain bus;
+  program = f(child vk/shape). `nv_program_pow_identity`: 4 PoW children, different transcripts,
+  byte-identical programs. NvAir 77 cols / 51 int; ≈ +150 B.
+* Binding on at every NV-child level; FINAL now runs the uniform fixed-point program under the
+  final domain with binding (old unbound FINAL was a soundness gap in all earlier 287 KB figures).
+  V_d (`nv/vd.rs`) test `nv_vd_pinned_program`: forged verify-nothing final rejected.
+* Model: final shares penultimate shape → (7,20,1,4,7) 290,477 B (L=25, NvAir ~270k) or
+  (7,20,2,4,6) 300,191 B (L=24); ~8k NvAir rows of cuts → ≈ 287.9 KB. Real base app table
+  (400–624k rows) → 315.7–321.4 KB → G2 (preprocessed program commitment) required.
+* Stream lane re-running non-provisional; auditor §X; preprocessed lane implements G2.
+
+## 2026-10-19 — NV verifies preprocessed/cached children (lane/pq-nv-preprocessed @ 9761585a5)
+
+* No AIR/role change; 8 generator sites (P1–P8); one-commitment programs byte-identical.
+  Tests: honest/tampered root/opening/vk/table-swap; cached 3 and 5 commitments; O-2 round-0
+  rule; 19,365 single-element mutations 0 mismatches; fast suite 67/67 both modes.
+* Cost per extra commitment per round-0 query: 7 + 2^k1·⌈w/2⌉ + 5·depth rows + depth+1 SHA
+  compressions (independent of table size → merge fixed tables). L1 over pinned base: +80k rows
+  (b=1) per extra commitment.
+* G2 via CACHED program commitment (preprocessed would be circular): final ≈ 295.7–296.1 KB
+  (293.2 with ~1k row cut); app-table binding with real L1 would be 315.7–321.4 KB.
+* Decisions: CODE cached + bound through statement; BYTE/RANGE committed; base stays SWIRL;
+  WASM base fan-out approved (div/rem, memory, locals/globals, calls). L1 ISA ceiling fix
+  assigned to recursion lane. CPU prover lane started (byte-identical rule).
+
+## 2026-10-19 — WASM base: cached CODE + div/rem (lane/pq-wasm-base @ 603710124)
+
+* CODE cached, `code_root` a statement component; V_d checks sha256(code) = code_hash and
+  recomputes code_root; base vk depends only on #locals. Lean hypothesis `CodeOK`. Tamper 30/30
+  (a forged unfetched CODE row passes AIR + native verifier, caught only by the code_root check).
+  Base proof 1,263 KB pinned (408 s, 12.8 GB) — not sent to V_d.
+* div/rem i32/i64 with traps: DIV AIR (95 cols, deg 6) + DRAIN; status 1/2; carry range-check hole
+  found pre-proof and fixed; `wasm_base_sound` extended to traps; KAT 63/63; difftest OK.
+* Cost: mixed loop 430 cell-eq/op (568 padded); div-only 1,226/row (2.2× model 546).
+* Next: shared Lean relation refactor (memory pages, globals, frames) → families 2–4.
+
+## 2026-10-19 — bound chain fails at L3 (lane/pq-stream-commit @ a12b65b77)
+
+* Real-settings chain on 717eb518e (b7 h20 k1=1, all O-2): L1 261,843 B; L2 289,493 B (binds L1
+  via app table; NvAir 257,212 rows, interactions 2^25.4 → L=25); L3 builder fails "program
+  binding": with tight heights the program depends on the child's committed heights (L1 tiny →
+  L2 program 133,154 rows vs L3 142,517). BIND needs equal programs → FINAL/V_d never reached.
+  Test nv_vd_pinned_program missed it (debug children with equal heights).
+* Assigned to recursion lane with G2 (options: heights as witnesses; per-level pinned program
+  constants until convergence; tight heights off). Converged program ≈ 271k NvAir rows (> 2^18).
+* Audit §X/§Y (lane/pq-nv-circuit-soundness @ 9eab7f2d2): G1 fix, bound FINAL + V_d, and NV
+  preprocessed/cached children — no soundness bug. Top-level: V_d accept under pinned program ⇒
+  chain to app proof under app vk with statement digest passthrough; ε_LogUp ≈ 2^-316.6 per level.
+  Native R5 (cached trace + tight heights, device path) is a completeness bug → commit cached
+  traces non-tight. Note: real-height chains are not buildable yet (L3 heights issue above).
+
+## 2026-10-19 — WASM base families 2–4 (lane/pq-wasm-base @ ce7a815ec)
+
+* Shared relation refactor done; family 2 linear memory (tamper 44/44), family 3 globals
+  (proved end to end, tamper 52/52), family 4 calls (CALL/RET/FUNC chips, step_call /
+  step_return proven, FUNC table bound through statement; budget hi-part range check added after
+  the Lean proof exposed it). KAT 73/73 (incl. recursion fib10, trap two calls deep); difftest OK.
+  Call tamper runs in progress. Next: DIV/SHIFT/CMP optimisation.
+
+## 2026-10-19 — G2 built, L3 heights fixed (lane/pq-recursion-sha384 @ 9159123be)
+
+* G2: per-level cached program commitment (P0..P3); child check root = C_M at anchor level,
+  else BIND; FINAL single-commitment, pinned by V_d. App table removed. NvAir 76 cols / 48 int.
+* Heights: anchors + prover-side tight-height floor (`set_tight_floor`, explicit zero rows, no
+  verifier change). Real bound chain with differing heights L1→L5→FINAL converged (96,390-row
+  program), V_d accepted (test size, 2 h 43). V_d forgery test passes (prog_log 17).
+* Merkle level 4 rows; addresses 20→24 bits (zero cost) → L1 over real base fits the address space.
+* Model: FINAL b7 h20 k1=1 k4 lf7 293,101 B at L=24 (NvAir 256,031, 2.3 % under 2^18).
+* CPU fast prover (lane/pq-cpu-prover @ 6134476fc) byte-identical on real layers → used for the
+  G2 measured chain (stream lane). Auditor §Z on G2.
+
+## 2026-10-19 — G2 GATE (user-defined)
+
+Pass only if all four hold:
+1. real-settings FINAL bytes ≤ ~296 KB (model 293,101 B);
+2. V_d accepts the real FINAL under the pinned program;
+3. forged verify-nothing FINAL rejected by V_d at real settings (and accepted without the program
+   check, showing the test is live);
+4. the chain reproduces from a clean deps setup: identical proof sha256s from a fresh setup in a
+   new directory, by an independent agent, using MANIFEST.json (lane/pq-stream-commit g2-gate/).
+Gate run: lane/pq-stream-commit (G2 9159123be + fast CPU prover 6134476fc + streamed overlays).
+
+## 2026-10-19 — classical NEAR AIRs reusable on PQ stack (lane/pq-d1-envelope @ 7cd1a7135)
+
+* Same base field (BabyBear), same row conventions, 1-bit multiplicities (grand product → LogUp,
+  D1 mult bound 1.196·10^9 < p). 23/30 nearAirV3D1 tables proven unchanged on SWIRL with real
+  D1a fixture traces: 1,261,284 B, 82 s/6 thr, tamper 14/14.
+* Overruns: opened columns 5,612 vs 1,024 (SHA-256 table 1,085); 2^22 fixed tables (99.6 % of
+  2.5 G cells); AIR count 33+1 vs 32; public tape (64 MiB) → cached table; native Ed25519 in
+  verifier (design item); min height 4; per-table height caps to enforce.
+* Lean: extractV3 + table/link/factor proofs transfer verbatim; new: generic SWIRL⇒HoldsP lemma,
+  multBound < p, vk⇔Lean identity, tape binding (≈ 7–11 agent-days est.).
+* Decision (after external advice): port proven state tables (D0a first, then D1), keep
+  direct-Wasm for execution, join later. Lane lane/pq-state-port started.
