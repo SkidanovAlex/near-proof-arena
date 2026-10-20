@@ -754,4 +754,13 @@ PTrie.upsert_wf :
 ```
 -/
 
+
+/-- `p` followed by `x :: xs`: the two extensions' own usages are at most the combined one. -/
+theorem extOwnMem_append_cons (p xs : List Nat) (x : Nat) :
+    extOwnMem p + extOwnMem xs ≤ extOwnMem (p ++ x :: xs) + 52 := by
+  unfold extOwnMem
+  rw [hexPrefix_length, hexPrefix_length, hexPrefix_length, List.length_append]
+  simp only [List.length_cons]
+  omega
+
 end NearSpec
