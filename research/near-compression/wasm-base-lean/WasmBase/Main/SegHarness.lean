@@ -414,4 +414,30 @@ theorem exec_of_rows_seg (seg : Nat → Nat × Nat) (st : Nat) (hst12 : st = 1 �
 
 
 
+
+/-! ## `wasm_base_exec_host`: the host-aware execution theorem
+
+`wasm_base_exec` instantiates `exec_of_rows` with `wasmBaseAir` and the instruction rows
+(`actList`, tables 1-14).  Here the AIR is `wasmBaseHostAir`, whose table 22 carries the host calls,
+and the rows are the *interleaved* list of instruction rows and active HOST rows.
+
+The two statements differ in exactly the way the segmentation requires:
+
+* the final gas invariant is reported at the **last segment** (`segs`), not the global `(0, g0)`;
+* `hstepgas` is a hypothesis: at every row the fee fits in the budget its segment carries.  For an
+  instruction row this follows from the segment's own invariant; at a HOST row it is the statement
+  that the host left enough budget, which `HostOK` + `HostResp` supply per row.
+
+The conclusion is `wasm_base_exec`'s plus the segment map.
+-/
+
+/-- The active HOST rows, as `(22, r)` pairs. -/
+def hostActRows (tr : Trace) (pub : List F) : List (Nat × Nat) :=
+  (actRows tr pub 22).map fun r => (22, r)
+
+/-- The instruction rows of `wasmBaseHostAir`.  Tables 1-14 are the base tables index for index
+(`host_air_get`), so the same `actRows` applies. -/
+def actListHost (tr : Trace) (pub : List F) : List (Nat × Nat) :=
+  (List.range 14).flatMap fun k => (actRows tr pub (k + 1)).map fun r => (k + 1, r)
+
 end WasmBase
