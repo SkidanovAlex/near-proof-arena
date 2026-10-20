@@ -1,0 +1,38 @@
+NATIVE_SHA384_PROFILE n_stack=17 k=3 log_blowup=8 all_list=1 queries=[61, 61, 49, 40]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE k1=1 log_final=9 multiproof=true keep_domain=false m=8 query_pow=24 folding_pow=0 mu_pow=0 digest_bytes=42 coset_leaf=true dummy=true
+NATIVE_SHA384_KEYGEN_SECONDS 0.000687542
+NATIVE_SHA384_EXT12 target=260 min=260.4895120111298 logup=329.795224314651 proximity=315.0303353508395 query=260.4895120111298
+NATIVE_SHA384_PROVE_SECONDS 65.497809484
+LEVERS_GRIND bits=24 seconds=0.0450 witness=2163359
+LEVERS_GRIND bits=24 seconds=0.0231 witness=954652
+LEVERS_GRIND bits=24 seconds=0.3802 witness=17723071
+LEVERS_GRIND bits=24 seconds=0.3447 witness=15930546
+NATIVE_SHA384_VERIFY_SECONDS 0.016238935
+NATIVE_SHA384_VERIFY_CALLS [0, 3724, 1, 152, 5, 273, 211, 4]
+NATIVE_SHA384_VERIFY_BLOCKS [0, 3724, 1, 986, 10, 273, 661, 4] total=5659
+NATIVE_SHA384_EXT12_BYTES total=301222 gkr=15848 relations=49944 stacking=2176 whir=233187
+LEVERS_CENSUS total=301222 auth=147714 auth_digests=3517 auth_per_tree=[1179, 980, 770, 588] initial=1952 codeword=57600 final_poly=24576 whir_small=1345 whir=233187 relations=49944 column_openings_ef=920 gkr=15848 stacking=2176 stacking_openings_ef=4 other=67
+	Command being timed: "/tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/run.sh /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/g5z236-h12 NEARPROOF_DUMMY=1 NEARPROOF_N_STACK=17 NEARPROOF_LOG_BLOWUP=8 NEARPROOF_K1=1 NEARPROOF_K=3 NEARPROOF_LOG_FINAL=9 NEARPROOF_LIST_M=8 NEARPROOF_COSET_LEAF=1 NEARPROOF_MULTIPROOF=1 NEARPROOF_DUMMY_LOG_HEIGHT=12 NEARPROOF_QUERY_BITS=260 NEARPROOF_QUERY_POW=24 NEARPROOF_DIGEST_BYTES=42"
+	User time (seconds): 412.73
+	System time (seconds): 4.71
+	Percent of CPU this job got: 636%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:05.56
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 16144964
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 6325227
+	Voluntary context switches: 9080
+	Involuntary context switches: 1033
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 872
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

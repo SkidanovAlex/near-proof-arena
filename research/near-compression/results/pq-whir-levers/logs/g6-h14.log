@@ -1,0 +1,58 @@
+NATIVE_SHA384_PROFILE n_stack=17 k=3 log_blowup=8 all_list=1 queries=[69, 69, 55, 46]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE_GKR gruen=true derive=true next_mask=true gruen_zc=true max_degree=4
+LEVERS_PROFILE k1=1 log_final=9 multiproof=true keep_domain=false m=8 query_pow=0 folding_pow=0 mu_pow=0 digest_bytes=48 coset_leaf=true dummy=true
+NATIVE_SHA384_KEYGEN_SECONDS 0.000738939
+LEVERS_ROT_MASK air=0 widths=[460] need_rot=true rotated_per_part=[460]
+NATIVE_SHA384_EXT12 target=268 min=269.96506325858786 logup=329.795224314651 proximity=315.0303353508395 query=269.96506325858786
+NATIVE_SHA384_PROVE_SECONDS 95.565587343
+NATIVE_SHA384_VERIFY_SECONDS 0.019442317
+NATIVE_SHA384_VERIFY_CALLS [0, 4136, 1, 185, 5, 335, 239, 0]
+NATIVE_SHA384_VERIFY_BLOCKS [0, 4136, 1, 944, 10, 335, 818, 0] total=6244
+NATIVE_SHA384_EXT12_BYTES total=350713 gkr_upstream_enc=20408 relations=47928 stacking=2704 whir=286744
+LEVERS_CENSUS total=350713 auth=187248 auth_digests=3901 auth_per_tree=[1305, 1096, 825, 675] initial=8280 codeword=65280 final_poly=24576 whir_small=1360 whir=286744 relations=47356 column_openings_ef=920 gkr=13832 stacking=2704 stacking_openings_ef=15 other=77
+LEVERS_NEGATIVE case="next_mask: vk drops a rotated column" rejected=true
+LEVERS_NEGATIVE case="next_mask: rotated claim removed" rejected=true
+LEVERS_NEGATIVE case="initial leaf value" rejected=true
+LEVERS_NEGATIVE case="codeword leaf value (last coset element)" rejected=true
+LEVERS_NEGATIVE case="initial auth digest" rejected=true
+LEVERS_NEGATIVE case="codeword auth digest" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling removed" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling appended" rejected=true
+LEVERS_NEGATIVE case="multiproof: siblings reordered" rejected=true
+LEVERS_NEGATIVE case="levers field mismatch" rejected=true
+LEVERS_NEGATIVE case="GKR sumcheck s(1)" rejected=true
+LEVERS_NEGATIVE case="GKR sumcheck s(2)" rejected=true
+LEVERS_NEGATIVE case="GKR layer claim q_xi_1" rejected=true
+LEVERS_NEGATIVE case="GKR root claim p_xi_0" rejected=true
+LEVERS_NEGATIVE case="GKR last layer claim q_xi_0" rejected=true
+LEVERS_NEGATIVE case="GKR gruen: dropped s(3) set" rejected=true
+LEVERS_NEGATIVE case="GKR derive: p_xi_1 set" rejected=true
+LEVERS_NEGATIVE case="GKR derive: q0_claim set" rejected=true
+LEVERS_NEGATIVE case="batch sumcheck eval" rejected=true
+LEVERS_NEGATIVE case="batch gruen: dropped eval set" rejected=true
+LEVERS_NEGATIVE case="next_mask: rotated claim value" rejected=true
+LEVERS_NEGATIVE_PASS cases=19
+	Command being timed: "/tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/run.sh /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/g6-h14 NEARPROOF_DUMMY=1 NEARPROOF_N_STACK=17 NEARPROOF_LOG_BLOWUP=8 NEARPROOF_K1=1 NEARPROOF_K=3 NEARPROOF_LOG_FINAL=9 NEARPROOF_LIST_M=8 NEARPROOF_COSET_LEAF=1 NEARPROOF_MULTIPROOF=1 NEARPROOF_DUMMY_LOG_HEIGHT=14 NEARPROOF_MAX_DEGREE=4 NEARPROOF_GRUEN_GKR=1 NEARPROOF_GKR_DERIVE=1 NEARPROOF_GRUEN_ZC=1 NEARPROOF_NEXT_MASK=1 NEARPROOF_NEGATIVE=1"
+	User time (seconds): 622.61
+	System time (seconds): 6.72
+	Percent of CPU this job got: 657%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:35.76
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 22195484
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 8972101
+	Voluntary context switches: 14594
+	Involuntary context switches: 4753
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 968
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

@@ -1,0 +1,1531 @@
+{
+ "status": "DESIGN_MODEL_ONLY",
+ "calibrated_against": "gas-failure5 child",
+ "target_bits": 268,
+ "rows": [
+  {
+   "regime": "list",
+   "c_sha": 8000,
+   "cols": 300,
+   "dedup": 0.0,
+   "cells_log2": 26.94,
+   "child": {
+    "b": 7,
+    "k": 3,
+    "log_h": 20,
+    "width": 123,
+    "sha_blocks": 14801
+   },
+   "final": {
+    "b": 6,
+    "k": 3,
+    "log_h": 21,
+    "width": 62,
+    "bytes": 626561,
+    "log_final": 9,
+    "queries": [
+     97,
+     71,
+     57,
+     47
+    ],
+    "whir": 583492,
+    "initial": 192448,
+    "auth": 297696
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 8000,
+   "cols": 300,
+   "dedup": "multiproof",
+   "cells_log2": 26.94,
+   "child": {
+    "b": 7,
+    "k": 3,
+    "log_h": 20,
+    "width": 123,
+    "sha_blocks": 14801
+   },
+   "final": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 31,
+    "bytes": 521265,
+    "log_final": 10,
+    "queries": [
+     118,
+     82,
+     63,
+     51
+    ],
+    "whir": 478196,
+    "initial": 117056,
+    "auth": 235152
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 8000,
+   "cols": 600,
+   "dedup": 0.0,
+   "cells_log2": 26.94,
+   "child": {
+    "b": 7,
+    "k": 3,
+    "log_h": 20,
+    "width": 123,
+    "sha_blocks": 14801
+   },
+   "final": {
+    "b": 6,
+    "k": 3,
+    "log_h": 21,
+    "width": 62,
+    "bytes": 655361,
+    "log_final": 9,
+    "queries": [
+     97,
+     71,
+     57,
+     47
+    ],
+    "whir": 583492,
+    "initial": 192448,
+    "auth": 297696
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 8000,
+   "cols": 600,
+   "dedup": "multiproof",
+   "cells_log2": 26.94,
+   "child": {
+    "b": 7,
+    "k": 3,
+    "log_h": 20,
+    "width": 123,
+    "sha_blocks": 14801
+   },
+   "final": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 31,
+    "bytes": 550065,
+    "log_final": 10,
+    "queries": [
+     118,
+     82,
+     63,
+     51
+    ],
+    "whir": 478196,
+    "initial": 117056,
+    "auth": 235152
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 8000,
+   "cols": 1500,
+   "dedup": 0.0,
+   "cells_log2": 26.94,
+   "child": {
+    "b": 7,
+    "k": 3,
+    "log_h": 20,
+    "width": 123,
+    "sha_blocks": 14801
+   },
+   "final": {
+    "b": 6,
+    "k": 3,
+    "log_h": 21,
+    "width": 62,
+    "bytes": 741761,
+    "log_final": 9,
+    "queries": [
+     97,
+     71,
+     57,
+     47
+    ],
+    "whir": 583492,
+    "initial": 192448,
+    "auth": 297696
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 8000,
+   "cols": 1500,
+   "dedup": "multiproof",
+   "cells_log2": 26.94,
+   "child": {
+    "b": 7,
+    "k": 3,
+    "log_h": 20,
+    "width": 123,
+    "sha_blocks": 14801
+   },
+   "final": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 31,
+    "bytes": 636465,
+    "log_final": 10,
+    "queries": [
+     118,
+     82,
+     63,
+     51
+    ],
+    "whir": 478196,
+    "initial": 117056,
+    "auth": 235152
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 12000,
+   "cols": 300,
+   "dedup": 0.0,
+   "cells_log2": 27.6,
+   "child": {
+    "b": 7,
+    "k": 3,
+    "log_h": 20,
+    "width": 195,
+    "sha_blocks": 16113
+   },
+   "final": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 49,
+    "bytes": 698481,
+    "log_final": 10,
+    "queries": [
+     118,
+     82,
+     63,
+     51
+    ],
+    "whir": 655412,
+    "initial": 185024,
+    "auth": 344400
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 12000,
+   "cols": 300,
+   "dedup": "multiproof",
+   "cells_log2": 27.6,
+   "child": {
+    "b": 7,
+    "k": 3,
+    "log_h": 20,
+    "width": 195,
+    "sha_blocks": 16113
+   },
+   "final": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 49,
+    "bytes": 589233,
+    "log_final": 10,
+    "queries": [
+     118,
+     82,
+     63,
+     51
+    ],
+    "whir": 546164,
+    "initial": 185024,
+    "auth": 235152
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 12000,
+   "cols": 600,
+   "dedup": 0.0,
+   "cells_log2": 27.6,
+   "child": {
+    "b": 7,
+    "k": 3,
+    "log_h": 20,
+    "width": 195,
+    "sha_blocks": 16113
+   },
+   "final": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 49,
+    "bytes": 727281,
+    "log_final": 10,
+    "queries": [
+     118,
+     82,
+     63,
+     51
+    ],
+    "whir": 655412,
+    "initial": 185024,
+    "auth": 344400
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 12000,
+   "cols": 600,
+   "dedup": "multiproof",
+   "cells_log2": 27.6,
+   "child": {
+    "b": 7,
+    "k": 3,
+    "log_h": 20,
+    "width": 195,
+    "sha_blocks": 16113
+   },
+   "final": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 49,
+    "bytes": 618033,
+    "log_final": 10,
+    "queries": [
+     118,
+     82,
+     63,
+     51
+    ],
+    "whir": 546164,
+    "initial": 185024,
+    "auth": 235152
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 12000,
+   "cols": 1500,
+   "dedup": 0.0,
+   "cells_log2": 27.6,
+   "child": {
+    "b": 7,
+    "k": 3,
+    "log_h": 20,
+    "width": 195,
+    "sha_blocks": 16113
+   },
+   "final": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 49,
+    "bytes": 813681,
+    "log_final": 10,
+    "queries": [
+     118,
+     82,
+     63,
+     51
+    ],
+    "whir": 655412,
+    "initial": 185024,
+    "auth": 344400
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 12000,
+   "cols": 1500,
+   "dedup": "multiproof",
+   "cells_log2": 27.6,
+   "child": {
+    "b": 7,
+    "k": 3,
+    "log_h": 20,
+    "width": 195,
+    "sha_blocks": 16113
+   },
+   "final": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 49,
+    "bytes": 704433,
+    "log_final": 10,
+    "queries": [
+     118,
+     82,
+     63,
+     51
+    ],
+    "whir": 546164,
+    "initial": 185024,
+    "auth": 235152
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 20000,
+   "cols": 300,
+   "dedup": 0.0,
+   "cells_log2": 28.57,
+   "child": {
+    "b": 6,
+    "k": 3,
+    "log_h": 21,
+    "width": 190,
+    "sha_blocks": 19284
+   },
+   "final": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 48,
+    "bytes": 852289,
+    "log_final": 8,
+    "queries": [
+     151,
+     97,
+     71,
+     57,
+     47
+    ],
+    "whir": 809220,
+    "initial": 231936,
+    "auth": 458592
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 20000,
+   "cols": 300,
+   "dedup": "multiproof",
+   "cells_log2": 28.57,
+   "child": {
+    "b": 6,
+    "k": 3,
+    "log_h": 21,
+    "width": 190,
+    "sha_blocks": 19284
+   },
+   "final": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 48,
+    "bytes": 701761,
+    "log_final": 8,
+    "queries": [
+     151,
+     97,
+     71,
+     57,
+     47
+    ],
+    "whir": 658692,
+    "initial": 231936,
+    "auth": 308064
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 20000,
+   "cols": 600,
+   "dedup": 0.0,
+   "cells_log2": 28.57,
+   "child": {
+    "b": 6,
+    "k": 3,
+    "log_h": 21,
+    "width": 190,
+    "sha_blocks": 19284
+   },
+   "final": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 48,
+    "bytes": 881089,
+    "log_final": 8,
+    "queries": [
+     151,
+     97,
+     71,
+     57,
+     47
+    ],
+    "whir": 809220,
+    "initial": 231936,
+    "auth": 458592
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 20000,
+   "cols": 600,
+   "dedup": "multiproof",
+   "cells_log2": 28.57,
+   "child": {
+    "b": 6,
+    "k": 3,
+    "log_h": 21,
+    "width": 190,
+    "sha_blocks": 19284
+   },
+   "final": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 48,
+    "bytes": 730561,
+    "log_final": 8,
+    "queries": [
+     151,
+     97,
+     71,
+     57,
+     47
+    ],
+    "whir": 658692,
+    "initial": 231936,
+    "auth": 308064
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 20000,
+   "cols": 1500,
+   "dedup": 0.0,
+   "cells_log2": 28.57,
+   "child": {
+    "b": 6,
+    "k": 3,
+    "log_h": 21,
+    "width": 190,
+    "sha_blocks": 19284
+   },
+   "final": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 48,
+    "bytes": 967489,
+    "log_final": 8,
+    "queries": [
+     151,
+     97,
+     71,
+     57,
+     47
+    ],
+    "whir": 809220,
+    "initial": 231936,
+    "auth": 458592
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 20000,
+   "cols": 1500,
+   "dedup": "multiproof",
+   "cells_log2": 28.57,
+   "child": {
+    "b": 6,
+    "k": 3,
+    "log_h": 21,
+    "width": 190,
+    "sha_blocks": 19284
+   },
+   "final": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 48,
+    "bytes": 816961,
+    "log_final": 8,
+    "queries": [
+     151,
+     97,
+     71,
+     57,
+     47
+    ],
+    "whir": 658692,
+    "initial": 231936,
+    "auth": 308064
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 30000,
+   "cols": 300,
+   "dedup": 0.0,
+   "cells_log2": 29.27,
+   "child": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 155,
+    "sha_blocks": 21190
+   },
+   "final": {
+    "b": 5,
+    "k": 2,
+    "log_h": 22,
+    "width": 155,
+    "bytes": 994737,
+    "log_final": 10,
+    "queries": [
+     118,
+     97,
+     82,
+     71,
+     63,
+     57
+    ],
+    "whir": 951668,
+    "initial": 292640,
+    "auth": 537072
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 30000,
+   "cols": 300,
+   "dedup": "multiproof",
+   "cells_log2": 29.27,
+   "child": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 155,
+    "sha_blocks": 21190
+   },
+   "final": {
+    "b": 4,
+    "k": 2,
+    "log_h": 23,
+    "width": 78,
+    "bytes": 817441,
+    "log_final": 9,
+    "queries": [
+     151,
+     118,
+     97,
+     82,
+     71,
+     63,
+     57
+    ],
+    "whir": 774372,
+    "initial": 188448,
+    "auth": 465600
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 30000,
+   "cols": 600,
+   "dedup": 0.0,
+   "cells_log2": 29.27,
+   "child": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 155,
+    "sha_blocks": 21190
+   },
+   "final": {
+    "b": 5,
+    "k": 2,
+    "log_h": 22,
+    "width": 155,
+    "bytes": 1023537,
+    "log_final": 10,
+    "queries": [
+     118,
+     97,
+     82,
+     71,
+     63,
+     57
+    ],
+    "whir": 951668,
+    "initial": 292640,
+    "auth": 537072
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 30000,
+   "cols": 600,
+   "dedup": "multiproof",
+   "cells_log2": 29.27,
+   "child": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 155,
+    "sha_blocks": 21190
+   },
+   "final": {
+    "b": 4,
+    "k": 2,
+    "log_h": 23,
+    "width": 78,
+    "bytes": 846241,
+    "log_final": 9,
+    "queries": [
+     151,
+     118,
+     97,
+     82,
+     71,
+     63,
+     57
+    ],
+    "whir": 774372,
+    "initial": 188448,
+    "auth": 465600
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 30000,
+   "cols": 1500,
+   "dedup": 0.0,
+   "cells_log2": 29.27,
+   "child": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 155,
+    "sha_blocks": 21190
+   },
+   "final": {
+    "b": 5,
+    "k": 2,
+    "log_h": 22,
+    "width": 155,
+    "bytes": 1109937,
+    "log_final": 10,
+    "queries": [
+     118,
+     97,
+     82,
+     71,
+     63,
+     57
+    ],
+    "whir": 951668,
+    "initial": 292640,
+    "auth": 537072
+   }
+  },
+  {
+   "regime": "list",
+   "c_sha": 30000,
+   "cols": 1500,
+   "dedup": "multiproof",
+   "cells_log2": 29.27,
+   "child": {
+    "b": 5,
+    "k": 3,
+    "log_h": 22,
+    "width": 155,
+    "sha_blocks": 21190
+   },
+   "final": {
+    "b": 4,
+    "k": 2,
+    "log_h": 23,
+    "width": 78,
+    "bytes": 932641,
+    "log_final": 9,
+    "queries": [
+     151,
+     118,
+     97,
+     82,
+     71,
+     63,
+     57
+    ],
+    "whir": 774372,
+    "initial": 188448,
+    "auth": 465600
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 8000,
+   "cols": 300,
+   "dedup": 0.0,
+   "cells_log2": 29.25,
+   "child": {
+    "b": 3,
+    "k": 3,
+    "log_h": 23,
+    "width": 77,
+    "sha_blocks": 74410
+   },
+   "final": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 39,
+    "bytes": 2200705,
+    "log_final": 12,
+    "queries": [
+     323,
+     281,
+     272,
+     269
+    ],
+    "whir": 2157636,
+    "initial": 403104,
+    "auth": 1240704
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 8000,
+   "cols": 300,
+   "dedup": "multiproof",
+   "cells_log2": 29.25,
+   "child": {
+    "b": 3,
+    "k": 3,
+    "log_h": 23,
+    "width": 77,
+    "sha_blocks": 74410
+   },
+   "final": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 39,
+    "bytes": 1703185,
+    "log_final": 12,
+    "queries": [
+     323,
+     281,
+     272,
+     269
+    ],
+    "whir": 1660116,
+    "initial": 403104,
+    "auth": 743184
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 8000,
+   "cols": 600,
+   "dedup": 0.0,
+   "cells_log2": 29.25,
+   "child": {
+    "b": 3,
+    "k": 3,
+    "log_h": 23,
+    "width": 77,
+    "sha_blocks": 74410
+   },
+   "final": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 39,
+    "bytes": 2229505,
+    "log_final": 12,
+    "queries": [
+     323,
+     281,
+     272,
+     269
+    ],
+    "whir": 2157636,
+    "initial": 403104,
+    "auth": 1240704
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 8000,
+   "cols": 600,
+   "dedup": "multiproof",
+   "cells_log2": 29.25,
+   "child": {
+    "b": 3,
+    "k": 3,
+    "log_h": 23,
+    "width": 77,
+    "sha_blocks": 74410
+   },
+   "final": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 39,
+    "bytes": 1731985,
+    "log_final": 12,
+    "queries": [
+     323,
+     281,
+     272,
+     269
+    ],
+    "whir": 1660116,
+    "initial": 403104,
+    "auth": 743184
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 8000,
+   "cols": 1500,
+   "dedup": 0.0,
+   "cells_log2": 29.25,
+   "child": {
+    "b": 3,
+    "k": 3,
+    "log_h": 23,
+    "width": 77,
+    "sha_blocks": 74410
+   },
+   "final": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 39,
+    "bytes": 2315905,
+    "log_final": 12,
+    "queries": [
+     323,
+     281,
+     272,
+     269
+    ],
+    "whir": 2157636,
+    "initial": 403104,
+    "auth": 1240704
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 8000,
+   "cols": 1500,
+   "dedup": "multiproof",
+   "cells_log2": 29.25,
+   "child": {
+    "b": 3,
+    "k": 3,
+    "log_h": 23,
+    "width": 77,
+    "sha_blocks": 74410
+   },
+   "final": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 39,
+    "bytes": 1818385,
+    "log_final": 12,
+    "queries": [
+     323,
+     281,
+     272,
+     269
+    ],
+    "whir": 1660116,
+    "initial": 403104,
+    "auth": 743184
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 12000,
+   "cols": 300,
+   "dedup": 0.0,
+   "cells_log2": 29.89,
+   "child": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 119,
+    "sha_blocks": 79169
+   },
+   "final": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 60,
+    "bytes": 2417761,
+    "log_final": 12,
+    "queries": [
+     323,
+     281,
+     272,
+     269
+    ],
+    "whir": 2374692,
+    "initial": 620160,
+    "auth": 1240704
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 12000,
+   "cols": 300,
+   "dedup": "multiproof",
+   "cells_log2": 29.89,
+   "child": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 119,
+    "sha_blocks": 79169
+   },
+   "final": {
+    "b": 2,
+    "k": 3,
+    "log_h": 25,
+    "width": 30,
+    "bytes": 1841713,
+    "log_final": 10,
+    "queries": [
+     396,
+     294,
+     275,
+     270,
+     269
+    ],
+    "whir": 1798644,
+    "initial": 380160,
+    "auth": 941904
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 12000,
+   "cols": 600,
+   "dedup": 0.0,
+   "cells_log2": 29.89,
+   "child": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 119,
+    "sha_blocks": 79169
+   },
+   "final": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 60,
+    "bytes": 2446561,
+    "log_final": 12,
+    "queries": [
+     323,
+     281,
+     272,
+     269
+    ],
+    "whir": 2374692,
+    "initial": 620160,
+    "auth": 1240704
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 12000,
+   "cols": 600,
+   "dedup": "multiproof",
+   "cells_log2": 29.89,
+   "child": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 119,
+    "sha_blocks": 79169
+   },
+   "final": {
+    "b": 2,
+    "k": 3,
+    "log_h": 25,
+    "width": 30,
+    "bytes": 1870513,
+    "log_final": 10,
+    "queries": [
+     396,
+     294,
+     275,
+     270,
+     269
+    ],
+    "whir": 1798644,
+    "initial": 380160,
+    "auth": 941904
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 12000,
+   "cols": 1500,
+   "dedup": 0.0,
+   "cells_log2": 29.89,
+   "child": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 119,
+    "sha_blocks": 79169
+   },
+   "final": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 60,
+    "bytes": 2532961,
+    "log_final": 12,
+    "queries": [
+     323,
+     281,
+     272,
+     269
+    ],
+    "whir": 2374692,
+    "initial": 620160,
+    "auth": 1240704
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 12000,
+   "cols": 1500,
+   "dedup": "multiproof",
+   "cells_log2": 29.89,
+   "child": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 119,
+    "sha_blocks": 79169
+   },
+   "final": {
+    "b": 2,
+    "k": 3,
+    "log_h": 25,
+    "width": 30,
+    "bytes": 1956913,
+    "log_final": 10,
+    "queries": [
+     396,
+     294,
+     275,
+     270,
+     269
+    ],
+    "whir": 1798644,
+    "initial": 380160,
+    "auth": 941904
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 20000,
+   "cols": 300,
+   "dedup": 0.0,
+   "cells_log2": 30.68,
+   "child": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 206,
+    "sha_blocks": 83873
+   },
+   "final": {
+    "b": 2,
+    "k": 3,
+    "log_h": 25,
+    "width": 52,
+    "bytes": 2762305,
+    "log_final": 13,
+    "queries": [
+     396,
+     294,
+     275,
+     270
+    ],
+    "whir": 2719236,
+    "initial": 658944,
+    "auth": 1343328
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 20000,
+   "cols": 300,
+   "dedup": "multiproof",
+   "cells_log2": 30.68,
+   "child": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 206,
+    "sha_blocks": 83873
+   },
+   "final": {
+    "b": 2,
+    "k": 3,
+    "log_h": 25,
+    "width": 52,
+    "bytes": 2120497,
+    "log_final": 10,
+    "queries": [
+     396,
+     294,
+     275,
+     270,
+     269
+    ],
+    "whir": 2077428,
+    "initial": 658944,
+    "auth": 941904
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 20000,
+   "cols": 600,
+   "dedup": 0.0,
+   "cells_log2": 30.68,
+   "child": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 206,
+    "sha_blocks": 83873
+   },
+   "final": {
+    "b": 2,
+    "k": 3,
+    "log_h": 25,
+    "width": 52,
+    "bytes": 2791105,
+    "log_final": 13,
+    "queries": [
+     396,
+     294,
+     275,
+     270
+    ],
+    "whir": 2719236,
+    "initial": 658944,
+    "auth": 1343328
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 20000,
+   "cols": 600,
+   "dedup": "multiproof",
+   "cells_log2": 30.68,
+   "child": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 206,
+    "sha_blocks": 83873
+   },
+   "final": {
+    "b": 2,
+    "k": 3,
+    "log_h": 25,
+    "width": 52,
+    "bytes": 2149297,
+    "log_final": 10,
+    "queries": [
+     396,
+     294,
+     275,
+     270,
+     269
+    ],
+    "whir": 2077428,
+    "initial": 658944,
+    "auth": 941904
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 20000,
+   "cols": 1500,
+   "dedup": 0.0,
+   "cells_log2": 30.68,
+   "child": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 206,
+    "sha_blocks": 83873
+   },
+   "final": {
+    "b": 2,
+    "k": 3,
+    "log_h": 25,
+    "width": 52,
+    "bytes": 2877505,
+    "log_final": 13,
+    "queries": [
+     396,
+     294,
+     275,
+     270
+    ],
+    "whir": 2719236,
+    "initial": 658944,
+    "auth": 1343328
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 20000,
+   "cols": 1500,
+   "dedup": "multiproof",
+   "cells_log2": 30.68,
+   "child": {
+    "b": 4,
+    "k": 3,
+    "log_h": 23,
+    "width": 206,
+    "sha_blocks": 83873
+   },
+   "final": {
+    "b": 2,
+    "k": 3,
+    "log_h": 25,
+    "width": 52,
+    "bytes": 2235697,
+    "log_final": 10,
+    "queries": [
+     396,
+     294,
+     275,
+     270,
+     269
+    ],
+    "whir": 2077428,
+    "initial": 658944,
+    "auth": 941904
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 30000,
+   "cols": 300,
+   "dedup": 0.0,
+   "cells_log2": 31.4,
+   "child": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 169,
+    "sha_blocks": 92722
+   },
+   "final": {
+    "b": 2,
+    "k": 3,
+    "log_h": 25,
+    "width": 85,
+    "bytes": 3180481,
+    "log_final": 13,
+    "queries": [
+     396,
+     294,
+     275,
+     270
+    ],
+    "whir": 3137412,
+    "initial": 1077120,
+    "auth": 1343328
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 30000,
+   "cols": 300,
+   "dedup": "multiproof",
+   "cells_log2": 31.4,
+   "child": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 169,
+    "sha_blocks": 92722
+   },
+   "final": {
+    "b": 2,
+    "k": 2,
+    "log_h": 25,
+    "width": 85,
+    "bytes": 2338609,
+    "log_final": 11,
+    "queries": [
+     396,
+     323,
+     294,
+     281,
+     275,
+     272,
+     270
+    ],
+    "whir": 2295540,
+    "initial": 538560,
+    "auth": 1327344
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 30000,
+   "cols": 600,
+   "dedup": 0.0,
+   "cells_log2": 31.4,
+   "child": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 169,
+    "sha_blocks": 92722
+   },
+   "final": {
+    "b": 2,
+    "k": 3,
+    "log_h": 25,
+    "width": 85,
+    "bytes": 3209281,
+    "log_final": 13,
+    "queries": [
+     396,
+     294,
+     275,
+     270
+    ],
+    "whir": 3137412,
+    "initial": 1077120,
+    "auth": 1343328
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 30000,
+   "cols": 600,
+   "dedup": "multiproof",
+   "cells_log2": 31.4,
+   "child": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 169,
+    "sha_blocks": 92722
+   },
+   "final": {
+    "b": 2,
+    "k": 2,
+    "log_h": 25,
+    "width": 85,
+    "bytes": 2367409,
+    "log_final": 11,
+    "queries": [
+     396,
+     323,
+     294,
+     281,
+     275,
+     272,
+     270
+    ],
+    "whir": 2295540,
+    "initial": 538560,
+    "auth": 1327344
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 30000,
+   "cols": 1500,
+   "dedup": 0.0,
+   "cells_log2": 31.4,
+   "child": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 169,
+    "sha_blocks": 92722
+   },
+   "final": {
+    "b": 2,
+    "k": 3,
+    "log_h": 25,
+    "width": 85,
+    "bytes": 3295681,
+    "log_final": 13,
+    "queries": [
+     396,
+     294,
+     275,
+     270
+    ],
+    "whir": 3137412,
+    "initial": 1077120,
+    "auth": 1343328
+   }
+  },
+  {
+   "regime": "unique",
+   "c_sha": 30000,
+   "cols": 1500,
+   "dedup": "multiproof",
+   "cells_log2": 31.4,
+   "child": {
+    "b": 3,
+    "k": 3,
+    "log_h": 24,
+    "width": 169,
+    "sha_blocks": 92722
+   },
+   "final": {
+    "b": 2,
+    "k": 2,
+    "log_h": 25,
+    "width": 85,
+    "bytes": 2453809,
+    "log_final": 11,
+    "queries": [
+     396,
+     323,
+     294,
+     281,
+     275,
+     272,
+     270
+    ],
+    "whir": 2295540,
+    "initial": 538560,
+    "auth": 1327344
+   }
+  }
+ ]
+}

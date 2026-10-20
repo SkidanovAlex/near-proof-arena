@@ -1,9 +1,10 @@
 """Compile the actual patched native implication method in an exhaustive small test."""
+import sys as _sys;from pathlib import Path as _P;_sys.path.insert(0,str(_P(__file__).resolve().parents[2]/'native'));import native_paths
 import hashlib,json,subprocess,tempfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'results/native-literal-recursion'
-source=Path('/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5/crates/stark-backend/src/keygen/types.rs').read_text()
+source=(native_paths.BACKEND/'crates/stark-backend/src/keygen/types.rs').read_text()
 a=source.index('impl LinearConstraint {');b=source.index('\n#[derive(Error',a)
 method=source[a:b]
 program='struct LinearConstraint {coefficients:Vec<u32>,threshold:u32}\n'+method+r'''

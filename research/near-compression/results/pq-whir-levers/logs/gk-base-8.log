@@ -1,0 +1,12 @@
+NATIVE_SHA384_PROFILE n_stack=12 k=3 log_blowup=2 all_list=1 queries=[345, 151, 97, 71]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE_GKR gruen=false derive=false next_mask=false max_degree=8
+LEVERS_PROFILE k1=3 log_final=2 multiproof=true keep_domain=false m=3 query_pow=0 folding_pow=0 mu_pow=0 digest_bytes=48 coset_leaf=false dummy=true
+NATIVE_SHA384_KEYGEN_SECONDS 0.000098495
+NATIVE_SHA384_EXT12 target=268 min=268.2101374382322 logup=334.07533223384377 proximity=338.4308228092512 query=268.2101374382322
+NATIVE_SHA384_PROVE_SECONDS 0.128084702
+NATIVE_SHA384_VERIFY_SECONDS 0.010674784
+NATIVE_SHA384_VERIFY_CALLS [5312, 7740, 1, 95, 5, 228, 0, 0]
+NATIVE_SHA384_VERIFY_BLOCKS [5312, 7740, 1, 286, 10, 228, 0, 0] total=13577
+NATIVE_SHA384_EXT12_BYTES total=268613 gkr_upstream_enc=8456 relations=5592 stacking=1552 whir=252936
+LEVERS_CENSUS total=268613 auth=117648 auth_digests=2451 auth_per_tree=[1294, 610, 327, 220] initial=11040 codeword=122496 final_poly=192 whir_small=1560 whir=252936 relations=5592 column_openings_ef=32 gkr=8456 stacking=1552 stacking_openings_ef=1 other=77

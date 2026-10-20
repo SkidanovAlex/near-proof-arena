@@ -1,4 +1,5 @@
 """Check packed AIR constraints/buses and an isolated invalid-byte witness."""
+import sys as _sys;from pathlib import Path as _P;_sys.path.insert(0,str(_P(__file__).resolve().parents[2]/'native'));import native_paths
 from pathlib import Path
 from collections import Counter
 import copy,json,os,struct,subprocess,tempfile
@@ -44,7 +45,7 @@ with tempfile.TemporaryDirectory(prefix='nearproof-invalid-byte-') as tmp:
     (tmp/'public.bin').write_bytes((OUT/'public.bin').read_bytes())
     env=dict(os.environ,NEARPROOF_LITERAL_OUT=str(tmp),NEARPROOF_N_STACK='15',NEARPROOF_ALL_LIST='1',NEARPROOF_LOG_BLOWUP='7',NEARPROOF_INTERACTION_LOG='26',NEARPROOF_QUERY_BITS='268',RAYON_NUM_THREADS='4')
     for key in ['NEARPROOF_REPLAY','NEARPROOF_DICTIONARY','NEARPROOF_TRANSCRIPT_VECTORS','NEARPROOF_EXPECT_RANGE_REJECTION']:env.pop(key,None)
-    run=subprocess.run(['cargo','run','--locked','--manifest-path','/tmp/nearproof-native-sha384/Cargo.toml','--release'],env=env,text=True,capture_output=True)
+    run=subprocess.run(['cargo','run','--locked','--manifest-path',str(native_paths.CRATE/'Cargo.toml'),'--release'],env=env,text=True,capture_output=True)
     assert run.returncode!=0 and 'LogupZerocheck(NonZeroRootSum)' in run.stderr
     assert not (tmp/'child.proof').exists()
 (OUT/'invalid-byte.log').write_text(run.stdout+run.stderr)

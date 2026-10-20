@@ -1,15 +1,17 @@
-"""Prepare isolated pinned Plonky3 arithmetic experiment; never edit registry."""
+"""Check the pinned Ext12 Plonky3 tree against its construction; prepare the arithmetic check crate.
+
+The patched crates come from native/setup_native_deps.sh; this script never edits them."""
 from pathlib import Path
 import json,shutil,difflib
 ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'results/babybear-ext12-construction'
-TMP=Path('/tmp/nearproof-ext12-rust');TMP.mkdir(exist_ok=True)
-registry=Path('/home/illia/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f')
+import sys;sys.path.insert(0,str(ROOT/'native'));import native_paths
+native_paths.require_deps()
+TMP=native_paths.DEPS/'ext12-check';TMP.mkdir(exist_ok=True)
 c=json.loads((OUT/'construction.json').read_text())
 patches=[]
 for name in ['p3-baby-bear','p3-monty-31']:
-    src=registry/(name+'-0.4.3');dst=TMP/name
-    if not dst.exists():shutil.copytree(src,dst)
+    src=native_paths.EXT12/'.orig'/name;dst=native_paths.EXT12/name
     rel='src/baby_bear.rs' if name=='p3-baby-bear' else 'src/extension.rs'
     old=(src/rel).read_text();new=old
     if name=='p3-baby-bear':
@@ -32,7 +34,7 @@ for name in ['p3-baby-bear','p3-monty-31']:
             },
             _ => panic!("Unsupported binomial extension degree: {}", WIDTH),''')
         assert new!=old
-    (dst/rel).write_text(new)
+    assert (dst/rel).read_text()==new,f'{dst/rel} differs from construction'
     patches.extend(difflib.unified_diff(old.splitlines(True),new.splitlines(True),fromfile=f'a/{name}/{rel}',tofile=f'b/{name}/{rel}'))
 (OUT/'plonky3-ext12.patch').write_text(''.join(patches))
 (TMP/'Cargo.toml').write_text('''[package]
@@ -44,9 +46,9 @@ p3-baby-bear="=0.4.3"
 p3-field="=0.4.3"
 serde_json="1"
 [patch.crates-io]
-p3-baby-bear={path="p3-baby-bear"}
-p3-monty-31={path="p3-monty-31"}
-''')
+p3-baby-bear={path="EXT12/p3-baby-bear"}
+p3-monty-31={path="EXT12/p3-monty-31"}
+'''.replace('EXT12',str(native_paths.EXT12)))
 (TMP/'src').mkdir(exist_ok=True)
 shutil.copyfile(Path(__file__).with_name('ext12_check.rs'),TMP/'src/main.rs')
 print(TMP)

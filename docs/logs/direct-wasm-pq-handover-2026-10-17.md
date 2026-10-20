@@ -91,7 +91,7 @@ then build the standalone crate. check_native_sha384.py accepts --input-source,
 --out, --request, --prove-log and --oracle-fuel (positive integer, default 256).
 Set sufficient fuel explicitly before using it for long workloads; the report
 records the chosen fuel. Exhaustion is rejected, not accepted as a guest trap.
-Preparing a workload overwrites /tmp/nearproof-native-sha384/src/literal.rs;
+Preparing a workload overwrites $NEARPROOF_PQ_DEPS/native-sha384/src/literal.rs (formerly /tmp/nearproof-native-sha384);
 do not prepare workloads concurrently. At wrap-up the binary/source contain gas-failure5.
 
 Profile: n_stack=15, k=3, log_blowup=7, all_list=1, interaction_log=26,
@@ -100,7 +100,8 @@ NEARPROOF_LITERAL_OUT, RAYON_NUM_THREADS=4. The checker reads transcript vectors
 from /tmp/nearproof-native-sha384-vectors.log; refresh by running the binary with
 NEARPROOF_TRANSCRIPT_VECTORS=1. Native component minimum 268.7638 bits is uncertified.
 
-Dependencies are not hermetic: backend d667af5929d0ea9e5194adf639d6bddeb8c10f9a
+**Superseded 2026-10-17 by `research/near-compression/native/` (see the follow-up below).**
+Dependencies were not hermetic: backend d667af5929d0ea9e5194adf639d6bddeb8c10f9a
 at /home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5 has
 research patches; p3-baby-bear and p3-monty-31 v0.4.3 patched copies live under
 /tmp/nearproof-ext12-rust. Saved native results contain Cargo manifest/lock,
@@ -153,3 +154,25 @@ native proof also passed the complete checker with fuel 1,026, including hidden
 witness replay, transcript vectors, eligibility, exported AIR and runCall parity.
 This removes a validation harness limit; no new long native proof or security
 claim follows from these tests.
+
+## Follow-up: pinned native dependencies (priority 1 closed)
+
+`research/near-compression/native/` rebuilds the patched dependencies from
+pinned sources: stark-backend `d667af5929d0` from GitHub plus
+`patches/stark-backend-d667af5.patch`, crates.io `p3-baby-bear`/`p3-monty-31`
+0.4.3 (sha256-pinned) plus `patches/plonky3-ext12.patch`, and the native crate
+`Cargo.lock`. `setup_native_deps.sh` populates `$NEARPROOF_PQ_DEPS` (default
+`/data/illia/nearproof-deps/pq-native`) and verifies an existing tree against the
+patches. `native_paths.py` is the single source of these paths for the native
+pipeline scripts (prepare/check SHA-384, Ext12 construction, digest dictionary,
+packed AIR, literal recursion archive, security report, PCS audit); the shared
+`~/.cargo` checkout and `/tmp/nearproof-ext12-rust` are no longer read.
+
+Validation from a fresh setup: gas-failure5 re-proved with the recorded profile
+gives a byte-identical `child.proof` (sha256 ba042e71…, 378,849 B), identical
+transcript vectors, and the full checker with `--oracle-fuel 1026` passes
+(hidden-witness replay, six public mutations, independent transcript, Lean
+eligibility and runCall). Report differences are only timings and paths. The
+Ext12 construction check regenerates a byte-identical patch. A new worktree needs
+the Lean caches of `research/near-compression`, `zk-formal` and `spec/lean/v3`
+(copy with `cp -a`, never hard links) or a rebuild before the checker's Lean step.

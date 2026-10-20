@@ -1,0 +1,29 @@
+NATIVE_SHA384_PROFILE n_stack=15 k=3 log_blowup=7 all_list=1 queries=[72, 50, 39, 31, 26]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE k1=3 log_final=2 multiproof=true keep_domain=true m=8 query_pow=24 folding_pow=0 mu_pow=0 digest_bytes=42 coset_leaf=true dummy=false
+NATIVE_SHA384_KEYGEN_SECONDS 0.000609244
+NATIVE_SHA384_EXT12 target=268 min=268.7139808081272 logup=330.295224314651 proximity=304.53033544958123 query=268.7139808081272
+NATIVE_SHA384_PROVE_SECONDS 34.903979562
+LEVERS_GRIND bits=24 seconds=0.4339 witness=19902355
+LEVERS_GRIND bits=24 seconds=0.8256 witness=23885212
+LEVERS_GRIND bits=24 seconds=0.1837 witness=5249571
+LEVERS_GRIND bits=24 seconds=0.5510 witness=25000449
+LEVERS_GRIND bits=24 seconds=0.0024 witness=116350
+NATIVE_SHA384_VERIFY_SECONDS 0.006474325
+NATIVE_SHA384_VERIFY_CALLS [0, 3395, 1, 102, 6, 202, 218, 5]
+NATIVE_SHA384_VERIFY_BLOCKS [0, 3395, 1, 519, 12, 202, 656, 5] total=4790
+NATIVE_SHA384_EXT12_BYTES total=236734 gkr=8456 relations=31432 stacking=1840 whir=194151
+LEVERS_CENSUS total=236734 auth=133644 auth_digests=3182 auth_per_tree=[1012, 713, 588, 471, 398] initial=2304 codeword=56064 final_poly=192 whir_small=1947 whir=194151 relations=31432 column_openings_ef=566 gkr=8456 stacking=1840 stacking_openings_ef=1 other=855
+NATIVE_SHA384_EXT12_PASS public_mutations_rejected=6
+LEVERS_NEGATIVE ok=encoding-ignores-truncated-tail
+LEVERS_NEGATIVE case="initial leaf value" rejected=true
+LEVERS_NEGATIVE case="codeword leaf value (last coset element)" rejected=true
+LEVERS_NEGATIVE case="initial auth digest" rejected=true
+LEVERS_NEGATIVE case="codeword auth digest" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling removed" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling appended" rejected=true
+LEVERS_NEGATIVE case="multiproof: siblings reordered" rejected=true
+LEVERS_NEGATIVE case="query PoW witness" rejected=true
+LEVERS_NEGATIVE case="last-round query PoW witness" rejected=true
+LEVERS_NEGATIVE case="levers field mismatch" rejected=true
+LEVERS_NEGATIVE_PASS cases=10

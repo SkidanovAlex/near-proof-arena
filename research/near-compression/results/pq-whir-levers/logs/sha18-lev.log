@@ -1,0 +1,39 @@
+NATIVE_SHA384_PROFILE n_stack=20 k=3 log_blowup=3 all_list=1 queries=[190, 190, 112, 79, 61, 50]
+NATIVE_SHA384_INTERACTION_LOG 27
+LEVERS_PROFILE_GKR gruen=true derive=true next_mask=true gruen_zc=true max_degree=4
+LEVERS_PROFILE k1=1 log_final=6 multiproof=true keep_domain=false m=8 query_pow=0 folding_pow=0 mu_pow=0 digest_bytes=48 coset_leaf=true dummy=true
+NATIVE_SHA384_KEYGEN_SECONDS 0.003573476
+LEVERS_ROT_MASK air=0 widths=[442] need_rot=true rotated_per_part=[438]
+LEVERS_ROT_MASK air=1 widths=[18] need_rot=true rotated_per_part=[16]
+LEVERS_ROT_MASK air=2 widths=[7] need_rot=false rotated_per_part=[0]
+NATIVE_SHA384_EXT12 target=268 min=268.3820599361426 logup=331.295224314651 proximity=320.53033525269984 query=268.3820599361426
+LEVERS_SHA_AIR n=4096 main_height=262144 main_cells=115867648
+NATIVE_SHA384_PROVE_SECONDS 322.674704937
+NATIVE_SHA384_VERIFY_SECONDS 0.05013643
+NATIVE_SHA384_VERIFY_CALLS [0, 9509, 1, 364, 7, 665, 682, 0]
+NATIVE_SHA384_VERIFY_BLOCKS [0, 9509, 1, 1160, 14, 665, 2538, 0] total=13887
+NATIVE_SHA384_EXT12_BYTES total=743353 gkr_upstream_enc=44408 relations=49144 stacking=3616 whir=660720
+LEVERS_CENSUS total=743353 auth=423984 auth_digests=8833 auth_per_tree=[2951, 2375, 1391, 923, 670, 523] initial=42560 codeword=188928 final_poly=3072 whir_small=2176 whir=660720 relations=48956 column_openings_ef=921 gkr=29960 stacking=3616 stacking_openings_ef=28 other=101
+	Command being timed: "/tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/run.sh /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/sha18-lev NEARPROOF_SHA_AIR=4096 NEARPROOF_MAX_DEGREE=4 NEARPROOF_N_STACK=20 NEARPROOF_LOG_BLOWUP=3 NEARPROOF_INTERACTION_LOG=27 NEARPROOF_K1=1 NEARPROOF_K=3 NEARPROOF_LOG_FINAL=6 NEARPROOF_LIST_M=8 NEARPROOF_NEXT_MASK=1 NEARPROOF_GRUEN_GKR=1 NEARPROOF_GKR_DERIVE=1 NEARPROOF_GRUEN_ZC=1 NEARPROOF_MULTIPROOF=1 NEARPROOF_COSET_LEAF=1"
+	User time (seconds): 2025.90
+	System time (seconds): 11.15
+	Percent of CPU this job got: 630%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:22.95
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 14821568
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 10141797
+	Voluntary context switches: 56159
+	Involuntary context switches: 282141
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 1736
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

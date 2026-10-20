@@ -3,7 +3,9 @@ from pathlib import Path
 import shutil,argparse
 ROOT=Path(__file__).resolve().parents[2]
 HERE=Path(__file__).parent
-TMP=Path('/tmp/nearproof-native-sha384');(TMP/'src').mkdir(parents=True,exist_ok=True)
+import sys;sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'native'));import native_paths
+native_paths.require_deps()
+TMP=native_paths.CRATE;(TMP/'src').mkdir(parents=True,exist_ok=True)
 ap=argparse.ArgumentParser();ap.add_argument('--literal-source',type=Path,default=ROOT/'results/native-literal-field-screen');ap.add_argument('--out',type=Path,default=ROOT/'results/native-literal-sha384-ext12-compact')
 args=ap.parse_args();OUT=args.out.resolve();OUT.mkdir(exist_ok=True)
 ret=args.literal_source.resolve()
@@ -13,7 +15,7 @@ s=(ret/'native_literal.rs').read_text().split('// Appended to the generated lite
 s=s.replace('BabyBearPoseidon2Config','SC').replace('struct LiteralFixture;','pub(super) struct LiteralFixture;')
 (TMP/'src/literal.rs').write_text(s)
 for name,dst in [('native_sha384_driver.rs','main.rs'),('native_sha384_config.rs','native_sha384_config.rs'),('native_digest_dictionary.rs','native_digest_dictionary.rs')]:shutil.copyfile(HERE/name,TMP/'src'/dst)
-backend='/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5/crates/stark-backend'
+backend=native_paths.BACKEND/'crates/stark-backend'
 (TMP/'Cargo.toml').write_text(f'''[package]
 name="nearproof-native-sha384"
 version="0.1.0"
@@ -26,7 +28,8 @@ p3-air="=0.4.3"
 p3-matrix="=0.4.3"
 sha2="=0.10.9"
 [patch.crates-io]
-p3-baby-bear={{path="/tmp/nearproof-ext12-rust/p3-baby-bear"}}
-p3-monty-31={{path="/tmp/nearproof-ext12-rust/p3-monty-31"}}
+p3-baby-bear={{path="{native_paths.EXT12}/p3-baby-bear"}}
+p3-monty-31={{path="{native_paths.EXT12}/p3-monty-31"}}
 ''')
+shutil.copyfile(native_paths.LOCKFILE,TMP/'Cargo.lock')
 print(TMP,OUT)

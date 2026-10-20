@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Source-pinned adapter feasibility audit; not a PCS soundness proof."""
+import sys as _sys;from pathlib import Path as _P;_sys.path.insert(0,str(_P(__file__).resolve().parents[2]/'native'));import native_paths
 import hashlib
 import json
 import subprocess
@@ -12,7 +13,7 @@ SOURCES = [
      'crates/iop/src/channel/mod.rs', ['IOPVerifierChannel<F: Field>', 'verify_oracle_relation']),
     (Path('/tmp/nearproof-binius64'), '4428e759dd27956bd5b9ae5025d67eb8ccc1accf',
      'crates/iop/src/fri/fold.rs', ['NTT: AdditiveNTT', 'v += u;', 'u += v * t;']),
-    (Path('/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5'),
+    (native_paths.BACKEND,
      'd667af5929d0ea9e5194adf639d6bddeb8c10f9a',
      'crates/stark-backend/src/verifier/whir.rs',
      ['binary_k_fold<F: TwoAdicField', 'F::two_adic_generator(k)', 't_inv.halve()']),

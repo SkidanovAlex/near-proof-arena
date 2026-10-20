@@ -2,11 +2,13 @@
 import hashlib,json,os,re,shutil,struct,subprocess,tempfile,argparse
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
-ap=argparse.ArgumentParser();ap.add_argument('--input-source',type=Path,default=ROOT/'results/native-literal-field-screen');ap.add_argument('--out',type=Path,default=ROOT/'results/native-literal-sha384-ext12-compact');ap.add_argument('--prove-log',type=Path,default=Path('/tmp/nearproof-native-sha384.log'));ap.add_argument('--request',type=Path,default=ROOT/'results/pq384-code-table-long193/request.json');ap.add_argument('--oracle-fuel',type=int,default=256);args=ap.parse_args()
+import sys;sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'native'));import native_paths
+ap=argparse.ArgumentParser();ap.add_argument('--input-source',type=Path,default=ROOT/'results/native-literal-field-screen');ap.add_argument('--out',type=Path,default=ROOT/'results/native-literal-sha384-ext12-compact');ap.add_argument('--prove-log',type=Path,default=native_paths.DEPS/'native-sha384.log');ap.add_argument('--request',type=Path,default=ROOT/'results/pq384-code-table-long193/request.json');ap.add_argument('--oracle-fuel',type=int,default=256);args=ap.parse_args()
 if args.oracle_fuel <= 0:ap.error('--oracle-fuel must be positive')
 OUT=args.out.resolve()
-TMP=Path('/tmp/nearproof-native-sha384')
-BACKEND=Path('/home/illia/.cargo/git/checkouts/stark-backend-708f1155344bec0c/d667af5')
+native_paths.require_deps()
+TMP=native_paths.CRATE
+BACKEND=native_paths.BACKEND
 log=args.prove_log.read_text()
 profile=re.search(r'NATIVE_SHA384_PROFILE n_stack=(\d+) k=(\d+) log_blowup=(\d+) (?:all_list=(\d+) )?queries=(\[[^\n]+\])',log)
 params=(dict(n_stack=int(profile[1]),k=int(profile[2]),log_blowup=int(profile[3]),all_list=int(profile[4] or 0),queries=json.loads(profile[5])) if profile else dict(n_stack=16,k=3,log_blowup=5,all_list=0,queries=None))
@@ -23,7 +25,7 @@ assert bound and int(bound[1])==268
 (OUT/'prove.log').write_text(log)
 # A separate SHA384 implementation (Python/OpenSSL) and separately written
 # framing/sampler reproduce all transcript states, including rejection steps.
-vector_log=Path('/tmp/nearproof-native-sha384-vectors.log').read_text()
+vector_log=native_paths.VECTORS_LOG.read_text()
 vectors={line.split(' ',1)[0]:json.loads(line.split(' ',1)[1]) for line in vector_log.splitlines() if line.startswith('VECTOR_')}
 def h(tag,*parts):
     framed=b'nearproof-native-sha384-ext12-v4'+bytes([tag])

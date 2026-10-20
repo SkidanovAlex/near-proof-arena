@@ -1,0 +1,43 @@
+NATIVE_SHA384_PROFILE n_stack=15 k=3 log_blowup=8 all_list=1 queries=[69, 61, 46, 37]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE k1=1 log_final=7 multiproof=true keep_domain=true m=8 query_pow=0 folding_pow=0 mu_pow=0 digest_bytes=48 coset_leaf=true dummy=true
+NATIVE_SHA384_KEYGEN_SECONDS 0.000730854
+NATIVE_SHA384_EXT12 target=268 min=269.1647657965282 logup=329.795224314651 proximity=309.5303354377936 query=269.1647657965282
+NATIVE_SHA384_PROVE_SECONDS 51.719524577
+NATIVE_SHA384_VERIFY_SECONDS 0.014840248
+NATIVE_SHA384_VERIFY_CALLS [0, 3623, 1, 150, 5, 274, 213, 0]
+NATIVE_SHA384_VERIFY_BLOCKS [0, 3623, 1, 842, 10, 274, 714, 0] total=5464
+NATIVE_SHA384_EXT12_BYTES total=303332 gkr=15848 relations=49944 stacking=2512 whir=234955
+LEVERS_CENSUS total=303332 auth=163872 auth_digests=3414 auth_per_tree=[1188, 941, 704, 581] initial=8280 codeword=55296 final_poly=6144 whir_small=1363 whir=234955 relations=49944 column_openings_ef=920 gkr=15848 stacking=2512 stacking_openings_ef=15 other=73
+LEVERS_NEGATIVE case="initial leaf value" rejected=true
+LEVERS_NEGATIVE case="codeword leaf value (last coset element)" rejected=true
+LEVERS_NEGATIVE case="initial auth digest" rejected=true
+LEVERS_NEGATIVE case="codeword auth digest" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling removed" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling appended" rejected=true
+LEVERS_NEGATIVE case="multiproof: siblings reordered" rejected=true
+LEVERS_NEGATIVE case="levers field mismatch" rejected=true
+LEVERS_NEGATIVE_PASS cases=8
+	Command being timed: "/tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/run.sh /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/e5-keep NEARPROOF_DUMMY=1 NEARPROOF_N_STACK=15 NEARPROOF_LOG_BLOWUP=8 NEARPROOF_K1=1 NEARPROOF_K=3 NEARPROOF_LOG_FINAL=7 NEARPROOF_LIST_M=8 NEARPROOF_COSET_LEAF=1 NEARPROOF_MULTIPROOF=1 NEARPROOF_DUMMY_LOG_HEIGHT=12 NEARPROOF_KEEP_DOMAIN=1 NEARPROOF_NEGATIVE=1"
+	User time (seconds): 325.58
+	System time (seconds): 3.21
+	Percent of CPU this job got: 633%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:51.86
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 9214164
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 4125340
+	Voluntary context switches: 8879
+	Involuntary context switches: 818
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 880
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

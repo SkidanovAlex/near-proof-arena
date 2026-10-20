@@ -1,0 +1,50 @@
+NATIVE_SHA384_PROFILE n_stack=17 k=3 log_blowup=8 all_list=1 queries=[58, 58, 47, 39]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE k1=1 log_final=9 multiproof=true keep_domain=false m=8 query_pow=24 folding_pow=0 mu_pow=0 digest_bytes=42 coset_leaf=true dummy=true
+NATIVE_SHA384_KEYGEN_SECONDS 0.000717598
+NATIVE_SHA384_EXT12 target=250 min=250.91518198221138 logup=329.795224314651 proximity=315.0303353508395 query=250.91518198221138
+NATIVE_SHA384_PROVE_SECONDS 98.06716195
+LEVERS_GRIND bits=24 seconds=1.8512 witness=85441619
+LEVERS_GRIND bits=24 seconds=0.0044 witness=146070
+LEVERS_GRIND bits=24 seconds=1.1655 witness=53408444
+LEVERS_GRIND bits=24 seconds=1.2231 witness=55365093
+NATIVE_SHA384_VERIFY_SECONDS 0.017734057
+NATIVE_SHA384_VERIFY_CALLS [0, 3583, 1, 185, 5, 326, 202, 4]
+NATIVE_SHA384_VERIFY_BLOCKS [0, 3583, 1, 1093, 10, 326, 692, 4] total=5709
+NATIVE_SHA384_EXT12_BYTES total=304334 gkr=20408 relations=50808 stacking=2704 whir=230347
+LEVERS_CENSUS total=304334 auth=142170 auth_digests=3385 auth_per_tree=[1126, 946, 739, 574] initial=6960 codeword=55296 final_poly=24576 whir_small=1345 whir=230347 relations=50808 column_openings_ef=920 gkr=20408 stacking=2704 stacking_openings_ef=15 other=67
+LEVERS_NEGATIVE ok=encoding-ignores-truncated-tail
+LEVERS_NEGATIVE case="initial leaf value" rejected=true
+LEVERS_NEGATIVE case="codeword leaf value (last coset element)" rejected=true
+LEVERS_NEGATIVE case="initial auth digest" rejected=true
+LEVERS_NEGATIVE case="codeword auth digest" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling removed" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling appended" rejected=true
+LEVERS_NEGATIVE case="multiproof: siblings reordered" rejected=true
+LEVERS_NEGATIVE case="query PoW witness" rejected=true
+LEVERS_NEGATIVE case="last-round query PoW witness" rejected=true
+LEVERS_NEGATIVE case="levers field mismatch" rejected=true
+LEVERS_NEGATIVE_PASS cases=10
+	Command being timed: "/tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/run.sh /tmp/claude-1002/-data-illia-nearproof/23cf1fcd-9c02-48d4-a6eb-068ac0431aed/scratchpad/g5z-h14 NEARPROOF_DUMMY=1 NEARPROOF_N_STACK=17 NEARPROOF_LOG_BLOWUP=8 NEARPROOF_K1=1 NEARPROOF_K=3 NEARPROOF_LOG_FINAL=9 NEARPROOF_LIST_M=8 NEARPROOF_COSET_LEAF=1 NEARPROOF_MULTIPROOF=1 NEARPROOF_DUMMY_LOG_HEIGHT=14 NEARPROOF_QUERY_BITS=250 NEARPROOF_QUERY_POW=24 NEARPROOF_DIGEST_BYTES=42 NEARPROOF_NEGATIVE=1"
+	User time (seconds): 662.87
+	System time (seconds): 9.73
+	Percent of CPU this job got: 684%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:38.29
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 22133112
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 10791906
+	Voluntary context switches: 38897
+	Involuntary context switches: 4424
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 880
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

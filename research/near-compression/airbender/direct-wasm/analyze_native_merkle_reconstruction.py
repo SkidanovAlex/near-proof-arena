@@ -1,4 +1,5 @@
 """Analyze the executed Merkle hash DAG, not a claimed globally optimal multiproof."""
+import sys as _sys;from pathlib import Path as _P;_sys.path.insert(0,str(_P(__file__).resolve().parents[2]/'native'));import native_paths
 from pathlib import Path
 from collections import Counter
 import gzip,hashlib,json,shutil
@@ -106,6 +107,6 @@ report=dict(status='EXECUTED_MERKLE_DAG_RECONSTRUCTION_ANALYSIS',
 if trace_path.exists():trace_path.unlink()
 shutil.copyfile('/tmp/nearproof-merkle-trace.log',OUT/'replay.log')
 for name in ['main.rs','native_sha384_config.rs']:
-    shutil.copyfile('/tmp/nearproof-native-sha384/src/'+name,OUT/name)
+    shutil.copyfile(native_paths.CRATE/'src'/name,OUT/name)
 report['artifact_sha256']={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in OUT.iterdir() if p.is_file() and p.name!='report.json'}
 (OUT/'report.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
