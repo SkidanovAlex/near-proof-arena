@@ -224,7 +224,7 @@ theorem local_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
       rw [← row_eq_natRow, ← Fp.cast_toNat (Local.space.eval (tr.row pub 9 r)), this]; rfl
     · simp
   -- the spec step
-  intro E s f tps tpl t pc S live R hin hlive ht1 hS hg64
+  intro E s f tps tpl t pc S live S_seg segb R hin hlive ht1 hS hg64
   rw [hIn] at hin
   obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
   have hpcl := R.pcLt

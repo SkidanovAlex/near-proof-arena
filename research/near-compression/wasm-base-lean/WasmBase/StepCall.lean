@@ -10,6 +10,7 @@ return at activation `cid ≠ 0` pops the frame (under D3 the operand stack is u
 the call record, restores the budget, and the callee's locals become dead.
 -/
 namespace WasmBase
+variable {S_seg segb : Nat}
 open NearSpecV3.Wasm
 set_option linter.unusedSimpArgs false
 
@@ -113,6 +114,7 @@ theorem chainMsgs_rec_slot {X : Ctx} {t : Nat} :
 end WasmBase
 
 namespace WasmBase
+variable {S_seg segb : Nat}
 open NearSpecV3.Wasm
 set_option linter.unusedSimpArgs false
 
@@ -129,18 +131,21 @@ def callState (X : Ctx) (s : St) (f : Frame) (rest : List Frame) (pc fee kc : Na
                        base := base } :: { f with pc := pc + 1 } :: rest }
 
 theorem step_call_spec (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {fi fee kc : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {fi fee kc : Nat}
     (hins : (X.pfOf E.k).code[pc]? = some (.call fi))
     (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
     (hkc : kc < X.nf) (hfi : X.fnOf kc + X.p.m.imports.size = fi)
-    (hg : X.R * (S + (fee + (X.ckOf kc).prologue)) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (hg : X.R * (S + (fee + (X.ckOf kc).prologue) - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64)
     (hrem : (X.pfOf kc).stackCharge ≤ s.stackRem) :
     step X.cfg X.p s = .cont (callState X s f E.rest pc fee kc) := by
   have CFc := X.factsOf hkc
   have hgas := R.gas
   have hpro := CFc.prologue
-  have hg1 : X.R * (S + fee) ≤ X.g0 := by
-    have : X.R * (S + fee) ≤ X.R * (S + (fee + (X.ckOf kc).prologue)) := Nat.mul_le_mul_left _ (by omega)
+  have hpro' : X.R * (X.ckOf kc).prologue = (X.pfOf kc).prologueGas := by
+    unfold Ctx.R; rw [Nat.mul_comm]; exact hpro
+  have hg1 : X.R * (S + fee - S_seg) ≤ segb := by
+    have : X.R * (S + fee - S_seg) ≤ X.R * (S + (fee + (X.ckOf kc).prologue) - S_seg) :=
+      Nat.mul_le_mul_left _ (by omega)
     omega
   rw [step_eq_exec X R hins hfee hg1 hg64]
   simp only [exec]
@@ -151,12 +156,22 @@ theorem step_call_spec (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
   rw [show fi - X.p.m.imports.size = X.fnOf kc by omega, CFc.func]
   simp only [setFrame, R.frames, R.pcEq]
   rw [if_neg (by omega)]
-  have hpro' : X.R * (X.ckOf kc).prologue = (X.pfOf kc).prologueGas := by
-    unfold Ctx.R; rw [Nat.mul_comm]; exact hpro
   have e1 : X.R * (S + (fee + (X.ckOf kc).prologue)) = X.R * S + X.R * fee + X.R * (X.ckOf kc).prologue := by
     rw [Nat.mul_add, Nat.mul_add, Nat.add_assoc]
+  have hgl : X.R * fee + (X.pfOf kc).prologueGas ≤ s.gas.g := by
+    have h1 := R.gas
+    have hm : X.R * (S + (fee + (X.ckOf kc).prologue) - S_seg) =
+        X.R * (S - S_seg) + X.R * fee + X.R * (X.ckOf kc).prologue := by
+      rw [← Nat.mul_add, ← Nat.mul_add]; congr 1
+      have := R.segLt; omega
+    rw [hm, hpro'] at hg
+    omega
+  have hgs : s.gas.g ≤ segb := by
+    have h1 := R.gas; omega
   have hamt : ¬ (0 * (Fee.const (X.pfOf kc).prologueGas).l + (Fee.const (X.pfOf kc).prologueGas).c ≥ u64Bound) := by
     simp only [Fee.const, Nat.zero_mul, Nat.zero_add, u64Bound]
+    rw [← hpro']
+    have h2 := R.segbLt
     omega
   have hle : ¬ (0 * (Fee.const (X.pfOf kc).prologueGas).l + (Fee.const (X.pfOf kc).prologueGas).c > s.gas.g - X.R * fee) := by
     simp only [Fee.const, Nat.zero_mul, Nat.zero_add]
@@ -167,6 +182,7 @@ theorem step_call_spec (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
 end WasmBase
 
 namespace WasmBase
+variable {S_seg segb : Nat}
 open NearSpecV3.Wasm
 set_option linter.unusedSimpArgs false
 
@@ -177,11 +193,11 @@ set_option maxHeartbeats 1600000 in
 /-- **`call`**: the relation moves to the callee (`kc`, local pc 0, activation id `t`, base
 `size − np`), with the caller saved on the chain. -/
 theorem step_call (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {fi fee kc : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {fi fee kc : Nat}
     (hins : (X.pfOf E.k).code[pc]? = some (.call fi))
     (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
     (hkc : kc < X.nf) (hfi : X.fnOf kc + X.p.m.imports.size = fi)
-    (hg : X.R * (S + (fee + (X.ckOf kc).prologue)) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (hg : X.R * (S + (fee + (X.ckOf kc).prologue) - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64)
     (hrem : (X.pfOf kc).stackCharge ≤ s.stackRem)
     (hsbL : s.stack.size - (X.pfOf kc).type.params.size < 2 ^ 28) (htL : t < 2 ^ 28)
     {tpb : Nat} (hbud : live (budMsg s.stackRem tpb)) :
@@ -196,7 +212,7 @@ theorem step_call (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Na
           (localView (16 + t) (s.stack.extract (s.stack.size - (X.pfOf kc).type.params.size) s.stack.size ++
               (X.pfOf kc).locals.map Val.default) (fun _ => t) ++
             [callMsg t (X.offOf E.k + (pc + 1)) E.sb E.cid (X.pfOf kc).stackCharge t,
-             budMsg (s.stackRem - (X.pfOf kc).stackCharge) t])) := by
+             budMsg (s.stackRem - (X.pfOf kc).stackCharge) t])) S_seg segb := by
   refine ⟨step_call_spec X R hins hfee hkc hfi hg hg64 hrem, ?_⟩
   have CFc := X.factsOf hkc
   obtain ⟨ls0, hL0, hfl0⟩ := R.labels
@@ -278,8 +294,21 @@ theorem step_call (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Na
         (X.pfOf kc).type.params.size + (X.pfOf kc).locals.size
       simp only [Array.size_append, Array.size_extract, Array.size_map, Nat.min_self]; omega
     gas := by
-      show X.R * (S + (fee + (X.ckOf kc).prologue)) + (s.gas.g - X.R * fee - (X.pfOf kc).prologueGas) = X.g0
-      omega
+      show X.R * (S + (fee + (X.ckOf kc).prologue) - S_seg) +
+        (s.gas.g - X.R * fee - (X.pfOf kc).prologueGas) = segb
+      have hle : X.R * fee + (X.pfOf kc).prologueGas ≤ s.gas.g := by
+        have h1 := R.gas
+        have harg : S + (fee + (X.ckOf kc).prologue) - S_seg =
+            (S - S_seg) + (fee + (X.ckOf kc).prologue) := by
+          have := R.segLt; omega
+        have ha : X.R * (S + (fee + (X.ckOf kc).prologue) - S_seg) =
+            X.R * (S - S_seg) + X.R * fee + (X.pfOf kc).prologueGas := by
+          rw [harg, Nat.mul_add, Nat.mul_add, hpro']; omega
+        rw [ha] at hg
+        omega
+      exact R.gas_call hpro' hle
+    segLt := by have := R.segLt; omega
+    segbLt := R.segbLt
     numS := by
       intro i hi
       have hi' : i < base := by
@@ -417,6 +446,7 @@ theorem step_call (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Na
 end WasmBase
 
 namespace WasmBase
+variable {S_seg segb : Nat}
 open NearSpecV3.Wasm
 set_option linter.unusedSimpArgs false
 
@@ -427,7 +457,7 @@ the caller's stack plus the results (D3), the call record `m` and the budget reg
 and the budget is restored.  The relation moves to the caller (the chain head), and the callee's
 locals become dead. -/
 theorem return_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) (fee kp : Nat) (hg : X.R * (S + fee) ≤ X.g0)
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) (fee kp : Nat) (hg : X.R * (S + fee - S_seg) ≤ segb)
     (hcid : E.cid ≠ 0) (hkp : kp ≤ s.stack.size - E.sb)
     (har : s.stack.size - kp = E.sb + (X.pfOf E.k).type.results.size)
     {m : Msg} (hm : live m) (hms : m.space = 4) (hmsl : m.slot = E.cid)
@@ -437,12 +467,11 @@ theorem return_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
     (hs'rem : s'.stackRem = s.stackRem + (X.pfOf E.k).stackCharge) :
     ∃ (fc : Frame) (rest' : List Frame) (c : Saved), E.rest = fc :: rest' ∧
       m = callMsg E.cid (X.offOf c.k + fc.pc) c.sb c.cid (X.pfOf E.k).stackCharge c.tpc ∧
-      Rel X s' (t + 1) c.k fc.pc (S + fee) c.sb c.cid
-        (stepLive live
+      Rel X s' (t + 1) c.k fc.pc (S + fee) c.sb c.cid (stepLive live
           ((List.range kp).map (fun d => enc 0 (s.stack.size - kp + d)
               (s.stack[s.stack.size - kp + d]?.getD default) (tps (s.stack.size - kp + d))) ++
             [m, budMsg s.stackRem tpb])
-          [budMsg (s.stackRem + (X.pfOf E.k).stackCharge) t]) := by
+          [budMsg (s.stackRem + (X.pfOf E.k).stackCharge) t]) S_seg segb := by
   obtain ⟨sv, hch, hin, hout, hrl⟩ := R.calls.chain
   obtain ⟨tpb0, htpb0, hbudE⟩ := R.calls.budget
   have hcidT := R.calls.cidLtT
@@ -526,10 +555,9 @@ theorem return_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
       show (X.ckOf c.k).heights[fc.pc]? = some (s'.stack.size - c.sb)
       rw [hs'stk, hext, c9]; congr 1; omega
     nloc := c10
-    gas := by
-      rw [hs'g]
-      have : X.R * (S + fee) = X.R * S + X.R * fee := Nat.mul_add _ _ _
-      omega
+    gas := R.step_gas hg hs'g
+    segLt := by have := R.segLt; omega
+    segbLt := R.segbLt
     numS := by
       intro i hi
       rw [hs'stk, hext] at hi
@@ -667,6 +695,7 @@ theorem return_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
 end WasmBase
 
 namespace WasmBase
+variable {S_seg segb : Nat}
 open NearSpecV3.Wasm
 set_option linter.unusedSimpArgs false
 
@@ -686,18 +715,17 @@ theorem doReturn_cons (X : Ctx) {k : Nat} (hkn : k < X.nf) (s : St) (f fc : Fram
 /-- **Return from a callee** (`end` of the body, `return`, `br` to the function label at
 activation `cid ≠ 0`). -/
 theorem step_return (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {ins : Instr} {fee : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {ins : Instr} {fee : Nat}
     (hins : (X.pfOf E.k).code[pc]? = some ins)
     (hkind : (ins = .end_ ∧ f.labels.length = 1) ∨ ins = .ret ∨ (∃ l, ins = .br l ∧ l + 1 ≥ f.labels.length))
     (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
-    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) (hcid : E.cid ≠ 0)
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64) (hcid : E.cid ≠ 0)
     {m : Msg} (hm : live m) (hms : m.space = 4) (hmsl : m.slot = E.cid)
     {tpb : Nat} (hmb : live (budMsg s.stackRem tpb)) :
     ∃ (fc : Frame) (rest' : List Frame) (c : Saved), E.rest = fc :: rest' ∧
       m = callMsg E.cid (X.offOf c.k + fc.pc) c.sb c.cid (X.pfOf E.k).stackCharge c.tpc ∧
       ∃ s', step X.cfg X.p s = .cont s' ∧
-        Rel X s' (t + 1) c.k fc.pc (S + fee) c.sb c.cid
-          (stepLive live [m, budMsg s.stackRem tpb] [budMsg (s.stackRem + (X.pfOf E.k).stackCharge) t]) := by
+        Rel X s' (t + 1) c.k fc.pc (S + fee) c.sb c.cid (stepLive live [m, budMsg s.stackRem tpb] [budMsg (s.stackRem + (X.pfOf E.k).stackCharge) t]) S_seg segb := by
   have hv := (X.factsOf R.kLt).verify pc R.pcLt
   obtain ⟨ls0, hL0, hfl⟩ := R.labels
   have hH := R.height
@@ -734,6 +762,7 @@ theorem step_return (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → 
 end WasmBase
 
 namespace WasmBase
+variable {S_seg segb : Nat}
 open NearSpecV3.Wasm
 set_option linter.unusedSimpArgs false
 
@@ -746,19 +775,18 @@ theorem pop_eq_extract (a : Array Val) : a.pop = a.extract 0 (a.size - 1) := by
 /-- **`br_if` to the function label at activation `cid ≠ 0`**: taken, it returns to the caller;
 not taken, it continues at `pc + 1`. -/
 theorem step_returnIf (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {l fee : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {l fee : Nat}
     (hl : l + 1 ≥ f.labels.length)
     (hins : (X.pfOf E.k).code[pc]? = some (.brIf l)) (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
-    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) (hcid : E.cid ≠ 0)
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64) (hcid : E.cid ≠ 0)
     (mc : Msg) (hmc : live mc) (sc : mc.space = 0 ∧ mc.slot = s.stack.size - 1) :
     (mc.val ≠ 0 → ∀ {m : Msg}, live m → m.space = 4 → m.slot = E.cid → ∀ {tpb : Nat}, live (budMsg s.stackRem tpb) →
       ∃ (fc : Frame) (rest' : List Frame) (c : Saved), E.rest = fc :: rest' ∧
         m = callMsg E.cid (X.offOf c.k + fc.pc) c.sb c.cid (X.pfOf E.k).stackCharge c.tpc ∧
         ∃ s', step X.cfg X.p s = .cont s' ∧
-          Rel X s' (t + 1) c.k fc.pc (S + fee) c.sb c.cid
-            (stepLive live [mc, m, budMsg s.stackRem tpb] [budMsg (s.stackRem + (X.pfOf E.k).stackCharge) t])) ∧
+          Rel X s' (t + 1) c.k fc.pc (S + fee) c.sb c.cid (stepLive live [mc, m, budMsg s.stackRem tpb] [budMsg (s.stackRem + (X.pfOf E.k).stackCharge) t]) S_seg segb) ∧
     (mc.val = 0 → ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [mc] [])) := by
+      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [mc] []) S_seg segb) := by
   have hv := (X.factsOf R.kLt).verify pc R.pcLt
   obtain ⟨ls0, hL0, hfl⟩ := R.labels
   have hH := R.height
@@ -829,11 +857,12 @@ theorem step_returnIf (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
 end WasmBase
 
 namespace WasmBase
+variable {S_seg segb : Nat}
 open NearSpecV3.Wasm
 
 /-- A live call record of the current activation is the chain head's record. -/
 theorem RelW.call_rec {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) (hcid : E.cid ≠ 0)
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) (hcid : E.cid ≠ 0)
     {m : Msg} (hm : live m) (hms : m.space = 4) (hmsl : m.slot = E.cid) :
     ∃ (fc : Frame) (rest' : List Frame) (c : Saved), E.rest = fc :: rest' ∧
       m = callMsg E.cid (X.offOf c.k + fc.pc) c.sb c.cid (X.pfOf E.k).stackCharge c.tpc := by

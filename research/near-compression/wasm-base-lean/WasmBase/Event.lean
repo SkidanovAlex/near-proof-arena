@@ -351,9 +351,15 @@ theorem CallsOK.mono {X : Ctx} {E E' : Env} {s s' : St} {t t' : Nat} (C : CallsO
     · exact Or.inr ⟨d1, by omega, d3, d4⟩
 
 /-- **The simulation relation** between a spec state and the AIR view at time `t` (design note:
-results/pq-wasm-base/README.md §10). -/
+results/pq-wasm-base/README.md §10).
+
+`S_seg` and `segb` delimit the current **gas segment** (JOIN-INTERFACE.md §4.2a): the instruction
+counter at the last host boundary and the budget the state side fixed there.  Between host calls
+the budget satisfies `R · (S − S_seg) + g = segb`; a host call resynchronises `g := remaining` and
+starts a new segment (`S_seg := S`, `segb := g_after`).  With `S_seg = 0`, `segb = g0` this is the
+original invariant `R · S + g = g0`, recovered by `RelW.gas_from_zero`. -/
 structure RelW (X : Ctx) (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) (t pc S : Nat)
-    (live : Msg → Prop) : Prop where
+    (live : Msg → Prop) (S_seg segb : Nat) : Prop where
   frames : s.frames = f :: E.rest
   kLt : E.k < X.nf
   fn : f.fn = X.fnOf E.k
@@ -364,7 +370,12 @@ structure RelW (X : Ctx) (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) 
   sbLe : E.sb ≤ s.stack.size
   height : (X.ckOf E.k).heights[pc]? = some (s.stack.size - E.sb)
   nloc : f.locals.size = (X.pfOf E.k).type.params.size + (X.pfOf E.k).locals.size
-  gas : X.R * S + s.gas.g = X.g0
+  /-- The per-segment gas invariant: `S_seg ≤ S` and `R · (S − S_seg) + g = segb`. -/
+  gas : X.R * (S - S_seg) + s.gas.g = segb
+  /-- The segment starts at or before the current instruction counter. -/
+  segLt : S_seg ≤ S
+  /-- The segment budget is a 64-bit budget (the HOSTR response limbs bound it). -/
+  segbLt : segb < 2 ^ 64
   numS : ∀ i, i < s.stack.size → isNum (s.stack[i]?.getD default)
   numL : ∀ j, j < f.locals.size → isNum (f.locals[j]?.getD default)
   tpsLt : ∀ i, i < s.stack.size → tps i < t
@@ -382,13 +393,78 @@ structure RelW (X : Ctx) (E : Env) (s : St) (f : Frame) (tps tpl : Nat → Nat) 
   live : ∀ x, live x ↔ x ∈ stackView s.stack tps ∨ x ∈ localView E.lsp f.locals tpl ∨ E.live x
 
 /-- The relation with the frame data existential; `sb`/`cid` are the AIR state's, `k` the checked
-function and `pc` the local pc (the AIR's global pc is `X.offOf k + pc`). -/
-def Rel (X : Ctx) (s : St) (t k pc S sb cid : Nat) (live : Msg → Prop) : Prop :=
-  ∃ E f tps tpl, E.sb = sb ∧ E.cid = cid ∧ E.k = k ∧ RelW X E s f tps tpl t pc S live
+function and `pc` the local pc (the AIR's global pc is `X.offOf k + pc`).  `S_seg`/`segb` delimit the
+current gas segment (see `RelW`). -/
+def Rel (X : Ctx) (s : St) (t k pc S sb cid : Nat) (live : Msg → Prop) (S_seg segb : Nat) : Prop :=
+  ∃ E f tps tpl, E.sb = sb ∧ E.cid = cid ∧ E.k = k ∧ RelW X E s f tps tpl t pc S live S_seg segb
+
+/-- **The old global gas invariant** in the no-host case (`S_seg = 0`, `segb = g0`): this is exactly
+`wasm_base_sound`'s conclusion, and it is the specialisation of the per-segment invariant at the
+start of a run. -/
+theorem RelW.gas_global {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live 0 X.g0) : X.R * S + s.gas.g = X.g0 := by
+  simpa using R.gas
+
+/-- A `RelW` whose gas field is the old global form `R · S + g = g0` is a `RelW` at the initial
+segment `(0, g0)`.  This is how constructions written against the original invariant (e.g. the entry
+relation) feed the generalised one. -/
+theorem RelW.of_global {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} (h : RelW X E s f tps tpl t pc S live 0 X.g0) : X.R * S + s.gas.g = X.g0 :=
+  h.gas_global
+
+theorem Rel.gas_global {X : Ctx} {s : St} {t k pc S sb cid : Nat} {live : Msg → Prop}
+    (R : Rel X s t k pc S sb cid live 0 X.g0) : X.R * S + s.gas.g = X.g0 := by
+  obtain ⟨E, f, tps, tpl, -, -, -, h⟩ := R
+  exact h.gas_global
+
+/-- The segment's remaining budget covers this instruction's gas (the charge succeeds).  With
+`S_seg = 0`, `segb = g0` this is the old `R · (S + fee) ≤ g0`. -/
+theorem RelW.charge_ok {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} {S_seg segb fee : Nat} (R : RelW X E s f tps tpl t pc S live S_seg segb)
+    (hg : X.R * (S + fee - S_seg) ≤ segb) : X.R * fee ≤ s.gas.g := by
+  have h1 := R.gas
+  have h2 := R.segLt
+  have hs := R.segLt
+  have hm : X.R * (S + fee - S_seg) = X.R * (S - S_seg) + X.R * fee := by
+    rw [← Nat.mul_add]; congr 1; omega
+  omega
+
+/-- A step that keeps the segment (`S_seg`, `segb` fixed) while `S` advances by `fee`. -/
+theorem RelW.step_gas {X : Ctx} {E : Env} {s s' : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} {S_seg segb fee : Nat} (R : RelW X E s f tps tpl t pc S live S_seg segb)
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hgg : s'.gas.g = s.gas.g - X.R * fee) :
+    X.R * (S + fee - S_seg) + s'.gas.g = segb := by
+  rw [hgg]
+  have h1 := R.gas
+  have h2 := R.charge_ok hg
+  have hs := R.segLt
+  have hm : X.R * (S + fee - S_seg) = X.R * (S - S_seg) + X.R * fee := by
+    rw [← Nat.mul_add]; congr 1; omega
+  omega
+
+/-- Splitting the gas advance of one step at a segment start `S_seg ≤ S`. -/
+theorem seg_mul {R S S_seg fee p : Nat} (h : S_seg ≤ S) :
+    R * (S + (fee + p) - S_seg) = R * (S - S_seg) + (R * fee + R * p) := by
+  have harg : S + (fee + p) - S_seg = (S - S_seg) + (fee + p) := by omega
+  rw [harg, Nat.mul_add, Nat.mul_add]
+
+/-- The gas arithmetic of a `call`: advancing `S` by `fee + p` while the state charges
+`X.R · fee + pro` (with `pro = X.R · p`) keeps the segment invariant. -/
+theorem RelW.gas_call {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
+    {live : Msg → Prop} {S_seg segb fee p pro : Nat} (R : RelW X E s f tps tpl t pc S live S_seg segb)
+    (hpro : X.R * p = pro) (hle : X.R * fee + pro ≤ s.gas.g) :
+    X.R * (S + (fee + p) - S_seg) + (s.gas.g - X.R * fee - pro) = segb := by
+  have harg : S + (fee + p) - S_seg = (S - S_seg) + (fee + p) := by
+    have := R.segLt; omega
+  have ha : X.R * (S + (fee + p) - S_seg) = X.R * (S - S_seg) + X.R * fee + X.R * p := by
+    rw [harg, Nat.mul_add, Nat.mul_add, hpro]; omega
+  rw [ha]
+  have h1 := R.gas
+  omega
 
 /-- A live stack message at slot `i` is the encoding of stack entry `i`. -/
 theorem RelW.stack_msg {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {x : Msg} (hx : live x)
+    {live : Msg → Prop} {S_seg segb : Nat} (R : RelW X E s f tps tpl t pc S live S_seg segb) {x : Msg} (hx : live x)
     (hs : x.space = 0) (hi : x.slot < s.stack.size) :
     x = enc 0 x.slot (s.stack[x.slot]?.getD default) (tps x.slot) := by
   rcases (R.live x).mp hx with h | h | h
@@ -399,7 +475,7 @@ theorem RelW.stack_msg {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
   · exact absurd hs (R.envSep x h).1
 
 theorem RelW.local_msg {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {x : Msg} (hx : live x)
+    {live : Msg → Prop} {S_seg segb : Nat} (R : RelW X E s f tps tpl t pc S live S_seg segb) {x : Msg} (hx : live x)
     (hs : x.space = E.lsp) (hj : x.slot < f.locals.size) :
     x = enc E.lsp x.slot (f.locals[x.slot]?.getD default) (tpl x.slot) := by
   rcases (R.live x).mp hx with h | h | h

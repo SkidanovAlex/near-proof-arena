@@ -86,7 +86,7 @@ theorem const_rowfacts {X : Ctx} {nloc ncode : Nat} {pub : List F} {tr : Trace}
   · rw [hProd, hIn]; simp only [List.mem_cons, List.mem_nil_iff, or_false, forall_eq, lvl,
       List.getD_cons_succ, List.getD_cons_zero]; exact ⟨hcP _, trivial⟩
   -- the spec step
-  intro E s f tps tpl t pc S live R hin _ ht1 hS hg64
+  intro E s f tps tpl t pc S live S_seg segb R hin _ ht1 hS hg64
   rw [hIn] at hin
   obtain ⟨i0, i1, i2, -, i4, i5⟩ := stMsg_cons hin
   have hpcl := R.pcLt

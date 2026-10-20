@@ -10,13 +10,15 @@ consumes the value, the address and the `w` old byte messages and produces the n
 `pe` (other spaces), with the outer live set updated accordingly.
 -/
 namespace WasmBase
+
+variable {S_seg segb : Nat}
 open NearSpecV3.Wasm
 set_option linter.unusedSimpArgs false
 set_option maxHeartbeats 1000000
 
 /-- A live message outside space 0 and the current locals space is an outer message. -/
 theorem RelW.env_msg {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {x : Msg} (hx : live x)
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {x : Msg} (hx : live x)
     (h0 : x.space ≠ 0) (h1 : x.space ≠ E.lsp) : E.live x := by
   rcases (R.live x).mp hx with h | h | h
   · obtain ⟨i, _, rfl⟩ := mem_stackView.mp h; exact absurd rfl h0
@@ -26,7 +28,7 @@ theorem RelW.env_msg {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat →
 /-- The successor relation of a straight-line instruction that also consumes the outer messages
 `ce` and produces `pe` (in spaces other than 0 and the locals space). -/
 theorem straight_rel_env (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S fee k : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb)
     (hk : k ≤ s.stack.size) (stk' locs' : Array Val) (J : Option Nat)
     (keep : ∀ i, i < s.stack.size - k → stk'[i]? = s.stack[i]?) (hsz : s.stack.size - k ≤ stk'.size)
     (hnum : ∀ i, i < stk'.size → isNum (stk'[i]?.getD default))
@@ -36,7 +38,7 @@ theorem straight_rel_env (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat
     (hnext : pc + 1 < (X.pfOf E.k).code.size)
     (hL : ∃ ls, (X.ckOf E.k).labels[pc + 1]? = some ls ∧ f.labels = shiftLabels E.sb ls)
     (hsb : E.sb ≤ stk'.size) (hH : (X.ckOf E.k).heights[pc + 1]? = some (stk'.size - E.sb))
-    (hgs : X.R * (S + fee) ≤ X.g0)
+    (hgs : X.R * (S + fee - S_seg) ≤ segb)
     (s' : St) (hs'stk : s'.stack = stk') (hs'fr : s'.frames = { f with pc := pc + 1, locals := locs' } :: E.rest)
     (hs'g : s'.gas.g = s.gas.g - X.R * fee)
     (hs'rem : s'.stackRem = s.stackRem)
@@ -52,7 +54,7 @@ theorem straight_rel_env (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat
           J.toList.map (fun j => enc E.lsp j (f.locals[j]?.getD default) (tpl j))) ++ ce)
         ((((List.range (stk'.size - (s.stack.size - k))).map fun d =>
             enc 0 (s.stack.size - k + d) (stk'[s.stack.size - k + d]?.getD default) t) ++
-          J.toList.map (fun j => enc E.lsp j (locs'[j]?.getD default) t)) ++ pe)) where
+          J.toList.map (fun j => enc E.lsp j (locs'[j]?.getD default) t)) ++ pe)) S_seg segb where
   frames := hs'fr
   kLt := R.kLt
   fn := R.fn
@@ -63,10 +65,9 @@ theorem straight_rel_env (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat
   sbLe := by rw [hs'stk]; exact hsb
   height := by rw [hs'stk]; exact hH
   nloc := by simp [lsz, R.nloc]
-  gas := by
-    have hg := R.gas
-    have : X.R * (S + fee) = X.R * S + X.R * fee := Nat.mul_add _ _ _
-    rw [hs'g]; omega
+  gas := R.step_gas hgs hs'g
+  segLt := by have := R.segLt; omega
+  segbLt := R.segbLt
   numS := by rw [hs'stk]; exact hnum
   numL := lnum
   tpsLt := by
@@ -291,19 +292,18 @@ theorem exec_load (cfg : NearCfg) (p : Prepared) (s : St) (f : Frame) (pf : PFun
 memory messages, so they carry the current bytes and are in bounds (no trap); the result replaces
 the address; the byte messages are produced again with time `t`. -/
 theorem step_load (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb)
     {op al off fee : Nat} (hins : (X.pfOf E.k).code[pc]? = some (.load op al off)) (hop : isLoadOp op = true)
     (hoff : off < 2 ^ 32)
-    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64)
     (ma : Msg) (hma : live ma) (sa : ma.space = 0 ∧ ma.slot = s.stack.size - 1)
     (ea : Nat) (hea : ma.ok → ma.val + off = ea)
     (bv tb : Nat → Nat) (hmb : ∀ i, i < (loadSpec op).1 → live (encB (ea + i) (bv i) (tb i)))
     (mr : Msg)
     (hmr : (∀ i, i < (loadSpec op).1 → bv i < 256) →
       mr = enc 0 (s.stack.size - 1) (loadVal op (leVal bv 0 (loadSpec op).1)) t) :
-    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid
-      (stepLive live (ma :: (List.range (loadSpec op).1).map fun i => encB (ea + i) (bv i) (tb i))
-        (mr :: (List.range (loadSpec op).1).map fun i => encB (ea + i) (bv i) t)) := by
+    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live (ma :: (List.range (loadSpec op).1).map fun i => encB (ea + i) (bv i) (tb i))
+        (mr :: (List.range (loadSpec op).1).map fun i => encB (ea + i) (bv i) t)) S_seg segb := by
   have F := (X.factsOf R.kLt)
   obtain ⟨ls0, hL, hfl⟩ := R.labels
   have hH := R.height
@@ -405,18 +405,17 @@ theorem byte_of_mod (v w i : Nat) (hi : i < w) : v % 256 ^ w / 256 ^ i % 256 = v
 are live memory messages (current bytes, in bounds: no trap); the new byte messages carry the bytes
 of the value. -/
 theorem step_store (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb)
     {op al off fee : Nat} (hins : (X.pfOf E.k).code[pc]? = some (.store op al off)) (hop : isStoreOp op = true)
     (hoff : off < 2 ^ 32)
-    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee) (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64)
     (mv ma : Msg) (hmv : live mv) (hma : live ma)
     (sv : mv.space = 0 ∧ mv.slot = s.stack.size - 1) (sa : ma.space = 0 ∧ ma.slot = s.stack.size - 2)
     (ea : Nat) (hea : ma.ok → ma.val + off = ea)
     (bv tb nb : Nat → Nat) (hmb : ∀ i, i < storeWidth op → live (encB (ea + i) (bv i) (tb i)))
     (hnb : mv.ok → ∀ i, i < storeWidth op → nb i = mv.val / 256 ^ i % 256) :
-    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid
-      (stepLive live (mv :: ma :: (List.range (storeWidth op)).map fun i => encB (ea + i) (bv i) (tb i))
-        ((List.range (storeWidth op)).map fun i => encB (ea + i) (nb i) t)) := by
+    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live (mv :: ma :: (List.range (storeWidth op)).map fun i => encB (ea + i) (bv i) (tb i))
+        ((List.range (storeWidth op)).map fun i => encB (ea + i) (nb i) t)) S_seg segb := by
   have F := (X.factsOf R.kLt)
   obtain ⟨ls0, hL, hfl⟩ := R.labels
   have hH := R.height
@@ -566,14 +565,14 @@ theorem heap_glob {E : Env} {s s' : St} {t x : Nat} (H : HeapOK E s t) (hpg : s'
 
 /-- **global.get**: the global's live message is consumed and produced again; its value is pushed. -/
 theorem step_globalGet (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {x fee : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {x fee : Nat}
     (hins : (X.pfOf E.k).code[pc]? = some (.globalGet x)) (hx : x < 2 ^ 16)
     (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
-    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64)
     (mg : Msg) (hmg : live mg) (sg : mg.space = 2 ∧ mg.slot = x) (mo ms : Msg)
     (hmo : mg.ok → mo = enc 2 x mg.toVal t) (hms : mg.ok → ms = enc 0 s.stack.size mg.toVal t) :
     ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [mg] [ms, mo]) := by
+      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [mg] [ms, mo]) S_seg segb := by
   obtain ⟨ls0, hL, hfl⟩ := R.labels
   have hsbR := R.sbLe
   obtain ⟨-, hnext, hL1, hH1⟩ := verify_straight X R.kLt R.pcLt hins hL R.height (pops := 0) (pushes := 1)
@@ -629,15 +628,15 @@ theorem step_globalGet (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
 /-- **global.set**: the stack top and the global's live message are consumed; the global's new
 message carries the value. -/
 theorem step_globalSet (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {x fee : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {x fee : Nat}
     (hins : (X.pfOf E.k).code[pc]? = some (.globalSet x)) (hx : x < 2 ^ 16)
     (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
-    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64)
     (mv mg mo : Msg) (hmv : live mv) (hmg : live mg)
     (sv : mv.space = 0 ∧ mv.slot = s.stack.size - 1) (sg : mg.space = 2 ∧ mg.slot = x)
     (hmo : mv.ok → mo = enc 2 x mv.toVal t) :
     ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [mv, mg] [mo]) := by
+      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [mv, mg] [mo]) S_seg segb := by
   obtain ⟨ls0, hL, hfl⟩ := R.labels
   have hsbR := R.sbLe
   obtain ⟨h1, hnext, hL1, hH1⟩ := verify_straight X R.kLt R.pcLt hins hL R.height (pops := 1) (pushes := 0)

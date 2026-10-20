@@ -7,15 +7,18 @@ gas check `R · S_final ≤ g0` bounds every intermediate sum.  `straight_rel`: 
 relation for instructions that keep the label stack and move to `pc + 1`.
 -/
 namespace WasmBase
+
+variable {S_seg segb : Nat}
 open NearSpecV3.Wasm
 set_option linter.unusedSimpArgs false
 
 theorem step_eq_exec (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {ins : Instr} {fee : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {ins : Instr} {fee : Nat}
     (hins : (X.pfOf E.k).code[pc]? = some ins) (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
-    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) :
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64) :
     step X.cfg X.p s = exec X.cfg X.p { s with gas := { s.gas with g := s.gas.g - X.R * fee } } f (X.pfOf E.k) ins := by
   have hgas := R.gas
+  have hle62 := R.charge_ok hg
   have hpf : X.p.funcs[f.fn]? = some (X.pfOf E.k) := by rw [R.fn]; exact (X.factsOf R.kLt).func
   have hcode : (X.pfOf E.k).code[f.pc]? = some ins := by rw [R.pcEq]; exact hins
   cases hg' : (X.pfOf E.k).gas[pc]? with
@@ -40,16 +43,16 @@ theorem step_eq_exec (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat →
         have hge : (X.pfOf E.k).gas[f.pc]? = some (some (k, fe)) := by rw [R.pcEq]; exact hg'
         have hamt : ∀ n, n * fe.l + fe.c = X.R * fee := by intro n; rw [hl, hc]; simp
         have hlt : ¬ (X.R * fee ≥ u64Bound) := by
-          unfold u64Bound; have := Nat.mul_le_mul_left X.R (Nat.le_add_left fee S); omega
-        have hle : ¬ (X.R * fee > s.gas.g) := by
-          have : X.R * (S + fee) = X.R * S + X.R * fee := Nat.mul_add _ _ _
+          have := R.segbLt
+          unfold u64Bound
           omega
+        have hle : ¬ (X.R * fee > s.gas.g) := by omega
         simp only [step, R.frames, hpf, hcode, hge, charge, hamt, hlt, hle, ite_false]
       · simp at hfee
 
 /-- The live-set part of `straight_rel` (no heap facts needed). -/
 theorem straight_live (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S k : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb)
     (hk : k ≤ s.stack.size) (stk' locs' : Array Val) (J : Option Nat)
     (keep : ∀ i, i < s.stack.size - k → stk'[i]? = s.stack[i]?) (hsz : s.stack.size - k ≤ stk'.size)
     (lsz : locs'.size = f.locals.size) (lkeep : ∀ j, some j ≠ J → locs'[j]? = f.locals[j]?)
@@ -112,7 +115,7 @@ theorem straight_live (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
 /-- The view relation after an instruction that keeps the labels, moves to `pc + 1`, pops `k` stack
 entries and pushes the entries of `stk'` beyond `n - k`, and changes locals at most at `J`. -/
 theorem straight_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S fee k : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live)
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb)
     (hk : k ≤ s.stack.size) (stk' locs' : Array Val) (J : Option Nat)
     (keep : ∀ i, i < s.stack.size - k → stk'[i]? = s.stack[i]?) (hsz : s.stack.size - k ≤ stk'.size)
     (hnum : ∀ i, i < stk'.size → isNum (stk'[i]?.getD default))
@@ -122,7 +125,7 @@ theorem straight_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat →
     (hnext : pc + 1 < (X.pfOf E.k).code.size)
     (hL : ∃ ls, (X.ckOf E.k).labels[pc + 1]? = some ls ∧ f.labels = shiftLabels E.sb ls)
     (hsb : E.sb ≤ stk'.size) (hH : (X.ckOf E.k).heights[pc + 1]? = some (stk'.size - E.sb))
-    (hgs : X.R * (S + fee) ≤ X.g0)
+    (hgs : X.R * (S + fee - S_seg) ≤ segb)
     (s' : St) (hs'stk : s'.stack = stk') (hs'fr : s'.frames = { f with pc := pc + 1, locals := locs' } :: E.rest)
     (hs'g : s'.gas.g = s.gas.g - X.R * fee) (hs'pg : s'.pages = s.pages)
     (hs'gl : s'.globals = s.globals) (hs'rem : s'.stackRem = s.stackRem) :
@@ -135,7 +138,7 @@ theorem straight_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat →
           J.toList.map (fun j => enc E.lsp j (f.locals[j]?.getD default) (tpl j)))
         (((List.range (stk'.size - (s.stack.size - k))).map fun d =>
             enc 0 (s.stack.size - k + d) (stk'[s.stack.size - k + d]?.getD default) t) ++
-          J.toList.map (fun j => enc E.lsp j (locs'[j]?.getD default) t))) where
+          J.toList.map (fun j => enc E.lsp j (locs'[j]?.getD default) t))) S_seg segb where
   frames := hs'fr
   kLt := R.kLt
   fn := R.fn
@@ -146,10 +149,9 @@ theorem straight_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat →
   sbLe := by rw [hs'stk]; exact hsb
   height := by rw [hs'stk]; exact hH
   nloc := by simp [lsz, R.nloc]
-  gas := by
-    have hg := R.gas
-    have : X.R * (S + fee) = X.R * S + X.R * fee := Nat.mul_add _ _ _
-    rw [hs'g]; omega
+  gas := R.step_gas hgs hs'g
+  segLt := by have := R.segLt; omega
+  segbLt := R.segbLt
   numS := by rw [hs'stk]; exact hnum
   numL := lnum
   tpsLt := by

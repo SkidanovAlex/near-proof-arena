@@ -6,17 +6,19 @@ Labels are static (`CheckOut.labels`); under the no-discard condition (D3) branc
 stack unchanged, so the AIR's CTRL row only moves the pc (and pops the `br_if` condition).
 -/
 namespace WasmBase
+
+variable {S_seg segb : Nat}
 open NearSpecV3.Wasm
 set_option linter.unusedSimpArgs false
 set_option maxHeartbeats 1000000
 
 /-- Relation after a control instruction: stack `popK k`, new pc and labels, locals unchanged. -/
 theorem ctrl_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S fee k : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) (hk : k ≤ s.stack.size)
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) (hk : k ≤ s.stack.size)
     (pc' : Nat) (ls' : List Label)
     (hnext : pc' < (X.pfOf E.k).code.size) (hL : (X.ckOf E.k).labels[pc']? = some ls')
     (hsb : E.sb ≤ s.stack.size - k) (hH : (X.ckOf E.k).heights[pc']? = some (s.stack.size - k - E.sb))
-    (hgs : X.R * (S + fee) ≤ X.g0)
+    (hgs : X.R * (S + fee - S_seg) ≤ segb)
     (s' : St) (hs'stk : s'.stack = popK s.stack k)
     (hs'fr : s'.frames = { f with pc := pc', labels := shiftLabels E.sb ls' } :: E.rest)
     (hs'g : s'.gas.g = s.gas.g - X.R * fee) (hs'pg : s'.pages = s.pages)
@@ -30,7 +32,7 @@ theorem ctrl_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat
           (none : Option Nat).toList.map (fun j => enc E.lsp j (f.locals[j]?.getD default) (tpl j)))
         (((List.range ((popK s.stack k).size - (s.stack.size - k))).map fun d =>
             enc 0 (s.stack.size - k + d) ((popK s.stack k)[s.stack.size - k + d]?.getD default) t) ++
-          (none : Option Nat).toList.map (fun j => enc E.lsp j (f.locals[j]?.getD default) t))) where
+          (none : Option Nat).toList.map (fun j => enc E.lsp j (f.locals[j]?.getD default) t))) S_seg segb where
   frames := hs'fr
   kLt := R.kLt
   fn := R.fn
@@ -41,10 +43,9 @@ theorem ctrl_rel (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat
   sbLe := by rw [hs'stk, popK_size]; exact hsb
   height := by rw [hs'stk, popK_size]; exact hH
   nloc := R.nloc
-  gas := by
-    have hg := R.gas
-    have : X.R * (S + fee) = X.R * S + X.R * fee := Nat.mul_add _ _ _
-    rw [hs'g]; omega
+  gas := R.step_gas hgs hs'g
+  segLt := by have := R.segLt; omega
+  segbLt := R.segbLt
   numS := by
     rw [hs'stk]; intro i hi; rw [popK_size] at hi; rw [popK_get _ _ _ hi]; exact R.numS i (by omega)
   numL := R.numL
@@ -122,15 +123,15 @@ theorem shiftLabels_drop (sb : Nat) (ls : List Label) (n : Nat) :
 
 /-- Control step with nothing popped (block, loop, nested end, br). -/
 theorem step_ctrl0 (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {ins : Instr} {fee : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {ins : Instr} {fee : Nat}
     (hins : (X.pfOf E.k).code[pc]? = some ins) (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
-    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) (pc' : Nat) (ls' : List Label)
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64) (pc' : Nat) (ls' : List Label)
     (hnext : pc' < (X.pfOf E.k).code.size) (hL : (X.ckOf E.k).labels[pc']? = some ls')
     (hH : (X.ckOf E.k).heights[pc']? = some (s.stack.size - E.sb))
     (hexec : exec X.cfg X.p { s with gas := { s.gas with g := s.gas.g - X.R * fee } } f (X.pfOf E.k) ins =
       .cont { s with gas := { s.gas with g := s.gas.g - X.R * fee },
                      frames := { f with pc := pc', labels := shiftLabels E.sb ls' } :: E.rest }) :
-    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k pc' (S + fee) E.sb E.cid (stepLive live [] []) := by
+    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k pc' (S + fee) E.sb E.cid (stepLive live [] []) S_seg segb := by
   refine ⟨_, by rw [step_eq_exec X R hins hfee hg hg64, hexec], ?_⟩
   have CR := ctrl_rel X R (k := 0) (fee := fee) (Nat.zero_le _) pc' ls' hnext hL (by have := R.sbLe; omega)
     (by simpa using hH) hg
@@ -172,10 +173,10 @@ theorem doReturn_one (X : Ctx) {k : Nat} (hkn : k < X.nf) (s : St) (f : Frame) (
 /-! ## block, loop, nested end, br -/
 
 theorem step_block (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {bt : BT} {fee : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {bt : BT} {fee : Nat}
     (hins : (X.pfOf E.k).code[pc]? = some (.block bt)) (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
-    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) :
-    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [] []) := by
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64) :
+    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [] []) S_seg segb := by
   have hv := (X.factsOf R.kLt).verify pc R.pcLt
   obtain ⟨ls0, hL0, hfl⟩ := R.labels
   have hsb := R.sbLe
@@ -191,10 +192,10 @@ theorem step_block (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → N
     simp only [exec, R.pcEq, he, setFrame, R.frames, shiftLabels_cons, hfl, Nat.sub_add_cancel hsb]
 
 theorem step_loop (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {fee : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {fee : Nat}
     (hins : (X.pfOf E.k).code[pc]? = some (.loop none)) (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
-    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) :
-    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [] []) := by
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64) :
+    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [] []) S_seg segb := by
   have hv := (X.factsOf R.kLt).verify pc R.pcLt
   obtain ⟨ls0, hL0, hfl⟩ := R.labels
   have hsb := R.sbLe
@@ -206,11 +207,11 @@ theorem step_loop (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Na
   simp only [exec, R.pcEq, setFrame, R.frames, shiftLabels_cons, hfl, Nat.sub_add_cancel hsb]
 
 theorem step_end_nested (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {fee : Nat} {lab lab' : Label}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {fee : Nat} {lab lab' : Label}
     {rest : List Label} (hls : f.labels = lab :: lab' :: rest)
     (hins : (X.pfOf E.k).code[pc]? = some .end_) (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
-    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) :
-    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [] []) := by
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64) :
+    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [] []) S_seg segb := by
   have hv := (X.factsOf R.kLt).verify pc R.pcLt
   obtain ⟨ls0, hL0, hfl⟩ := R.labels
   obtain ⟨l0, l0', rest0, rfl⟩ : ∃ l0 l0' rest0, ls0 = l0 :: l0' :: rest0 := by
@@ -229,11 +230,11 @@ theorem step_end_nested (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat 
   rw [hrest]
 
 theorem step_br (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {l fee : Nat} {lab : Label}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {l fee : Nat} {lab : Label}
     (hl : l + 1 < f.labels.length) (hlab : f.labels[l]? = some lab)
     (hins : (X.pfOf E.k).code[pc]? = some (.br l)) (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
-    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) :
-    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k lab.target (S + fee) E.sb E.cid (stepLive live [] []) := by
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64) :
+    ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k lab.target (S + fee) E.sb E.cid (stepLive live [] []) S_seg segb := by
   have hv := (X.factsOf R.kLt).verify pc R.pcLt
   obtain ⟨ls0, hL0, hfl⟩ := R.labels
   have hsb := R.sbLe
@@ -257,13 +258,13 @@ theorem step_br (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat}
 /-! ## br_if -/
 
 theorem step_brIf (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {l fee : Nat} {lab : Label}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {l fee : Nat} {lab : Label}
     (hl : l + 1 < f.labels.length) (hlab : f.labels[l]? = some lab)
     (hins : (X.pfOf E.k).code[pc]? = some (.brIf l)) (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
-    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64)
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64)
     (mc : Msg) (hmc : live mc) (sc : mc.space = 0 ∧ mc.slot = s.stack.size - 1) :
     ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) E.k (if mc.val = 0 then pc + 1 else lab.target) (S + fee) E.sb E.cid (stepLive live [mc] []) := by
+      Rel X s' (t + 1) E.k (if mc.val = 0 then pc + 1 else lab.target) (S + fee) E.sb E.cid (stepLive live [mc] []) S_seg segb := by
   have hv := (X.factsOf R.kLt).verify pc R.pcLt
   obtain ⟨ls0, hL0, hfl⟩ := R.labels
   have hsb := R.sbLe
@@ -288,7 +289,7 @@ theorem step_brIf (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Na
       exec X.cfg X.p { s with gas := { s.gas with g := s.gas.g - X.R * fee } } f (X.pfOf E.k) (.brIf l) =
         .cont { s with gas := { s.gas with g := s.gas.g - X.R * fee }, stack := popK s.stack 1,
                        frames := { f with pc := pc', labels := shiftLabels E.sb ls' } :: E.rest } →
-      ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k pc' (S + fee) E.sb E.cid (stepLive live [mc] []) := by
+      ∃ s', step X.cfg X.p s = .cont s' ∧ Rel X s' (t + 1) E.k pc' (S + fee) E.sb E.cid (stepLive live [mc] []) S_seg segb := by
     intro pc' ls' hn' hL' hH' hexec
     refine ⟨_, by rw [step_eq_exec X R hins hfee hg hg64, hexec], ?_⟩
     have CR := ctrl_rel X R (k := 1) (fee := fee) (by omega) pc' ls' hn' hL' (by omega) hH' hg
@@ -326,11 +327,11 @@ def Halted (X : Ctx) (s sN : St) (fee : Nat) (stk : Array Val) : Prop :=
   sN.frames = [] ∧ sN.stack = stk ∧ sN.gas.g = s.gas.g - X.R * fee
 
 theorem step_halt (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {ins : Instr} {fee : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {ins : Instr} {fee : Nat}
     (hins : (X.pfOf E.k).code[pc]? = some ins)
     (hkind : (ins = .end_ ∧ f.labels.length = 1) ∨ ins = .ret ∨ (∃ l, ins = .br l ∧ l + 1 ≥ f.labels.length))
     (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
-    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) (hent : E.rest = [] ∧ E.sb = 0) :
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64) (hent : E.rest = [] ∧ E.sb = 0) :
     ∃ sN, step X.cfg X.p s = .fin sN ∧ Halted X s sN fee s.stack := by
   have hv := (X.factsOf R.kLt).verify pc R.pcLt
   obtain ⟨ls0, hL0, hfl⟩ := R.labels
@@ -361,14 +362,14 @@ theorem step_halt (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Na
   · simp only [exec]; unfold doBr; rw [if_pos hl]; exact hd
 
 theorem step_haltIf (X : Ctx) {E : Env} {s : St} {f : Frame} {tps tpl : Nat → Nat} {t pc S : Nat}
-    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live) {l fee : Nat}
+    {live : Msg → Prop} (R : RelW X E s f tps tpl t pc S live S_seg segb) {l fee : Nat}
     (hl : l + 1 ≥ f.labels.length)
     (hins : (X.pfOf E.k).code[pc]? = some (.brIf l)) (hfee : feeUnits X.cfg (X.pfOf E.k).gas[pc]? = some fee)
-    (hg : X.R * (S + fee) ≤ X.g0) (hg64 : X.g0 < 2 ^ 64) (hent : E.rest = [] ∧ E.sb = 0)
+    (hg : X.R * (S + fee - S_seg) ≤ segb) (hg64 : X.g0 < 2 ^ 64) (hent : E.rest = [] ∧ E.sb = 0)
     (mc : Msg) (hmc : live mc) (sc : mc.space = 0 ∧ mc.slot = s.stack.size - 1) :
     (mc.val ≠ 0 → ∃ sN, step X.cfg X.p s = .fin sN ∧ Halted X s sN fee s.stack.pop) ∧
     (mc.val = 0 → ∃ s', step X.cfg X.p s = .cont s' ∧
-      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [mc] [])) := by
+      Rel X s' (t + 1) E.k (pc + 1) (S + fee) E.sb E.cid (stepLive live [mc] []) S_seg segb) := by
   have hv := (X.factsOf R.kLt).verify pc R.pcLt
   obtain ⟨ls0, hL0, hfl⟩ := R.labels
   rw [hent.2, shiftLabels_zero] at hfl
