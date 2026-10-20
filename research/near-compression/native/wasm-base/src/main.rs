@@ -26,7 +26,7 @@ use p3_field::{PrimeCharacteristicRing, PrimeField32};
 use p3_matrix::dense::RowMajorMatrix;
 use std::sync::Arc;
 use std::time::Instant;
-use tracegen::{Gen, Prep};
+use tracegen::{Gen, Prep, HOST_NARGS};
 
 fn set_levers() {
     // The pinned base shape: 42-byte digests, coset leaves, T* (read once by `sha_levers`).
@@ -68,7 +68,12 @@ pub fn seg_v1_params(n_stack: usize, w_stack: usize, max_degree: usize) -> Syste
         w_stack,
         log_blowup,
         whir,
-        logup: LogUpSecurityParameters { max_interaction_count: 1 << 28, log_max_message_length: 4, pow_bits: 0 },
+        // The widest interaction message is HOSTQ: `4 + 2·Host.nArgs = 22` fields, so the backend's
+        // keygen check `message.len() + 1 <= 2^log_max_message_length` needs `2^l >= 23`, i.e. `l >= 5`.
+        // We keep the NV envelope value `7` (128 fields) so the join lane sees one number; the extra
+        // 2 bits of LogUp slack cost 3 LogUp bits (333.3 -> 330.3 at 2^28 interactions), which does
+        // not move the printed total (proximity-bound).
+        logup: LogUpSecurityParameters { max_interaction_count: 1 << 28, log_max_message_length: 7, pow_bits: 0 },
         max_constraint_degree: max_degree,
     }
 }
@@ -534,6 +539,24 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
         for c in ["hid", "np", "ar", "st", "nres", "ga0", "ga1", "ga2", "ga3", "r0", "r1", "r2", "r3",
             "P0_0", "tagP0", "fr_sb", "fr_cid", "S", "fee"] {
             cases.push((format!("HOST.{c}+1"), cell(th, 0, col(th, c), plus1())));
+        }
+        // the wide argument window (`Host.nArgs = 9`): an *absent* argument's tag, limbs and
+        // presence flag are all pinned to zero, and the presence flags are prefix-closed, so
+        // turning on an argument past `np` (or forging a limb of one) must be rejected
+        let w = g.mats[th].width;
+        let get = |r: usize, c: &str| g.mats[th].values[r * w + col(th, c)].as_canonical_u32() as u64;
+        let np0 = get(0, "np");
+        for j in (np0..(HOST_NARGS)).take(3) {
+            let j = j as usize;
+            for c in [format!("tagP{j}"), format!("P{j}_0"), format!("P{j}_3")] {
+                cases.push((format!("HOST.{c}+1 (past np)"), cell(th, 0, col(th, &c), plus1())));
+            }
+            cases.push((format!("HOST.pf{j} (past np)"), cell(th, 0, col(th, &format!("pf{j}")), Box::new(|_| F::ONE))));
+        }
+        if np0 >= 2 {
+            // drop a middle argument: prefix-closure / np = sum(pf) must reject it
+            cases.push((format!("HOST.pf{} = 0 (drop arg)", np0 - 2),
+                cell(th, 0, col(th, &format!("pf{}", np0 - 2)), Box::new(|_| F::ZERO))));
         }
         // `tP` of an *absent* argument is a free witness (its time check has count `pf = 0`), so
         // target a row whose first argument is present.

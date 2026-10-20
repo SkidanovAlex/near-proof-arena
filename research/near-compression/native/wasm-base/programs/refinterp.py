@@ -110,6 +110,10 @@ def run(prog, fuel=10 ** 8):
                 return (1 << 64) - 1
             if name == 'panic':
                 raise Trap('GuestPanic')
+            if name.startswith('promise_'):
+                # not modelled by this reference interpreter; the KAT only compares the outcome
+                # of a host program (an aborting call is what the program expects)
+                raise Trap('host abort')
             raise RuntimeError('host not modelled: ' + name)
         f = funcs[fi - nimp]
         body, end_of = prep(fi)

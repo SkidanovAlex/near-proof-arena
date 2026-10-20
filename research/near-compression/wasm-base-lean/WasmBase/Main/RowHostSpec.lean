@@ -5,8 +5,9 @@ import WasmBase.Main.HostLinks
 
 The HOST row (table 22) carries two kinds of CH (`busStk`) interaction:
 
-* up to two **argument receives** `stkRecv (sb + h − np + j) tagP[j] P[j] tP[j] pf[j]` — the
-  arguments of the host call, popped from the operand stack in argument order;
+* up to `Host.nArgs = 9` **argument receives** `stkRecv (sb + h − np + j) tagP[j] P[j] tP[j] pf[j]`
+  (`j ∈ Host.argRange`) — the arguments of the host call, popped from the operand stack in argument
+  order;
 * one **result send** `stkSend (sb + h − np) 1 rb[0..3] ts nres` — the single result word, pushed
   back at the stack base of the call.
 
@@ -30,6 +31,7 @@ namespace WasmBase
 open ZkFormal.Algebra Chips Local
 open NearSpecV3.Wasm hiding P
 set_option linter.unusedSimpArgs false
+set_option maxRecDepth 8000
 
 /-! ## The HOST table's STATE and CH interactions, by direction -/
 
@@ -43,7 +45,7 @@ theorem host_inters_state :
 
 theorem host_inters_stk :
     (Host.inters.filter (fun i => i.bus = busStk ∧ i.send = false)) =
-      ((List.range 2).flatMap fun j =>
+      (Host.argRange.flatMap fun j =>
         [stkRecv (Host.sbNew + Expr.c j) (v (Host.tagP j)) (limbsOf (Host.P j)) (v (Host.tP j))
           (v (Host.pf j))]) ∧
     (Host.inters.filter (fun i => i.bus = busStk ∧ i.send = true)) =
@@ -116,21 +118,38 @@ theorem decMsg_wordRaw (tr : Trace) (r : Nat) : decMsg (wordRaw tr r) = wordMsg 
     tr.cell 22 r Host.kSb + tr.cell 22 r cH - ((rowNat tr 22 r Host.np : Nat) : F) from by
       rw [cast_zero]; grind]
 
-/-- The raw `rowMsgs` shape of the row's CH receives. -/
+/-- The decoded shape of one `stkRecv` when its count is 1: `argRaw`. -/
+theorem single_recv {pub : List F} {tr : Trace} {r j : Nat} :
+    ([stkRecv (Host.sbNew + Expr.c j) (v (Host.tagP j)) (limbsOf (Host.P j)) (v (Host.tP j))
+        (v (Host.pf j))] : List Inter).filterMap
+      (fun i => if (i.count.eval (tr.row pub 22 r)).toNat = 1 then
+        some (i.msg.map (·.eval (tr.row pub 22 r))) else none)
+    = (if rowNat tr 22 r (Host.pf j) = 1 then [argRaw tr r j] else []) := by
+  simp only [List.filterMap_cons, List.filterMap_nil, stkRecv, chRecv, limbsOf, List.range,
+    List.range.loop, List.cons_append, List.nil_append, List.map_cons, List.map_nil, v,
+    Expr.eval_col, Expr.eval_add', Expr.eval_sub', Expr.eval_ofNat', Expr.eval_c, cell_cast,
+    Trace.row, cH, Host.sbNew, Host.np, Host.pf, argRaw]
+  have hpf : Fp.toNat (↑(rowNat tr 22 r (19 + j)) : Fp) = rowNat tr 22 r (19 + j) :=
+    Fp.toNat_cast_of_lt (rowNat_lt tr 22 r (19 + j))
+  rw [hpf]
+  by_cases g : rowNat tr 22 r (19 + j) = 1 <;>
+    simp only [g, ite_true, ite_false, Nat.add_zero]
+
+theorem flatMap_congr' {α β : Type} (l : List α) (f g : α → List β) (h : ∀ a ∈ l, f a = g a) :
+    l.flatMap f = l.flatMap g := by
+  induction l with
+  | nil => rfl
+  | cons a l ih => rw [List.flatMap_cons, List.flatMap_cons, h a List.mem_cons_self,
+      ih (fun x hx => h x (List.mem_cons_of_mem _ hx))]
+
+/-- The raw `rowMsgs` shape of the row's CH receives: one `argRaw` per present argument. -/
 theorem host_rawCons {pub : List F} {tr : Trace} {r : Nat} :
     rowMsgs Host.table tr pub 22 r busStk false =
-      (if rowNat tr 22 r (Host.pf 0) = 1 then [argRaw tr r 0] else []) ++
-      (if rowNat tr 22 r (Host.pf 1) = 1 then [argRaw tr r 1] else []) := by
+      Host.argRange.flatMap fun j =>
+        (if rowNat tr 22 r (Host.pf j) = 1 then [argRaw tr r j] else []) := by
   simp only [Host.table]
-  rw [rowMsgs_eq, host_inters_stk.1]
-  simp only [List.flatMap_cons, List.flatMap_nil, List.map_cons, List.map_nil, List.append_nil,
-    List.filterMap_cons, List.filterMap_nil, stkRecv, chRecv, limbsOf, List.range, List.range.loop,
-    List.cons_append, List.nil_append, v, Expr.eval_col, Expr.eval_add', Expr.eval_sub', Expr.eval_ofNat',
-    cell_cast, Trace.row, cH, Host.sbNew, Host.np, Host.pf, Expr.eval_c, Nat.reduceAdd, Nat.add_zero, argRaw]
-  rw [Fp.toNat_cast_of_lt (rowNat_lt tr 22 r 19), Fp.toNat_cast_of_lt (rowNat_lt tr 22 r 20)]
-  by_cases g0 : rowNat tr 22 r 19 = 1 <;> by_cases g1 : rowNat tr 22 r 20 = 1 <;>
-    simp only [g0, g1, ite_true, ite_false, List.nil_append, List.append_nil, List.map_cons, List.map_nil] <;>
-    rfl
+  rw [rowMsgs_eq, host_inters_stk.1, List.filterMap_flatMap]
+  exact flatMap_congr' _ _ _ (fun j _ => single_recv)
 
 /-- The raw `rowMsgs` shape of the row's CH send. -/
 theorem host_rawProd {pub : List F} {tr : Trace} {r : Nat} :
@@ -147,27 +166,42 @@ theorem host_rawProd {pub : List F} {tr : Trace} {r : Nat} :
   by_cases g0 : rowNat tr 22 r 10 = 1 <;>
     simp only [g0, ite_true, ite_false, List.map_cons, List.map_nil]
 
-/-- The two argument-present flags of an active HOST row are bits. -/
+/-- Every argument-present flag of an active HOST row is a bit. -/
 theorem host_pf_bits {nloc ngl : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseHostAir nloc ngl) pub tr) {r : Nat} (hr : r < tr.height 22)
     (hact : rowAct Host.table tr pub 22 r) :
-    rowNat tr 22 r (Host.pf 0) ≤ 1 ∧ rowNat tr 22 r (Host.pf 1) ≤ 1 := by
+    ∀ j, j < Host.nArgs → rowNat tr 22 r (Host.pf j) ≤ 1 := by
+  intro j hj
   have RF := host_rowfacts H hr hact
-  have b0 := bool_nat (rowNat_lt tr 22 r (Host.pf 0)) RF.pf0Bit
-  have b1 := bool_nat (rowNat_lt tr 22 r (Host.pf 1)) RF.pf1Bit
-  omega
+  have b := bool_nat (rowNat_lt tr 22 r (Host.pf j)) (RF.pfBit j hj)
+  rcases b with h | h <;> omega
+
+/-- One argument slot's messages, decoded. -/
+theorem map_decMsg_single {tr : Trace} {r j : Nat} :
+    List.map decMsg (if rowNat tr 22 r (Host.pf j) = 1 then [argRaw tr r j] else []) =
+      (if rowNat tr 22 r (Host.pf j) = 1 then [argMsg tr r j] else []) := by
+  by_cases g : rowNat tr 22 r (Host.pf j) = 1
+  · rw [if_pos g, if_pos g, List.map_cons, List.map_nil, decMsg_argRaw]
+  · rw [if_neg g, if_neg g]
+    rfl
+
+/-- `rowMsgs` mapped through `decMsg` distributes over `flatMap`, pointwise. -/
+theorem map_decMsg_flatMap {tr : Trace} {r : Nat} :
+    (Host.argRange.flatMap fun j =>
+        (if rowNat tr 22 r (Host.pf j) = 1 then [argRaw tr r j] else [])).map decMsg =
+      Host.argRange.flatMap fun j =>
+        (if rowNat tr 22 r (Host.pf j) = 1 then [argMsg tr r j] else []) := by
+  rw [List.map_flatMap]
+  exact flatMap_congr' _ _ _ (fun j _ => map_decMsg_single)
 
 /-- The row's consumed messages: the present arguments, in order. -/
-theorem host_row_cons {pub : List F} {tr : Trace} {r : Nat}
-    (h0 : rowNat tr 22 r (Host.pf 0) ≤ 1) (h1 : rowNat tr 22 r (Host.pf 1) ≤ 1) :
+theorem host_row_cons {pub : List F} {tr : Trace} {r : Nat} :
     rowCons Host.table tr pub 22 r =
-      ((if rowNat tr 22 r (Host.pf 0) = 1 then [argMsg tr r 0] else []) ++
-       (if rowNat tr 22 r (Host.pf 1) = 1 then [argMsg tr r 1] else [])) := by
+      Host.argRange.flatMap fun j =>
+        (if rowNat tr 22 r (Host.pf j) = 1 then [argMsg tr r j] else []) := by
   unfold rowCons
   rw [host_rawCons]
-  by_cases g0 : rowNat tr 22 r (Host.pf 0) = 1 <;> by_cases g1 : rowNat tr 22 r (Host.pf 1) = 1 <;>
-    simp only [g0, g1, ite_true, ite_false, List.nil_append, List.append_nil, List.map_cons, List.map_nil,
-      List.map_append, decMsg_argRaw]
+  exact map_decMsg_flatMap
 
 /-- The row's produced messages: the result word iff `nres = 1`. -/
 theorem host_row_prod {pub : List F} {tr : Trace} {r : Nat} :
@@ -210,7 +244,7 @@ theorem host_arg_slot {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
     {live : Msg → Prop} {S_seg segb : Nat} (R : RelW X E s f tps tpl t pc S live S_seg segb)
     {tr : Trace} {r j : Nat} (hsb : rowNat tr 22 r Host.kSb = E.sb)
     (h3 : rowNat tr 22 r cH = s.stack.size - E.sb) (hle : rowNat tr 22 r Host.np ≤ s.stack.size)
-    (hj : j < 2) :
+    (hj : j < Host.nArgs) :
     hostSlot tr r j = s.stack.size - rowNat tr 22 r Host.np + j := by
   have hP' := P_val
   have hsz := R.sbLe
@@ -233,7 +267,10 @@ theorem host_arg_slot {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
     rw [hsub]; grind
   rw [e4, ← Lean.Grind.Semiring.natCast_add,
     Fp.toNat_cast_of_lt (show s.stack.size - rowNat tr 22 r Host.np + j < P by
-      have h1 := R.size_bound; omega)]
+      have h1 := R.size_bound
+      have hn : Host.nArgs = 9 := rfl
+      rw [hn] at hj
+      omega)]
 
 /-- **Piece 1(a).**  A consumed argument message of an active HOST row (the `j`-th with
 `j < np`), when live, is one of the live stack messages (`stackView`) of the state the row is
@@ -320,15 +357,16 @@ rather than the trace. -/
 structure HostRowSpec (pub : List F) (tr : Trace) (resp : Nat → HostAnswer) (r : Nat) : Prop where
   /-- the row is active -/
   act : rowAct Host.table tr pub 22 r
-  /-- the argument-present flags are bits and `np` is their sum -/
-  npBits : rowNat tr 22 r (Host.pf 0) ≤ 1 ∧ rowNat tr 22 r (Host.pf 1) ≤ 1 ∧
-    rowNat tr 22 r Host.np = rowNat tr 22 r (Host.pf 0) + rowNat tr 22 r (Host.pf 1)
+  /-- the argument-present flags are bits, prefix-closed, and `np` is their sum -/
+  npBits : (∀ j, j < Host.nArgs → rowNat tr 22 r (Host.pf j) ≤ 1) ∧
+    (∀ j, j + 1 < Host.nArgs → rowNat tr 22 r (Host.pf (j + 1)) ≤ rowNat tr 22 r (Host.pf j)) ∧
+    rowNat tr 22 r Host.np = cellSum (rowNat tr 22 r) Host.pf Host.argRange
   /-- `nres = (1 − st)·ar` -/
   nresEq : rowNat tr 22 r Host.nres = (1 - rowNat tr 22 r Host.st) * rowNat tr 22 r Host.ar
   /-- the consumed messages are exactly the present arguments, in argument order -/
   cons : rowCons Host.table tr pub 22 r =
-    ((if rowNat tr 22 r (Host.pf 0) = 1 then [argMsg tr r 0] else []) ++
-     (if rowNat tr 22 r (Host.pf 1) = 1 then [argMsg tr r 1] else []))
+    Host.argRange.flatMap fun j =>
+      (if rowNat tr 22 r (Host.pf j) = 1 then [argMsg tr r j] else [])
   /-- the produced message is the result word (exactly one iff `nres = 1`) -/
   prod : rowProd Host.table tr pub 22 r =
     (if rowNat tr 22 r Host.nres = 1 then [wordMsg tr r] else [])
@@ -363,6 +401,35 @@ theorem nres_from {nres st ar : Nat} (hn : nres < P) (hst : st = 0 ∨ st = 1) (
     have h' := (cast_inj_iff hn (by decide : (0 : Nat) < P)).mp e
     rw [h']
 
+/-- A member of `Host.argRange` is below `Host.nArgs`. -/
+theorem argRange_lt {j : Nat} (hj : j ∈ Host.argRange) : j < Host.nArgs := by
+  simpa only [Host.argRange, List.mem_range] using hj
+
+/-- `Host.argRange` has nine entries, so a sum of bits over it is below the modulus. -/
+theorem argRange_length : Host.argRange.length = Host.nArgs := by
+  simp [Host.argRange]
+
+theorem cellSum_argRange_lt {c : Nat → Nat} (hbit : ∀ j ∈ Host.argRange, c (Host.pf j) ≤ 1) :
+    cellSum c Host.pf Host.argRange < P := by
+  have h := cellSum_le c Host.pf 1 Host.argRange hbit
+  have hP' := P_val
+  have hn : Host.nArgs = 9 := rfl
+  rw [argRange_length, hn] at h
+  omega
+
+/-- A prefix-closed bit vector's `j`-th flag is at most its predecessor's, as naturals. -/
+theorem host_order_nat {c : Nat → Nat} (rw : Row) (hP : ∀ i, c i < P)
+    (hbit : ∀ j, j < Host.nArgs → c (Host.pf j) ≤ 1)
+    (h : ∀ j, j + 1 < Host.nArgs → (v (Host.pf (j + 1)) -
+      v (Host.pf j) * v (Host.pf (j + 1))).eval (natRow c rw) = 0)
+    {j : Nat} (hj : j + 1 < Host.nArgs) :
+    c (Host.pf (j + 1)) ≤ c (Host.pf j) := by
+  have h' : (v (Host.pf (j + 1)) * (1 - v (Host.pf j))).eval (natRow c rw) = 0 := by
+    have h1 := h j hj
+    simp only [Expr.eval_mul', Expr.eval_sub', Expr.eval_col, Expr.eval_ofNat', natRow_cur] at h1 ⊢
+    grind
+  exact le_of_mulsub hP (hbit (j + 1) (by omega)) (hbit j (by omega)) h'
+
 /-- **The HOST row's `HostRowSpec` from the trace.**  Assembled from `host_rowfacts` (the field
 facts of the constraints), `HostOK` (the binding of the response) and the row's message shapes
 (`host_row_cons`, `host_row_prod`). -/
@@ -372,14 +439,14 @@ theorem host_rowspec {nloc ngl : Nat} {pub : List F} {tr : Trace} {resp : Nat �
     HostRowSpec pub tr resp r := by
   have hP' := P_val
   have RF := host_rowfacts H hr hact
-  have b0 := bool_nat (rowNat_lt tr 22 r (Host.pf 0)) RF.pf0Bit
-  have b1 := bool_nat (rowNat_lt tr 22 r (Host.pf 1)) RF.pf1Bit
-  have hnpF : (rowNat tr 22 r Host.np : F) =
-      (rowNat tr 22 r (Host.pf 0) + rowNat tr 22 r (Host.pf 1) : Nat) := by
-    rw [Lean.Grind.Semiring.natCast_add]; exact RF.npEq
-  have hnp : rowNat tr 22 r Host.np = rowNat tr 22 r (Host.pf 0) + rowNat tr 22 r (Host.pf 1) :=
-    natEq hnpF (rowNat_lt tr 22 r Host.np)
-      (by have := rowNat_lt tr 22 r (Host.pf 0); have := rowNat_lt tr 22 r (Host.pf 1); omega)
+  have hpfBit : ∀ j, j < Host.nArgs → rowNat tr 22 r (Host.pf j) ≤ 1 := by
+    intro j hj
+    rcases bool_nat (rowNat_lt tr 22 r (Host.pf j)) (RF.pfBit j hj) with h | h <;> omega
+  have hordNat : ∀ j, j + 1 < Host.nArgs → rowNat tr 22 r (Host.pf (j + 1)) ≤ rowNat tr 22 r (Host.pf j) :=
+    fun j hj => host_order_nat (tr.row pub 22 r) (rowNat_lt tr 22 r) hpfBit RF.order hj
+  have hnp : rowNat tr 22 r Host.np = cellSum (rowNat tr 22 r) Host.pf Host.argRange :=
+    natEq RF.npEq (rowNat_lt tr 22 r Host.np)
+      (cellSum_argRange_lt (fun j hj => hpfBit j (argRange_lt hj)))
   have hst := bool_nat (rowNat_lt tr 22 r Host.st) RF.stBit
   have har := bool_nat (rowNat_lt tr 22 r Host.ar) RF.arBit
   have hnr : rowNat tr 22 r Host.nres = (1 - rowNat tr 22 r Host.st) * rowNat tr 22 r Host.ar := by
@@ -387,7 +454,7 @@ theorem host_rowspec {nloc ngl : Nat} {pub : List F} {tr : Trace} {resp : Nat �
     change (rowNat tr 22 r Host.nres : F) - (rowNat tr 22 r Host.ar : F) +
       (rowNat tr 22 r Host.st : F) * (rowNat tr 22 r Host.ar : F) = 0 at h
     exact nres_from (rowNat_lt tr 22 r Host.nres) hst har h
-  refine ⟨hact, ⟨by omega, by omega, hnp⟩, hnr, host_row_cons (by omega) (by omega), host_row_prod,
+  refine ⟨hact, ⟨hpfBit, hordNat, hnp⟩, hnr, host_row_cons, host_row_prod,
     ?_, HOK.ar r hr _, HOK.gas r hr _, HOK.word r hr _⟩
   exact HOK.status r hr _
 

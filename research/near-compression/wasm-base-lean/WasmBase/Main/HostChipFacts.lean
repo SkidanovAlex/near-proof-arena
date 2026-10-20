@@ -27,9 +27,9 @@ set_option linter.unusedSimpArgs false
 set_option maxRecDepth 4000
 
 /-- **An inactive HOST row emits nothing.**  From `Holds` plus the `act`-gating constraints: `act`
-is a bit and `rowAct` false means `act ≠ 1`, hence `act = 0`, and then `(1 − act)·pf j = 0` and
-`(1 − act)·nres = 0` force `pf 0 = pf 1 = nres = 0`.  With `host_row_cons` / `host_row_prod` the
-row's `cons` and `prod` are empty. -/
+is a bit and `rowAct` false means `act ≠ 1`, hence `act = 0`, and then `(1 − act)·pf j = 0` (for every
+`j < nArgs`) and `(1 − act)·nres = 0` force `pf j = 0` and `nres = 0`.  With `host_row_cons` /
+`host_row_prod` the row's `cons` and `prod` are empty. -/
 theorem host_row_inactive_emits_nothing {nloc ngl : Nat} {pub : List F} {tr : Trace} {r : Nat}
     (H : Holds (wasmBaseHostAir nloc ngl) pub tr) (hr : r < tr.height 22)
     (hneg : ¬ rowAct Host.table tr pub 22 r) :
@@ -37,13 +37,10 @@ theorem host_row_inactive_emits_nothing {nloc ngl : Nat} {pub : List F} {tr : Tr
   have ht : 22 < (wasmBaseHostAir nloc ngl).tables.length := by simp [wasmBaseHostAir, air_len]
   have hcon : ∀ e ∈ Host.table.constraints, e.eval (natRow (rowNat tr 22 r) (tr.row pub 22 r)) = 0 :=
     table_constr H ht hr
-  have hbA := hcon Host.cAct (by simp [Host.table, Host.constraints])
-  have hg0 := hcon (Host.cActPf 0) (by simp [Host.table, Host.constraints])
-  have hg1 := hcon (Host.cActPf 1) (by simp [Host.table, Host.constraints])
-  have hgR := hcon Host.cActNres (by simp [Host.table, Host.constraints])
+  have hbA := hcon Host.cAct host_cAct_mem
+  have hgR := hcon Host.cActNres host_cActNres_mem
   simp only [Chips.bool, Chips.v, Expr.eval_mul', Expr.eval_sub', Expr.eval_add', Expr.eval_col,
-    Expr.eval_ofNat', natRow, Host.act, Host.pf, Host.nres, Host.cAct, Host.cActPf,
-    Host.cActNres] at hbA hg0 hg1 hgR
+    Expr.eval_ofNat', natRow, Host.act, Host.nres, Host.cAct, Host.cActNres] at hbA hgR
   -- `act` is a bit; `rowAct` false means `act ≠ 1`; hence `act = 0`
   have hactNe : rowNat tr 22 r Host.act ≠ 1 := by
     intro hv
@@ -59,21 +56,19 @@ theorem host_row_inactive_emits_nothing {nloc ngl : Nat} {pub : List F} {tr : Tr
   -- `1 - act = 1` as a field element once `act = 0`
   have hactIdx : rowNat tr 22 r 5 = 0 := by simpa [Host.act] using hact0
   have hone : ((1 : Nat) : F) - (rowNat tr 22 r 5 : F) = 1 := by rw [hactIdx]; rfl
-  have hp0F : (rowNat tr 22 r (Host.pf 0) : F) = 0 := by
-    rw [hone, Lean.Grind.Semiring.one_mul] at hg0; exact hg0
-  have hp1F : (rowNat tr 22 r (Host.pf 1) : F) = 0 := by
-    rw [hone, Lean.Grind.Semiring.one_mul] at hg1; exact hg1
   have hnrF : (rowNat tr 22 r Host.nres : F) = 0 := by
     rw [hone, Lean.Grind.Semiring.one_mul] at hgR; exact hgR
-  have hp0 : rowNat tr 22 r (Host.pf 0) = 0 :=
-    (cast_inj_iff (rowNat_lt tr 22 r (Host.pf 0)) (by decide : (0 : Nat) < P)).mp hp0F
-  have hp1 : rowNat tr 22 r (Host.pf 1) = 0 :=
-    (cast_inj_iff (rowNat_lt tr 22 r (Host.pf 1)) (by decide : (0 : Nat) < P)).mp hp1F
   have hnr : rowNat tr 22 r Host.nres = 0 :=
     (cast_inj_iff (rowNat_lt tr 22 r Host.nres) (by decide : (0 : Nat) < P)).mp hnrF
+  have hpf0 : ∀ j, j ∈ Host.argRange → rowNat tr 22 r (Host.pf j) = 0 := by
+    intro j hj
+    have h := hcon (Host.cActPf j) (host_cActPf_mem j (argRange_lt hj))
+    simp only [Chips.v, Expr.eval_mul', Expr.eval_sub', Expr.eval_col, Expr.eval_ofNat', natRow,
+      Host.act, Host.cActPf] at h
+    rw [hone, Lean.Grind.Semiring.one_mul] at h
+    exact (cast_inj_iff (rowNat_lt tr 22 r (Host.pf j)) (by decide : (0 : Nat) < P)).mp h
   refine ⟨?_, ?_⟩
-  · rw [host_row_cons (by omega) (by omega), hp0, hp1]
-    simp
+  · exact host_row_cons_inactive (fun j hj => hpf0 j hj)
   · rw [host_row_prod, hnr]
     simp
 
