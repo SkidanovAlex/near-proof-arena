@@ -366,3 +366,8 @@ import ZkFormal.PQ.Aggregation.Compose
 -- lane pq-d3-join: the ContractData key prefix/walk tables and the joint Wasm×state statement
 import ZkFormal.NearV3.D3.ContractData
 import ZkFormal.PQ.Join.Statement
+-- lane pq-cd-storage: the state half of `storage_write` (ContractData read + `upsV3` write)
+import ZkFormal.NearV3.D3.CdBus
+import ZkFormal.NearV3.D3.StateRead
+import ZkFormal.NearV3.D3.StateWrite
+import ZkFormal.PQ.CdStorage.Link
