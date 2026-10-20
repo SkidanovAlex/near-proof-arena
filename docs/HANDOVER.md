@@ -90,26 +90,70 @@ Read `docs/logs/pq-gap-analysis-2026-10-19.md`. Summary:
 
 Realistic: **~2-3 months to a `G_α` chunk under 300 KB**. 1 Pgas is a separate project on top.
 
+## Lanes 1-4 landed (2026-10-20, merged + pushed)
+
+All four ran in parallel and are on main (`aba464c0a`):
+
+| lane | what landed | evidence |
+|---|---|---|
+| `pq-host-gas` | `RelW` gas invariant generalised to `R·(S − S_seg) + g = segb`; recovery lemmas keep the 114 sites one-line; `step_host_ok_seg`/`step_host_abort_seg` proved; `wasm_base_sound`/`wasm_base_exec` re-proved through it | `results/pq-host-gas/`, `Main/Host.lean` |
+| `pq-host-bytes` | `HOSTB` bus 210 `[ts, dir, pos, byte]`, table at index 25, 8 degree-2 constraints, byte-table range check; 3 tamper cases rejected; `wasmBaseAir` byte-identical | `results/pq-host-bytes/` |
+| `pq-cd-storage` | the `storage_write` **state half**: `cdWalkV3` read + `upsV3` write, `CdBus`/`StateRead`/`StateWrite` + `PQ.CdStorage.Link`; measured 541,608 cells / 43,029 slots (42.9 % / 56.3 % of the D0a baseline) | `results/pq-cd-storage/` |
+| `pq-nv-tape` | cached TAPE root folded into the statement and reaching V_d (node-fold, because 18 more limbs would push the message past one SHA block); per-AIR height cap in vk/NV/V_d; `max_interaction_count` production default 2^30 (gate scripts pin 2^28 so the recorded G2 proofs stay valid) | `results/pq-nv-tape/README.md` |
+
+Verification: `zk-formal` builds (3,044 jobs); `pin-check`; `cargo fmt --check`; `clippy -D warnings`;
+KAT **77/77**; the G2 gate's 6 proof hashes still verify.
+
+**Two process traps found (worth remembering):**
+1. A stale `wasmbase-tool` binary made 4 KATs fail after the merge (`HOSTB` missing from `airH`).
+   The Lean source was correct; the binary was old. Always rebuild the tool after a Lean change that
+   adds a table.
+2. `lane/pq-cd-storage` appeared to be a no-op merge because its commit was already an ancestor of
+   the merge base through shared history — verify content (`git merge-base --is-ancestor <sha> HEAD`
+   and check the files), not just whether HEAD moved.
+
+**Still open after lanes 1-4:**
+* `wasm_base_sound_host` is **not** stated: the gas/boundary layer is done, but the HOST row's
+  `RowSpec` (argument liveness, result equality) and the `Exec` bus decomposition for
+  `wasmBaseHostAir` are not. `Main/Host.lean` records the exact statements.
+* `HOSTB` does **not** yet model the memory pointer/`(ptr,len)` range, the length bound, the
+  register space (space 6), or the link from a `HOSTB` group to its `HOSTQ` call. Bytes are free
+  witnesses, not tied to memory or the state side.
+* CD storage: 4 stated `Prop`s remain (`WalkKeyIsContractData`, `RealStoreMatchesTables`,
+  `UpsV3AppliesLog`, `UpsertPreservesWf`).
+* NV: `maxLog` is plumbed end to end but ships as `None` in every AIR; host-wire commitments reuse
+  the TAPE mechanism once the AIRs exist.
+
 ## Parallel lanes to run next
 
-The dependency order below is what the merge proved: the state side, the recursion tail and the
-audits are all done, so the remaining work is the Wasm side plus the join. Lanes 1-4 can run
-concurrently; 5-6 follow.
+Lanes 1-4 are done (see above). The remaining critical path is the **tightening** of what landed,
+then the join. Lanes 5-7 and 9-10 are independent; 8 depends on 5 and 7.
 
 | # | lane | scope | blocks | est. |
 |---|---|---|---|---|
-| 1 | `lane/pq-host-gas` | Generalise the gas invariant to `R·(S − S_seg) + g = g_seg` between host boundaries, then state and prove `wasm_base_sound_host` (the relative form taking `HostResp`). ~112 sites, mechanical. | everything on the Wasm side | 5-8 d |
-| 2 | `lane/pq-host-bytes` | `HOSTB` bus (208/209 are taken; use 210), MEMIO row family, space-6 register space, `(ptr,len)` byte moves both directions | `storage_write`, `input`, registers | 5-7 d |
-| 3 | `lane/pq-cd-storage` | Contract-data storage on the state side: extend the D3 `RealStore` overlay into walk/val/ups tables under the `ContractData` prefix (prefix + tables already prototyped in `pq-d3-join`), plus the `upsV3` write | the state half of any `storage_write` | 8-12 d |
-| 4 | `lane/pq-nv-tape` | **done** (`results/pq-nv-tape/README.md`): the cached TAPE root is folded into the statement NV exposes and V_d checks (`StatementClaim`); `log_height <= maxLog_t` is a vk field enforced in the native proof shape, by the NV generator and by V_d; the production LogUp budget is 2^30 (310.88 bits, no query change).  Still open: wiring `maxLog` from the ported tables, and the host-wire commitments (no AIR yet) | — | done |
-| 5 | `lane/pq-runCall-fold` | The coverage theorem: `join_additive` + `d3Hooks`/`runCall` correspondence, so a joined proof implies the D3 chunk relation. Shape is stated in `JoinFold.JoinStmt`. | the end-to-end claim | 10-15 d |
-| 6 | `lane/pq-sig-layer` | The separate Ed25519 proof layer: ZK-friendly curve arithmetic (`baby-jubjub`) + a SHA-512 witness over the preimage, proving `Ed25519.verify` at 128 bits; a NIZK over non-native Ed25519. The census is done. | signed transactions | 16-26 d |
-| 7 | `lane/pq-1pgas-scale` | Research only: measure one 2^28.25-cell segment at real settings, then extrapolate the aggregation tree; no 1 Pgas claim | goal B | research |
+| 5 | `lane/pq-host-rowfacts` | Finish `wasm_base_sound_host`: the HOST row's `RowSpec` (argument liveness from `stkRecv`, result equality from `stkSend`) and the `Exec` bus decomposition for `wasmBaseHostAir` (tables 22-25), with `S_seg`/`segb` threaded through the induction. `Main/Host.lean` already states the interface. | the host-aware execution theorem | 4-6 d |
+| 6 | `lane/pq-host-memio` | `HOSTB` -> memory: the `(ptr,len)` range, `pos < len`, and the register space (space 6), plus the link from a `HOSTB` group to its `HOSTQ` call. The bus and table exist; this gives them meaning. | any real byte-moving host call | 5-7 d |
+| 7 | `lane/pq-cd-props` | The four stated `Prop`s of the CD storage path: `WalkKeyIsContractData` (HOSTB -> CDKEYNIB routing), `RealStoreMatchesTables` (render + overlay replay), `UpsV3AppliesLog`, `UpsertPreservesWf`. | the state half being a theorem, not a check | 6-10 d |
+| 8 | `lane/pq-runCall-fold` | The coverage theorem: `join_additive` + `d3Hooks`/`runCall` correspondence, so a joined proof implies the D3 chunk relation. Shape stated in `JoinFold.JoinStmt`. | the end-to-end claim | 10-15 d |
+| 9 | `lane/pq-sig-layer` | The separate Ed25519 proof layer: ZK-friendly curve arithmetic + a SHA-512 witness over the preimage, proving `Ed25519.verify` at 128 bits. Census done (`results/pq-ed25519-air/CENSUS.md`). | signed transactions | 16-26 d |
+| 10 | `lane/pq-1pgas-scale` | Research only: measure one 2^28.25-cell segment at real settings, then extrapolate the aggregation tree. No 1 Pgas claim. | goal B | research |
 
-Merge discipline that worked here: merge the **frontier** lane (the one that contains the others'
-commits) rather than every lane; shared log files conflict additively and the resolution is to keep
-both sections; a file that main already has a newer version of should keep main's version. Always
-run `pin-check` plus the `zk-formal` build before promoting a merge branch to main.
+**Suggested first batch:** 5, 6, 7 in parallel (they touch different files: `Main/` + `Exec` vs
+`HostChip`/`tracegen` vs `zk-formal/.../D3`). 8 can start once 5 and 7 land. 9 is independent and
+long; 10 is independent and cheap.
+
+### Merge discipline that worked (learned twice now)
+
+1. Merge the **frontier** lane (the one containing the others' commits), not every lane.
+2. Shared log files conflict **additively**: keep both sections.
+3. A file main already has a newer version of: keep main's.
+4. Verify **content**, not HEAD movement: a lane can be a no-op merge because its commit is already
+   an ancestor through shared history. Check `git merge-base --is-ancestor <lane> HEAD` **and** the
+   files.
+5. **Rebuild before believing a test failure.** A stale `wasmbase-tool` made 4 KATs fail; the Lean
+   source was fine. After any Lean change that adds a table, rebuild the tool and the Rust crate.
+6. Always run `pin-check`, the `zk-formal` build, `cargo fmt --check`, `clippy -D warnings`, the KAT
+   suite and the G2 manifest check before promoting to main.
 
 ## 0a. State at stop (2026-10-15) — HISTORICAL, superseded by the sections above
 
