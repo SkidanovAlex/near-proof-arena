@@ -46,6 +46,86 @@ full NEAR transition or a certified post-quantum proof system. Native acceptance
 concrete QROM bounds and the SHA-384/Ext12 recursive parent remain open. The handover records
 reproduction commands, dependency patches, boundary tests and the final gas-failure native run.
 
+## PQ recursion gate G2: PASSED, measured (2026-10-19)
+
+The G2 binding design is **measured end-to-end at real PQ settings**, not just modelled.
+Evidence: `lane/pq-stream-commit` `research/near-compression/results/pq-stream-commit/g2-gate/`
+(`run.log`, `L1..L5.proof`, `FINAL.proof`, `MANIFEST.json`, `reproduce.sh`, `README.md`);
+model log `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`.
+
+| criterion | result |
+|---|---|
+| FINAL bytes <= ~296 KB | **293,077 B** (6,923 B under 300 KB) |
+| V_d accepts under the pinned program | pass, level 6, 125,550-row program |
+| forged verify-nothing FINAL rejected | pass; accepted without the program check (control live) |
+| reproduces on a clean deps setup | `MANIFEST.json` + `reproduce.sh`; independent re-run outstanding |
+
+Settings: 268 bits = 236 query + z 32, 42-B digests, coset leaves, x15, every lever, m = 64 with
+kernel-proved O-2 only. Chain L1 -> L5 -> FINAL; L2/L3/L4 anchor at M = 1/2/3, **L5 binds by BIND**
+and the program converges at 125,550 rows. Only FINAL is transmitted. 46 min, 24 threads, 17 GB.
+
+**Two corrections to earlier figures (both matter):**
+1. 293,077 B is 5,600 B **above** the 287,477 B provisional number, which ran with `bind = false`.
+   The real margin to 300 KB is **2.3 %**.
+2. The NvAir 2^18 headroom is **thin and real**. The model said 256,031 rows (2.3 % under); a paired
+   run failed with `NvAir: 262572 rows exceed 2^18` (+428). Model-vs-measured is ~2.5 %, not 0.2 %.
+   Any program growth (wider app table, D1-class base) can cost L 24 -> 25 and eat the margin.
+
+Also since the last handover:
+* `lane/pq-d1-envelope` @ `7cd1a7135`: 23/30 `nearAirV3D1` tables proven unchanged on SWIRL with
+  real D1a traces (1,261,284 B, 82 s, tamper 14/14); per-table envelope CSVs.
+* `lane/pq-state-port` @ `c69358866`: **all 25 D0a `nearAirV3` tables** ported with no stand-in
+  table (1.02-1.60 MB, tamper 19/19), plus the Lean bridge `ZkFormal.PQ.StatePort` with
+  `multBoundP < p` kernel-checked. This is the port path, and the decision to take it.
+* `lane/pq-wasm-base` README §14: the HOST/storage/gas/receipt interface between direct-Wasm and
+  the state tables (design note).
+
+## Gap to e2e 1 Pgas under 300 KB (2026-10-19)
+
+Read `docs/logs/pq-gap-analysis-2026-10-19.md`. Summary:
+
+* **Two goals are conflated.** The signed challenge caps at `G_α` = 2^22·822,756 = 3.451e12 gas
+  (2^41.65). 1 Pgas is **289.8×** that and exists only as `Scope.checkD3Peta` (a research
+  definition). At 1 Pgas one proof is impossible at any W (needs W = 35k–71k, pin is 24), so it
+  requires ~1,880–3,760 segments and a recursion tree that has never been built or measured.
+* **The 293,077 B is the recursion tail only.** It does not cover a NEAR chunk.
+* **Blocking gaps for a `G_α` chunk:** HOST chip + `HOSTQ`/`HOSTR`/`HOSTB` buses (design only),
+  Ed25519/SHA-512 in-circuit (weeks), the Wasm↔state join (15–25 days), D1's remaining 7 tables,
+  TAPE commitment passthrough, `max_interaction_count 2^30`, `holdsP_of_swirl` composition.
+* **Next experiment:** prove one `storage_write` on both sides and join on the host buses. That
+  one run decides whether the join is 15 days or a rewrite, and needs no Ed25519.
+
+Realistic: **~2–3 months to a `G_α` chunk under 300 KB**, end to end. 1 Pgas is a separate
+research project on top.
+
+## D1-on-PQ envelope check (2026-10-19)
+
+A computed answer to "can the kernel-checked `nearAirV3D1` tables be carried on the PQ stack
+instead of re-deriving their semantics in `pq-wasm-base`". Tool: `tools/d1-pq-envelope/check.py`,
+log `docs/logs/d1-pq-envelope-2026-10-19.md`.
+
+Three findings:
+1. **Every hard limit passes.** 33 tables, degree 6 formal / 8 backend, `multBound 2^29.74`,
+   `fpBound 2^34.91`, message 36 fields, max per-bus mass `2^27.39 < p`. The AIR is admissible.
+2. **One protocol edit is required, and D0a needs it too:** `max_interaction_count` 2^28 -> 2^30
+   (D1 N = 2^29.59, D0a N = 2^29.55). Costs 2 bits on the backend LogUp term (310.88 bits at
+   `log_msg_len=7`); no WHIR query count moves.
+3. **Carry it as five base shards, with >= 3 NV levels.** One 33-table base proof is 11.9 G
+   committed cells / 179 G x15 LDE and 2.52 M-row L1 (~597 s, ~40 GB); each shard's L1 is
+   0.7-1.05 M rows (~170-250 s), today's direct-Wasm scale. At the full D1 width L1's stacked
+   height caps the blowup at b=2; sharding keeps it at the direct-Wasm b=4. The final is the
+   lane's converged 293.1 KB (model) / 287.5 KB (measured), and V_d pinning the converged
+   program forces >= 3 NV levels.
+
+Cross-checked against two lanes that did this independently the same day:
+`lane/pq-d1-envelope` @ 7cd1a7135 (per-table CSVs from the same exports; 23/30 D1 tables proven on
+SWIRL, 1,261,284 B, tamper 14/14) and `lane/pq-state-port` @ c69358866 (all 25 D0a tables, no
+stand-in, 1.02-1.60 MB, tamper 19/19). Per-table data agrees on all 33 tables. One correction
+absorbed: formal max constraint degree is 6, not 7.
+
+Not established: full NEAR / 1 Pgas coverage, host functions, or a measured PQ proof. G3 is
+untouched; this only replaces re-proving the existing D1 table semantics.
+
 ## 0a. State at stop (2026-10-15, main after this commit)
 
 * **Signed + live (local operator key; registered on the live arena):**
