@@ -1,0 +1,252 @@
+
+running 1 test
+CHILD_PARAMS l_skip=2 n_stack=8 k=3 log_blowup=1 queries=[13, 7, 6] pow(mu,fold,query,logup)=(0,0,0,0)
+PARENT_PARAMS l_skip=2 n_stack=18 k=3 log_blowup=3 queries=[16, 9, 7, 5, 4, 4] pow(mu,fold,query,logup)=(0,0,0,0)
+L0_SOUNDNESS total=5.4 logup=334.9 proximity=360.9 query=5.4
+L0_PROVE_S 0.00
+L0_PROOF_BYTES total=18833 gkr=56 relations=1800 stacking=1168 whir=15724
+L1_TRACEGEN_S 0.46
+L1_AIR 0 SymbolicExpressionAir<BabyBearParameters> 32 28 1280
+L1_AIR 1 FractionsFolderAir 1 77 77
+L1_AIR 2 UnivariateSumcheckAir 16 56 896
+L1_AIR 3 MultilinearSumcheckAir 32 81 2592
+L1_AIR 4 EqNsAir 4 97 388
+L1_AIR 5 Eq3bAir 1 41 41
+L1_AIR 6 EqSharpUniAir 4 33 132
+L1_AIR 7 EqSharpUniReceiverAir 4 41 164
+L1_AIR 8 EqUniAir 4 40 160
+L1_AIR 9 ExpressionClaimAir 4 72 288
+L1_AIR 10 InteractionsFoldingAir 1 85 85
+L1_AIR 11 ConstraintsFoldingAir 8 57 456
+L1_AIR 12 EqNegAir 8 96 768
+L1_AIR 13 TranscriptHashAir 128 95 12160
+L1_AIR 14 TranscriptObsAir 1024 8 8192
+L1_AIR 15 TranscriptSampleAir 1024 20 20480
+L1_AIR 16 MerkleVerifyAir 512 95 48640
+L1_AIR 17 Sha512Air 16384 442 7241728
+L1_AIR 18 Sha512Air 16384 442 7241728
+L1_AIR 19 TableAir 64 18 1152
+L1_AIR 20 ShaBlockAir 512 134 68608
+L1_AIR 21 ShaMsgAir 8192 45 368640
+L1_AIR 22 ShaByteAir 256 2 512
+L1_AIR 23 ProofShapeAir<4, 8> 2 54 108
+L1_AIR 24 PublicValuesAir 4 8 32
+L1_AIR 25 RangeCheckerAir<8> 256 2 512
+L1_AIR 26 GkrInputAir 1 58 58
+L1_AIR 27 GkrLayerAir 1 126 126
+L1_AIR 28 GkrLayerSumcheckAir 1 117 117
+L1_AIR 29 GkrXiSamplerAir 8 18 144
+L1_AIR 30 OpeningClaimsAir 2 151 302
+L1_AIR 31 UnivariateRoundAir 8 67 536
+L1_AIR 32 SumcheckRoundsAir 8 153 1224
+L1_AIR 33 StackingClaimsAir 4096 83 339968
+L1_AIR 34 EqBaseAir 4 139 556
+L1_AIR 35 EqBitsAir 8 32 256
+L1_AIR 36 WhirRoundAir 4 118 472
+L1_AIR 37 SumcheckAir 16 94 1504
+L1_AIR 38 WhirQueryAir 32 72 2304
+L1_AIR 39 InitialOpenedValuesAir 128 162 20736
+L1_AIR 40 NonInitialOpenedValuesAir 128 61 7808
+L1_AIR 41 WhirFoldingAir 256 71 18176
+L1_AIR 42 FinalPolyMleEvalAir 4 82 328
+L1_AIR 43 FinalPolyQueryEvalAir 256 109 27904
+L1_AIR 44 PowerCheckerAir<2, 32> 32 4 128
+L1_AIR 45 ExpBitsLenAir 1024 16 16384
+L1_TOTAL_CELLS 15458850
+L1_SHA_COMPRESSIONS total=716 merkle_nodes=371 job_blocks=345 transcript_jobs=93
+L1_COLUMNS airs=46 columns=3914 opened_columns=7580 opened_bytes~363840
+L1_SOUNDNESS total=20.4 logup=331.6 proximity=325.9 query=20.4
+L1_PROVE_S 20.15
+L1_VERIFY_S 0.095
+L1_PROOF_BYTES total=487030 gkr=34328 relations=372292 stacking=2852 whir=76892
+L2_TRACEGEN_S 0.80
+L2_AIR 0 SymbolicExpressionAir<BabyBearParameters> 131072 28 5242880
+L2_AIR 1 FractionsFolderAir 64 77 4928
+L2_AIR 2 UnivariateSumcheckAir 16 56 896
+L2_AIR 3 MultilinearSumcheckAir 128 81 10368
+L2_AIR 4 EqNsAir 32 97 3104
+L2_AIR 5 Eq3bAir 32768 41 1343488
+L2_AIR 6 EqSharpUniAir 4 33 132
+L2_AIR 7 EqSharpUniReceiverAir 4 41 164
+L2_AIR 8 EqUniAir 4 40 160
+L2_AIR 9 ExpressionClaimAir 256 72 18432
+L2_AIR 10 InteractionsFoldingAir 16384 85 1392640
+L2_AIR 11 ConstraintsFoldingAir 8192 57 466944
+L2_AIR 12 EqNegAir 8 96 768
+L2_AIR 13 TranscriptHashAir 1024 95 97280
+L2_AIR 14 TranscriptObsAir 131072 8 1048576
+L2_AIR 15 TranscriptSampleAir 8192 20 163840
+L2_AIR 16 MerkleVerifyAir 2048 95 194560
+L2_AIR 17 Sha512Air 262144 442 115867648
+L2_AIR 18 Sha512Air 32768 442 14483456
+L2_AIR 19 TableAir 64 18 1152
+L2_AIR 20 ShaBlockAir 8192 134 1097728
+L2_AIR 21 ShaMsgAir 131072 45 5898240
+L2_AIR 22 ShaByteAir 256 2 512
+L2_AIR 23 ProofShapeAir<4, 8> 64 62 3968
+L2_AIR 24 PublicValuesAir 1 8 8
+L2_AIR 25 RangeCheckerAir<8> 256 2 512
+L2_AIR 26 GkrInputAir 1 58 58
+L2_AIR 27 GkrLayerAir 32 126 4032
+L2_AIR 28 GkrLayerSumcheckAir 256 117 29952
+L2_AIR 29 GkrXiSamplerAir 1 18 18
+L2_AIR 30 OpeningClaimsAir 4096 151 618496
+L2_AIR 31 UnivariateRoundAir 8 67 536
+L2_AIR 32 SumcheckRoundsAir 32 153 4896
+L2_AIR 33 StackingClaimsAir 4096 83 339968
+L2_AIR 34 EqBaseAir 4 139 556
+L2_AIR 35 EqBitsAir 8192 32 262144
+L2_AIR 36 WhirRoundAir 8 119 952
+L2_AIR 37 SumcheckAir 32 94 3008
+L2_AIR 38 WhirQueryAir 64 72 4608
+L2_AIR 39 InitialOpenedValuesAir 512 162 82944
+L2_AIR 40 NonInitialOpenedValuesAir 256 61 15616
+L2_AIR 41 WhirFoldingAir 512 71 36352
+L2_AIR 42 FinalPolyMleEvalAir 8 82 656
+L2_AIR 43 FinalPolyQueryEvalAir 1024 109 111616
+L2_AIR 44 PowerCheckerAir<2, 32> 32 4 128
+L2_AIR 45 ExpBitsLenAir 2048 16 32768
+L2_TOTAL_CELLS 148891688
+L2_SHA_COMPRESSIONS total=6388 merkle_nodes=1573 job_blocks=4815 transcript_jobs=801
+L2_COLUMNS airs=46 columns=3923 opened_columns=7598 opened_bytes~364704
+L2_SOUNDNESS total=20.4 logup=331.6 proximity=325.9 query=20.4
+test sha384::e2e_tests::e2e_measure has been running for over 60 seconds
+L2_PROVE_S 193.96
+L2_VERIFY_S 0.114
+L2_PROOF_BYTES total=573702 gkr=48056 relations=374116 stacking=8948 whir=141916
+L3_TRACEGEN_S 0.85
+L3_AIR 0 SymbolicExpressionAir<BabyBearParameters> 131072 28 5242880
+L3_AIR 1 FractionsFolderAir 64 77 4928
+L3_AIR 2 UnivariateSumcheckAir 16 56 896
+L3_AIR 3 MultilinearSumcheckAir 128 81 10368
+L3_AIR 4 EqNsAir 32 97 3104
+L3_AIR 5 Eq3bAir 32768 41 1343488
+L3_AIR 6 EqSharpUniAir 4 33 132
+L3_AIR 7 EqSharpUniReceiverAir 4 41 164
+L3_AIR 8 EqUniAir 4 40 160
+L3_AIR 9 ExpressionClaimAir 256 72 18432
+L3_AIR 10 InteractionsFoldingAir 16384 85 1392640
+L3_AIR 11 ConstraintsFoldingAir 8192 57 466944
+L3_AIR 12 EqNegAir 8 96 768
+L3_AIR 13 TranscriptHashAir 2048 95 194560
+L3_AIR 14 TranscriptObsAir 131072 8 1048576
+L3_AIR 15 TranscriptSampleAir 8192 20 163840
+L3_AIR 16 MerkleVerifyAir 2048 95 194560
+L3_AIR 17 Sha512Air 262144 442 115867648
+L3_AIR 18 Sha512Air 65536 442 28966912
+L3_AIR 19 TableAir 64 18 1152
+L3_AIR 20 ShaBlockAir 8192 134 1097728
+L3_AIR 21 ShaMsgAir 131072 45 5898240
+L3_AIR 22 ShaByteAir 256 2 512
+L3_AIR 23 ProofShapeAir<4, 8> 64 62 3968
+L3_AIR 24 PublicValuesAir 1 8 8
+L3_AIR 25 RangeCheckerAir<8> 256 2 512
+L3_AIR 26 GkrInputAir 1 58 58
+L3_AIR 27 GkrLayerAir 32 126 4032
+L3_AIR 28 GkrLayerSumcheckAir 512 117 59904
+L3_AIR 29 GkrXiSamplerAir 1 18 18
+L3_AIR 30 OpeningClaimsAir 4096 151 618496
+L3_AIR 31 UnivariateRoundAir 8 67 536
+L3_AIR 32 SumcheckRoundsAir 32 153 4896
+L3_AIR 33 StackingClaimsAir 4096 83 339968
+L3_AIR 34 EqBaseAir 4 139 556
+L3_AIR 35 EqBitsAir 8192 32 262144
+L3_AIR 36 WhirRoundAir 8 119 952
+L3_AIR 37 SumcheckAir 32 94 3008
+L3_AIR 38 WhirQueryAir 64 72 4608
+L3_AIR 39 InitialOpenedValuesAir 4096 162 663552
+L3_AIR 40 NonInitialOpenedValuesAir 256 61 15616
+L3_AIR 41 WhirFoldingAir 512 71 36352
+L3_AIR 42 FinalPolyMleEvalAir 8 82 656
+L3_AIR 43 FinalPolyQueryEvalAir 1024 109 111616
+L3_AIR 44 PowerCheckerAir<2, 32> 32 4 128
+L3_AIR 45 ExpBitsLenAir 2048 16 32768
+L3_TOTAL_CELLS 164082984
+L3_SHA_COMPRESSIONS total=7403 merkle_nodes=1573 job_blocks=5830 transcript_jobs=1053
+L3_COLUMNS airs=46 columns=3923 opened_columns=7598 opened_bytes~364704
+L3_SOUNDNESS total=20.4 logup=331.6 proximity=325.9 query=20.4
+L3_PROVE_S 205.07
+L3_VERIFY_S 0.115
+L3_PROOF_BYTES total=581542 gkr=48056 relations=374116 stacking=9620 whir=149084
+L4_TRACEGEN_S 0.89
+L4_AIR 0 SymbolicExpressionAir<BabyBearParameters> 131072 28 5242880
+L4_AIR 1 FractionsFolderAir 64 77 4928
+L4_AIR 2 UnivariateSumcheckAir 16 56 896
+L4_AIR 3 MultilinearSumcheckAir 128 81 10368
+L4_AIR 4 EqNsAir 32 97 3104
+L4_AIR 5 Eq3bAir 32768 41 1343488
+L4_AIR 6 EqSharpUniAir 4 33 132
+L4_AIR 7 EqSharpUniReceiverAir 4 41 164
+L4_AIR 8 EqUniAir 4 40 160
+L4_AIR 9 ExpressionClaimAir 256 72 18432
+L4_AIR 10 InteractionsFoldingAir 16384 85 1392640
+L4_AIR 11 ConstraintsFoldingAir 8192 57 466944
+L4_AIR 12 EqNegAir 8 96 768
+L4_AIR 13 TranscriptHashAir 2048 95 194560
+L4_AIR 14 TranscriptObsAir 131072 8 1048576
+L4_AIR 15 TranscriptSampleAir 8192 20 163840
+L4_AIR 16 MerkleVerifyAir 2048 95 194560
+L4_AIR 17 Sha512Air 262144 442 115867648
+L4_AIR 18 Sha512Air 131072 442 57933824
+L4_AIR 19 TableAir 64 18 1152
+L4_AIR 20 ShaBlockAir 8192 134 1097728
+L4_AIR 21 ShaMsgAir 131072 45 5898240
+L4_AIR 22 ShaByteAir 256 2 512
+L4_AIR 23 ProofShapeAir<4, 8> 64 62 3968
+L4_AIR 24 PublicValuesAir 1 8 8
+L4_AIR 25 RangeCheckerAir<8> 256 2 512
+L4_AIR 26 GkrInputAir 1 58 58
+L4_AIR 27 GkrLayerAir 32 126 4032
+L4_AIR 28 GkrLayerSumcheckAir 512 117 59904
+L4_AIR 29 GkrXiSamplerAir 1 18 18
+L4_AIR 30 OpeningClaimsAir 4096 151 618496
+L4_AIR 31 UnivariateRoundAir 8 67 536
+L4_AIR 32 SumcheckRoundsAir 32 153 4896
+L4_AIR 33 StackingClaimsAir 4096 83 339968
+L4_AIR 34 EqBaseAir 4 139 556
+L4_AIR 35 EqBitsAir 8192 32 262144
+L4_AIR 36 WhirRoundAir 8 119 952
+L4_AIR 37 SumcheckAir 32 94 3008
+L4_AIR 38 WhirQueryAir 64 72 4608
+L4_AIR 39 InitialOpenedValuesAir 4096 162 663552
+L4_AIR 40 NonInitialOpenedValuesAir 256 61 15616
+L4_AIR 41 WhirFoldingAir 512 71 36352
+L4_AIR 42 FinalPolyMleEvalAir 8 82 656
+L4_AIR 43 FinalPolyQueryEvalAir 1024 109 111616
+L4_AIR 44 PowerCheckerAir<2, 32> 32 4 128
+L4_AIR 45 ExpBitsLenAir 2048 16 32768
+L4_TOTAL_CELLS 193049896
+L4_SHA_COMPRESSIONS total=7516 merkle_nodes=1573 job_blocks=5943 transcript_jobs=1033
+L4_COLUMNS airs=46 columns=3923 opened_columns=7598 opened_bytes~364704
+L4_SOUNDNESS total=20.4 logup=331.6 proximity=325.9 query=20.4
+L4_PROVE_S 253.68
+L4_VERIFY_S 0.117
+L4_PROOF_BYTES total=597222 gkr=48056 relations=374116 stacking=10964 whir=163420
+test sha384::e2e_tests::e2e_measure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 14 filtered out; finished in 676.34s
+
+	Command being timed: "/data/illia/nearproof-deps/pq-recursion/target-sha/release/deps/openvm_recursion_circuit-41e0f9a769bcd7a3 e2e_measure --ignored --nocapture"
+	User time (seconds): 4755.64
+	System time (seconds): 34.60
+	Percent of CPU this job got: 708%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 11:16.43
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 24777472
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 42020720
+	Voluntary context switches: 265964
+	Involuntary context switches: 31393
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 72
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+EXIT 0

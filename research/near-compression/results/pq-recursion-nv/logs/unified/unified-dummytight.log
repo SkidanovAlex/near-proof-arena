@@ -1,0 +1,49 @@
+NATIVE_SHA384_PROFILE n_stack=15 k=3 log_blowup=3 all_list=1 queries=[75, 58, 47, 40, 35]
+NATIVE_SHA384_INTERACTION_LOG 26
+LEVERS_PROFILE_GKR gruen=true derive=true next_mask=true gruen_zc=true max_degree=8
+LEVERS_PROFILE k1=3 log_final=2 multiproof=true keep_domain=false m=8 query_pow=16 folding_pow=0 mu_pow=0 digest_bytes=42 coset_leaf=true dummy=true
+NATIVE_SHA384_KEYGEN_SECONDS 0.000733489
+LEVERS_ROT_MASK air=0 widths=[460] need_rot=true rotated_per_part=[460]
+NATIVE_SHA384_EXT12 target=268 min=268.201128496786 logup=330.3417790168468 proximity=314.7631089479364 query=268.201128496786
+NATIVE_SHA384_PROVE_SECONDS 8.676424677
+LEVERS_GRIND bits=16 seconds=0.0037 witness=134425
+LEVERS_GRIND bits=16 seconds=0.0008 witness=24575
+LEVERS_GRIND bits=16 seconds=0.0024 witness=108917
+LEVERS_GRIND bits=16 seconds=0.0014 witness=65565
+LEVERS_GRIND bits=16 seconds=0.0010 witness=43523
+NATIVE_SHA384_VERIFY_SECONDS 0.016519732
+NATIVE_SHA384_VERIFY_CALLS [0, 3502, 1, 156, 6, 291, 255, 5]
+NATIVE_SHA384_VERIFY_BLOCKS [0, 3502, 1, 707, 12, 291, 1095, 5] total=5613
+NATIVE_SHA384_EXT12_BYTES total=306655 gkr_upstream_enc=15848 relations=49944 stacking=2512 whir=243840
+LEVERS_TIGHT heights=[(12, Some(4096))]
+LEVERS_CENSUS total=306655 auth=136584 auth_digests=3252 auth_per_tree=[1038, 764, 598, 469, 383] initial=36000 codeword=69120 final_poly=192 whir_small=1944 whir=243840 relations=49468 column_openings_ef=920 gkr=10760 stacking=2512 stacking_openings_ef=15 other=75
+LEVERS_NEGATIVE ok=encoding-ignores-truncated-tail
+LEVERS_NEGATIVE case="next_mask: vk drops a rotated column" rejected=true
+LEVERS_NEGATIVE case="next_mask: rotated claim removed" rejected=true
+LEVERS_NEGATIVE case="initial leaf value" rejected=true
+LEVERS_NEGATIVE case="codeword leaf value (last coset element)" rejected=true
+LEVERS_NEGATIVE case="initial auth digest" rejected=true
+LEVERS_NEGATIVE case="codeword auth digest" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling removed" rejected=true
+LEVERS_NEGATIVE case="multiproof: sibling appended" rejected=true
+LEVERS_NEGATIVE case="multiproof: siblings reordered" rejected=true
+LEVERS_NEGATIVE case="query PoW witness" rejected=true
+LEVERS_NEGATIVE case="last-round query PoW witness" rejected=true
+LEVERS_NEGATIVE case="levers field mismatch" rejected=true
+LEVERS_NEGATIVE case="GKR sumcheck s(1)" rejected=true
+LEVERS_NEGATIVE case="GKR sumcheck s(2)" rejected=true
+LEVERS_NEGATIVE case="GKR layer claim q_xi_1" rejected=true
+LEVERS_NEGATIVE case="GKR root claim p_xi_0" rejected=true
+LEVERS_NEGATIVE case="GKR last layer claim q_xi_0" rejected=true
+LEVERS_NEGATIVE case="GKR gruen: dropped s(3) set" rejected=true
+LEVERS_NEGATIVE case="GKR derive: p_xi_1 set" rejected=true
+LEVERS_NEGATIVE case="GKR derive: q0_claim set" rejected=true
+LEVERS_NEGATIVE case="batch sumcheck eval" rejected=true
+LEVERS_NEGATIVE case="batch gruen: dropped eval set" rejected=true
+LEVERS_NEGATIVE case="next_mask: rotated claim value" rejected=true
+LEVERS_NEGATIVE case="tight: committed height +2^l_skip" rejected=true
+LEVERS_NEGATIVE case="tight: committed height -2^l_skip" rejected=true
+LEVERS_NEGATIVE case="tight: committed height dropped" rejected=true
+LEVERS_NEGATIVE case="tight: height not a multiple of 2^l_skip" rejected=true
+LEVERS_NEGATIVE case="tight: last stacked column opening" rejected=true
+LEVERS_NEGATIVE_PASS cases=26

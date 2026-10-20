@@ -1,0 +1,72 @@
+
+running 1 test
+NV_PARENT_PARAMS l_skip=2 n_stack=19 k=3 log_blowup=3 queries=[16, 9, 7, 5, 4, 4, 3] pow(mu,fold,query,logup)=(0,0,0,0)
+NV_PHASE before_dag 1465
+NV_DAG air=0 nodes=21 rows_so_far=1515
+NV_PHASE after_dag 1528
+NV_PHASE after_stacking 1841
+NV_QCOST round=0 queries=10 rows=3703 per_query=370 nbits=8 k=3 merkle_nodes=150
+NV_QCOST round=1 queries=4 rows=1460 per_query=365 nbits=7 k=3 merkle_nodes=206
+NV_QCOST round=2 queries=2 rows=706 per_query=353 nbits=6 k=3 merkle_nodes=232
+NV_PHASE end 10436
+test nv::tests::nv_chain has been running for over 60 seconds
+A1_AIR NvAir h=262144 w=69 rot=1 int/row=48 deg=8
+A1_AIR Sha512Air h=32768 w=171 rot=1 int/row=14 deg=21
+A1_AIR TableAir h=64 w=13 rot=1 int/row=2 deg=4
+A1_AIR ByteAir h=65536 w=5 rot=1 int/row=1 deg=3
+A1_SUMMARY cols=258 opened=516 interactions=13107328 L=24 cells=24019776 sha_cells=5604160 other_cells=18415616 alu_used=9669 merkle_nodes=232 leaf_blocks=128 prove_s=504.5
+A1_SOUNDNESS total=20.4 logup=331.6 proximity=322.9 query=20.4
+A1_PROOF_BYTES total=157797 gkr=44408 relations=45312 stacking=2752 whir=65212
+A1_HEIGHTS [262144, 32768, 64, 65536]
+NV_PHASE before_dag 16737
+NV_DAG air=0 nodes=3132 rows_so_far=20885
+NV_DAG air=3 nodes=32 rows_so_far=22069
+NV_DAG air=1 nodes=12707 rows_so_far=35464
+NV_DAG air=2 nodes=1126 rows_so_far=37115
+NV_PHASE after_dag 37212
+NV_PHASE after_stacking 42191
+NV_QCOST round=0 queries=16 rows=9835 per_query=615 nbits=21 k=3 merkle_nodes=448
+NV_QCOST round=1 queries=9 rows=4690 per_query=521 nbits=20 k=3 merkle_nodes=691
+NV_QCOST round=2 queries=7 rows=3564 per_query=509 nbits=19 k=3 merkle_nodes=873
+NV_QCOST round=3 queries=5 rows=2486 per_query=497 nbits=18 k=3 merkle_nodes=998
+NV_QCOST round=4 queries=4 rows=1941 per_query=485 nbits=17 k=3 merkle_nodes=1094
+NV_QCOST round=5 queries=4 rows=1893 per_query=473 nbits=16 k=3 merkle_nodes=1186
+NV_QCOST round=6 queries=3 rows=1384 per_query=461 nbits=15 k=3 merkle_nodes=1252
+NV_PHASE end 73610
+A2_AIR NvAir h=262144 w=69 rot=1 int/row=48 deg=8
+A2_AIR Sha512Air h=262144 w=171 rot=1 int/row=14 deg=21
+A2_AIR TableAir h=64 w=13 rot=1 int/row=2 deg=4
+A2_AIR ByteAir h=65536 w=5 rot=1 int/row=1 deg=3
+A2_SUMMARY cols=258 opened=516 interactions=16318592 L=24 cells=63243072 sha_cells=44827456 other_cells=18415616 alu_used=72843 merkle_nodes=1252 leaf_blocks=384 prove_s=2130.0
+A2_SOUNDNESS total=20.4 logup=331.6 proximity=322.9 query=20.4
+A2_PROOF_BYTES total=168437 gkr=44408 relations=45312 stacking=3664 whir=74940
+A2_HEIGHTS [262144, 262144, 64, 65536]
+NV_FIXED_HEIGHTS [262144, 262144, 64, 65536]
+test nv::tests::nv_chain ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 25 filtered out; finished in 2634.45s
+
+	Command being timed: "/data/illia/nearproof-deps/pq-recursion/bin/nv-u2c nv_chain --ignored --nocapture"
+	User time (seconds): 20820.94
+	System time (seconds): 10.90
+	Percent of CPU this job got: 790%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 43:54.49
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 11152600
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 11997034
+	Voluntary context switches: 57220
+	Involuntary context switches: 28259
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 32
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+EXIT 0

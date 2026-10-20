@@ -1,0 +1,77 @@
+
+running 1 test
+NV_PHASE before_dag 1474
+NV_DAG air=0 nodes=21 rows_so_far=1524
+NV_PHASE after_dag 1537
+NV_PHASE after_stacking 1845
+NV_QCOST round=0 queries=10 rows=3393 per_query=339 nbits=8 k=3 merkle_nodes=150
+NV_QCOST round=1 queries=4 rows=1336 per_query=334 nbits=7 k=3 merkle_nodes=206
+NV_QCOST round=2 queries=2 rows=644 per_query=322 nbits=6 k=3 merkle_nodes=232
+NV_PHASE end 10041
+test nv::tests::nv_app_binding has been running for over 60 seconds
+NV_APP table rows 10042
+NV_PHASE before_dag 30501
+NV_DAG air=0 nodes=3510 rows_so_far=35376
+NV_DAG air=3 nodes=32 rows_so_far=36665
+NV_DAG air=1 nodes=12718 rows_so_far=50096
+NV_DAG air=2 nodes=1128 rows_so_far=51747
+NV_PHASE after_dag 51844
+NV_PHASE after_stacking 55586
+NV_QCOST round=0 queries=29 rows=22934 per_query=791 nbits=19 k=3 merkle_nodes=754
+NV_QCOST round=1 queries=11 rows=5126 per_query=466 nbits=18 k=3 merkle_nodes=1029
+NV_QCOST round=2 queries=7 rows=3178 per_query=454 nbits=17 k=3 merkle_nodes=1197
+NV_QCOST round=3 queries=6 rows=2652 per_query=442 nbits=16 k=3 merkle_nodes=1335
+NV_QCOST round=4 queries=4 rows=1720 per_query=430 nbits=15 k=3 merkle_nodes=1423
+NV_QCOST round=5 queries=4 rows=1672 per_query=418 nbits=14 k=3 merkle_nodes=1507
+NV_PHASE end 103019
+NV_APP level2 failures []
+NV_APP honest ok
+NV_PHASE before_dag 30501
+NV_DAG air=0 nodes=3510 rows_so_far=35376
+NV_DAG air=3 nodes=32 rows_so_far=36665
+NV_DAG air=1 nodes=12718 rows_so_far=50096
+NV_DAG air=2 nodes=1128 rows_so_far=51747
+NV_PHASE after_dag 51844
+NV_PHASE after_stacking 55586
+NV_QCOST round=0 queries=29 rows=22934 per_query=791 nbits=19 k=3 merkle_nodes=754
+NV_QCOST round=1 queries=11 rows=5126 per_query=466 nbits=18 k=3 merkle_nodes=1029
+NV_QCOST round=2 queries=7 rows=3178 per_query=454 nbits=17 k=3 merkle_nodes=1197
+NV_QCOST round=3 queries=6 rows=2652 per_query=442 nbits=16 k=3 merkle_nodes=1335
+NV_QCOST round=4 queries=4 rows=1720 per_query=430 nbits=15 k=3 merkle_nodes=1423
+NV_QCOST round=5 queries=4 rows=1672 per_query=418 nbits=14 k=3 merkle_nodes=1507
+NV_PHASE end 103019
+NV_APP level2 failures ["program binding"]
+
+thread '<unnamed>' (2538980) panicked at /data/illia/nearproof-deps/pq-recursion/stark-backend-unified/crates/stark-backend/src/air_builders/debug/mod.rs:75:9:
+assertion `left == right` failed: constraints had nonzero value on air NvAir,row 30500
+  left: 325073124
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+NV_TAMPER_REJECTED app table word
+test nv::tests::nv_app_binding ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 31 filtered out; finished in 3063.00s
+
+	Command being timed: "/data/illia/nearproof-deps/pq-recursion/bin/nv-p2e nv_app_binding --nocapture"
+	User time (seconds): 10444.94
+	System time (seconds): 9.05
+	Percent of CPU this job got: 341%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 51:03.06
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 17317944
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 8394078
+	Voluntary context switches: 639811
+	Involuntary context switches: 557502
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 32
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

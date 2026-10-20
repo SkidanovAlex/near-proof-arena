@@ -1,0 +1,10 @@
+
+running 15 tests
+test nv::hash_tests::nv_hash2_random_jobs ... ok
+test nv::hash_tests::nv_hash2_rejects_mutations ... ok
+test nv::tests::nv_circuit_fib_debug ... ok
+test nv::tests::nv_circuit_interactions_debug ... ok
+test nv::tests::nv_circuit_tamper ... ok
+test nv::tests::nv_degrees ... ok
+test nv::tests::nv_lever_tamper ... ok
+test nv::tests::nv_opening_formula ... 

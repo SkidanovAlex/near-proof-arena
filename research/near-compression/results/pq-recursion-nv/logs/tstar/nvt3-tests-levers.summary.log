@@ -1,0 +1,82 @@
+test nv::hash_tests::nv_hash2_random_jobs ... ok
+test nv::hash_tests::nv_hash2_rejects_mutations ... 
+test nv::tests::nv_circuit_fib_debug ... NV_PHASE before_dag 1396
+test nv::tests::nv_circuit_interactions_debug ... NV_PHASE before_dag 1614
+test nv::tests::nv_circuit_tamper ... NV_PHASE before_dag 1396
+NV_TAMPER_REJECTED merkle-sibling-digest
+NV_TAMPER_REJECTED opened-value
+NV_TAMPER_REJECTED transcript-sample
+NV_TAMPER_REJECTED transcript-state-limb
+NV_TAMPER_REJECTED alu-result
+NV_TAMPER_REJECTED nvair padding row y
+NV_TAMPER_REJECTED nvair padding row pool
+NV_TAMPER_REJECTED op relabel const->load
+NV_TAMPER_REJECTED bind-acc
+NV_TAMPER_REJECTED bind-program-word
+test nv::tests::nv_degrees ... NV_DEG NvAir deg=8 w=73 int=55 rot=1 rot_cols=36
+test nv::tests::nv_lever_tamper ... NV_PHASE before_dag 1611
+NV_TAMPER_REJECTED gruen gkr s(3) non-zero
+NV_TAMPER_REJECTED gruen gkr s(1)
+NV_TAMPER_REJECTED derived p_xi_1 non-zero
+NV_TAMPER_REJECTED derived q0 non-zero
+NV_TAMPER_REJECTED layer q_xi_1
+NV_TAMPER_REJECTED gruen zerocheck last eval
+NV_TAMPER_REJECTED zerocheck eval
+NV_TAMPER_REJECTED column opening
+NV_TAMPER_REJECTED pow witness
+test nv::tests::nv_program_detects_tampering ... NV_PHASE before_dag 850
+NV_TAMPER column opening: ["batch constraint claim", "stacking s0", "stacking final sum", "pow (3 bits)", "pow leading zero bits", "pow (2 bits)", "pow leading zero bits", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "pow (2 bits)", "pow leading zero bits", "pow (2 bits)", "pow leading zero bits", "pow (1 bits)", "pow leading zero bits", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "pow (2 bits)", "pow leading zero bits", "pow (2 bits)", "pow leading zero bits", "pow (2 bits)", "pow leading zero bits", "merkle root", "merkle root lo", "merkle root hi", "whir final"]
+NV_TAMPER gkr claim: ["q0 = 1 without interactions"]
+NV_TAMPER stacking opening: ["stacking final sum", "pow (3 bits)", "pow leading zero bits", "pow (2 bits)", "pow leading zero bits", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "pow (2 bits)", "pow leading zero bits", "pow (2 bits)", "pow leading zero bits", "pow (2 bits)", "pow leading zero bits", "pow (1 bits)", "pow leading zero bits", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "pow (2 bits)", "pow leading zero bits", "pow (2 bits)", "pow leading zero bits", "pow (2 bits)", "pow leading zero bits", "pow (1 bits)", "pow leading zero bits", "merkle root", "merkle root lo", "merkle root hi", "whir final"]
+NV_TAMPER whir sumcheck: ["pow (2 bits)", "pow leading zero bits", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "multiproof stream too short", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "pow (2 bits)", "pow leading zero bits", "pow (2 bits)", "pow leading zero bits", "pow (2 bits)", "pow leading zero bits", "multiproof stream too long", "merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "pow (2 bits)", "pow leading zero bits", "merkle root", "merkle root lo", "merkle root hi", "whir final"]
+NV_TAMPER final poly: ["merkle root", "merkle root lo", "merkle root hi", "whir final"]
+NV_TAMPER codeword value: ["merkle root", "merkle root lo", "merkle root hi", "merkle root", "merkle root lo", "merkle root hi", "pow (2 bits)", "pow leading zero bits", "pow (2 bits)", "pow leading zero bits", "pow (2 bits)", "pow leading zero bits", "pow (1 bits)", "pow leading zero bits", "merkle root", "merkle root lo", "merkle root hi", "whir final"]
+test nv::tests::nv_program_fib ... NV_PHASE before_dag 850
+test nv::tests::nv_program_interactions ... NV_PHASE before_dag 1068
+test nv::tests::nv_tight_heights ... NV_TIGHT child tight=[Some(700)]
+NV_TAMPER_REJECTED tight stacking opening
+NV_TAMPER_REJECTED tight opened row
+NV_TAMPER_REJECTED tight stacking opening
+NV_TAMPER_REJECTED tight opened row
+test nv::tests::nv_tstar_tamper ... NV_PHASE before_dag 1396
+NV_TSTAR jobs: squeeze 30 pow 12 pow-run 16
+NV_TSTAR honest ok
+NV_TAMPER_REJECTED tstar wrong counter (squeeze block)
+NV_TAMPER_REJECTED tstar wrong counter (PoW-run block)
+NV_TAMPER_REJECTED tstar challenges from the PoW bits of B_1
+NV_TSTAR old-chain witness 0 (honest 1)
+NV_TAMPER_REJECTED tstar PoW ground on the old chain
+test nv::tests::nv_whir_lever_tamper ... NV_PHASE before_dag 1190
+NV_TAMPER_REJECTED multiproof initial digest
+NV_TAMPER_REJECTED multiproof codeword digest
+NV_TAMPER_REJECTED initial opened row (k1 leaf)
+NV_TAMPER_REJECTED codeword value
+NV_TAMPER_REJECTED wide pow witness element 1
+NV_TAMPER_REJECTED final poly
+test nv::tests::nv_zero_tail_plain ... NV_PHASE before_dag 2074
+test nv::tests::unified_cpu_matches_reference ... UNIFIED_IDENTITY case=default fixture=0 bytes=70807 identical=true
+UNIFIED_IDENTITY case=default fixture=1 bytes=71823 identical=true
+UNIFIED_IDENTITY case=k1=1 fixture=0 bytes=105777 identical=true
+UNIFIED_IDENTITY case=k1=1 fixture=1 bytes=106793 identical=true
+UNIFIED_IDENTITY case=keep_domain fixture=0 bytes=65087 identical=true
+UNIFIED_IDENTITY case=keep_domain fixture=1 bytes=66103 identical=true
+UNIFIED_IDENTITY case=multiproof fixture=0 bytes=44447 identical=true
+UNIFIED_IDENTITY case=multiproof fixture=1 bytes=45505 identical=true
+UNIFIED_IDENTITY case=gruen+derive fixture=0 bytes=70631 identical=true
+UNIFIED_IDENTITY case=gruen+derive fixture=1 bytes=71311 identical=true
+UNIFIED_IDENTITY case=next_mask fixture=0 bytes=70823 identical=true
+UNIFIED_IDENTITY case=next_mask fixture=1 bytes=71839 identical=true
+UNIFIED_IDENTITY case=x15 fixture=0 bytes=56875 identical=true
+UNIFIED_IDENTITY case=x15 fixture=1 bytes=57891 identical=true
+UNIFIED_IDENTITY case=tight fixture=0 bytes=70827 identical=true
+UNIFIED_IDENTITY case=tight fixture=1 bytes=71847 identical=true
+UNIFIED_IDENTITY case=whir_y fixture=0 bytes=70823 identical=true
+UNIFIED_IDENTITY case=whir_y fixture=1 bytes=71839 identical=true
+UNIFIED_IDENTITY case=all fixture=0 bytes=47299 identical=true
+UNIFIED_IDENTITY case=all fixture=1 bytes=48403 identical=true
+test sha384::config::native_diff::native_differential ... skipped: the native reference is the legacy chained squeeze (NEARPROOF_TSTAR=0)
+test sha384::config::tests::digest_limb_roundtrip ... ok
+test sha384::config::tests::native_transcript_vectors ... skipped: recorded vectors are the legacy chained squeeze (NEARPROOF_TSTAR=0)
+test sha384::config::tests::tstar_counter_mode ... ok
+test sha384::config::tests::tstar_pow ... ok
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 143.81s

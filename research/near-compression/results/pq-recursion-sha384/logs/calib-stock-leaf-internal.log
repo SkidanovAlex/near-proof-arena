@@ -1,0 +1,213 @@
+
+running 1 test
+CALIB_PARAMS child l_skip=4 n_stack=17 w_stack=2048 log_blowup=2 k_whir=4 queries=[118, 84, 81] pow(mu,fold,query)=(13,4,20) logup_pow=18
+CALIB_PARAMS parent l_skip=2 n_stack=17 w_stack=512 log_blowup=3 k_whir=4 queries=[68, 30, 20] pow(mu,fold,query)=(20,18,20) logup_pow=19
+CALIB_L0_PROVE_S 3.18
+CALIB_L0_PROOF_BYTES total=226221 gkr=24 relations=2296 stacking=1072 whir=222760
+CALIB_L1_KEYGEN_S 0.01
+CALIB_L1_TRACEGEN_S 0.02
+CALIB_L1_AIR idx name height width cached_w cells
+CALIB_L1_AIR 0 SymbolicExpressionAir<BabyBearParameters> 32 12 12 768 used_rows=32
+CALIB_L1_AIR 1 FractionsFolderAir 1 29 0 29 used_rows=1
+CALIB_L1_AIR 2 UnivariateSumcheckAir 128 24 0 3072 used_rows=76
+CALIB_L1_AIR 3 MultilinearSumcheckAir 128 33 0 4224 used_rows=72
+CALIB_L1_AIR 4 EqNsAir 16 41 0 656 used_rows=13
+CALIB_L1_AIR 5 Eq3bAir 1 25 0 25 used_rows=1
+CALIB_L1_AIR 6 EqSharpUniAir 16 17 0 272 used_rows=16
+CALIB_L1_AIR 7 EqSharpUniReceiverAir 16 17 0 272 used_rows=16
+CALIB_L1_AIR 8 EqUniAir 8 16 0 128 used_rows=8
+CALIB_L1_AIR 9 ExpressionClaimAir 4 32 0 128 used_rows=3
+CALIB_L1_AIR 10 InteractionsFoldingAir 1 37 0 37 used_rows=1
+CALIB_L1_AIR 11 ConstraintsFoldingAir 8 25 0 200 used_rows=6
+CALIB_L1_AIR 12 EqNegAir 16 40 0 640 used_rows=16
+CALIB_L1_AIR 13 TranscriptAir 512 44 0 22528 used_rows=496
+CALIB_L1_AIR 14 Poseidon2Air<BabyBearParameters>, 1> 16384 301 0 4931584 used_rows=12496
+CALIB_L1_AIR 15 MerkleVerifyAir 16384 38 0 622592 used_rows=9659
+CALIB_L1_AIR 16 ProofShapeAir<4, 8> 2 38 0 76 used_rows=2
+CALIB_L1_AIR 17 PublicValuesAir 4 8 0 32 used_rows=3
+CALIB_L1_AIR 18 RangeCheckerAir<8> 256 2 0 512 used_rows=256
+CALIB_L1_AIR 19 GkrInputAir 1 26 0 26 used_rows=1
+CALIB_L1_AIR 20 GkrLayerAir 1 46 0 46 used_rows=1
+CALIB_L1_AIR 21 GkrLayerSumcheckAir 1 45 0 45 used_rows=1
+CALIB_L1_AIR 22 GkrXiSamplerAir 16 10 0 160 used_rows=16
+CALIB_L1_AIR 23 OpeningClaimsAir 2 63 0 126 used_rows=2
+CALIB_L1_AIR 24 UnivariateRoundAir 32 27 0 864 used_rows=32
+CALIB_L1_AIR 25 SumcheckRoundsAir 32 57 0 1824 used_rows=32
+CALIB_L1_AIR 26 StackingClaimsAir 2048 35 0 71680 used_rows=2048
+CALIB_L1_AIR 27 EqBaseAir 8 51 0 408 used_rows=8
+CALIB_L1_AIR 28 EqBitsAir 8 16 0 128 used_rows=8
+CALIB_L1_AIR 29 WhirRoundAir 4 46 0 184 used_rows=3
+CALIB_L1_AIR 30 SumcheckAir 16 38 0 608 used_rows=12
+CALIB_L1_AIR 31 WhirQueryAir 512 32 0 16384 used_rows=283
+CALIB_L1_AIR 32 InitialOpenedValuesAir 2048 89 0 182272 used_rows=1888
+CALIB_L1_AIR 33 NonInitialOpenedValuesAir 4096 28 0 114688 used_rows=2640
+CALIB_L1_AIR 34 WhirFoldingAir 8192 31 0 253952 used_rows=4245
+CALIB_L1_AIR 35 FinalPolyMleEvalAir 1024 34 0 34816 used_rows=1023
+CALIB_L1_AIR 36 FinalPolyQueryEvalAir 262144 45 0 11796480 used_rows=147724
+CALIB_L1_AIR 37 PowerCheckerAir<2, 32> 32 4 0 128 used_rows=32
+CALIB_L1_AIR 38 ExpBitsLenAir 16384 16 0 262144 used_rows=16384
+CALIB_L1_TOTAL_CELLS 18324738 rows=330518 used_cells=11561062
+CALIB_L1_PROVE_S 5.51
+CALIB_L1_PROOF_BYTES total=335865 gkr=11448 relations=45612 stacking=1252 whir=277004
+CALIB_L2_KEYGEN_S 0.01
+CALIB_L2_TRACEGEN_S 0.02
+CALIB_L2_AIR idx name height width cached_w cells
+CALIB_L2_AIR 0 SymbolicExpressionAir<BabyBearParameters> 32768 12 12 786432 used_rows=32768
+CALIB_L2_AIR 1 FractionsFolderAir 64 29 0 1856 used_rows=39
+CALIB_L2_AIR 2 UnivariateSumcheckAir 16 24 0 384 used_rows=16
+CALIB_L2_AIR 3 MultilinearSumcheckAir 128 33 0 4224 used_rows=96
+CALIB_L2_AIR 4 EqNsAir 32 41 0 1312 used_rows=20
+CALIB_L2_AIR 5 Eq3bAir 16384 25 0 409600 used_rows=9740
+CALIB_L2_AIR 6 EqSharpUniAir 4 17 0 68 used_rows=4
+CALIB_L2_AIR 7 EqSharpUniReceiverAir 4 17 0 68 used_rows=4
+CALIB_L2_AIR 8 EqUniAir 4 16 0 64 used_rows=4
+CALIB_L2_AIR 9 ExpressionClaimAir 128 32 0 4096 used_rows=117
+CALIB_L2_AIR 10 InteractionsFoldingAir 4096 37 0 151552 used_rows=3661
+CALIB_L2_AIR 11 ConstraintsFoldingAir 4096 25 0 102400 used_rows=2241
+CALIB_L2_AIR 12 EqNegAir 8 40 0 320 used_rows=8
+CALIB_L2_AIR 13 TranscriptAir 4096 44 0 180224 used_rows=2538
+CALIB_L2_AIR 14 Poseidon2Air<BabyBearParameters>, 1> 16384 301 0 4931584 used_rows=14613
+CALIB_L2_AIR 15 MerkleVerifyAir 8192 38 0 311296 used_rows=6254
+CALIB_L2_AIR 16 ProofShapeAir<4, 8> 64 45 0 2880 used_rows=64
+CALIB_L2_AIR 17 PublicValuesAir 1 8 0 8 used_rows=0
+CALIB_L2_AIR 18 RangeCheckerAir<8> 256 2 0 512 used_rows=256
+CALIB_L2_AIR 19 GkrInputAir 1 26 0 26 used_rows=1
+CALIB_L2_AIR 20 GkrLayerAir 32 46 0 1472 used_rows=21
+CALIB_L2_AIR 21 GkrLayerSumcheckAir 256 45 0 11520 used_rows=210
+CALIB_L2_AIR 22 GkrXiSamplerAir 1 10 0 10 used_rows=1
+CALIB_L2_AIR 23 OpeningClaimsAir 2048 63 0 129024 used_rows=2048
+CALIB_L2_AIR 24 UnivariateRoundAir 8 27 0 216 used_rows=8
+CALIB_L2_AIR 25 SumcheckRoundsAir 32 57 0 1824 used_rows=32
+CALIB_L2_AIR 26 StackingClaimsAir 512 35 0 17920 used_rows=512
+CALIB_L2_AIR 27 EqBaseAir 4 51 0 204 used_rows=4
+CALIB_L2_AIR 28 EqBitsAir 4096 16 0 65536 used_rows=4096
+CALIB_L2_AIR 29 WhirRoundAir 4 46 0 184 used_rows=3
+CALIB_L2_AIR 30 SumcheckAir 16 38 0 608 used_rows=12
+CALIB_L2_AIR 31 WhirQueryAir 128 32 0 4096 used_rows=118
+CALIB_L2_AIR 32 InitialOpenedValuesAir 8192 89 0 729088 used_rows=6528
+CALIB_L2_AIR 33 NonInitialOpenedValuesAir 1024 28 0 28672 used_rows=800
+CALIB_L2_AIR 34 WhirFoldingAir 2048 31 0 63488 used_rows=1770
+CALIB_L2_AIR 35 FinalPolyMleEvalAir 256 34 0 8704 used_rows=255
+CALIB_L2_AIR 36 FinalPolyQueryEvalAir 16384 45 0 737280 used_rows=16164
+CALIB_L2_AIR 37 PowerCheckerAir<2, 32> 32 4 0 128 used_rows=32
+CALIB_L2_AIR 38 ExpBitsLenAir 8192 16 0 131072 used_rows=8192
+CALIB_L2_TOTAL_CELLS 8819952 rows=129991 used_cells=7737468
+CALIB_L2_PROVE_S 4.00
+CALIB_L2_PROOF_BYTES total=256201 gkr=10424 relations=45596 stacking=964 whir=198668
+CALIB_L3_KEYGEN_S 0.01
+CALIB_L3_TRACEGEN_S 0.02
+CALIB_L3_AIR idx name height width cached_w cells
+CALIB_L3_AIR 0 SymbolicExpressionAir<BabyBearParameters> 32768 12 12 786432 used_rows=32768
+CALIB_L3_AIR 1 FractionsFolderAir 64 29 0 1856 used_rows=39
+CALIB_L3_AIR 2 UnivariateSumcheckAir 16 24 0 384 used_rows=16
+CALIB_L3_AIR 3 MultilinearSumcheckAir 128 33 0 4224 used_rows=78
+CALIB_L3_AIR 4 EqNsAir 32 41 0 1312 used_rows=19
+CALIB_L3_AIR 5 Eq3bAir 16384 25 0 409600 used_rows=9253
+CALIB_L3_AIR 6 EqSharpUniAir 4 17 0 68 used_rows=4
+CALIB_L3_AIR 7 EqSharpUniReceiverAir 4 17 0 68 used_rows=4
+CALIB_L3_AIR 8 EqUniAir 4 16 0 64 used_rows=4
+CALIB_L3_AIR 9 ExpressionClaimAir 128 32 0 4096 used_rows=117
+CALIB_L3_AIR 10 InteractionsFoldingAir 4096 37 0 151552 used_rows=3661
+CALIB_L3_AIR 11 ConstraintsFoldingAir 4096 25 0 102400 used_rows=2249
+CALIB_L3_AIR 12 EqNegAir 8 40 0 320 used_rows=8
+CALIB_L3_AIR 13 TranscriptAir 4096 44 0 180224 used_rows=2461
+CALIB_L3_AIR 14 Poseidon2Air<BabyBearParameters>, 1> 16384 301 0 4931584 used_rows=12314
+CALIB_L3_AIR 15 MerkleVerifyAir 8192 38 0 311296 used_rows=6254
+CALIB_L3_AIR 16 ProofShapeAir<4, 8> 64 45 0 2880 used_rows=64
+CALIB_L3_AIR 17 PublicValuesAir 1 8 0 8 used_rows=0
+CALIB_L3_AIR 18 RangeCheckerAir<8> 256 2 0 512 used_rows=256
+CALIB_L3_AIR 19 GkrInputAir 1 26 0 26 used_rows=1
+CALIB_L3_AIR 20 GkrLayerAir 32 46 0 1472 used_rows=20
+CALIB_L3_AIR 21 GkrLayerSumcheckAir 256 45 0 11520 used_rows=190
+CALIB_L3_AIR 22 GkrXiSamplerAir 1 10 0 10 used_rows=1
+CALIB_L3_AIR 23 OpeningClaimsAir 2048 63 0 129024 used_rows=2048
+CALIB_L3_AIR 24 UnivariateRoundAir 8 27 0 216 used_rows=8
+CALIB_L3_AIR 25 SumcheckRoundsAir 32 57 0 1824 used_rows=32
+CALIB_L3_AIR 26 StackingClaimsAir 512 35 0 17920 used_rows=512
+CALIB_L3_AIR 27 EqBaseAir 4 51 0 204 used_rows=4
+CALIB_L3_AIR 28 EqBitsAir 2048 16 0 32768 used_rows=2048
+CALIB_L3_AIR 29 WhirRoundAir 4 46 0 184 used_rows=3
+CALIB_L3_AIR 30 SumcheckAir 16 38 0 608 used_rows=12
+CALIB_L3_AIR 31 WhirQueryAir 128 32 0 4096 used_rows=118
+CALIB_L3_AIR 32 InitialOpenedValuesAir 8192 89 0 729088 used_rows=4352
+CALIB_L3_AIR 33 NonInitialOpenedValuesAir 1024 28 0 28672 used_rows=800
+CALIB_L3_AIR 34 WhirFoldingAir 2048 31 0 63488 used_rows=1770
+CALIB_L3_AIR 35 FinalPolyMleEvalAir 256 34 0 8704 used_rows=255
+CALIB_L3_AIR 36 FinalPolyQueryEvalAir 16384 45 0 737280 used_rows=16164
+CALIB_L3_AIR 37 PowerCheckerAir<2, 32> 32 4 0 128 used_rows=32
+CALIB_L3_AIR 38 ExpBitsLenAir 8192 16 0 131072 used_rows=8192
+CALIB_L3_TOTAL_CELLS 8787184 rows=127943 used_cells=6802093
+CALIB_L3_PROVE_S 3.92
+CALIB_L3_PROOF_BYTES total=256201 gkr=10424 relations=45596 stacking=964 whir=198668
+CALIB_L4_KEYGEN_S 0.01
+CALIB_L4_TRACEGEN_S 0.02
+CALIB_L4_AIR idx name height width cached_w cells
+CALIB_L4_AIR 0 SymbolicExpressionAir<BabyBearParameters> 32768 12 12 786432 used_rows=32768
+CALIB_L4_AIR 1 FractionsFolderAir 64 29 0 1856 used_rows=39
+CALIB_L4_AIR 2 UnivariateSumcheckAir 16 24 0 384 used_rows=16
+CALIB_L4_AIR 3 MultilinearSumcheckAir 128 33 0 4224 used_rows=78
+CALIB_L4_AIR 4 EqNsAir 32 41 0 1312 used_rows=19
+CALIB_L4_AIR 5 Eq3bAir 16384 25 0 409600 used_rows=9253
+CALIB_L4_AIR 6 EqSharpUniAir 4 17 0 68 used_rows=4
+CALIB_L4_AIR 7 EqSharpUniReceiverAir 4 17 0 68 used_rows=4
+CALIB_L4_AIR 8 EqUniAir 4 16 0 64 used_rows=4
+CALIB_L4_AIR 9 ExpressionClaimAir 128 32 0 4096 used_rows=117
+CALIB_L4_AIR 10 InteractionsFoldingAir 4096 37 0 151552 used_rows=3661
+CALIB_L4_AIR 11 ConstraintsFoldingAir 4096 25 0 102400 used_rows=2249
+CALIB_L4_AIR 12 EqNegAir 8 40 0 320 used_rows=8
+CALIB_L4_AIR 13 TranscriptAir 4096 44 0 180224 used_rows=2461
+CALIB_L4_AIR 14 Poseidon2Air<BabyBearParameters>, 1> 16384 301 0 4931584 used_rows=12372
+CALIB_L4_AIR 15 MerkleVerifyAir 8192 38 0 311296 used_rows=6254
+CALIB_L4_AIR 16 ProofShapeAir<4, 8> 64 45 0 2880 used_rows=64
+CALIB_L4_AIR 17 PublicValuesAir 1 8 0 8 used_rows=0
+CALIB_L4_AIR 18 RangeCheckerAir<8> 256 2 0 512 used_rows=256
+CALIB_L4_AIR 19 GkrInputAir 1 26 0 26 used_rows=1
+CALIB_L4_AIR 20 GkrLayerAir 32 46 0 1472 used_rows=20
+CALIB_L4_AIR 21 GkrLayerSumcheckAir 256 45 0 11520 used_rows=190
+CALIB_L4_AIR 22 GkrXiSamplerAir 1 10 0 10 used_rows=1
+CALIB_L4_AIR 23 OpeningClaimsAir 2048 63 0 129024 used_rows=2048
+CALIB_L4_AIR 24 UnivariateRoundAir 8 27 0 216 used_rows=8
+CALIB_L4_AIR 25 SumcheckRoundsAir 32 57 0 1824 used_rows=32
+CALIB_L4_AIR 26 StackingClaimsAir 512 35 0 17920 used_rows=512
+CALIB_L4_AIR 27 EqBaseAir 4 51 0 204 used_rows=4
+CALIB_L4_AIR 28 EqBitsAir 2048 16 0 32768 used_rows=2048
+CALIB_L4_AIR 29 WhirRoundAir 4 46 0 184 used_rows=3
+CALIB_L4_AIR 30 SumcheckAir 16 38 0 608 used_rows=12
+CALIB_L4_AIR 31 WhirQueryAir 128 32 0 4096 used_rows=118
+CALIB_L4_AIR 32 InitialOpenedValuesAir 8192 89 0 729088 used_rows=4352
+CALIB_L4_AIR 33 NonInitialOpenedValuesAir 1024 28 0 28672 used_rows=800
+CALIB_L4_AIR 34 WhirFoldingAir 2048 31 0 63488 used_rows=1770
+CALIB_L4_AIR 35 FinalPolyMleEvalAir 256 34 0 8704 used_rows=255
+CALIB_L4_AIR 36 FinalPolyQueryEvalAir 16384 45 0 737280 used_rows=16164
+CALIB_L4_AIR 37 PowerCheckerAir<2, 32> 32 4 0 128 used_rows=32
+CALIB_L4_AIR 38 ExpBitsLenAir 8192 16 0 131072 used_rows=8192
+CALIB_L4_TOTAL_CELLS 8787184 rows=127943 used_cells=6819551
+CALIB_L4_PROVE_S 3.78
+CALIB_L4_PROOF_BYTES total=256201 gkr=10424 relations=45596 stacking=964 whir=198668
+test calib_tests::calib_stock_recursion ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 206 filtered out; finished in 23.70s
+
+	Command being timed: "/data/illia/nearproof-deps/pq-recursion/target-stock/release/deps/openvm_recursion_circuit-d30e36a742e9d79e calib_stock --ignored --nocapture"
+	User time (seconds): 172.38
+	System time (seconds): 2.00
+	Percent of CPU this job got: 735%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:23.72
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1428460
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1892137
+	Voluntary context switches: 50444
+	Involuntary context switches: 1286
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 48
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

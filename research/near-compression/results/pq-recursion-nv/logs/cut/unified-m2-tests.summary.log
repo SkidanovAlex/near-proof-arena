@@ -1,0 +1,24 @@
+     Running unittests src/lib.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/openvm_cpu_backend-fc10bc85999d1a04)
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/integration.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/integration-c19c8008d294bcf3)
+test result: ok. 70 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.03s
+     Running unittests src/lib.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/openvm_stark_backend-1117d24b97dd430b)
+test result: ok. 40 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/fractional_sumcheck_gkr.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/fractional_sumcheck_gkr-df89ac6dc8a49794)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/integration.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/integration-b655db83638a34a7)
+test result: ok. 74 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.34s
+     Running tests/keygen_validation.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/keygen_validation-bba205ebc0c7467c)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/partitioned_sum_air.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/partitioned_sum_air-871a2f808a9fc2fd)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/proof_codec.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/proof_codec-6e7a9ec5563f9186)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/soundness.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/soundness-7a743463cede165c)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/stacked_reduction.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/stacked_reduction-d48054f475f18be1)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/transcript.rs (/data/illia/nearproof-deps/pq-recursion/target-unified/release/deps/transcript-73154d9781efb248)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

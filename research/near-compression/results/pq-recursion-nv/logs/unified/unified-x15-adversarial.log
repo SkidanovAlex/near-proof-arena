@@ -1,0 +1,5 @@
+ADVERSARIAL honest x15 codeword: verify=ACCEPT
+ADVERSARIAL cosets 1<->2 swapped: verify=REJECT (FinalPolyConstraint)
+ADVERSARIAL power-of-two codeword repeated 15x: verify=REJECT (FinalPolyConstraint)
+ADVERSARIAL each coset bit-mirrored (u -> 2^L - u): verify=REJECT (FinalPolyConstraint)
+ADVERSARIAL_PASS
