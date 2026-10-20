@@ -581,6 +581,13 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
                     g.mats[thb].values[c * w + f] = F::ZERO;
                 })));
             }
+            // `len` changed on one row of a group: breaks cLenConst (and pos < len for the last row)
+            cases.push((format!("HOSTB[row {r}].len+1"), cell(thb, r, col(thb, "len"), plus1())));
+            // `hid` changed on one row: breaks cHidConst, so the group cannot be spliced onto
+            // another host call
+            cases.push((format!("HOSTB[row {r}].hid+1"), cell(thb, r, col(thb, "hid"), plus1())));
+            // `gap` changed: pos + gap + 1 != len
+            cases.push((format!("HOSTB[row {r}].gap+1"), cell(thb, r, col(thb, "gap"), plus1())));
         }
     }
     // swap two ADD rows' timestamps (reorders execution)

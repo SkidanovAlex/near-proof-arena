@@ -369,7 +369,7 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     // and the response (`dir = 1`) of the first host call.  The 4 request bytes are the low four
     // bytes of the first argument, the 4 response bytes those of the result word; the bytes are a
     // placeholder for the `(ptr, len)` memory range, which this slice does not model.
-    let mut hostb_rows: Vec<[u64; 6]> = vec![];
+    let mut hostb_rows: Vec<[u64; 9]> = vec![];
     let mut hostb_done = false;
     let mut func_calls: Vec<u64> = vec![0; prep.funcs.len()];
     // dead callee locals `(space, slot, entry)`, left over in the channel after their frame returned
@@ -477,10 +477,13 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                     let sb_ = bytes(ev.word);
                     for dir in 0..2u64 {
                         let src = if dir == 0 { qb } else { sb_ };
-                        for pos in 0..4u64 {
+                        let blen = 4u64;
+                        for pos in 0..blen {
                             let b = src[pos as usize];
-                            hostb_rows.push([ts, dir, pos, b, 1, (pos == 0) as u64]);
+                            // [ts, dir, pos, byte, len, hid, gap, act, f]; gap = len - pos - 1
+                            hostb_rows.push([ts, dir, pos, b, blen, hid, blen - pos - 1, 1, (pos == 0) as u64]);
                             st.byte(0, b, 0);
+                            st.r16(blen - pos - 1);
                         }
                     }
                 }
@@ -1294,13 +1297,13 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
         let mut hb = hb;
         for rec in hostb_rows.iter() {
             let mut r = hb.row();
-            for (k, name) in ["ts", "dir", "pos", "byte", "act", "f"].iter().enumerate() {
+            for (k, name) in ["ts", "dir", "pos", "byte", "len", "hid", "gap", "act", "f"].iter().enumerate() {
                 r.u(name, rec[k]);
             }
         }
         let hgt = (hb.rows.len() + 1).max(4).next_power_of_two();
         while hb.rows.len() < hgt {
-            hb.row().u("act", 0).u("f", 1);
+            hb.row().u("act", 0).u("f", 1).u("gap", 0);
         }
         tabs.insert("HOSTB".into(), hb);
     }

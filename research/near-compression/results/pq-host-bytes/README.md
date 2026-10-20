@@ -169,3 +169,20 @@ WASMBASE_AIRH=1 python3 difftest.py 0 0 /tmp/hb-dt2 16
 * `native/wasm-base/src/main.rs` — three HOSTB tamper cases.
 
 `wasmBaseAir` is unchanged (the exported first 22 tables are byte-identical).
+
+## 2. Group length, host-call binding, and `pos < len`
+
+The minimum slice had a free `byte` with no length and no link to its host call.  Added:
+
+* columns `len`, `hid`, `gap` (so `HOSTB` is now `[ts, dir, pos, byte, len, hid, gap, act, f]`);
+* `cLenConst` / `cHidConst` — `len` and `hid` are constant within a `(ts, dir)` group;
+* `cPosLtLen` — `pos + gap + 1 = len` with `gap` range-checked by a `RANGE16` lookup, which proves
+  `pos < len` for `len < 2^16` (a stated domain condition; a polynomial cannot express `<`);
+* the wire message is now `[ts, hid, dir, pos, byte]`, so a byte group carries the host-call id.
+  The same `(ts, hid)` pair is on `HOSTQ`, so a group cannot be spliced onto a different call.
+
+**Verified:** `lake build` 123 jobs; KAT **77/77**; `tamper hostarg` **65/65 rejected**, including
+the new `len+1`, `hid+1` and `gap+1` cases.
+
+**Still not modelled:** the `(ptr, len)` range into linear memory (bytes are not yet tied to
+space 3), and the register space (space 6).  `len < 2^16` is a domain condition, not a constraint.

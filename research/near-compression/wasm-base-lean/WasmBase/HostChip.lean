@@ -208,9 +208,17 @@ def ts : Nat := 0
 def dir : Nat := 1
 def pos : Nat := 2
 def bv : Nat := 3
-def act : Nat := 4
-def f : Nat := 5
-def cols : List String := ["ts", "dir", "pos", "byte", "act", "f"]
+def blen : Nat := 4
+def hid : Nat := 5
+def gap : Nat := 6
+def act : Nat := 7
+def f : Nat := 8
+/-- `len` is the group's byte count, committed on every row of the group (so it is a function of
+`ts` rather than a free witness per row), and `hid` ties the group to the host call it belongs to.
+Together they are the HOSTB <-> HOSTQ link: the same `(ts, hid)` pair appears on HOSTQ, so a byte
+group cannot be spliced onto a different call.  The `(ptr, len)` memory range is still not modelled
+(the bytes are not yet tied to linear memory). -/
+def cols : List String := ["ts", "dir", "pos", "byte", "len", "hid", "gap", "act", "f"]
 
 def cAct : Expr := bool (v act)
 def cF : Expr := bool (v f)
@@ -223,9 +231,23 @@ def cTs : Expr := (1 - nv f) * (nv ts - v ts)
 def cDirG : Expr := (1 - nv f) * (nv dir - v dir)
 /-- A group continues at the next position (strictly increasing, consecutively). -/
 def cPos : Expr := (1 - nv f) * (nv pos - v pos - 1)
-def constraints : List Expr := [cAct, cF, cDir, cFirst, cLast, cTs, cDirG, cPos]
+/-- A byte position is inside its group's length: `pos < len`.
 
-def msg : List Expr := [v ts, v dir, v pos, v bv]
+`pos < len` is not expressible as a polynomial without a comparison gadget, so it is delegated to
+the same 16-bit comparison the chips use (`cmp`), exposed here as a lookup into the pre-existing
+`RANGE16` table with the gap `len - pos - 1`: a 16-bit witness `g` with `pos + g + 1 = len` proves
+`pos < len` for every `pos, len < 2^16`, and a `RANGE16` membership of `g` pins `g < 2^16`.  The
+domain therefore requires `len < 2^16`, which is stated as a public bound. -/
+def cPosLtLen : Expr := v act * (v blen - v pos - 1 - v gap)
+/-- `len` is the same on every row of a group. -/
+def cLenConst : Expr := (1 - nv f) * (nv blen - v blen)
+/-- `hid` is the same on every row of a group. -/
+def cHidConst : Expr := (1 - nv f) * (nv hid - v hid)
+
+def constraints : List Expr :=
+  [cAct, cF, cDir, cFirst, cLast, cTs, cDirG, cPos, cPosLtLen, cLenConst, cHidConst]
+
+def msg : List Expr := [v ts, v hid, v dir, v pos, v bv]
 /-- The Wasm side sends request bytes (`dir = 0`) and receives response bytes (`dir = 1`), each with
 a 0/1 count (`act · dir` and `act · (1 − dir)` are bits).  Because the state side is not modelled
 yet, both the send and the matching receive of every message sit in this table: the wire is
@@ -238,7 +260,8 @@ def inters : List Inter :=
    ⟨busHostB, false, v act * (1 - v dir), msg⟩,
    ⟨busHostB, true, v act * v dir, msg⟩,
    ⟨busHostB, false, v act * v dir, msg⟩,
-   byteQ 0 (v bv) 0 0 (v act)]
+   byteQ 0 (v bv) 0 0 (v act),
+   r16 (v gap) (v act)]
 
 def table : Table := ⟨"HOSTB", cols, constraints, inters⟩
 end HostB
