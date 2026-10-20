@@ -353,3 +353,4 @@ import ZkFormal.Chacha.ZEval
 import ZkFormal.PQ.Aggregation.Tree
 import ZkFormal.PQ.Aggregation.Statement
 import ZkFormal.PQ.Aggregation.Shape
+import ZkFormal.PQ.Aggregation.Compose

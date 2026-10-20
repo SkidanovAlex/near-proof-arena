@@ -98,3 +98,23 @@ lake env lean /tmp/ax.lean
 ```
 
 Axes observed: `propext`, `Classical.choice`, `Quot.sound` only; no `sorry`, no `native_decide`.
+
+## 4. Addition: `Compose.lean` (N3/N4 structural half)
+
+`ZkFormal/PQ/Aggregation/Compose.lean` adds the proof-system-level tree induction, with the QROM
+extraction premise kept explicit rather than assumed away.
+
+| theorem | statement |
+|---|---|
+| `ProofTree.certified_root` | if the node step turns certified children into a certified parent, every certified tree has a certified root — for any arity and depth |
+| `ProofTree.base_root_of_eq` / `node_count_irrelevant` | the composed predicate mentions only the root, so it cannot accumulate per-node error (N4) |
+| `ProofTree.arity_split` | splitting a node's children into two nested nodes leaves the root unchanged, so a fixed binary circuit implements arbitrary arity |
+
+`Certified` is an inductive predicate with constructors `leaf` and `node`, so induction over it is
+structural and arity-free. `NodeOK s children` is the abstract per-node obligation (child proofs
+verify, levels advance, the statement digest links them). **It is not proved here**: supplying it
+is `PROOF.md` Theorem 6.4 applied once to the family of vks, plus NV-faithful (F1)–(F3), which
+remains paper-level (GAPS S-19/S-28). This file shows that *given* that single application, tree
+composition needs no further probability and no per-node union.
+
+Axes: `certified_root` uses `propext, Quot.sound`; the two invariance lemmas use none.
