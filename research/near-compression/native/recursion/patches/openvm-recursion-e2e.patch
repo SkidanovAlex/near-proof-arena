@@ -1,0 +1,3884 @@
+diff --git a/crates/recursion/src/nv/e2e.rs b/crates/recursion/src/nv/e2e.rs
+new file mode 100644
+index 0000000..7047006
+--- /dev/null
++++ b/crates/recursion/src/nv/e2e.rs
+@@ -0,0 +1,631 @@
++//! [e2e] pq-e2e-slice (results/pq-e2e-slice/README.md): the first end-to-end vertical slice of
++//! the post-quantum chunk proof.
++//!
++//! base AIR set (direct-Wasm EXEC/CODE/RANGE + chunk-statement AIR)
++//!   -> L1 (NV level 1: verifies the base proof, hashes its public values under tag 8)
++//!   -> NV chain at fixed heights; program binding (L2 checks L1's program against the app table,
++//!      the fixed point checks its child's program against its own) is attempted and falls back
++//!      to the unbound statement passthrough when the program differs (gap G1)
++//!   -> FINAL (`Sha384CpuEngine::new_final`)
++//!   -> native V_d (`verify_chunk`): final-domain verification, level, statement digest
++//!      recomputed from the claim (ctx, enc S_0, enc S_S), and (when a program can be pinned)
++//!      the final proof's program openings against the pinned program (`check_final_program`).
++//!
++//! What is proven about the chunk is listed in the README gap list.  In short: the Wasm
++//! execution of one prepared function call (i32.const/add/drop/end, one function, <= 8 stack
++//! slots) is proven by the base AIRs; the chunk context, state roots and the receipt are
++//! STATEMENT-CARRIED STUBS: they are public values of `ChunkStmtAir`, bound by the statement
++//! digest, but no AIR constrains them.
++use std::path::{Path, PathBuf};
++use std::sync::Arc;
++
++use openvm_stark_backend::{
++    keygen::types::MultiStarkVerifyingKey,
++    proof::Proof,
++    prover::{AirProvingContext, ColMajorMatrix, CpuColMajorBackend, ProvingContext},
++    test_utils::TestFixture,
++    AirRef, FiatShamirTranscript, StarkEngine,
++};
++use p3_field::{Field, PrimeCharacteristicRing, PrimeField32, TwoAdicField};
++use p3_matrix::dense::RowMajorMatrix;
++
++use crate::sha384::config::{
++    digest_from_bytes, hash_parts, statement_digest, truncate_digest, Digest, Sha384Config,
++    Sha384CpuEngine, ShaTranscript, EF, F,
++};
++
++pub type SC = Sha384Config;
++
++/// The byte-packed direct-Wasm AIRs (generated; code length 5).
++pub mod literal {
++    #![allow(unused_imports, dead_code, clippy::all)]
++    use super::*;
++    include!("e2e_literal_gen.rs");
++}
++
++// ---------------------------------------------------------------------------------------
++// Chunk-statement AIR (STUB carrier)
++// ---------------------------------------------------------------------------------------
++
++/// ctx digest limbs (NV digest format)
++pub const N_CTX: usize = 18;
++/// a SHA-256 state root as 16 x 16-bit limbs
++pub const N_ROOT: usize = 16;
++/// receipt digest limbs
++pub const N_RCPT: usize = 18;
++/// public values of `ChunkStmtAir`: [ctx | pre_state_root | receipt | post_state_root]
++pub const STMT_PVS: usize = N_CTX + N_ROOT + N_RCPT + N_ROOT;
++/// public values of the EXEC AIR (code length 5): 12 header + 27 entry + 27 final + 5 x 25 code
++pub const EXEC_PVS: usize = 12 + 27 + 27 + 5 * 25;
++
++/// STUB: carries ctx, the state roots and the receipt digest as public values.  Its one column is
++/// constrained to zero; nothing relates its public values to the execution (gaps G2-G5).
++#[derive(Clone, Copy)]
++pub struct ChunkStmtAir;
++impl<T> p3_air::BaseAir<T> for ChunkStmtAir {
++    fn width(&self) -> usize {
++        1
++    }
++}
++impl<T> openvm_stark_backend::BaseAirWithPublicValues<T> for ChunkStmtAir {
++    fn num_public_values(&self) -> usize {
++        STMT_PVS
++    }
++}
++impl<T> openvm_stark_backend::PartitionedBaseAir<T> for ChunkStmtAir {}
++impl<AB: p3_air::AirBuilderWithPublicValues> p3_air::Air<AB> for ChunkStmtAir {
++    fn eval(&self, builder: &mut AB) {
++        use p3_air::AirBuilder;
++        use p3_matrix::Matrix;
++        let main = builder.main();
++        let x: AB::Expr = main.row_slice(0).unwrap()[0].clone().into();
++        builder.assert_zero(x);
++    }
++}
++
++/// AIR order of the base proof (= the order of the statement message).
++pub fn base_airs() -> Vec<AirRef<SC>> {
++    vec![
++        Arc::new(literal::Literal0),
++        Arc::new(literal::Literal1),
++        Arc::new(literal::Literal2),
++        Arc::new(ChunkStmtAir),
++    ]
++}
++
++// ---------------------------------------------------------------------------------------
++// The chunk claim (what V_d receives) and its public-value encoding
++// ---------------------------------------------------------------------------------------
++
++/// Native-only hash domains of this slice (proposal; never hashed in-circuit).
++pub const TAG_E2E_CTX: u8 = 10;
++pub const TAG_E2E_RECEIPT: u8 = 11;
++
++#[derive(Clone, Debug, PartialEq, Eq)]
++pub struct MachineState {
++    pub func: u32,
++    pub pc: u32,
++    pub gas: u64,
++    pub done: bool,
++    pub fail: bool,
++    pub stack: Vec<u32>,
++}
++
++#[derive(Clone, Debug, PartialEq, Eq)]
++pub struct CodeEntry {
++    pub pc: u32,
++    pub func: u32,
++    pub opcode: u32,
++    pub imm: u32,
++    pub has: bool,
++    pub kind: u32,
++    pub fee: u64,
++}
++
++#[derive(Clone, Debug, PartialEq, Eq)]
++pub struct Receipt {
++    pub receiver: String,
++    pub method: String,
++    pub prepaid: u64,
++    pub code_hash: [u8; 32],
++}
++
++/// The chunk claim of the slice.  ctx = (chain_id, height, prev_block_hash, gas_price,
++/// protocol_version); enc S_0 = (pre_state_root, receipt, entry, code); enc S_S =
++/// (post_state_root, final).
++#[derive(Clone, Debug, PartialEq, Eq)]
++pub struct ChunkClaim {
++    pub chain_id: String,
++    pub height: u64,
++    pub prev_block_hash: [u8; 32],
++    pub gas_price: u64,
++    pub protocol_version: u32,
++    pub pre_state_root: [u8; 32],
++    pub receipt: Receipt,
++    pub entry: MachineState,
++    pub code: Vec<CodeEntry>,
++    pub post_state_root: [u8; 32],
++    pub final_state: MachineState,
++}
++
++fn hex32(s: &str) -> Result<[u8; 32], String> {
++    if s.len() != 64 {
++        return Err(format!("bad hash {s}"));
++    }
++    let mut o = [0u8; 32];
++    for i in 0..32 {
++        o[i] = u8::from_str_radix(&s[2 * i..2 * i + 2], 16).map_err(|e| e.to_string())?;
++    }
++    Ok(o)
++}
++
++fn num<T: std::str::FromStr>(s: &str) -> Result<T, String> {
++    s.parse().map_err(|_| format!("bad number {s}"))
++}
++
++fn parse_state(f: &[&str]) -> Result<MachineState, String> {
++    if f.len() < 5 {
++        return Err("short machine state".into());
++    }
++    Ok(MachineState {
++        func: num(f[0])?,
++        pc: num(f[1])?,
++        gas: num(f[2])?,
++        done: num::<u8>(f[3])? == 1,
++        fail: num::<u8>(f[4])? == 1,
++        stack: f[5..].iter().map(|x| num(x)).collect::<Result<_, _>>()?,
++    })
++}
++
++impl ChunkClaim {
++    pub fn parse(text: &str) -> Result<Self, String> {
++        let mut m: std::collections::HashMap<&str, Vec<&str>> = Default::default();
++        let mut code = vec![];
++        for line in text.lines().map(str::trim).filter(|l| !l.is_empty() && !l.starts_with('#')) {
++            let f: Vec<&str> = line.split_whitespace().collect();
++            if f[0] == "code" {
++                if f.len() != 8 {
++                    return Err(format!("bad code line {line}"));
++                }
++                code.push(CodeEntry {
++                    pc: num(f[1])?,
++                    func: num(f[2])?,
++                    opcode: num(f[3])?,
++                    imm: num(f[4])?,
++                    has: num::<u8>(f[5])? == 1,
++                    kind: num(f[6])?,
++                    fee: num(f[7])?,
++                });
++            } else if m.insert(f[0], f[1..].to_vec()).is_some() {
++                return Err(format!("duplicate field {}", f[0]));
++            }
++        }
++        let g = |k: &str| m.get(k).cloned().ok_or(format!("missing {k}"));
++        let one = |k: &str| -> Result<&str, String> {
++            let v = m.get(k).ok_or(format!("missing {k}"))?;
++            if v.len() != 1 {
++                return Err(format!("field {k} takes one value"));
++            }
++            Ok(v[0])
++        };
++        let r = g("receipt")?;
++        if r.len() != 4 {
++            return Err("bad receipt".into());
++        }
++        Ok(ChunkClaim {
++            chain_id: one("chain_id")?.to_string(),
++            height: num(one("height")?)?,
++            prev_block_hash: hex32(one("prev_block_hash")?)?,
++            gas_price: num(one("gas_price")?)?,
++            protocol_version: num(one("protocol_version")?)?,
++            pre_state_root: hex32(one("pre_state_root")?)?,
++            receipt: Receipt {
++                receiver: r[0].into(),
++                method: r[1].into(),
++                prepaid: num(r[2])?,
++                code_hash: hex32(r[3])?,
++            },
++            entry: parse_state(&g("entry")?)?,
++            code,
++            post_state_root: hex32(one("post_state_root")?)?,
++            final_state: parse_state(&g("final")?)?,
++        })
++    }
++
++    pub fn load(path: &Path) -> Self {
++        Self::parse(&std::fs::read_to_string(path).unwrap_or_else(|e| panic!("{path:?}: {e}")))
++            .unwrap_or_else(|e| panic!("{path:?}: {e}"))
++    }
++
++    fn native_digest(tag: u8, parts: &[&[u8]]) -> Digest {
++        digest_from_bytes(truncate_digest(hash_parts(tag, parts)))
++    }
++
++    /// ctx = SHA-384 (tag 10, truncated as the statement digest) of the chunk-context fields.
++    pub fn ctx_digest(&self) -> Digest {
++        Self::native_digest(
++            TAG_E2E_CTX,
++            &[
++                self.chain_id.as_bytes(),
++                &self.height.to_le_bytes(),
++                &self.prev_block_hash,
++                &self.gas_price.to_le_bytes(),
++                &self.protocol_version.to_le_bytes(),
++            ],
++        )
++    }
++
++    pub fn receipt_digest(&self) -> Digest {
++        let r = &self.receipt;
++        Self::native_digest(
++            TAG_E2E_RECEIPT,
++            &[r.receiver.as_bytes(), r.method.as_bytes(), &r.prepaid.to_le_bytes(), &r.code_hash],
++        )
++    }
++
++    /// The boundary encoding of the direct-Wasm AIR (prepared_code_table_air.boundary()):
++    /// fn (2 x 16 bit), pc (2), sp, done, fail, gas (4 x 16), stack slots 0..8 (2 x 16 each).
++    pub fn enc_state(s: &MachineState) -> Vec<F> {
++        assert!(s.stack.len() <= 8, "eight stack slots");
++        let l16 = |x: u64, i: usize| F::from_u64((x >> (16 * i)) & 0xffff);
++        let mut v = vec![
++            l16(s.func as u64, 0),
++            l16(s.func as u64, 1),
++            l16(s.pc as u64, 0),
++            l16(s.pc as u64, 1),
++            F::from_usize(s.stack.len()),
++            F::from_bool(s.done),
++            F::from_bool(s.fail),
++        ];
++        v.extend((0..4).map(|i| l16(s.gas, i)));
++        for j in 0..8 {
++            let w = s.stack.get(j).copied().unwrap_or(0) as u64;
++            v.extend([l16(w, 0), l16(w, 1)]);
++        }
++        v
++    }
++
++    /// The code descriptor (prepared_code_table_air.descriptor()).
++    pub fn enc_code(e: &CodeEntry) -> Vec<F> {
++        let l16 = |x: u64, i: usize| F::from_u64((x >> (16 * i)) & 0xffff);
++        let ops = [65u32, 106, 26, 11];
++        let op = ops.iter().position(|&o| o == e.opcode).expect("supported opcode");
++        assert!(e.kind < 6);
++        let mut v = vec![l16(e.func as u64, 0), l16(e.func as u64, 1), l16(e.pc as u64, 0), l16(e.pc as u64, 1)];
++        v.extend((0..4).map(|i| F::from_bool(i == op)));
++        v.extend([l16(e.imm as u64, 0), l16(e.imm as u64, 1)]);
++        v.extend((0..4).map(|i| l16(e.fee, i)));
++        v.push(F::from_bool(e.has));
++        v.extend((0..6).map(|i| F::from_bool(e.has && i == e.kind as usize)));
++        v.extend([F::ZERO; 4]);
++        v
++    }
++
++    /// EXEC (AIR 0) public values: nat4(1) nat4(1) nat4(len) | entry | final | code.
++    pub fn exec_public_values(&self) -> Vec<F> {
++        let nat4 = |n: u32| (0..4).map(move |i| F::from_u32((n >> (8 * i)) & 255));
++        let mut v: Vec<F> = nat4(1).chain(nat4(1)).chain(nat4(self.code.len() as u32)).collect();
++        v.extend(Self::enc_state(&self.entry));
++        v.extend(Self::enc_state(&self.final_state));
++        for e in &self.code {
++            v.extend(Self::enc_code(e));
++        }
++        v
++    }
++
++    /// `ChunkStmtAir` public values: [ctx | pre_state_root | receipt | post_state_root].
++    pub fn stmt_public_values(&self) -> Vec<F> {
++        fn root(r: &[u8; 32]) -> Vec<F> {
++            (0..16).map(|i| F::from_u32(u16::from_le_bytes([r[2 * i], r[2 * i + 1]]) as u32)).collect()
++        }
++        let mut v: Vec<F> = super::fmt::digest_limbs(self.ctx_digest()).to_vec();
++        v.extend(root(&self.pre_state_root));
++        v.extend(super::fmt::digest_limbs(self.receipt_digest()));
++        v.extend(root(&self.post_state_root));
++        assert_eq!(v.len(), STMT_PVS);
++        v
++    }
++
++    /// Per-AIR public values of the base proof, in AIR order (the statement message layout).
++    pub fn public_values(&self) -> Vec<Vec<F>> {
++        vec![self.exec_public_values(), vec![], vec![], self.stmt_public_values()]
++    }
++
++    /// The tag-8 statement digest the final proof must expose.
++    pub fn statement_digest(&self) -> Digest {
++        statement_digest(&self.public_values())
++    }
++}
++
++// ---------------------------------------------------------------------------------------
++// Base proof fixture
++// ---------------------------------------------------------------------------------------
++
++/// Root of the slice fixture (env `E2E_FIXTURE`, default: the recorded results directory).
++pub fn fixture_root() -> PathBuf {
++    std::env::var("E2E_FIXTURE").map(PathBuf::from).unwrap_or_else(|_| {
++        PathBuf::from("/data/illia/nearproof-wt/pq-e2e-slice/research/near-compression/results/pq-e2e-slice/fixture")
++    })
++}
++
++fn read_felts(p: &Path) -> Vec<F> {
++    std::fs::read(p)
++        .unwrap_or_else(|e| panic!("{p:?}: {e}"))
++        .chunks_exact(4)
++        .map(|x| F::from_u32(u32::from_le_bytes(x.try_into().unwrap())))
++        .collect()
++}
++
++/// One chunk's base proof input: the witness rows and EXEC public values written by the
++/// generator, plus the chunk-statement public values (from the chunk data = the claim).
++#[derive(Clone)]
++pub struct SliceBase {
++    pub dir: PathBuf,
++    pub exec_pvs: Vec<F>,
++    pub stmt_pvs: Vec<F>,
++}
++
++impl SliceBase {
++    pub fn new(case: &str) -> Self {
++        let dir = fixture_root().join(case);
++        let claim = ChunkClaim::load(&dir.join("claim.txt"));
++        Self {
++            exec_pvs: read_felts(&dir.join("public.bin")),
++            stmt_pvs: claim.stmt_public_values(),
++            dir,
++        }
++    }
++    pub fn claim(&self) -> ChunkClaim {
++        ChunkClaim::load(&self.dir.join("claim.txt"))
++    }
++}
++
++impl SliceBase {
++    /// Row-major traces (the `debug` checker's backend).
++    pub fn debug_ctx(&self) -> ProvingContext<openvm_cpu_backend::CpuBackend<SC>> {
++        let rows = |i: usize, w: usize| RowMajorMatrix::new(read_felts(&self.dir.join(format!("rows-{i}.bin"))), w);
++        ProvingContext::new(vec![
++            (0, AirProvingContext::simple(rows(0, 157), self.exec_pvs.clone())),
++            (1, AirProvingContext::simple(rows(1, 114), vec![])),
++            (2, AirProvingContext::simple(rows(2, 24), vec![])),
++            (3, AirProvingContext::simple(RowMajorMatrix::new(vec![F::ZERO; 4], 1), self.stmt_pvs.clone())),
++        ])
++    }
++}
++
++impl TestFixture<SC> for SliceBase {
++    fn airs(&self) -> Vec<AirRef<SC>> {
++        base_airs()
++    }
++    fn generate_proving_ctx(&self) -> ProvingContext<CpuColMajorBackend<SC>> {
++        let rows = |i: usize, w: usize| {
++            ColMajorMatrix::from_row_major(&RowMajorMatrix::new(read_felts(&self.dir.join(format!("rows-{i}.bin"))), w))
++        };
++        ProvingContext::new(vec![
++            (0, AirProvingContext::simple(rows(0, 157), self.exec_pvs.clone())),
++            (1, AirProvingContext::simple(rows(1, 114), vec![])),
++            (2, AirProvingContext::simple(rows(2, 24), vec![])),
++            (
++                3,
++                AirProvingContext::simple(
++                    ColMajorMatrix::from_row_major(&RowMajorMatrix::new(vec![F::ZERO; 4], 1)),
++                    self.stmt_pvs.clone(),
++                ),
++            ),
++        ])
++    }
++}
++
++// ---------------------------------------------------------------------------------------
++// V_d: the native final verifier of the slice
++// ---------------------------------------------------------------------------------------
++
++/// What V_d pins: the final vk (final domain), the fixed-point NV program and the final level.
++/// `program = None` is the measured state of the stack (gap G1: the NV program depends on the
++/// child proof through T* rejection sampling, so no program can be pinned); V_d then skips the
++/// program check and is NOT sound (see `forge_statement_program`).
++#[derive(Clone)]
++pub struct VdSetup {
++    pub vk_final: MultiStarkVerifyingKey<SC>,
++    pub program: Option<Vec<[u32; 4]>>,
++    pub level: u32,
++}
++
++/// eval_eq_uni(l_skip, x, y) (verifier.rs `eq_uni`, natively)
++fn eq_uni(l_skip: usize, x: EF, y: EF) -> EF {
++    let (mut xp, mut yp) = (x, y);
++    let mut res = EF::ONE;
++    for _ in 0..l_skip {
++        res = (xp + yp) * res + (xp - EF::ONE) * (yp - EF::ONE);
++        xp = xp.square();
++        yp = yp.square();
++    }
++    res * F::ONE.halve().exp_u64(l_skip as u64)
++}
++
++/// The final proof's batch point r and its NvAir openings, re-derived natively under the final
++/// domain (the preamble of `verifier::verify`, then `verify_zerocheck_and_logup`).
++fn final_point_and_openings(vk: &MultiStarkVerifyingKey<SC>, proof: &Proof<SC>) -> Result<(Vec<EF>, usize, Vec<(EF, EF)>), String> {
++    use std::cmp::Reverse;
++    let mvk = &vk.inner;
++    let l_skip = mvk.params.l_skip;
++    let num_airs = mvk.per_air.len();
++    let mut t = ShaTranscript::new_layer(true);
++    t.observe_commit(vk.pre_hash);
++    t.observe_commit(proof.common_main_commit);
++    for ((td, avk), pvs) in proof.trace_vdata.iter().zip(&mvk.per_air).zip(&proof.public_values) {
++        if avk.preprocessed_data.is_some() || !avk.params.width.cached_mains.is_empty() {
++            return Err("final vk has preprocessed/cached traces".into());
++        }
++        if !avk.is_required {
++            t.observe(F::from_bool(td.is_some()));
++        }
++        let td = td.as_ref().ok_or("final proof: AIR absent")?;
++        t.observe(F::from_usize(td.log_height));
++        if let Some(h) = td.tight_height {
++            t.observe(F::from_usize(h));
++        }
++        for &pv in pvs {
++            t.observe(pv);
++        }
++    }
++    let mut tid: Vec<usize> = (0..num_airs).collect();
++    tid.sort_by_key(|&a| (Reverse(proof.trace_vdata[a].as_ref().unwrap().log_height), a));
++    let n_per_trace: Vec<isize> = tid
++        .iter()
++        .map(|&a| proof.trace_vdata[a].as_ref().unwrap().log_height as isize - l_skip as isize)
++        .collect();
++    let omega_skip_pows: Vec<F> = F::two_adic_generator(l_skip).powers().take(1 << l_skip).collect();
++    let r = openvm_stark_backend::verifier::batch_constraints::verify_zerocheck_and_logup::<SC, _>(
++        &mut t,
++        mvk,
++        &proof.public_values,
++        &proof.gkr_proof,
++        &proof.batch_constraint_proof,
++        &tid,
++        &n_per_trace,
++        &omega_skip_pows,
++    )
++    .map_err(|e| format!("zerocheck: {e:?}"))?;
++    let ti = tid.iter().position(|&a| a == 0).unwrap();
++    let mask = mvk.per_air[0].params.opening_masks()[0].clone();
++    let open = openvm_stark_backend::proof::column_openings_by_mask(&proof.batch_constraint_proof.column_openings[ti][0], &mask);
++    Ok((r, n_per_trace[ti] as usize, open))
++}
++
++/// The multilinear evaluation of the program words (P0..P3 combined by tau) at r, natively:
++/// sum_y L_{y mod 2^l_skip}(r_0) eq(r_1..r_n, y >> l_skip) sum_j tau^j P_j[y].
++pub fn program_eval(program: &[[u32; 4]], r: &[EF], n: usize, l_skip: usize) -> EF {
++    let tp = super::uair::tau_pows();
++    let omega = F::two_adic_generator(l_skip);
++    let lv: Vec<EF> = (0..1usize << l_skip).map(|i| eq_uni(l_skip, r[0], EF::from(omega.exp_u64(i as u64)))).collect();
++    let mut eq = vec![EF::ONE];
++    for &ri in &r[1..=n] {
++        let mut next = Vec::with_capacity(2 * eq.len());
++        next.extend(eq.iter().map(|&e| e * (EF::ONE - ri)));
++        next.extend(eq.iter().map(|&e| e * ri));
++        eq = next;
++    }
++    let mut acc = EF::ZERO;
++    for (y, w) in program.iter().enumerate() {
++        let p: EF = (0..4).map(|j| tp[j] * F::from_u32(w[j])).sum();
++        acc += lv[y & ((1 << l_skip) - 1)] * eq[y >> l_skip] * p;
++    }
++    acc
++}
++
++/// Native check that the final proof's NvAir program columns open to the pinned program.
++pub fn check_final_program(setup: &VdSetup, proof: &Proof<SC>) -> Result<(), String> {
++    let program = setup.program.as_ref().ok_or("no pinned program")?;
++    let (r, n, open) = final_point_and_openings(&setup.vk_final, proof)?;
++    let l_skip = setup.vk_final.inner.params.l_skip;
++    if program.len() > 1usize << (l_skip + n) {
++        return Err("program longer than the NvAir trace".into());
++    }
++    let tp = super::uair::tau_pows();
++    let phat: EF = (0..4).map(|j| tp[j] * open[super::uair::U_P + j].0).sum();
++    if phat != program_eval(program, &r, n, l_skip) {
++        return Err("final program openings differ from the pinned program".into());
++    }
++    Ok(())
++}
++
++/// V_d: accept iff the final proof verifies under the pinned final vk (final domain), exposes
++/// the pinned level, runs the pinned program, and exposes the statement digest of `claim`.
++pub fn verify_chunk(setup: &VdSetup, engine_final: &Sha384CpuEngine, claim: &ChunkClaim, proof: &Proof<SC>) -> Result<(), String> {
++    engine_final.verify(&setup.vk_final, proof).map_err(|e| format!("final proof: {e:?}"))?;
++    let pvs = &proof.public_values[0];
++    if pvs.len() != super::uair::NV_NUM_PVS {
++        return Err("final public values".into());
++    }
++    if pvs[0] != F::from_u32(setup.level) {
++        return Err(format!("level {} != pinned {}", pvs[0], setup.level));
++    }
++    if setup.program.is_some() {
++        check_final_program(setup, proof)?;
++    }
++    if !super::circuit::check_statement(pvs, &claim.public_values()) {
++        return Err("statement digest differs from the claim's (ctx, enc S_0, enc S_S)".into());
++    }
++    Ok(())
++}
++
++// ---------------------------------------------------------------------------------------
++// Arbitrary NV programs (for the forgery test of a V_d without the program check)
++// ---------------------------------------------------------------------------------------
++
++/// Execute an arbitrary NV program (instead of the verifier) and generate every trace, as
++/// `NvCircuit::generate` does for the verifier program.
++pub fn generate_program(
++    circ: &super::circuit::NvCircuit,
++    f: impl FnOnce(&mut super::builder::Builder),
++) -> (Vec<RowMajorMatrix<F>>, super::builder::Builder) {
++    use super::{
++        hash::{byte_table2, generate2, Work2},
++        transcript2::{replay2, tr2_traces},
++        uair::nv_trace,
++    };
++    let mut b = super::builder::Builder::new(circ.log_rows, circ.reserved());
++    b.prog_log = circ.prog_log;
++    if let Some(app) = &circ.app {
++        b.emit_app(app.clone());
++    }
++    b.begin();
++    f(&mut b);
++    b.finish();
++    let log = b.transcript.clone().into_log();
++    let tr_jobs = replay2(&log);
++    let mut work = Work2 { jobs: b.jobs(), nodes: vec![] };
++    work.jobs.extend(tr_jobs.iter().map(|j| j.job()));
++    let sha = generate2(&work, circ.layout(), circ.heights.as_ref().map(|h| h[1]));
++    let tr = tr2_traces(&tr_jobs);
++    let mut counts = sha.byte_counts.clone();
++    for (c, t) in counts.iter_mut().zip(&tr.byte_counts) {
++        *c += t;
++    }
++    let nv = nv_trace(&b.instrs, &b.vals, &b.wits, &sha.glue_rows, &tr.hash, &tr.samp, &b.app, circ.log_rows, &mut counts);
++    (vec![nv, sha.compress, sha.table, byte_table2(&counts)], b)
++}
++
++/// The forger's program: verifies nothing, exposes `level` and the statement digest `d` of any
++/// claim it likes.  It satisfies every NV AIR constraint; only a pinned-program check (or the
++/// parent's binding) rejects it.
++pub fn forge_statement_program(level: u32, d: Digest) -> impl FnOnce(&mut super::builder::Builder) {
++    move |b| {
++        use super::builder::{digest_cells, ef_from, DigestCells};
++        let l = b.c(F::from_u32(level));
++        b.pv_level(l);
++        let (lo, hi) = digest_cells(d);
++        let lo = b.load(ef_from(lo));
++        let hi = b.load(ef_from(hi));
++        b.pv_digest(&DigestCells { lo, hi, digest: d });
++    }
++}
++
++/// Prove pre-generated NV traces (AIR 0 carries the builder's public values).
++pub fn prove_traces(
++    circ: &super::circuit::NvCircuit,
++    engine: &Sha384CpuEngine,
++    mats: Vec<RowMajorMatrix<F>>,
++    pvs: Vec<F>,
++) -> (MultiStarkVerifyingKey<SC>, Proof<SC>) {
++    use openvm_cpu_backend::CpuBackend;
++    use openvm_stark_backend::prover::DeviceDataTransporter;
++    let airs = circ.airs::<SC>();
++    let (pk, vk) = engine.keygen(&airs);
++    let ctxs: Vec<(usize, AirProvingContext<CpuBackend<SC>>)> = mats
++        .into_iter()
++        .enumerate()
++        .map(|(i, m)| (i, if i == 0 { AirProvingContext::simple(m, pvs.clone()) } else { AirProvingContext::simple_no_pis(m) }))
++        .collect();
++    let d_pk = engine.device().transport_pk_to_device(&pk);
++    let proof = engine.prove(&d_pk, ProvingContext::new(ctxs)).unwrap();
++    engine.verify(&vk, &proof).unwrap();
++    (vk, proof)
++}
++
++#[allow(dead_code)]
++fn _unused(x: F) -> u32 {
++    let _ = Field::is_zero(&x);
++    x.as_canonical_u32()
++}
+diff --git a/crates/recursion/src/nv/e2e_literal_gen.rs b/crates/recursion/src/nv/e2e_literal_gen.rs
+new file mode 100644
+index 0000000..59e760f
+--- /dev/null
++++ b/crates/recursion/src/nv/e2e_literal_gen.rs
+@@ -0,0 +1,2693 @@
++// GENERATED by results/pq-e2e-slice/make_slice_fixture.sh from generate_native_literal_recursion.py
++// --packed-bytes (code length 5). Do not edit.
++use super::*;
++use p3_air::{Air, AirBuilderWithPublicValues, BaseAir, BaseAirWithPublicValues};
++use p3_field::PrimeCharacteristicRing;
++use p3_matrix::{Matrix,dense::RowMajorMatrix};
++use openvm_stark_backend::{PartitionedBaseAir, interaction::InteractionBuilder, prover::{ColMajorMatrix,CpuColMajorBackend}};
++// The generated static node tables contain only AIR expressions, never witness values.
++#[allow(dead_code)]
++enum N { C(u32), V(usize,bool), P(usize), First, Last, Trans, Neg(usize), Add(usize,usize), Mul(usize,usize) }
++fn eval_nodes<AB: AirBuilderWithPublicValues + InteractionBuilder>(builder:&AB,nodes:&[N])->Vec<AB::Expr> {
++    let main=builder.main();
++    let local=main.row_slice(0).unwrap();
++    let next=main.row_slice(1).unwrap();
++    let public=builder.public_values();
++    let mut values:Vec<AB::Expr>=Vec::with_capacity(nodes.len());
++    for node in nodes {
++        let v=match *node {
++            N::C(c)=>AB::Expr::from(AB::F::from_u32(c)),
++            N::V(i,false)=>local[i].into(), N::V(i,true)=>next[i].into(),
++            N::P(i)=>public[i].into(),
++            N::First=>builder.is_first_row(), N::Last=>builder.is_last_row(),
++            N::Trans=>builder.is_transition_window(2),
++            N::Neg(i)=>-values[i].clone(),
++            N::Add(i,j)=>values[i].clone()+values[j].clone(),
++            N::Mul(i,j)=>values[i].clone()*values[j].clone(),
++        };
++        values.push(v);
++    }
++    values
++}
++
++pub(crate) struct Literal0;
++impl<F> BaseAir<F> for Literal0 { fn width(&self)->usize {157} }
++impl<F> PartitionedBaseAir<F> for Literal0 {}
++impl<F> BaseAirWithPublicValues<F> for Literal0 { fn num_public_values(&self)->usize {191} }
++impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for Literal0 { fn eval(&self,builder:&mut AB) {
++let main=builder.main(); let local=main.row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_values().to_vec();
++let e=eval_nodes(builder,&[N::V(0,false),
++N::C(1),
++N::Neg(1),
++N::Add(0,2),
++N::Mul(0,3),
++N::C(0),
++N::Neg(5),
++N::Add(4,6),
++N::V(1,false),
++N::Add(8,2),
++N::Mul(8,9),
++N::Add(10,6),
++N::V(2,false),
++N::Add(12,2),
++N::Mul(12,13),
++N::Add(14,6),
++N::V(3,false),
++N::Add(16,2),
++N::Mul(16,17),
++N::Add(18,6),
++N::V(4,false),
++N::Add(20,2),
++N::Mul(20,21),
++N::Add(22,6),
++N::V(5,false),
++N::Add(24,2),
++N::Mul(24,25),
++N::Add(26,6),
++N::V(6,false),
++N::Add(28,2),
++N::Mul(28,29),
++N::Add(30,6),
++N::V(7,false),
++N::Add(32,2),
++N::Mul(32,33),
++N::Add(34,6),
++N::V(8,false),
++N::Add(36,2),
++N::Mul(36,37),
++N::Add(38,6),
++N::V(9,false),
++N::Add(40,2),
++N::Mul(40,41),
++N::Add(42,6),
++N::V(10,false),
++N::Add(44,2),
++N::Mul(44,45),
++N::Add(46,6),
++N::V(11,false),
++N::Add(48,2),
++N::Mul(48,49),
++N::Add(50,6),
++N::V(12,false),
++N::Add(52,2),
++N::Mul(52,53),
++N::Add(54,6),
++N::V(13,false),
++N::Add(56,2),
++N::Mul(56,57),
++N::Add(58,6),
++N::V(14,false),
++N::Add(60,2),
++N::Mul(60,61),
++N::Add(62,6),
++N::V(15,false),
++N::Add(64,2),
++N::Mul(64,65),
++N::Add(66,6),
++N::V(16,false),
++N::Add(68,2),
++N::Mul(68,69),
++N::Add(70,6),
++N::V(17,false),
++N::Add(72,2),
++N::Mul(72,73),
++N::Add(74,6),
++N::V(18,false),
++N::Add(76,2),
++N::Mul(76,77),
++N::Add(78,6),
++N::V(19,false),
++N::Add(80,2),
++N::Mul(80,81),
++N::Add(82,6),
++N::V(20,false),
++N::Add(84,2),
++N::Mul(84,85),
++N::Add(86,6),
++N::V(21,false),
++N::Add(88,2),
++N::Mul(88,89),
++N::Add(90,6),
++N::V(22,false),
++N::Add(92,2),
++N::Mul(92,93),
++N::Add(94,6),
++N::V(23,false),
++N::Add(96,2),
++N::Mul(96,97),
++N::Add(98,6),
++N::V(24,false),
++N::Add(100,2),
++N::Mul(100,101),
++N::Add(102,6),
++N::V(25,false),
++N::Add(104,2),
++N::Mul(104,105),
++N::Add(106,6),
++N::V(26,false),
++N::Add(108,2),
++N::Mul(108,109),
++N::Add(110,6),
++N::V(27,false),
++N::Add(112,2),
++N::Mul(112,113),
++N::Add(114,6),
++N::V(28,false),
++N::Add(116,2),
++N::Mul(116,117),
++N::Add(118,6),
++N::V(29,false),
++N::Add(120,2),
++N::Mul(120,121),
++N::Add(122,6),
++N::V(30,false),
++N::Add(124,2),
++N::Mul(124,125),
++N::Add(126,6),
++N::V(31,false),
++N::Add(128,2),
++N::Mul(128,129),
++N::Add(130,6),
++N::V(32,false),
++N::Add(132,2),
++N::Mul(132,133),
++N::Add(134,6),
++N::V(33,false),
++N::Add(136,2),
++N::Mul(136,137),
++N::Add(138,6),
++N::V(34,false),
++N::Add(140,2),
++N::Mul(140,141),
++N::Add(142,6),
++N::V(35,false),
++N::Add(144,2),
++N::Mul(144,145),
++N::Add(146,6),
++N::V(36,false),
++N::Add(148,2),
++N::Mul(148,149),
++N::Add(150,6),
++N::V(37,false),
++N::Add(152,2),
++N::Mul(152,153),
++N::Add(154,6),
++N::V(38,false),
++N::Add(156,2),
++N::Mul(156,157),
++N::Add(158,6),
++N::V(39,false),
++N::Add(160,2),
++N::Mul(160,161),
++N::Add(162,6),
++N::V(40,false),
++N::Add(164,2),
++N::Mul(164,165),
++N::Add(166,6),
++N::V(41,false),
++N::Add(168,2),
++N::Mul(168,169),
++N::Add(170,6),
++N::V(42,false),
++N::Add(172,2),
++N::Mul(172,173),
++N::Add(174,6),
++N::V(91,false),
++N::Add(176,2),
++N::Mul(176,177),
++N::Add(178,6),
++N::V(92,false),
++N::Add(180,2),
++N::Mul(180,181),
++N::Add(182,6),
++N::V(93,false),
++N::Add(184,2),
++N::Mul(184,185),
++N::Add(186,6),
++N::V(94,false),
++N::Add(188,2),
++N::Mul(188,189),
++N::Add(190,6),
++N::V(99,false),
++N::Add(192,2),
++N::Mul(192,193),
++N::Add(194,6),
++N::V(100,false),
++N::Add(196,2),
++N::Mul(196,197),
++N::Add(198,6),
++N::V(101,false),
++N::Add(200,2),
++N::Mul(200,201),
++N::Add(202,6),
++N::V(102,false),
++N::Add(204,2),
++N::Mul(204,205),
++N::Add(206,6),
++N::V(103,false),
++N::Add(208,2),
++N::Mul(208,209),
++N::Add(210,6),
++N::V(104,false),
++N::Add(212,2),
++N::Mul(212,213),
++N::Add(214,6),
++N::V(105,false),
++N::Add(216,2),
++N::Mul(216,217),
++N::Add(218,6),
++N::V(118,false),
++N::Add(220,2),
++N::Mul(220,221),
++N::Add(222,6),
++N::V(119,false),
++N::Add(224,2),
++N::Mul(224,225),
++N::Add(226,6),
++N::V(120,false),
++N::Add(228,2),
++N::Mul(228,229),
++N::Add(230,6),
++N::V(121,false),
++N::Add(232,2),
++N::Mul(232,233),
++N::Add(234,6),
++N::V(122,false),
++N::Add(236,2),
++N::Mul(236,237),
++N::Add(238,6),
++N::V(123,false),
++N::Add(240,2),
++N::Mul(240,241),
++N::Add(242,6),
++N::V(124,false),
++N::Add(244,2),
++N::Mul(244,245),
++N::Add(246,6),
++N::V(125,false),
++N::Add(248,2),
++N::Mul(248,249),
++N::Add(250,6),
++N::V(126,false),
++N::Add(252,2),
++N::Mul(252,253),
++N::Add(254,6),
++N::V(127,false),
++N::Add(256,2),
++N::Mul(256,257),
++N::Add(258,6),
++N::V(128,false),
++N::Add(260,2),
++N::Mul(260,261),
++N::Add(262,6),
++N::V(129,false),
++N::Add(264,2),
++N::Mul(264,265),
++N::Add(266,6),
++N::V(130,false),
++N::Add(268,2),
++N::Mul(268,269),
++N::Add(270,6),
++N::V(131,false),
++N::Add(272,2),
++N::Mul(272,273),
++N::Add(274,6),
++N::V(132,false),
++N::Add(276,2),
++N::Mul(276,277),
++N::Add(278,6),
++N::V(133,false),
++N::Add(280,2),
++N::Mul(280,281),
++N::Add(282,6),
++N::V(134,false),
++N::Add(284,2),
++N::Mul(284,285),
++N::Add(286,6),
++N::V(135,false),
++N::Add(288,2),
++N::Mul(288,289),
++N::Add(290,6),
++N::V(136,false),
++N::Add(292,2),
++N::Mul(292,293),
++N::Add(294,6),
++N::V(137,false),
++N::Add(296,2),
++N::Mul(296,297),
++N::Add(298,6),
++N::V(138,false),
++N::Add(300,2),
++N::Mul(300,301),
++N::Add(302,6),
++N::V(139,false),
++N::Add(304,2),
++N::Mul(304,305),
++N::Add(306,6),
++N::V(140,false),
++N::Add(308,2),
++N::Mul(308,309),
++N::Add(310,6),
++N::V(141,false),
++N::Add(312,2),
++N::Mul(312,313),
++N::Add(314,6),
++N::V(142,false),
++N::Add(316,2),
++N::Mul(316,317),
++N::Add(318,6),
++N::V(143,false),
++N::Add(320,2),
++N::Mul(320,321),
++N::Add(322,6),
++N::V(144,false),
++N::Add(324,2),
++N::Mul(324,325),
++N::Add(326,6),
++N::V(145,false),
++N::Add(328,2),
++N::Mul(328,329),
++N::Add(330,6),
++N::V(146,false),
++N::Add(332,2),
++N::Mul(332,333),
++N::Add(334,6),
++N::V(147,false),
++N::Add(336,2),
++N::Mul(336,337),
++N::Add(338,6),
++N::V(148,false),
++N::Add(340,2),
++N::Mul(340,341),
++N::Add(342,6),
++N::V(149,false),
++N::Add(344,2),
++N::Mul(344,345),
++N::Add(346,6),
++N::V(150,false),
++N::Add(348,2),
++N::Mul(348,349),
++N::Add(350,6),
++N::V(151,false),
++N::Add(352,2),
++N::Mul(352,353),
++N::Add(354,6),
++N::V(152,false),
++N::Add(356,2),
++N::Mul(356,357),
++N::Add(358,6),
++N::V(153,false),
++N::Add(360,2),
++N::Mul(360,361),
++N::Add(362,6),
++N::V(154,false),
++N::Add(364,2),
++N::Mul(364,365),
++N::Add(366,6),
++N::V(155,false),
++N::Add(368,2),
++N::Mul(368,369),
++N::Add(370,6),
++N::V(156,false),
++N::Add(372,2),
++N::Mul(372,373),
++N::Add(374,6),
++N::Add(132,136),
++N::Add(140,144),
++N::Add(376,377),
++N::Add(148,152),
++N::Add(156,160),
++N::Add(379,380),
++N::Add(378,381),
++N::Add(382,164),
++N::Add(383,2),
++N::Neg(168),
++N::Add(1,385),
++N::Mul(172,386),
++N::Add(387,6),
++N::Add(204,208),
++N::Add(212,216),
++N::Add(389,390),
++N::Add(391,2),
++N::First,
++N::Add(0,6),
++N::Mul(393,394),
++N::Add(8,6),
++N::Mul(393,396),
++N::Add(12,6),
++N::Mul(393,398),
++N::Add(16,6),
++N::Mul(393,400),
++N::Add(20,6),
++N::Mul(393,402),
++N::Add(24,6),
++N::Mul(393,404),
++N::Add(28,6),
++N::Mul(393,406),
++N::Add(32,6),
++N::Mul(393,408),
++N::Add(36,6),
++N::Mul(393,410),
++N::Add(40,6),
++N::Mul(393,412),
++N::Add(44,6),
++N::Mul(393,414),
++N::Add(48,6),
++N::Mul(393,416),
++N::Add(52,6),
++N::Mul(393,418),
++N::Add(56,6),
++N::Mul(393,420),
++N::Add(60,6),
++N::Mul(393,422),
++N::Add(64,6),
++N::Mul(393,424),
++N::Add(68,6),
++N::Mul(393,426),
++N::Add(72,6),
++N::Mul(393,428),
++N::Add(76,6),
++N::Mul(393,430),
++N::Add(80,6),
++N::Mul(393,432),
++N::Add(84,6),
++N::Mul(393,434),
++N::Add(88,6),
++N::Mul(393,436),
++N::Add(92,6),
++N::Mul(393,438),
++N::Add(96,6),
++N::Mul(393,440),
++N::Add(100,6),
++N::Mul(393,442),
++N::Add(104,6),
++N::Mul(393,444),
++N::Add(108,6),
++N::Mul(393,446),
++N::Add(112,6),
++N::Mul(393,448),
++N::Add(116,6),
++N::Mul(393,450),
++N::Add(120,6),
++N::Mul(393,452),
++N::Add(124,6),
++N::Mul(393,454),
++N::Add(128,6),
++N::Mul(393,456),
++N::Mul(393,133),
++N::Add(168,6),
++N::Mul(393,459),
++N::Last,
++N::Mul(461,169),
++N::V(75,false),
++N::C(256),
++N::V(76,false),
++N::Mul(464,465),
++N::Add(463,466),
++N::V(110,false),
++N::V(111,false),
++N::Mul(464,469),
++N::Add(468,470),
++N::Neg(471),
++N::Add(467,472),
++N::Add(473,6),
++N::V(83,false),
++N::V(84,false),
++N::Mul(464,476),
++N::Add(475,477),
++N::C(65536),
++N::Mul(479,176),
++N::Neg(480),
++N::Add(478,481),
++N::Neg(482),
++N::Add(474,483),
++N::V(77,false),
++N::V(78,false),
++N::Mul(464,486),
++N::Add(485,487),
++N::V(112,false),
++N::V(113,false),
++N::Mul(464,490),
++N::Add(489,491),
++N::Neg(492),
++N::Add(488,493),
++N::Neg(176),
++N::Add(494,495),
++N::V(85,false),
++N::V(86,false),
++N::Mul(464,498),
++N::Add(497,499),
++N::Mul(479,180),
++N::Neg(501),
++N::Add(500,502),
++N::Neg(503),
++N::Add(496,504),
++N::V(79,false),
++N::V(80,false),
++N::Mul(464,507),
++N::Add(506,508),
++N::V(114,false),
++N::V(115,false),
++N::Mul(464,511),
++N::Add(510,512),
++N::Neg(513),
++N::Add(509,514),
++N::Neg(180),
++N::Add(515,516),
++N::V(87,false),
++N::V(88,false),
++N::Mul(464,519),
++N::Add(518,520),
++N::Mul(479,184),
++N::Neg(522),
++N::Add(521,523),
++N::Neg(524),
++N::Add(517,525),
++N::V(81,false),
++N::V(82,false),
++N::Mul(464,528),
++N::Add(527,529),
++N::V(116,false),
++N::V(117,false),
++N::Mul(464,532),
++N::Add(531,533),
++N::Neg(534),
++N::Add(530,535),
++N::Neg(184),
++N::Add(536,537),
++N::V(89,false),
++N::V(90,false),
++N::Mul(464,540),
++N::Add(539,541),
++N::Mul(479,188),
++N::Neg(543),
++N::Add(542,544),
++N::Neg(545),
++N::Add(538,546),
++N::Trans,
++N::V(41,true),
++N::Mul(386,188),
++N::Neg(188),
++N::Add(1,551),
++N::Mul(386,552),
++N::Mul(553,216),
++N::Add(550,554),
++N::Add(168,555),
++N::Neg(556),
++N::Add(549,557),
++N::Mul(548,558),
++N::V(42,true),
++N::Add(172,550),
++N::Neg(561),
++N::Add(560,562),
++N::Mul(548,563),
++N::Mul(1,0),
++N::C(2),
++N::Mul(566,8),
++N::Add(565,567),
++N::C(4),
++N::Mul(569,12),
++N::C(8),
++N::Mul(571,16),
++N::Add(570,572),
++N::Add(568,573),
++N::C(16),
++N::Mul(575,20),
++N::C(32),
++N::Mul(577,24),
++N::Add(576,578),
++N::C(64),
++N::Mul(580,28),
++N::C(128),
++N::Mul(582,32),
++N::Add(581,583),
++N::Add(579,584),
++N::Add(574,585),
++N::Mul(464,36),
++N::C(512),
++N::Mul(588,40),
++N::Add(587,589),
++N::C(1024),
++N::Mul(591,44),
++N::C(2048),
++N::Mul(593,48),
++N::Add(592,594),
++N::Add(590,595),
++N::C(4096),
++N::Mul(597,52),
++N::C(8192),
++N::Mul(599,56),
++N::Add(598,600),
++N::C(16384),
++N::Mul(602,60),
++N::C(32768),
++N::Mul(604,64),
++N::Add(603,605),
++N::Add(601,606),
++N::Add(596,607),
++N::Add(586,608),
++N::Neg(216),
++N::Add(1,610),
++N::Mul(553,611),
++N::Add(609,612),
++N::V(0,true),
++N::Mul(1,614),
++N::V(1,true),
++N::Mul(566,616),
++N::Add(615,617),
++N::V(2,true),
++N::Mul(569,619),
++N::V(3,true),
++N::Mul(571,621),
++N::Add(620,622),
++N::Add(618,623),
++N::V(4,true),
++N::Mul(575,625),
++N::V(5,true),
++N::Mul(577,627),
++N::Add(626,628),
++N::V(6,true),
++N::Mul(580,630),
++N::V(7,true),
++N::Mul(582,632),
++N::Add(631,633),
++N::Add(629,634),
++N::Add(624,635),
++N::V(8,true),
++N::Mul(464,637),
++N::V(9,true),
++N::Mul(588,639),
++N::Add(638,640),
++N::V(10,true),
++N::Mul(591,642),
++N::V(11,true),
++N::Mul(593,644),
++N::Add(643,645),
++N::Add(641,646),
++N::V(12,true),
++N::Mul(597,648),
++N::V(13,true),
++N::Mul(599,650),
++N::Add(649,651),
++N::V(14,true),
++N::Mul(602,653),
++N::V(15,true),
++N::Mul(604,655),
++N::Add(654,656),
++N::Add(652,657),
++N::Add(647,658),
++N::Add(636,659),
++N::Mul(479,200),
++N::Add(660,661),
++N::Neg(662),
++N::Add(613,663),
++N::Mul(548,664),
++N::V(16,true),
++N::Mul(1,666),
++N::V(17,true),
++N::Mul(566,668),
++N::Add(667,669),
++N::V(18,true),
++N::Mul(569,671),
++N::V(19,true),
++N::Mul(571,673),
++N::Add(672,674),
++N::Add(670,675),
++N::V(20,true),
++N::Mul(575,677),
++N::V(21,true),
++N::Mul(577,679),
++N::Add(678,680),
++N::V(22,true),
++N::Mul(580,682),
++N::V(23,true),
++N::Mul(582,684),
++N::Add(683,685),
++N::Add(681,686),
++N::Add(676,687),
++N::V(24,true),
++N::Mul(464,689),
++N::V(25,true),
++N::Mul(588,691),
++N::Add(690,692),
++N::V(26,true),
++N::Mul(591,694),
++N::V(27,true),
++N::Mul(593,696),
++N::Add(695,697),
++N::Add(693,698),
++N::V(28,true),
++N::Mul(597,700),
++N::V(29,true),
++N::Mul(599,702),
++N::Add(701,703),
++N::V(30,true),
++N::Mul(602,705),
++N::V(31,true),
++N::Mul(604,707),
++N::Add(706,708),
++N::Add(704,709),
++N::Add(699,710),
++N::Add(688,711),
++N::Mul(1,68),
++N::Mul(566,72),
++N::Add(713,714),
++N::Mul(569,76),
++N::Mul(571,80),
++N::Add(716,717),
++N::Add(715,718),
++N::Mul(575,84),
++N::Mul(577,88),
++N::Add(720,721),
++N::Mul(580,92),
++N::Mul(582,96),
++N::Add(723,724),
++N::Add(722,725),
++N::Add(719,726),
++N::Mul(464,100),
++N::Mul(588,104),
++N::Add(728,729),
++N::Mul(591,108),
++N::Mul(593,112),
++N::Add(731,732),
++N::Add(730,733),
++N::Mul(597,116),
++N::Mul(599,120),
++N::Add(735,736),
++N::Mul(602,124),
++N::Mul(604,128),
++N::Add(738,739),
++N::Add(737,740),
++N::Add(734,741),
++N::Add(727,742),
++N::Add(743,200),
++N::Neg(744),
++N::Add(712,745),
++N::Mul(548,746),
++N::Add(248,6),
++N::Add(252,6),
++N::Add(256,6),
++N::Add(260,6),
++N::Add(264,6),
++N::Add(268,6),
++N::Add(272,6),
++N::Add(276,6),
++N::Add(280,6),
++N::Add(284,6),
++N::Add(288,6),
++N::Add(292,6),
++N::Add(296,6),
++N::Add(300,6),
++N::Add(304,6),
++N::Add(308,6),
++N::Add(312,6),
++N::Add(316,6),
++N::Add(320,6),
++N::Add(324,6),
++N::Add(328,6),
++N::Add(332,6),
++N::Add(336,6),
++N::Add(340,6),
++N::Add(344,6),
++N::Add(348,6),
++N::Add(352,6),
++N::Add(356,6),
++N::Add(360,6),
++N::Add(364,6),
++N::Add(368,6),
++N::Add(372,6),
++N::V(32,true),
++N::Mul(5,780),
++N::V(33,true),
++N::Mul(1,782),
++N::Add(781,783),
++N::V(34,true),
++N::Mul(566,785),
++N::C(3),
++N::V(35,true),
++N::Mul(787,788),
++N::Add(786,789),
++N::Add(784,790),
++N::V(36,true),
++N::Mul(569,792),
++N::C(5),
++N::V(37,true),
++N::Mul(794,795),
++N::Add(793,796),
++N::C(6),
++N::V(38,true),
++N::Mul(798,799),
++N::C(7),
++N::V(39,true),
++N::Mul(801,802),
++N::Add(800,803),
++N::Add(797,804),
++N::Add(791,805),
++N::V(40,true),
++N::Mul(571,807),
++N::Add(806,808),
++N::Mul(5,132),
++N::Mul(1,136),
++N::Add(810,811),
++N::Mul(566,140),
++N::Mul(787,144),
++N::Add(813,814),
++N::Add(812,815),
++N::Mul(569,148),
++N::Mul(794,152),
++N::Add(817,818),
++N::Mul(798,156),
++N::Mul(801,160),
++N::Add(820,821),
++N::Add(819,822),
++N::Add(816,823),
++N::Mul(571,164),
++N::Add(824,825),
++N::Add(208,212),
++N::Neg(827),
++N::Add(204,828),
++N::Mul(553,829),
++N::Add(826,830),
++N::Neg(831),
++N::Add(809,832),
++N::Mul(548,833),
++N::Mul(204,164),
++N::Mul(553,835),
++N::Add(836,6),
++N::Mul(208,376),
++N::Mul(553,838),
++N::Add(839,6),
++N::Mul(212,132),
++N::Mul(553,841),
++N::Add(842,6),
++N::Neg(132),
++N::Add(1,844),
++N::Mul(216,845),
++N::Mul(553,846),
++N::Add(847,6),
++N::V(75,true),
++N::V(76,true),
++N::Mul(464,850),
++N::Add(849,851),
++N::Mul(553,478),
++N::Neg(553),
++N::Add(1,854),
++N::Mul(855,467),
++N::Add(853,856),
++N::Neg(857),
++N::Add(852,858),
++N::Mul(548,859),
++N::V(77,true),
++N::V(78,true),
++N::Mul(464,862),
++N::Add(861,863),
++N::Mul(553,500),
++N::Mul(855,488),
++N::Add(865,866),
++N::Neg(867),
++N::Add(864,868),
++N::Mul(548,869),
++N::V(79,true),
++N::V(80,true),
++N::Mul(464,872),
++N::Add(871,873),
++N::Mul(553,521),
++N::Mul(855,509),
++N::Add(875,876),
++N::Neg(877),
++N::Add(874,878),
++N::Mul(548,879),
++N::V(81,true),
++N::V(82,true),
++N::Mul(464,882),
++N::Add(881,883),
++N::Mul(553,542),
++N::Mul(855,530),
++N::Add(885,886),
++N::Neg(887),
++N::Add(884,888),
++N::Mul(548,889),
++N::Mul(553,208),
++N::V(43,false),
++N::V(44,false),
++N::Mul(464,893),
++N::Add(892,894),
++N::Mul(140,895),
++N::V(47,false),
++N::V(48,false),
++N::Mul(464,898),
++N::Add(897,899),
++N::Mul(144,900),
++N::Add(896,901),
++N::V(51,false),
++N::V(52,false),
++N::Mul(464,904),
++N::Add(903,905),
++N::Mul(148,906),
++N::V(55,false),
++N::V(56,false),
++N::Mul(464,909),
++N::Add(908,910),
++N::Mul(152,911),
++N::Add(907,912),
++N::Add(902,913),
++N::V(59,false),
++N::V(60,false),
++N::Mul(464,916),
++N::Add(915,917),
++N::Mul(156,918),
++N::V(63,false),
++N::V(64,false),
++N::Mul(464,921),
++N::Add(920,922),
++N::Mul(160,923),
++N::Add(919,924),
++N::V(67,false),
++N::V(68,false),
++N::Mul(464,927),
++N::Add(926,928),
++N::Mul(164,929),
++N::Add(925,930),
++N::Add(914,931),
++N::Mul(140,900),
++N::Mul(144,906),
++N::Add(933,934),
++N::Mul(148,911),
++N::Mul(152,918),
++N::Add(936,937),
++N::Add(935,938),
++N::Mul(156,923),
++N::Mul(160,929),
++N::Add(940,941),
++N::V(71,false),
++N::V(72,false),
++N::Mul(464,944),
++N::Add(943,945),
++N::Mul(164,946),
++N::Add(942,947),
++N::Add(939,948),
++N::Add(932,949),
++N::Add(950,5),
++N::V(95,false),
++N::V(96,false),
++N::Mul(464,953),
++N::Add(952,954),
++N::Mul(479,192),
++N::Add(955,956),
++N::Neg(957),
++N::Add(951,958),
++N::Mul(891,959),
++N::V(45,false),
++N::V(46,false),
++N::Mul(464,962),
++N::Add(961,963),
++N::Mul(140,964),
++N::V(49,false),
++N::V(50,false),
++N::Mul(464,967),
++N::Add(966,968),
++N::Mul(144,969),
++N::Add(965,970),
++N::V(53,false),
++N::V(54,false),
++N::Mul(464,973),
++N::Add(972,974),
++N::Mul(148,975),
++N::V(57,false),
++N::V(58,false),
++N::Mul(464,978),
++N::Add(977,979),
++N::Mul(152,980),
++N::Add(976,981),
++N::Add(971,982),
++N::V(61,false),
++N::V(62,false),
++N::Mul(464,985),
++N::Add(984,986),
++N::Mul(156,987),
++N::V(65,false),
++N::V(66,false),
++N::Mul(464,990),
++N::Add(989,991),
++N::Mul(160,992),
++N::Add(988,993),
++N::V(69,false),
++N::V(70,false),
++N::Mul(464,996),
++N::Add(995,997),
++N::Mul(164,998),
++N::Add(994,999),
++N::Add(983,1000),
++N::Mul(140,969),
++N::Mul(144,975),
++N::Add(1002,1003),
++N::Mul(148,980),
++N::Mul(152,987),
++N::Add(1005,1006),
++N::Add(1004,1007),
++N::Mul(156,992),
++N::Mul(160,998),
++N::Add(1009,1010),
++N::V(73,false),
++N::V(74,false),
++N::Mul(464,1013),
++N::Add(1012,1014),
++N::Mul(164,1015),
++N::Add(1011,1016),
++N::Add(1008,1017),
++N::Add(1001,1018),
++N::Add(1019,192),
++N::V(97,false),
++N::V(98,false),
++N::Mul(464,1022),
++N::Add(1021,1023),
++N::Mul(479,196),
++N::Add(1024,1025),
++N::Neg(1026),
++N::Add(1020,1027),
++N::Mul(891,1028),
++N::Add(136,140),
++N::Add(144,148),
++N::Add(1030,1031),
++N::Add(152,156),
++N::Add(160,164),
++N::Add(1033,1034),
++N::Add(1032,1035),
++N::Neg(1036),
++N::Add(1,1037),
++N::Mul(1038,895),
++N::Add(1039,6),
++N::V(43,true),
++N::V(44,true),
++N::Mul(464,1042),
++N::Add(1041,1043),
++N::Mul(204,132),
++N::Mul(553,1045),
++N::Mul(208,140),
++N::Mul(553,1047),
++N::Add(1046,1048),
++N::Mul(827,136),
++N::Mul(553,1050),
++N::Add(1049,1051),
++N::Neg(1052),
++N::Add(1,1053),
++N::Mul(1054,895),
++N::V(106,false),
++N::V(107,false),
++N::Mul(464,1057),
++N::Add(1056,1058),
++N::Mul(1046,1059),
++N::Mul(1048,955),
++N::Add(1060,1061),
++N::Add(1055,1062),
++N::Neg(1063),
++N::Add(1044,1064),
++N::Mul(548,1065),
++N::Mul(1038,964),
++N::Add(1067,6),
++N::V(45,true),
++N::V(46,true),
++N::Mul(464,1070),
++N::Add(1069,1071),
++N::Mul(1054,964),
++N::V(108,false),
++N::V(109,false),
++N::Mul(464,1075),
++N::Add(1074,1076),
++N::Mul(1046,1077),
++N::Mul(1048,1024),
++N::Add(1078,1079),
++N::Add(1073,1080),
++N::Neg(1081),
++N::Add(1072,1082),
++N::Mul(548,1083),
++N::Add(377,379),
++N::Add(380,164),
++N::Add(1085,1086),
++N::Neg(1087),
++N::Add(1,1088),
++N::Mul(1089,900),
++N::Add(1090,6),
++N::V(47,true),
++N::V(48,true),
++N::Mul(464,1093),
++N::Add(1092,1094),
++N::Mul(204,136),
++N::Mul(553,1096),
++N::Mul(208,144),
++N::Mul(553,1098),
++N::Add(1097,1099),
++N::Mul(827,140),
++N::Mul(553,1101),
++N::Add(1100,1102),
++N::Neg(1103),
++N::Add(1,1104),
++N::Mul(1105,900),
++N::Mul(1097,1059),
++N::Mul(1099,955),
++N::Add(1107,1108),
++N::Add(1106,1109),
++N::Neg(1110),
++N::Add(1095,1111),
++N::Mul(548,1112),
++N::Mul(1089,969),
++N::Add(1114,6),
++N::V(49,true),
++N::V(50,true),
++N::Mul(464,1117),
++N::Add(1116,1118),
++N::Mul(1105,969),
++N::Mul(1097,1077),
++N::Mul(1099,1024),
++N::Add(1121,1122),
++N::Add(1120,1123),
++N::Neg(1124),
++N::Add(1119,1125),
++N::Mul(548,1126),
++N::Add(1031,1033),
++N::Add(1128,1034),
++N::Neg(1129),
++N::Add(1,1130),
++N::Mul(1131,906),
++N::Add(1132,6),
++N::V(51,true),
++N::V(52,true),
++N::Mul(464,1135),
++N::Add(1134,1136),
++N::Mul(204,140),
++N::Mul(553,1138),
++N::Mul(208,148),
++N::Mul(553,1140),
++N::Add(1139,1141),
++N::Mul(827,144),
++N::Mul(553,1143),
++N::Add(1142,1144),
++N::Neg(1145),
++N::Add(1,1146),
++N::Mul(1147,906),
++N::Mul(1139,1059),
++N::Mul(1141,955),
++N::Add(1149,1150),
++N::Add(1148,1151),
++N::Neg(1152),
++N::Add(1137,1153),
++N::Mul(548,1154),
++N::Mul(1131,975),
++N::Add(1156,6),
++N::V(53,true),
++N::V(54,true),
++N::Mul(464,1159),
++N::Add(1158,1160),
++N::Mul(1147,975),
++N::Mul(1139,1077),
++N::Mul(1141,1024),
++N::Add(1163,1164),
++N::Add(1162,1165),
++N::Neg(1166),
++N::Add(1161,1167),
++N::Mul(548,1168),
++N::Add(381,164),
++N::Neg(1170),
++N::Add(1,1171),
++N::Mul(1172,911),
++N::Add(1173,6),
++N::V(55,true),
++N::V(56,true),
++N::Mul(464,1176),
++N::Add(1175,1177),
++N::Mul(204,144),
++N::Mul(553,1179),
++N::Mul(208,152),
++N::Mul(553,1181),
++N::Add(1180,1182),
++N::Mul(827,148),
++N::Mul(553,1184),
++N::Add(1183,1185),
++N::Neg(1186),
++N::Add(1,1187),
++N::Mul(1188,911),
++N::Mul(1180,1059),
++N::Mul(1182,955),
++N::Add(1190,1191),
++N::Add(1189,1192),
++N::Neg(1193),
++N::Add(1178,1194),
++N::Mul(548,1195),
++N::Mul(1172,980),
++N::Add(1197,6),
++N::V(57,true),
++N::V(58,true),
++N::Mul(464,1200),
++N::Add(1199,1201),
++N::Mul(1188,980),
++N::Mul(1180,1077),
++N::Mul(1182,1024),
++N::Add(1204,1205),
++N::Add(1203,1206),
++N::Neg(1207),
++N::Add(1202,1208),
++N::Mul(548,1209),
++N::Neg(1035),
++N::Add(1,1211),
++N::Mul(1212,918),
++N::Add(1213,6),
++N::V(59,true),
++N::V(60,true),
++N::Mul(464,1216),
++N::Add(1215,1217),
++N::Mul(204,148),
++N::Mul(553,1219),
++N::Mul(208,156),
++N::Mul(553,1221),
++N::Add(1220,1222),
++N::Mul(827,152),
++N::Mul(553,1224),
++N::Add(1223,1225),
++N::Neg(1226),
++N::Add(1,1227),
++N::Mul(1228,918),
++N::Mul(1220,1059),
++N::Mul(1222,955),
++N::Add(1230,1231),
++N::Add(1229,1232),
++N::Neg(1233),
++N::Add(1218,1234),
++N::Mul(548,1235),
++N::Mul(1212,987),
++N::Add(1237,6),
++N::V(61,true),
++N::V(62,true),
++N::Mul(464,1240),
++N::Add(1239,1241),
++N::Mul(1228,987),
++N::Mul(1220,1077),
++N::Mul(1222,1024),
++N::Add(1244,1245),
++N::Add(1243,1246),
++N::Neg(1247),
++N::Add(1242,1248),
++N::Mul(548,1249),
++N::Neg(1086),
++N::Add(1,1251),
++N::Mul(1252,923),
++N::Add(1253,6),
++N::V(63,true),
++N::V(64,true),
++N::Mul(464,1256),
++N::Add(1255,1257),
++N::Mul(204,152),
++N::Mul(553,1259),
++N::Mul(208,160),
++N::Mul(553,1261),
++N::Add(1260,1262),
++N::Mul(827,156),
++N::Mul(553,1264),
++N::Add(1263,1265),
++N::Neg(1266),
++N::Add(1,1267),
++N::Mul(1268,923),
++N::Mul(1260,1059),
++N::Mul(1262,955),
++N::Add(1270,1271),
++N::Add(1269,1272),
++N::Neg(1273),
++N::Add(1258,1274),
++N::Mul(548,1275),
++N::Mul(1252,992),
++N::Add(1277,6),
++N::V(65,true),
++N::V(66,true),
++N::Mul(464,1280),
++N::Add(1279,1281),
++N::Mul(1268,992),
++N::Mul(1260,1077),
++N::Mul(1262,1024),
++N::Add(1284,1285),
++N::Add(1283,1286),
++N::Neg(1287),
++N::Add(1282,1288),
++N::Mul(548,1289),
++N::Neg(1034),
++N::Add(1,1291),
++N::Mul(1292,929),
++N::Add(1293,6),
++N::V(67,true),
++N::V(68,true),
++N::Mul(464,1296),
++N::Add(1295,1297),
++N::Mul(204,156),
++N::Mul(553,1299),
++N::Mul(208,164),
++N::Mul(553,1301),
++N::Add(1300,1302),
++N::Mul(827,160),
++N::Mul(553,1304),
++N::Add(1303,1305),
++N::Neg(1306),
++N::Add(1,1307),
++N::Mul(1308,929),
++N::Mul(1300,1059),
++N::Mul(1302,955),
++N::Add(1310,1311),
++N::Add(1309,1312),
++N::Neg(1313),
++N::Add(1298,1314),
++N::Mul(548,1315),
++N::Mul(1292,998),
++N::Add(1317,6),
++N::V(69,true),
++N::V(70,true),
++N::Mul(464,1320),
++N::Add(1319,1321),
++N::Mul(1308,998),
++N::Mul(1300,1077),
++N::Mul(1302,1024),
++N::Add(1324,1325),
++N::Add(1323,1326),
++N::Neg(1327),
++N::Add(1322,1328),
++N::Mul(548,1329),
++N::Neg(164),
++N::Add(1,1331),
++N::Mul(1332,946),
++N::Add(1333,6),
++N::V(71,true),
++N::V(72,true),
++N::Mul(464,1336),
++N::Add(1335,1337),
++N::Mul(204,160),
++N::Mul(553,1339),
++N::Mul(208,5),
++N::Mul(553,1341),
++N::Add(1340,1342),
++N::Mul(827,164),
++N::Mul(553,1344),
++N::Add(1343,1345),
++N::Neg(1346),
++N::Add(1,1347),
++N::Mul(1348,946),
++N::Mul(1340,1059),
++N::Mul(1342,955),
++N::Add(1350,1351),
++N::Add(1349,1352),
++N::Neg(1353),
++N::Add(1338,1354),
++N::Mul(548,1355),
++N::Mul(1332,1015),
++N::Add(1357,6),
++N::V(73,true),
++N::V(74,true),
++N::Mul(464,1360),
++N::Add(1359,1361),
++N::Mul(1348,1015),
++N::Mul(1340,1077),
++N::Mul(1342,1024),
++N::Add(1364,1365),
++N::Add(1363,1366),
++N::Neg(1367),
++N::Add(1362,1368),
++N::Mul(548,1369),
++N::Mul(1,248),
++N::Mul(566,252),
++N::Add(1371,1372),
++N::Mul(569,256),
++N::Mul(571,260),
++N::Add(1374,1375),
++N::Add(1373,1376),
++N::Mul(575,264),
++N::Mul(577,268),
++N::Add(1378,1379),
++N::Mul(580,272),
++N::Mul(582,276),
++N::Add(1381,1382),
++N::Add(1380,1383),
++N::Add(1377,1384),
++N::Mul(464,280),
++N::Mul(588,284),
++N::Add(1386,1387),
++N::Mul(591,288),
++N::Mul(593,292),
++N::Add(1389,1390),
++N::Add(1388,1391),
++N::Mul(597,296),
++N::Mul(599,300),
++N::Add(1393,1394),
++N::Mul(602,304),
++N::Mul(604,308),
++N::Add(1396,1397),
++N::Add(1395,1398),
++N::Add(1392,1399),
++N::Add(1385,1400),
++N::Mul(1,312),
++N::Mul(566,316),
++N::Add(1402,1403),
++N::Mul(569,320),
++N::Mul(571,324),
++N::Add(1405,1406),
++N::Add(1404,1407),
++N::Mul(575,328),
++N::Mul(577,332),
++N::Add(1409,1410),
++N::Mul(580,336),
++N::Mul(582,340),
++N::Add(1412,1413),
++N::Add(1411,1414),
++N::Add(1408,1415),
++N::Mul(464,344),
++N::Mul(588,348),
++N::Add(1417,1418),
++N::Mul(591,352),
++N::Mul(593,356),
++N::Add(1420,1421),
++N::Add(1419,1422),
++N::Mul(597,360),
++N::Mul(599,364),
++N::Add(1424,1425),
++N::Mul(602,368),
++N::Mul(604,372),
++N::Add(1427,1428),
++N::Add(1426,1429),
++N::Add(1423,1430),
++N::Add(1416,1431)]);
++for i in [7,11,15,19,23,27,31,35,39,43,47,51,55,59,63,67,71,75,79,83,87,91,95,99,103,107,111,115,119,123,127,131,135,139,143,147,151,155,159,163,167,171,175,179,183,187,191,195,199,203,207,211,215,219,223,227,231,235,239,243,247,251,255,259,263,267,271,275,279,283,287,291,295,299,303,307,311,315,319,323,327,331,335,339,343,347,351,355,359,363,367,371,375,384,388,392,395,397,399,401,403,405,407,409,411,413,415,417,419,421,423,425,427,429,431,433,435,437,439,441,443,445,447,449,451,453,455,457,458,460,462,484,505,526,547,559,564,665,747,748,749,750,751,752,753,754,755,756,757,758,759,760,761,762,763,764,765,766,767,768,769,770,771,772,773,774,775,776,777,778,779,834,837,840,843,848,860,870,880,890,960,1029,1040,1066,1068,1084,1091,1113,1115,1127,1133,1155,1157,1169,1174,1196,1198,1210,1214,1236,1238,1250,1254,1276,1278,1290,1294,1316,1318,1330,1334,1356,1358,1370] {builder.assert_zero(e[i].clone());}
++builder.push_interaction(0,vec![e[1401].clone(), e[1432].clone(), e[609].clone(), e[743].clone(), e[826].clone(), e[168].clone(), e[172].clone(), e[467].clone(), e[488].clone(), e[509].clone(), e[530].clone(), e[895].clone(), e[964].clone(), e[900].clone(), e[969].clone(), e[906].clone(), e[975].clone(), e[911].clone(), e[980].clone(), e[918].clone(), e[987].clone(), e[923].clone(), e[992].clone(), e[929].clone(), e[998].clone(), e[946].clone(), e[1015].clone()],(e[393].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(1,vec![e[1401].clone(), e[1432].clone(), e[609].clone(), e[743].clone(), e[826].clone(), e[168].clone(), e[172].clone(), e[467].clone(), e[488].clone(), e[509].clone(), e[530].clone(), e[895].clone(), e[964].clone(), e[900].clone(), e[969].clone(), e[906].clone(), e[975].clone(), e[911].clone(), e[980].clone(), e[918].clone(), e[987].clone(), e[923].clone(), e[992].clone(), e[929].clone(), e[998].clone(), e[946].clone(), e[1015].clone()],(e[461].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(2,vec![e[1401].clone(), e[1432].clone(), e[609].clone(), e[743].clone(), e[204].clone(), e[208].clone(), e[212].clone(), e[216].clone(), e[1059].clone(), e[1077].clone(), e[471].clone(), e[492].clone(), e[513].clone(), e[534].clone(), e[220].clone(), e[224].clone(), e[228].clone(), e[232].clone(), e[236].clone(), e[240].clone(), e[244].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[892].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[893].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[961].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[962].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[897].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[898].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[966].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[967].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[903].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[904].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[972].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[973].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[908].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[909].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[977].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[978].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[915].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[916].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[984].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[985].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[920].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[921].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[989].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[990].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[926].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[927].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[995].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[996].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[943].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[944].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[1012].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[1013].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[463].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[465].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[485].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[486].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[506].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[507].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[527].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[528].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[475].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[476].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[497].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[498].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[518].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[519].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[539].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[540].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[952].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[953].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[1021].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[1022].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[1056].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[1057].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[1074].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[1075].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[468].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[469].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[489].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[490].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[510].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[511].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[531].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[532].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.assert_eq(public[0],AB::F::from_u32(1));
++builder.assert_eq(public[1],AB::F::from_u32(0));
++builder.assert_eq(public[2],AB::F::from_u32(0));
++builder.assert_eq(public[3],AB::F::from_u32(0));
++builder.assert_eq(public[4],AB::F::from_u32(1));
++builder.assert_eq(public[5],AB::F::from_u32(0));
++builder.assert_eq(public[6],AB::F::from_u32(0));
++builder.assert_eq(public[7],AB::F::from_u32(0));
++builder.assert_eq(public[8],AB::F::from_u32(5));
++builder.assert_eq(public[9],AB::F::from_u32(0));
++builder.assert_eq(public[10],AB::F::from_u32(0));
++builder.assert_eq(public[11],AB::F::from_u32(0));
++for row in 0..1 { let start=12+row*27; let first=builder.is_first_row(); builder.push_interaction(0, public[start..start+27].to_vec(),-first,1); }
++for row in 0..1 { let start=39+row*27; let first=builder.is_first_row(); builder.push_interaction(1, public[start..start+27].to_vec(),-first,1); }
++for row in 0..5 { let start=66+row*25; let first=builder.is_first_row(); builder.push_interaction(3, public[start..start+25].to_vec(),-first,1); }
++}}
++pub(crate) struct Literal1;
++impl<F> BaseAir<F> for Literal1 { fn width(&self)->usize {114} }
++impl<F> PartitionedBaseAir<F> for Literal1 {}
++impl<F> BaseAirWithPublicValues<F> for Literal1 { fn num_public_values(&self)->usize {0} }
++impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for Literal1 { fn eval(&self,builder:&mut AB) {
++let main=builder.main(); let local=main.row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_values().to_vec();
++let e=eval_nodes(builder,&[N::V(0,false),
++N::C(1),
++N::Neg(1),
++N::Add(0,2),
++N::Mul(0,3),
++N::C(0),
++N::Neg(5),
++N::Add(4,6),
++N::V(1,false),
++N::Add(8,2),
++N::Mul(8,9),
++N::Add(10,6),
++N::V(2,false),
++N::Add(12,2),
++N::Mul(12,13),
++N::Add(14,6),
++N::V(3,false),
++N::Add(16,2),
++N::Mul(16,17),
++N::Add(18,6),
++N::V(4,false),
++N::Add(20,2),
++N::Mul(20,21),
++N::Add(22,6),
++N::V(5,false),
++N::Add(24,2),
++N::Mul(24,25),
++N::Add(26,6),
++N::V(6,false),
++N::Add(28,2),
++N::Mul(28,29),
++N::Add(30,6),
++N::V(7,false),
++N::Add(32,2),
++N::Mul(32,33),
++N::Add(34,6),
++N::V(8,false),
++N::Add(36,2),
++N::Mul(36,37),
++N::Add(38,6),
++N::V(9,false),
++N::Add(40,2),
++N::Mul(40,41),
++N::Add(42,6),
++N::V(10,false),
++N::Add(44,2),
++N::Mul(44,45),
++N::Add(46,6),
++N::V(11,false),
++N::Add(48,2),
++N::Mul(48,49),
++N::Add(50,6),
++N::V(12,false),
++N::Add(52,2),
++N::Mul(52,53),
++N::Add(54,6),
++N::V(13,false),
++N::Add(56,2),
++N::Mul(56,57),
++N::Add(58,6),
++N::V(14,false),
++N::Add(60,2),
++N::Mul(60,61),
++N::Add(62,6),
++N::V(15,false),
++N::Add(64,2),
++N::Mul(64,65),
++N::Add(66,6),
++N::V(16,false),
++N::Add(68,2),
++N::Mul(68,69),
++N::Add(70,6),
++N::V(17,false),
++N::Add(72,2),
++N::Mul(72,73),
++N::Add(74,6),
++N::V(18,false),
++N::Add(76,2),
++N::Mul(76,77),
++N::Add(78,6),
++N::V(19,false),
++N::Add(80,2),
++N::Mul(80,81),
++N::Add(82,6),
++N::V(20,false),
++N::Add(84,2),
++N::Mul(84,85),
++N::Add(86,6),
++N::V(21,false),
++N::Add(88,2),
++N::Mul(88,89),
++N::Add(90,6),
++N::V(22,false),
++N::Add(92,2),
++N::Mul(92,93),
++N::Add(94,6),
++N::V(23,false),
++N::Add(96,2),
++N::Mul(96,97),
++N::Add(98,6),
++N::V(24,false),
++N::Add(100,2),
++N::Mul(100,101),
++N::Add(102,6),
++N::V(25,false),
++N::Add(104,2),
++N::Mul(104,105),
++N::Add(106,6),
++N::V(26,false),
++N::Add(108,2),
++N::Mul(108,109),
++N::Add(110,6),
++N::V(27,false),
++N::Add(112,2),
++N::Mul(112,113),
++N::Add(114,6),
++N::V(28,false),
++N::Add(116,2),
++N::Mul(116,117),
++N::Add(118,6),
++N::V(29,false),
++N::Add(120,2),
++N::Mul(120,121),
++N::Add(122,6),
++N::V(30,false),
++N::Add(124,2),
++N::Mul(124,125),
++N::Add(126,6),
++N::V(31,false),
++N::Add(128,2),
++N::Mul(128,129),
++N::Add(130,6),
++N::V(32,false),
++N::Add(132,2),
++N::Mul(132,133),
++N::Add(134,6),
++N::V(33,false),
++N::Add(136,2),
++N::Mul(136,137),
++N::Add(138,6),
++N::V(34,false),
++N::Add(140,2),
++N::Mul(140,141),
++N::Add(142,6),
++N::V(35,false),
++N::Add(144,2),
++N::Mul(144,145),
++N::Add(146,6),
++N::V(36,false),
++N::Add(148,2),
++N::Mul(148,149),
++N::Add(150,6),
++N::V(37,false),
++N::Add(152,2),
++N::Mul(152,153),
++N::Add(154,6),
++N::V(38,false),
++N::Add(156,2),
++N::Mul(156,157),
++N::Add(158,6),
++N::V(39,false),
++N::Add(160,2),
++N::Mul(160,161),
++N::Add(162,6),
++N::V(40,false),
++N::Add(164,2),
++N::Mul(164,165),
++N::Add(166,6),
++N::V(41,false),
++N::Add(168,2),
++N::Mul(168,169),
++N::Add(170,6),
++N::V(42,false),
++N::Add(172,2),
++N::Mul(172,173),
++N::Add(174,6),
++N::V(43,false),
++N::Add(176,2),
++N::Mul(176,177),
++N::Add(178,6),
++N::V(44,false),
++N::Add(180,2),
++N::Mul(180,181),
++N::Add(182,6),
++N::V(45,false),
++N::Add(184,2),
++N::Mul(184,185),
++N::Add(186,6),
++N::V(46,false),
++N::Add(188,2),
++N::Mul(188,189),
++N::Add(190,6),
++N::V(47,false),
++N::Add(192,2),
++N::Mul(192,193),
++N::Add(194,6),
++N::V(48,false),
++N::Add(196,2),
++N::Mul(196,197),
++N::Add(198,6),
++N::V(49,false),
++N::Add(200,2),
++N::Mul(200,201),
++N::Add(202,6),
++N::V(50,false),
++N::Add(204,2),
++N::Mul(204,205),
++N::Add(206,6),
++N::V(51,false),
++N::Add(208,2),
++N::Mul(208,209),
++N::Add(210,6),
++N::V(52,false),
++N::Add(212,2),
++N::Mul(212,213),
++N::Add(214,6),
++N::V(53,false),
++N::Add(216,2),
++N::Mul(216,217),
++N::Add(218,6),
++N::V(54,false),
++N::Add(220,2),
++N::Mul(220,221),
++N::Add(222,6),
++N::V(55,false),
++N::Add(224,2),
++N::Mul(224,225),
++N::Add(226,6),
++N::V(56,false),
++N::Add(228,2),
++N::Mul(228,229),
++N::Add(230,6),
++N::V(57,false),
++N::Add(232,2),
++N::Mul(232,233),
++N::Add(234,6),
++N::V(58,false),
++N::Add(236,2),
++N::Mul(236,237),
++N::Add(238,6),
++N::V(59,false),
++N::Add(240,2),
++N::Mul(240,241),
++N::Add(242,6),
++N::V(60,false),
++N::Add(244,2),
++N::Mul(244,245),
++N::Add(246,6),
++N::V(61,false),
++N::Add(248,2),
++N::Mul(248,249),
++N::Add(250,6),
++N::V(62,false),
++N::Add(252,2),
++N::Mul(252,253),
++N::Add(254,6),
++N::V(63,false),
++N::Add(256,2),
++N::Mul(256,257),
++N::Add(258,6),
++N::V(64,false),
++N::Add(260,2),
++N::Mul(260,261),
++N::Add(262,6),
++N::V(65,false),
++N::Add(264,2),
++N::Mul(264,265),
++N::Add(266,6),
++N::V(66,false),
++N::Add(268,2),
++N::Mul(268,269),
++N::Add(270,6),
++N::V(67,false),
++N::Add(272,2),
++N::Mul(272,273),
++N::Add(274,6),
++N::V(68,false),
++N::Add(276,2),
++N::Mul(276,277),
++N::Add(278,6),
++N::V(81,false),
++N::Add(280,2),
++N::Mul(280,281),
++N::Add(282,6),
++N::V(82,false),
++N::Add(284,2),
++N::Mul(284,285),
++N::Add(286,6),
++N::V(83,false),
++N::Add(288,2),
++N::Mul(288,289),
++N::Add(290,6),
++N::V(84,false),
++N::Add(292,2),
++N::Mul(292,293),
++N::Add(294,6),
++N::V(85,false),
++N::Add(296,2),
++N::Mul(296,297),
++N::Add(298,6),
++N::V(86,false),
++N::Add(300,2),
++N::Mul(300,301),
++N::Add(302,6),
++N::V(87,false),
++N::Add(304,2),
++N::Mul(304,305),
++N::Add(306,6),
++N::V(88,false),
++N::Add(308,2),
++N::Mul(308,309),
++N::Add(310,6),
++N::V(89,false),
++N::Add(312,2),
++N::Mul(312,313),
++N::Add(314,6),
++N::V(90,false),
++N::Add(316,2),
++N::Mul(316,317),
++N::Add(318,6),
++N::V(91,false),
++N::Add(320,2),
++N::Mul(320,321),
++N::Add(322,6),
++N::V(92,false),
++N::Add(324,2),
++N::Mul(324,325),
++N::Add(326,6),
++N::V(93,false),
++N::Add(328,2),
++N::Mul(328,329),
++N::Add(330,6),
++N::V(94,false),
++N::Add(332,2),
++N::Mul(332,333),
++N::Add(334,6),
++N::V(95,false),
++N::Add(336,2),
++N::Mul(336,337),
++N::Add(338,6),
++N::V(96,false),
++N::Add(340,2),
++N::Mul(340,341),
++N::Add(342,6),
++N::V(97,false),
++N::Add(344,2),
++N::Mul(344,345),
++N::Add(346,6),
++N::V(98,false),
++N::Add(348,2),
++N::Mul(348,349),
++N::Add(350,6),
++N::V(99,false),
++N::Add(352,2),
++N::Mul(352,353),
++N::Add(354,6),
++N::V(100,false),
++N::Add(356,2),
++N::Mul(356,357),
++N::Add(358,6),
++N::V(101,false),
++N::Add(360,2),
++N::Mul(360,361),
++N::Add(362,6),
++N::V(102,false),
++N::Add(364,2),
++N::Mul(364,365),
++N::Add(366,6),
++N::V(103,false),
++N::Add(368,2),
++N::Mul(368,369),
++N::Add(370,6),
++N::V(104,false),
++N::Add(372,2),
++N::Mul(372,373),
++N::Add(374,6),
++N::V(105,false),
++N::Add(376,2),
++N::Mul(376,377),
++N::Add(378,6),
++N::V(106,false),
++N::Add(380,2),
++N::Mul(380,381),
++N::Add(382,6),
++N::V(107,false),
++N::Add(384,2),
++N::Mul(384,385),
++N::Add(386,6),
++N::V(108,false),
++N::Add(388,2),
++N::Mul(388,389),
++N::Add(390,6),
++N::V(109,false),
++N::Add(392,2),
++N::Mul(392,393),
++N::Add(394,6),
++N::V(110,false),
++N::Add(396,2),
++N::Mul(396,397),
++N::Add(398,6),
++N::V(111,false),
++N::Add(400,2),
++N::Mul(400,401),
++N::Add(402,6),
++N::V(112,false),
++N::Add(404,2),
++N::Mul(404,405),
++N::Add(406,6),
++N::V(113,false),
++N::Add(408,2),
++N::Mul(408,409),
++N::Add(410,6),
++N::First,
++N::Mul(412,3),
++N::Add(8,6),
++N::Mul(412,414),
++N::Add(136,6),
++N::Add(12,6),
++N::Mul(412,417),
++N::Add(140,6),
++N::Add(16,6),
++N::Mul(412,420),
++N::Add(144,6),
++N::Add(20,6),
++N::Mul(412,423),
++N::Add(148,6),
++N::Add(24,6),
++N::Mul(412,426),
++N::Add(152,6),
++N::Add(28,6),
++N::Mul(412,429),
++N::Add(156,6),
++N::Add(32,6),
++N::Mul(412,432),
++N::Add(160,6),
++N::Add(36,6),
++N::Mul(412,435),
++N::Add(164,6),
++N::Add(40,6),
++N::Mul(412,438),
++N::Add(168,6),
++N::Add(44,6),
++N::Mul(412,441),
++N::Add(172,6),
++N::Add(48,6),
++N::Mul(412,444),
++N::Add(176,6),
++N::Add(52,6),
++N::Mul(412,447),
++N::Add(180,6),
++N::Add(56,6),
++N::Mul(412,450),
++N::Add(184,6),
++N::Add(60,6),
++N::Mul(412,453),
++N::Add(188,6),
++N::Add(64,6),
++N::Mul(412,456),
++N::Add(192,6),
++N::Add(68,6),
++N::Mul(412,459),
++N::Add(196,6),
++N::Add(72,6),
++N::Mul(412,462),
++N::Add(200,6),
++N::Add(76,6),
++N::Mul(412,465),
++N::Add(204,6),
++N::Add(80,6),
++N::Mul(412,468),
++N::Add(208,6),
++N::Add(84,6),
++N::Mul(412,471),
++N::Add(212,6),
++N::Add(88,6),
++N::Mul(412,474),
++N::Add(216,6),
++N::Add(92,6),
++N::Mul(412,477),
++N::Add(220,6),
++N::Add(96,6),
++N::Mul(412,480),
++N::Add(224,6),
++N::Add(100,6),
++N::Mul(412,483),
++N::Add(228,6),
++N::Add(104,6),
++N::Mul(412,486),
++N::Add(232,6),
++N::Add(108,6),
++N::Mul(412,489),
++N::Add(236,6),
++N::Add(112,6),
++N::Mul(412,492),
++N::Add(240,6),
++N::Add(116,6),
++N::Mul(412,495),
++N::Add(244,6),
++N::Add(120,6),
++N::Mul(412,498),
++N::Add(248,6),
++N::Add(124,6),
++N::Mul(412,501),
++N::Add(252,6),
++N::Add(128,6),
++N::Mul(412,504),
++N::Add(256,6),
++N::Add(132,6),
++N::Mul(412,507),
++N::Add(260,6),
++N::Trans,
++N::Neg(0),
++N::Add(1,511),
++N::V(0,true),
++N::Mul(512,513),
++N::Add(514,6),
++N::Mul(510,515),
++N::Mul(510,513),
++N::Mul(1,8),
++N::C(2),
++N::Mul(519,12),
++N::Add(518,520),
++N::C(4),
++N::Mul(522,16),
++N::C(8),
++N::Mul(524,20),
++N::Add(523,525),
++N::Add(521,526),
++N::C(16),
++N::Mul(528,24),
++N::C(32),
++N::Mul(530,28),
++N::Add(529,531),
++N::C(64),
++N::Mul(533,32),
++N::C(128),
++N::Mul(535,36),
++N::Add(534,536),
++N::Add(532,537),
++N::Add(527,538),
++N::C(256),
++N::Mul(540,40),
++N::C(512),
++N::Mul(542,44),
++N::Add(541,543),
++N::C(1024),
++N::Mul(545,48),
++N::C(2048),
++N::Mul(547,52),
++N::Add(546,548),
++N::Add(544,549),
++N::C(4096),
++N::Mul(551,56),
++N::C(8192),
++N::Mul(553,60),
++N::Add(552,554),
++N::C(16384),
++N::Mul(556,64),
++N::C(32768),
++N::Mul(558,68),
++N::Add(557,559),
++N::Add(555,560),
++N::Add(550,561),
++N::Add(539,562),
++N::Add(563,1),
++N::V(1,true),
++N::Mul(1,565),
++N::V(2,true),
++N::Mul(519,567),
++N::Add(566,568),
++N::V(3,true),
++N::Mul(522,570),
++N::V(4,true),
++N::Mul(524,572),
++N::Add(571,573),
++N::Add(569,574),
++N::V(5,true),
++N::Mul(528,576),
++N::V(6,true),
++N::Mul(530,578),
++N::Add(577,579),
++N::V(7,true),
++N::Mul(533,581),
++N::V(8,true),
++N::Mul(535,583),
++N::Add(582,584),
++N::Add(580,585),
++N::Add(575,586),
++N::V(9,true),
++N::Mul(540,588),
++N::V(10,true),
++N::Mul(542,590),
++N::Add(589,591),
++N::V(11,true),
++N::Mul(545,593),
++N::V(12,true),
++N::Mul(547,595),
++N::Add(594,596),
++N::Add(592,597),
++N::V(13,true),
++N::Mul(551,599),
++N::V(14,true),
++N::Mul(553,601),
++N::Add(600,602),
++N::V(15,true),
++N::Mul(556,604),
++N::V(16,true),
++N::Mul(558,606),
++N::Add(605,607),
++N::Add(603,608),
++N::Add(598,609),
++N::Add(587,610),
++N::C(65536),
++N::Mul(612,408),
++N::Add(611,613),
++N::Neg(614),
++N::Add(564,615),
++N::Mul(517,616),
++N::V(17,true),
++N::Mul(1,618),
++N::V(18,true),
++N::Mul(519,620),
++N::Add(619,621),
++N::V(19,true),
++N::Mul(522,623),
++N::V(20,true),
++N::Mul(524,625),
++N::Add(624,626),
++N::Add(622,627),
++N::V(21,true),
++N::Mul(528,629),
++N::V(22,true),
++N::Mul(530,631),
++N::Add(630,632),
++N::V(23,true),
++N::Mul(533,634),
++N::V(24,true),
++N::Mul(535,636),
++N::Add(635,637),
++N::Add(633,638),
++N::Add(628,639),
++N::V(25,true),
++N::Mul(540,641),
++N::V(26,true),
++N::Mul(542,643),
++N::Add(642,644),
++N::V(27,true),
++N::Mul(545,646),
++N::V(28,true),
++N::Mul(547,648),
++N::Add(647,649),
++N::Add(645,650),
++N::V(29,true),
++N::Mul(551,652),
++N::V(30,true),
++N::Mul(553,654),
++N::Add(653,655),
++N::V(31,true),
++N::Mul(556,657),
++N::V(32,true),
++N::Mul(558,659),
++N::Add(658,660),
++N::Add(656,661),
++N::Add(651,662),
++N::Add(640,663),
++N::Mul(1,72),
++N::Mul(519,76),
++N::Add(665,666),
++N::Mul(522,80),
++N::Mul(524,84),
++N::Add(668,669),
++N::Add(667,670),
++N::Mul(528,88),
++N::Mul(530,92),
++N::Add(672,673),
++N::Mul(533,96),
++N::Mul(535,100),
++N::Add(675,676),
++N::Add(674,677),
++N::Add(671,678),
++N::Mul(540,104),
++N::Mul(542,108),
++N::Add(680,681),
++N::Mul(545,112),
++N::Mul(547,116),
++N::Add(683,684),
++N::Add(682,685),
++N::Mul(551,120),
++N::Mul(553,124),
++N::Add(687,688),
++N::Mul(556,128),
++N::Mul(558,132),
++N::Add(690,691),
++N::Add(689,692),
++N::Add(686,693),
++N::Add(679,694),
++N::Add(695,408),
++N::Neg(696),
++N::Add(664,697),
++N::Mul(517,698),
++N::Mul(512,414),
++N::Mul(512,417),
++N::Mul(512,420),
++N::Mul(512,423),
++N::Mul(512,426),
++N::Mul(512,429),
++N::Mul(512,432),
++N::Mul(512,435),
++N::Mul(512,438),
++N::Mul(512,441),
++N::Mul(512,444),
++N::Mul(512,447),
++N::Mul(512,450),
++N::Mul(512,453),
++N::Mul(512,456),
++N::Mul(512,459),
++N::Mul(512,462),
++N::Mul(512,465),
++N::Mul(512,468),
++N::Mul(512,471),
++N::Mul(512,474),
++N::Mul(512,477),
++N::Mul(512,480),
++N::Mul(512,483),
++N::Mul(512,486),
++N::Mul(512,489),
++N::Mul(512,492),
++N::Mul(512,495),
++N::Mul(512,498),
++N::Mul(512,501),
++N::Mul(512,504),
++N::Mul(512,507),
++N::Mul(512,416),
++N::Mul(512,419),
++N::Mul(512,422),
++N::Mul(512,425),
++N::Mul(512,428),
++N::Mul(512,431),
++N::Mul(512,434),
++N::Mul(512,437),
++N::Mul(512,440),
++N::Mul(512,443),
++N::Mul(512,446),
++N::Mul(512,449),
++N::Mul(512,452),
++N::Mul(512,455),
++N::Mul(512,458),
++N::Mul(512,461),
++N::Mul(512,464),
++N::Mul(512,467),
++N::Mul(512,470),
++N::Mul(512,473),
++N::Mul(512,476),
++N::Mul(512,479),
++N::Mul(512,482),
++N::Mul(512,485),
++N::Mul(512,488),
++N::Mul(512,491),
++N::Mul(512,494),
++N::Mul(512,497),
++N::Mul(512,500),
++N::Mul(512,503),
++N::Mul(512,506),
++N::Mul(512,509),
++N::Add(264,6),
++N::Mul(512,764),
++N::Add(268,6),
++N::Mul(512,766),
++N::Add(272,6),
++N::Mul(512,768),
++N::Add(276,6),
++N::Mul(512,770),
++N::Add(280,6),
++N::Mul(512,772),
++N::Add(284,6),
++N::Mul(512,774),
++N::Add(288,6),
++N::Mul(512,776),
++N::Add(292,6),
++N::Mul(512,778),
++N::Add(296,6),
++N::Mul(512,780),
++N::Add(300,6),
++N::Mul(512,782),
++N::Add(304,6),
++N::Mul(512,784),
++N::Add(308,6),
++N::Mul(512,786),
++N::Add(312,6),
++N::Mul(512,788),
++N::Add(316,6),
++N::Mul(512,790),
++N::Add(320,6),
++N::Mul(512,792),
++N::Add(324,6),
++N::Mul(512,794),
++N::Add(328,6),
++N::Mul(512,796),
++N::Add(332,6),
++N::Mul(512,798),
++N::Add(336,6),
++N::Mul(512,800),
++N::Add(340,6),
++N::Mul(512,802),
++N::Add(344,6),
++N::Mul(512,804),
++N::Add(348,6),
++N::Mul(512,806),
++N::Add(352,6),
++N::Mul(512,808),
++N::Add(356,6),
++N::Mul(512,810),
++N::Add(360,6),
++N::Mul(512,812),
++N::Add(364,6),
++N::Mul(512,814),
++N::Add(368,6),
++N::Mul(512,816),
++N::Add(372,6),
++N::Mul(512,818),
++N::Add(376,6),
++N::Mul(512,820),
++N::Add(380,6),
++N::Mul(512,822),
++N::Add(384,6),
++N::Mul(512,824),
++N::Add(388,6),
++N::Mul(512,826),
++N::Add(392,6),
++N::Mul(512,828),
++N::Add(396,6),
++N::Mul(512,830),
++N::Add(400,6),
++N::Mul(512,832),
++N::Add(404,6),
++N::Mul(512,834),
++N::Add(408,6),
++N::Mul(512,836),
++N::Add(264,268),
++N::Add(272,276),
++N::Add(838,839),
++N::Add(840,511),
++N::Add(284,288),
++N::Add(292,296),
++N::Add(842,843),
++N::Add(300,304),
++N::Add(844,845),
++N::Neg(280),
++N::Add(846,847),
++N::Mul(280,512),
++N::Add(849,6),
++N::Add(1,847),
++N::V(73,false),
++N::V(74,false),
++N::Mul(540,853),
++N::Add(852,854),
++N::Add(855,6),
++N::Mul(851,856),
++N::V(75,false),
++N::V(76,false),
++N::Mul(540,859),
++N::Add(858,860),
++N::Add(861,6),
++N::Mul(851,862),
++N::V(77,false),
++N::V(78,false),
++N::Mul(540,865),
++N::Add(864,866),
++N::Add(867,6),
++N::Mul(851,868),
++N::V(79,false),
++N::V(80,false),
++N::Mul(540,871),
++N::Add(870,872),
++N::Add(873,6),
++N::Mul(851,874),
++N::Neg(264),
++N::Add(1,876),
++N::V(69,false),
++N::V(70,false),
++N::Mul(540,879),
++N::Add(878,880),
++N::Add(881,6),
++N::Mul(877,882),
++N::V(71,false),
++N::V(72,false),
++N::Mul(540,885),
++N::Add(884,886),
++N::Add(887,6),
++N::Mul(877,888),
++N::Mul(512,878),
++N::Mul(512,879),
++N::Mul(512,884),
++N::Mul(512,885),
++N::Mul(512,852),
++N::Mul(512,853),
++N::Mul(512,858),
++N::Mul(512,859),
++N::Mul(512,864),
++N::Mul(512,865),
++N::Mul(512,870),
++N::Mul(512,871),
++N::Mul(1,136),
++N::Mul(519,140),
++N::Add(902,903),
++N::Mul(522,144),
++N::Mul(524,148),
++N::Add(905,906),
++N::Add(904,907),
++N::Mul(528,152),
++N::Mul(530,156),
++N::Add(909,910),
++N::Mul(533,160),
++N::Mul(535,164),
++N::Add(912,913),
++N::Add(911,914),
++N::Add(908,915),
++N::Mul(540,168),
++N::Mul(542,172),
++N::Add(917,918),
++N::Mul(545,176),
++N::Mul(547,180),
++N::Add(920,921),
++N::Add(919,922),
++N::Mul(551,184),
++N::Mul(553,188),
++N::Add(924,925),
++N::Mul(556,192),
++N::Mul(558,196),
++N::Add(927,928),
++N::Add(926,929),
++N::Add(923,930),
++N::Add(916,931),
++N::Mul(1,200),
++N::Mul(519,204),
++N::Add(933,934),
++N::Mul(522,208),
++N::Mul(524,212),
++N::Add(936,937),
++N::Add(935,938),
++N::Mul(528,216),
++N::Mul(530,220),
++N::Add(940,941),
++N::Mul(533,224),
++N::Mul(535,228),
++N::Add(943,944),
++N::Add(942,945),
++N::Add(939,946),
++N::Mul(540,232),
++N::Mul(542,236),
++N::Add(948,949),
++N::Mul(545,240),
++N::Mul(547,244),
++N::Add(951,952),
++N::Add(950,953),
++N::Mul(551,248),
++N::Mul(553,252),
++N::Add(955,956),
++N::Mul(556,256),
++N::Mul(558,260),
++N::Add(958,959),
++N::Add(957,960),
++N::Add(954,961),
++N::Add(947,962)]);
++for i in [7,11,15,19,23,27,31,35,39,43,47,51,55,59,63,67,71,75,79,83,87,91,95,99,103,107,111,115,119,123,127,131,135,139,143,147,151,155,159,163,167,171,175,179,183,187,191,195,199,203,207,211,215,219,223,227,231,235,239,243,247,251,255,259,263,267,271,275,279,283,287,291,295,299,303,307,311,315,319,323,327,331,335,339,343,347,351,355,359,363,367,371,375,379,383,387,391,395,399,403,407,411,413,415,416,418,419,421,422,424,425,427,428,430,431,433,434,436,437,439,440,442,443,445,446,448,449,451,452,454,455,457,458,460,461,463,464,466,467,469,470,472,473,475,476,478,479,481,482,484,485,487,488,490,491,493,494,496,497,499,500,502,503,505,506,508,509,516,617,699,700,701,702,703,704,705,706,707,708,709,710,711,712,713,714,715,716,717,718,719,720,721,722,723,724,725,726,727,728,729,730,731,732,733,734,735,736,737,738,739,740,741,742,743,744,745,746,747,748,749,750,751,752,753,754,755,756,757,758,759,760,761,762,763,765,767,769,771,773,775,777,779,781,783,785,787,789,791,793,795,797,799,801,803,805,807,809,811,813,815,817,819,821,823,825,827,829,831,833,835,837,841,848,784,850,857,863,869,875,883,889,890,891,892,893,894,895,896,897,898,899,900,901] {builder.assert_zero(e[i].clone());}
++builder.assert_zero(local[92]);
++builder.assert_zero(local[93]);
++builder.assert_zero(local[94]);
++builder.assert_zero(local[95]);
++builder.assert_zero(local[96]);
++builder.assert_zero(local[97]);
++builder.assert_zero(local[98]);
++builder.assert_zero(local[99]);
++builder.assert_zero(local[100]);
++builder.assert_zero(local[101]);
++builder.assert_zero(local[102]);
++builder.assert_zero(local[103]);
++builder.assert_zero(local[104]);
++builder.assert_zero(local[105]);
++builder.assert_zero(local[106]);
++builder.assert_zero(local[107]);
++builder.assert_zero(local[108]);
++builder.assert_zero(local[109]);
++builder.assert_zero(local[110]);
++builder.assert_zero(local[111]);
++builder.assert_zero(local[112]);
++builder.push_interaction(2,vec![e[932].clone(), e[963].clone(), e[563].clone(), e[695].clone(), e[264].clone(), e[268].clone(), e[272].clone(), e[276].clone(), e[881].clone(), e[887].clone(), e[855].clone(), e[861].clone(), e[867].clone(), e[873].clone(), e[280].clone(), e[284].clone(), e[288].clone(), e[292].clone(), e[296].clone(), e[300].clone(), e[304].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],-((e[308].clone() * AB::F::from_u32(1)) + (e[312].clone() * AB::F::from_u32(2)) + (e[316].clone() * AB::F::from_u32(4)) + (e[320].clone() * AB::F::from_u32(8)) + (e[324].clone() * AB::F::from_u32(16)) + (e[328].clone() * AB::F::from_u32(32)) + (e[332].clone() * AB::F::from_u32(64)) + (e[336].clone() * AB::F::from_u32(128)) + (e[340].clone() * AB::F::from_u32(256)) + (e[344].clone() * AB::F::from_u32(512)) + (e[348].clone() * AB::F::from_u32(1024)) + (e[352].clone() * AB::F::from_u32(2048)) + (e[356].clone() * AB::F::from_u32(4096)) + (e[360].clone() * AB::F::from_u32(8192)) + (e[364].clone() * AB::F::from_u32(16384)) + (e[368].clone() * AB::F::from_u32(32768)) + (e[372].clone() * AB::F::from_u32(65536)) + (e[376].clone() * AB::F::from_u32(131072)) + (e[380].clone() * AB::F::from_u32(262144)) + (e[384].clone() * AB::F::from_u32(524288)) + (e[388].clone() * AB::F::from_u32(1048576)) + (e[392].clone() * AB::F::from_u32(2097152)) + (e[396].clone() * AB::F::from_u32(4194304)) + (e[400].clone() * AB::F::from_u32(8388608)) + (e[404].clone() * AB::F::from_u32(16777216))),15);
++builder.push_interaction(3,vec![e[932].clone(), e[963].clone(), e[563].clone(), e[695].clone(), e[264].clone(), e[268].clone(), e[272].clone(), e[276].clone(), e[881].clone(), e[887].clone(), e[855].clone(), e[861].clone(), e[867].clone(), e[873].clone(), e[280].clone(), e[284].clone(), e[288].clone(), e[292].clone(), e[296].clone(), e[300].clone(), e[304].clone(), e[5].clone(), e[5].clone(), e[5].clone(), e[5].clone()],(e[0].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[878].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[879].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[884].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[885].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[852].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[853].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[858].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[859].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[864].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[865].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[870].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++builder.push_interaction(4,vec![e[871].clone()],(e[1].clone() * AB::F::from_u32(1)),1);
++}}
++pub(crate) struct Literal2;
++impl<F> BaseAir<F> for Literal2 { fn width(&self)->usize {24} }
++impl<F> PartitionedBaseAir<F> for Literal2 {}
++impl<F> BaseAirWithPublicValues<F> for Literal2 { fn num_public_values(&self)->usize {0} }
++impl<AB: AirBuilderWithPublicValues + InteractionBuilder> Air<AB> for Literal2 { fn eval(&self,builder:&mut AB) {
++let main=builder.main(); let local=main.row_slice(0).unwrap(); let next=main.row_slice(1).unwrap(); let public=builder.public_values().to_vec();
++let e=eval_nodes(builder,&[N::V(0,false),
++N::C(1),
++N::Neg(1),
++N::Add(0,2),
++N::Mul(0,3),
++N::C(0),
++N::Neg(5),
++N::Add(4,6),
++N::V(1,false),
++N::Add(8,2),
++N::Mul(8,9),
++N::Add(10,6),
++N::V(2,false),
++N::Add(12,2),
++N::Mul(12,13),
++N::Add(14,6),
++N::V(3,false),
++N::Add(16,2),
++N::Mul(16,17),
++N::Add(18,6),
++N::V(4,false),
++N::Add(20,2),
++N::Mul(20,21),
++N::Add(22,6),
++N::V(5,false),
++N::Add(24,2),
++N::Mul(24,25),
++N::Add(26,6),
++N::V(6,false),
++N::Add(28,2),
++N::Mul(28,29),
++N::Add(30,6),
++N::V(7,false),
++N::Add(32,2),
++N::Mul(32,33),
++N::Add(34,6),
++N::V(8,false),
++N::Add(36,2),
++N::Mul(36,37),
++N::Add(38,6),
++N::V(9,false),
++N::Add(40,2),
++N::Mul(40,41),
++N::Add(42,6),
++N::V(10,false),
++N::Add(44,2),
++N::Mul(44,45),
++N::Add(46,6),
++N::V(11,false),
++N::Add(48,2),
++N::Mul(48,49),
++N::Add(50,6),
++N::V(12,false),
++N::Add(52,2),
++N::Mul(52,53),
++N::Add(54,6),
++N::V(13,false),
++N::Add(56,2),
++N::Mul(56,57),
++N::Add(58,6),
++N::V(14,false),
++N::Add(60,2),
++N::Mul(60,61),
++N::Add(62,6),
++N::V(15,false),
++N::Add(64,2),
++N::Mul(64,65),
++N::Add(66,6),
++N::V(16,false),
++N::Add(68,2),
++N::Mul(68,69),
++N::Add(70,6),
++N::V(17,false),
++N::Add(72,2),
++N::Mul(72,73),
++N::Add(74,6),
++N::V(18,false),
++N::Add(76,2),
++N::Mul(76,77),
++N::Add(78,6),
++N::V(19,false),
++N::Add(80,2),
++N::Mul(80,81),
++N::Add(82,6),
++N::V(20,false),
++N::Add(84,2),
++N::Mul(84,85),
++N::Add(86,6),
++N::V(21,false),
++N::Add(88,2),
++N::Mul(88,89),
++N::Add(90,6),
++N::V(22,false),
++N::Add(92,2),
++N::Mul(92,93),
++N::Add(94,6),
++N::V(23,false),
++N::Add(96,2),
++N::Mul(96,97),
++N::Add(98,6),
++N::Mul(1,0),
++N::C(2),
++N::Mul(101,8),
++N::Add(100,102),
++N::C(4),
++N::Mul(104,12),
++N::C(8),
++N::Mul(106,16),
++N::Add(105,107),
++N::Add(103,108),
++N::C(16),
++N::Mul(110,20),
++N::C(32),
++N::Mul(112,24),
++N::Add(111,113),
++N::C(64),
++N::Mul(115,28),
++N::C(128),
++N::Mul(117,32),
++N::Add(116,118),
++N::Add(114,119),
++N::Add(109,120)]);
++for i in [7,11,15,19,23,27,31,35,39,43,47,51,55,59,63,67,71,75,79,83,87,91,95,99] {builder.assert_zero(e[i].clone());}
++builder.push_interaction(4,vec![e[121].clone()],-((e[36].clone() * AB::F::from_u32(1)) + (e[40].clone() * AB::F::from_u32(2)) + (e[44].clone() * AB::F::from_u32(4)) + (e[48].clone() * AB::F::from_u32(8)) + (e[52].clone() * AB::F::from_u32(16)) + (e[56].clone() * AB::F::from_u32(32)) + (e[60].clone() * AB::F::from_u32(64)) + (e[64].clone() * AB::F::from_u32(128)) + (e[68].clone() * AB::F::from_u32(256)) + (e[72].clone() * AB::F::from_u32(512)) + (e[76].clone() * AB::F::from_u32(1024)) + (e[80].clone() * AB::F::from_u32(2048)) + (e[84].clone() * AB::F::from_u32(4096)) + (e[88].clone() * AB::F::from_u32(8192)) + (e[92].clone() * AB::F::from_u32(16384)) + (e[96].clone() * AB::F::from_u32(32768))),65535);
++}}
+diff --git a/crates/recursion/src/nv/e2e_tests.rs b/crates/recursion/src/nv/e2e_tests.rs
+new file mode 100644
+index 0000000..3bbfb67
+--- /dev/null
++++ b/crates/recursion/src/nv/e2e_tests.rs
+@@ -0,0 +1,521 @@
++//! [e2e] pq-e2e-slice tests.  Fast: `cargo test --release --lib e2e_`.  The chain:
++//! `cargo test --release --lib e2e_slice_chain -- --ignored --nocapture` (env-driven, see README).
++use openvm_stark_backend::{
++    keygen::types::MultiStarkVerifyingKey, proof::Proof, test_utils::TestFixture, StarkEngine,
++    SystemParams,
++};
++use p3_field::{PrimeCharacteristicRing, PrimeField32};
++
++use super::{
++    builder::Builder,
++    circuit::{check_statement, prove_level, NvCircuit},
++    e2e::*,
++    verifier::build_verifier,
++};
++use crate::sha384::{
++    config::{Sha384Config, Sha384CpuEngine, F},
++    e2e_tests::{child_params_small, describe, env_usize, params_from_env, proof_sizes, soundness},
++};
++
++/// Maximum constraint degree of the base AIR set (measured by `e2e_base_shape`).
++pub const BASE_DEGREE: usize = 6;
++
++/// Base-layer parameters: `child_params_small` (test size) unless `BASE_N_STACK` is set, then
++/// `params_from_env("BASE", ..)` (all `BASE_*` knobs, levers, O-2).
++pub fn base_params() -> SystemParams {
++    let mut p = if std::env::var("BASE_N_STACK").is_ok() {
++        params_from_env("BASE", [8, 1, 20, 0])
++    } else {
++        child_params_small()
++    };
++    p.max_constraint_degree = env_usize("BASE_DEGREE", p.max_constraint_degree.max(BASE_DEGREE));
++    p
++}
++
++fn nv_params(prefix: &str) -> SystemParams {
++    let mut p = params_from_env(prefix, [16, 3, 20, 64]);
++    p.max_constraint_degree = NvCircuit::new(3, 16, 1).layout().degree().max(6);
++    p
++}
++
++fn must_fail(name: &str, f: impl FnOnce()) {
++    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
++    assert!(r.is_err(), "{name}: tamper accepted");
++    println!("E2E_TAMPER {name}: rejected");
++}
++
++#[test]
++fn e2e_claim_encoding() {
++    for case in ["positive", "wrap"] {
++        let fx = SliceBase::new(case);
++        let claim = fx.claim();
++        // V_d's encoding (from the Lean prepare/step fixture) = the generator's EXEC public values
++        assert_eq!(claim.exec_public_values(), fx.exec_pvs, "{case}: exec public values");
++        assert_eq!(claim.exec_public_values().len(), EXEC_PVS);
++        assert_eq!(claim.public_values()[3], fx.stmt_pvs);
++    }
++    let (a, b) = (SliceBase::new("positive").claim(), SliceBase::new("wrap").claim());
++    assert_ne!(a.statement_digest(), b.statement_digest());
++    assert_ne!(a.ctx_digest(), b.ctx_digest());
++    // every claim field moves the digest
++    let d = a.statement_digest();
++    let muts: Vec<(&str, Box<dyn Fn(&mut ChunkClaim)>)> = vec![
++        ("chain_id", Box::new(|c| c.chain_id.push('x'))),
++        ("height", Box::new(|c| c.height += 1)),
++        ("prev_block_hash", Box::new(|c| c.prev_block_hash[31] ^= 1)),
++        ("gas_price", Box::new(|c| c.gas_price += 1)),
++        ("protocol_version", Box::new(|c| c.protocol_version += 1)),
++        ("pre_state_root", Box::new(|c| c.pre_state_root[0] ^= 1)),
++        ("receipt.prepaid", Box::new(|c| c.receipt.prepaid += 1)),
++        ("receipt.code_hash", Box::new(|c| c.receipt.code_hash[5] ^= 1)),
++        ("entry.gas", Box::new(|c| c.entry.gas += 1)),
++        ("code.imm", Box::new(|c| c.code[0].imm += 1)),
++        ("code.fee", Box::new(|c| c.code[0].fee += 1)),
++        ("post_state_root", Box::new(|c| c.post_state_root[0] ^= 1)),
++        ("final.gas", Box::new(|c| c.final_state.gas += 1)),
++        ("final.fail", Box::new(|c| c.final_state.fail = true)),
++        ("final.stack", Box::new(|c| c.final_state.stack.push(35))),
++    ];
++    for (name, m) in muts {
++        let mut c = a.clone();
++        m(&mut c);
++        assert_ne!(c.statement_digest(), d, "{name} does not move the digest");
++    }
++}
++
++/// Base AIR set against NV's envelope; base proof at the configured parameters.
++#[test]
++fn e2e_base_shape() {
++    let engine = Sha384CpuEngine::new(base_params());
++    describe("E2E_BASE", engine.params());
++    let fx = SliceBase::new("positive");
++    let airs = fx.airs();
++    let (_, vk) = engine.keygen(&airs);
++    for (a, avk) in airs.iter().zip(&vk.inner.per_air) {
++        println!(
++            "E2E_BASE_AIR {} w={} pvs={} int/row={} max_msg={} deg={} preprocessed={} cached={}",
++            a.name(),
++            avk.params.width.common_main,
++            avk.params.num_public_values,
++            avk.symbolic_constraints.interactions.len(),
++            avk.symbolic_constraints.interactions.iter().map(|i| i.message.len()).max().unwrap_or(0),
++            avk.max_constraint_degree,
++            avk.preprocessed_data.is_some(),
++            avk.params.width.cached_mains.len()
++        );
++        assert!(avk.max_constraint_degree as usize <= BASE_DEGREE);
++        assert!(avk.preprocessed_data.is_none() && avk.params.width.cached_mains.is_empty());
++    }
++    let t = std::time::Instant::now();
++    let (vk, proof) = fx.keygen_and_prove(&engine);
++    println!("E2E_BASE_PROVE_S {:.2}", t.elapsed().as_secs_f64());
++    engine.verify(&vk, &proof).unwrap();
++    soundness("E2E_BASE", &vk);
++    println!("E2E_BASE_PROOF_BYTES {}", proof_sizes(&proof));
++    assert_eq!(proof.public_values, fx.claim().public_values());
++}
++
++/// The AIRs enforce the execution: wrong boundary values cannot be proven.
++#[test]
++fn e2e_base_tamper() {
++    let engine = Sha384CpuEngine::new(base_params());
++    let fx = SliceBase::new("positive");
++    // honest passes the debug checker
++    engine.debug(&fx.airs(), &fx.debug_ctx());
++    let cases: Vec<(&str, Box<dyn Fn(&mut SliceBase)>)> = vec![
++        ("final gas", Box::new(|f| f.exec_pvs[12 + 27 + 7] += F::ONE)),
++        ("final done", Box::new(|f| f.exec_pvs[12 + 27 + 5] = F::ZERO)),
++        ("entry gas", Box::new(|f| f.exec_pvs[12 + 7] += F::ONE)),
++        ("code immediate", Box::new(|f| f.exec_pvs[66 + 8] += F::ONE)),
++        ("code length header", Box::new(|f| f.exec_pvs[8] += F::ONE)),
++    ];
++    for (name, m) in cases {
++        let mut f = fx.clone();
++        m(&mut f);
++        must_fail(name, || engine.debug(&f.airs(), &f.debug_ctx()));
++    }
++}
++
++fn l1_program(case: &str) -> (Builder, Proof<Sha384Config>, MultiStarkVerifyingKey<Sha384Config>) {
++    l1_program_with(case, base_params())
++}
++
++fn l1_program_with(case: &str, params: SystemParams) -> (Builder, Proof<Sha384Config>, MultiStarkVerifyingKey<Sha384Config>) {
++    let engine = Sha384CpuEngine::new(params);
++    let fx = SliceBase::new(case);
++    let (vk, proof) = fx.keygen_and_prove(&engine);
++    let mut b = Builder::new(17, 0);
++    build_verifier(&mut b, &vk, &proof);
++    (b, proof, vk)
++}
++
++/// L1's verifier program over the base proof: no failures, transcript equals the native one,
++/// one program for both chunks (it depends on the vk and shape only), statement = claim.
++#[test]
++fn e2e_l1_program() {
++    let (ba, pa, vka) = l1_program("positive");
++    let (bb, _, vkb) = l1_program("wrap");
++    assert!(ba.failures.is_empty(), "{:?}", ba.failures);
++    assert_eq!(vka.pre_hash, vkb.pre_hash, "one base vk for both chunks");
++    let mut t = crate::sha384::config::ShaTranscript::default();
++    openvm_stark_backend::verifier::verify(Sha384CpuEngine::new(base_params()).config(), &vka, &pa, &mut t).unwrap();
++    assert_eq!(t.state, ba.transcript.inner.state, "transcript diverged from native");
++    println!("E2E_L1_PROGRAM rows={} jobs={} merkle_nodes={}", ba.instrs.len(), ba.job_units.len(), ba.merkle_nodes);
++    if ba.instrs != bb.instrs {
++        let i = (0..ba.instrs.len().min(bb.instrs.len())).find(|&i| ba.instrs[i] != bb.instrs[i]).unwrap_or(0);
++        println!("E2E_L1_PROGRAM_DIFF lens={} {} first={i}", ba.instrs.len(), bb.instrs.len());
++        for j in i.saturating_sub(6)..(i + 6) {
++            println!("  {j}: A={:?} B={:?}", ba.instrs.get(j), bb.instrs.get(j));
++        }
++    }
++    let claim = SliceBase::new("positive").claim();
++    assert!(check_statement(&ba.public_values(), &claim.public_values()));
++    assert!(!check_statement(&ba.public_values(), &SliceBase::new("wrap").claim().public_values()));
++}
++
++/// L1 circuit (NV level 1 over the base proof): full constraint + bus debug check.
++/// FINDING G1 (recorded, not a desired property): the NV verifier program depends on the child
++/// proof, not only on its vk and shape.  T* samples by rejection (a 32-bit word is rejected with
++/// probability ~1/16), so the number of transcript blocks varies between proofs, and since B5
++/// squeeze / PoW-run job ids are program constants (and PoW-run blocks emit Unit1 rows).  Two
++/// base proofs of one vk (chunks A and B) give different L1 programs.  When G1 is fixed this test
++/// must be flipped to `assert_eq!`.
++#[test]
++fn e2e_finding_program_depends_on_proof() {
++    let (ba, _, _) = l1_program("positive");
++    let (bb, _, _) = l1_program("wrap");
++    assert_ne!(ba.instrs, bb.instrs, "G1 fixed? the L1 programs of chunks A and B are now equal");
++    let first = (0..ba.instrs.len().min(bb.instrs.len())).find(|&i| ba.instrs[i] != bb.instrs[i]).unwrap();
++    let ndiff = ba.instrs.iter().zip(&bb.instrs).filter(|(x, y)| x != y).count();
++    println!(
++        "E2E_G1 L1 programs differ: rows {} vs {}, first difference at row {first} ({:?} vs {:?}), {ndiff} differing rows in the common prefix",
++        ba.instrs.len(),
++        bb.instrs.len(),
++        ba.instrs[first],
++        bb.instrs[first]
++    );
++    // the cause is PoW: with every PoW at zero bits the two programs are identical (squeeze-block
++    // counts still differ, but only PoW-run blocks put the global block count into the program)
++    let mut p = base_params();
++    p.logup.pow_bits = 0;
++    p.whir.mu_pow_bits = 0;
++    p.whir.folding_pow_bits = 0;
++    p.whir.query_phase_pow_bits = 0;
++    let (za, _, _) = l1_program_with("positive", p.clone());
++    let (zb, _, _) = l1_program_with("wrap", p);
++    assert_eq!(za.instrs, zb.instrs, "without PoW the L1 programs of chunks A and B must agree");
++    println!("E2E_G1 without PoW: L1 programs of chunks A and B identical ({} rows)", za.instrs.len());
++}
++
++#[test]
++fn e2e_l1_circuit_debug() {
++    use openvm_cpu_backend::CpuBackend;
++    use openvm_stark_backend::prover::{AirProvingContext, MatrixDimensions, ProvingContext};
++    let engine = Sha384CpuEngine::new(base_params());
++    let fx = SliceBase::new("positive");
++    let (vk, proof) = fx.keygen_and_prove(&engine);
++    let circ = NvCircuit::new(vk.inner.params.k_whir(), env_usize("E2E_DEBUG_LOG_ROWS", 17), 1);
++    let airs = circ.airs::<Sha384Config>();
++    let (mats, b) = circ.generate(&vk, &proof);
++    assert!(b.failures.is_empty(), "{:?}", b.failures);
++    for (a, m) in airs.iter().zip(&mats) {
++        println!("E2E_L1_AIR {} {} x {}", a.name(), m.height(), m.width());
++    }
++    assert!(check_statement(&b.public_values(), &fx.claim().public_values()));
++    let ctxs: Vec<AirProvingContext<CpuBackend<Sha384Config>>> = mats
++        .into_iter()
++        .enumerate()
++        .map(|(i, m)| if i == 0 { AirProvingContext::simple(m, b.public_values()) } else { AirProvingContext::simple_no_pis(m) })
++        .collect();
++    let mut pp = crate::sha384::e2e_tests::parent_params_debug();
++    pp.max_constraint_degree = circ.layout().degree().max(6);
++    Sha384CpuEngine::new(pp).debug(&airs, &ProvingContext::new(ctxs.into_iter().enumerate().collect()));
++}
++
++// ---------------------------------------------------------------------------------------
++// The slice chain (ignored; env-driven)
++// ---------------------------------------------------------------------------------------
++
++struct Level {
++    vk: MultiStarkVerifyingKey<Sha384Config>,
++    proof: Proof<Sha384Config>,
++    program: Vec<[u32; 4]>,
++    heights: Vec<usize>,
++}
++
++fn hwm_gb() -> f64 {
++    std::fs::read_to_string("/proc/self/status")
++        .ok()
++        .and_then(|s| s.lines().find(|l| l.starts_with("VmHWM")).map(|l| l.split_whitespace().nth(1).unwrap().parse::<f64>().unwrap()))
++        .unwrap_or(0.0)
++        / 1048576.0
++}
++
++fn level(tag: &str, circ: &NvCircuit, eng: &Sha384CpuEngine, vk: &MultiStarkVerifyingKey<Sha384Config>, p: &Proof<Sha384Config>) -> Level {
++    let _ = std::fs::write("/proc/self/clear_refs", "5");
++    let t = std::time::Instant::now();
++    let (vk1, p1, b, shapes) = prove_level(circ, eng, vk, p);
++    let secs = t.elapsed().as_secs_f64();
++    let heights: Vec<usize> = shapes.iter().map(|s| s.0).collect();
++    println!(
++        "{tag}_RESOURCES wall_s={secs:.1} peak_rss_gb={:.2} program_rows={} merkle_nodes={} heights={heights:?} bind={} child_nv={}",
++        hwm_gb(),
++        b.instrs.len(),
++        b.merkle_nodes,
++        circ.bind,
++        circ.child_nv
++    );
++    soundness(tag, &vk1);
++    println!("{tag}_PROOF_BYTES {}", proof_sizes(&p1));
++    println!("{tag}_LEVEL {}", p1.public_values[0][0]);
++    Level { vk: vk1, proof: p1, program: NvCircuit::app_table(&b.instrs), heights }
++}
++
++fn save(dir: &Option<String>, name: &str, p: &Proof<Sha384Config>) {
++    if let Some(d) = dir {
++        use openvm_stark_backend::codec::Encode;
++        let mut bytes = vec![];
++        p.encode(&mut bytes).unwrap();
++        std::fs::write(format!("{d}/{name}.proof"), &bytes).unwrap();
++    }
++}
++
++/// The chain for one chunk at fixed heights: B1 (L1 over the base proof) -> B2 -> [B3.., E2E_INNER]
++/// -> FINAL (final domain).  Binding (`bind`: L2 checks L1 against the app table = B1's program, the
++/// fixed point checks its child against its own program) is attempted when E2E_BIND=1 (default);
++/// if the generated program reports a binding failure (gap G1) the level falls back to the
++/// unbound passthrough (`child_nv`), as in the recursion lane's measured chains.
++#[allow(clippy::too_many_arguments)]
++fn chain(
++    tag: &str,
++    k: usize,
++    log_rows: usize,
++    fixed: &[usize],
++    engine: &Sha384CpuEngine,
++    final_engine: &Sha384CpuEngine,
++    vk0: &MultiStarkVerifyingKey<Sha384Config>,
++    p0: &Proof<Sha384Config>,
++    save_dir: &Option<String>,
++) -> (Vec<Level>, Level, bool) {
++    let inner = env_usize("E2E_INNER", 0);
++    let mut bound = env_usize("E2E_BIND", 1) == 1;
++    let mut circ = NvCircuit::new(k, log_rows, 1);
++    circ.heights = Some(fixed.to_vec());
++    let b1 = level(&format!("{tag}B1"), &circ, engine, vk0, p0);
++    save(save_dir, &format!("{tag}B1"), &b1.proof);
++    let app = b1.program.clone();
++    let mut levels = vec![b1];
++    for i in 0..=inner + 1 {
++        let is_final = i == inner + 1;
++        let name = if is_final { format!("{tag}FINAL") } else { format!("{tag}B{}", i + 2) };
++        let (pvk, pp) = (&levels.last().unwrap().vk, &levels.last().unwrap().proof);
++        if bound {
++            circ.bind = true;
++            circ.child_nv = false;
++            circ.app = Some(app.clone());
++            let (_, b) = circ.generate(pvk, pp);
++            if !b.failures.is_empty() {
++                println!("E2E_BIND_FAIL {name}: {:?} -> unbound passthrough from here on (gap G1)", b.failures);
++                bound = false;
++            }
++        }
++        if !bound {
++            circ.bind = false;
++            circ.child_nv = true;
++            circ.app = None;
++        }
++        let eng = if is_final { final_engine } else { engine };
++        let l = level(&name, &circ, eng, pvk, pp);
++        save(save_dir, &name, &l.proof);
++        levels.push(l);
++    }
++    let fin = levels.pop().unwrap();
++    (levels, fin, bound)
++}
++
++#[test]
++#[ignore]
++fn e2e_slice_chain() {
++    let save_dir = std::env::var("E2E_SAVE_DIR").ok();
++    let log_rows = env_usize("NV_LOG_ROWS", 17);
++    // ---- base proof of chunk A ----
++    let base_engine = Sha384CpuEngine::new(base_params());
++    describe("E2E_BASE", base_engine.params());
++    let fx_a = SliceBase::new("positive");
++    let claim_a = fx_a.claim();
++    let t = std::time::Instant::now();
++    let (vk0, p0) = fx_a.keygen_and_prove(&base_engine);
++    println!("BASE_RESOURCES wall_s={:.1} peak_rss_gb={:.2}", t.elapsed().as_secs_f64(), hwm_gb());
++    base_engine.verify(&vk0, &p0).unwrap();
++    soundness("BASE", &vk0);
++    println!("BASE_PROOF_BYTES {}", proof_sizes(&p0));
++    assert_eq!(p0.public_values, claim_a.public_values(), "base public values = claim encoding");
++    save(&save_dir, "A_BASE", &p0);
++    // ---- NV engines ----
++    let pp = nv_params("PARENT");
++    describe("NV_PARENT", &pp);
++    let engine = Sha384CpuEngine::new(pp);
++    let fp = if std::env::var("FINAL_LOG_BLOWUP").is_ok() { nv_params("FINAL") } else { nv_params("PARENT") };
++    describe("NV_FINAL", &fp);
++    let final_engine = Sha384CpuEngine::new_final(fp);
++    let k = engine.params().k_whir();
++    // ---- phase A: natural heights to find the fixed point (skipped with E2E_FIXED) ----
++    let fixed: Vec<usize> = if let Ok(s) = std::env::var("E2E_FIXED") {
++        s.split(',').map(|x| x.trim().parse().unwrap()).collect()
++    } else {
++        let mut circ = NvCircuit::new(k, log_rows, 1);
++        let a1 = level("A1", &circ, &engine, &vk0, &p0);
++        circ.child_nv = true;
++        let a2 = level("A2", &circ, &engine, &a1.vk, &a1.proof);
++        let (mats3, b3) = circ.generate(&a2.vk, &a2.proof);
++        assert!(b3.failures.is_empty(), "{:?}", b3.failures);
++        let h3: Vec<usize> = mats3.iter().map(p3_matrix::Matrix::height).collect();
++        println!("A3_GENERATED heights={h3:?} program_rows={}", b3.instrs.len());
++        assert_eq!(h3, a2.heights, "heights did not repeat after A2 (set E2E_FIXED)");
++        a1.heights.iter().zip(&a2.heights).map(|(a, b)| *a.max(b)).collect()
++    };
++    println!("E2E_FIXED_HEIGHTS {fixed:?}");
++    // ---- phase B: the chain for chunk A ----
++    let (levels_a, fin_a, bound) = chain("A_", k, log_rows, &fixed, &engine, &final_engine, &vk0, &p0, &save_dir);
++    let final_level = fin_a.proof.public_values[0][0].as_canonical_u32();
++    println!("E2E_CHAIN bound={bound} final_level={final_level} levels={}", levels_a.len() + 1);
++    if bound {
++        assert_eq!(&fin_a.program, &levels_a.last().unwrap().program, "FINAL program = inner fixed-point program");
++    }
++    // the program V_d would pin (only meaningful when the program is fixed, i.e. after G1)
++    let pinned = VdSetup { vk_final: fin_a.vk.clone(), program: Some(fin_a.program.clone()), level: final_level };
++    let unpinned = VdSetup { program: None, ..pinned.clone() };
++    let vd = |s: &VdSetup, c: &ChunkClaim, p: &Proof<Sha384Config>| verify_chunk(s, &final_engine, c, p);
++    // ---- V_d accepts the honest chunk ----
++    let t = std::time::Instant::now();
++    vd(&pinned, &claim_a, &fin_a.proof).expect("V_d (program pinned) rejects the honest chunk A");
++    println!("E2E_VD_ACCEPT chunk A, program pinned, vd_s={:.3}", t.elapsed().as_secs_f64());
++    vd(&unpinned, &claim_a, &fin_a.proof).expect("V_d (unpinned) rejects the honest chunk A");
++    println!("E2E_VD_ACCEPT chunk A, program unpinned");
++    let reject = |name: &str, s: &VdSetup, c: &ChunkClaim, p: &Proof<Sha384Config>| {
++        let r = vd(s, c, p);
++        assert!(r.is_err(), "V_d accepted tamper {name}");
++        println!("E2E_VD_REJECT {name}: {}", r.unwrap_err());
++    };
++    // ---- statement tampers (both setups) ----
++    for (sn, s) in [("pinned", &pinned), ("unpinned", &unpinned)] {
++        let mut c = claim_a.clone();
++        c.final_state.gas += 1;
++        reject(&format!("[{sn}] wrong S_S (final gas)"), s, &c, &fin_a.proof);
++        let mut c = claim_a.clone();
++        c.post_state_root[0] ^= 1;
++        reject(&format!("[{sn}] wrong S_S (post-state root, stub field)"), s, &c, &fin_a.proof);
++        let mut c = claim_a.clone();
++        c.height += 1;
++        reject(&format!("[{sn}] wrong ctx (height)"), s, &c, &fin_a.proof);
++        let mut c = claim_a.clone();
++        c.code[1].imm = 24;
++        reject(&format!("[{sn}] wrong S_0 (contract immediate)"), s, &c, &fin_a.proof);
++        reject(&format!("[{sn}] claim of chunk B, proof of chunk A"), s, &SliceBase::new("wrap").claim(), &fin_a.proof);
++        let mut bad = fin_a.proof.clone();
++        bad.public_values[0][5] += F::ONE;
++        reject(&format!("[{sn}] final public value limb"), s, &claim_a, &bad);
++        reject(&format!("[{sn}] inner-domain proof presented as final"), s, &claim_a, &levels_a.last().unwrap().proof);
++        let mut s2 = s.clone();
++        s2.level += 1;
++        reject(&format!("[{sn}] pinned level"), &s2, &claim_a, &fin_a.proof);
++    }
++    // ---- the native program check itself ----
++    let mut s = pinned.clone();
++    s.program = Some(levels_a[0].program.clone());
++    reject("program pinned to the L1 program", &s, &claim_a, &fin_a.proof);
++    let mut s = pinned.clone();
++    let prog = s.program.as_mut().unwrap();
++    let mid = prog.len() / 2;
++    prog[mid][0] ^= 1;
++    reject("pinned program, one word changed", &s, &claim_a, &fin_a.proof);
++    // ---- forgery: a final-domain proof of a program that verifies nothing ----
++    if env_usize("E2E_FORGE", 1) == 1 {
++        let mut circ = NvCircuit::new(k, log_rows, 1);
++        circ.heights = Some(fixed.clone());
++        let mut forged_claim = claim_a.clone();
++        forged_claim.final_state.gas = 1;
++        forged_claim.post_state_root = [7u8; 32];
++        let t = std::time::Instant::now();
++        let (mats, b) = generate_program(&circ, forge_statement_program(final_level, forged_claim.statement_digest()));
++        assert!(b.failures.is_empty());
++        let (fvk, forged) = prove_traces(&circ, &final_engine, mats, b.public_values());
++        println!("FORGED_RESOURCES wall_s={:.1} program_rows={} bytes={}", t.elapsed().as_secs_f64(), b.instrs.len(), proof_sizes(&forged));
++        assert_eq!(fvk.pre_hash, pinned.vk_final.pre_hash, "the forged proof is under the honest final vk");
++        match vd(&unpinned, &forged_claim, &forged) {
++            Ok(()) => println!("E2E_VD_FORGERY_ACCEPTED by V_d without the program check (gap G1): a false claim (final gas 1, post root 0x07..) verifies"),
++            Err(e) => panic!("forgery unexpectedly rejected without the program check: {e}"),
++        }
++        reject("forgery (program verifies nothing), program pinned", &pinned, &forged_claim, &forged);
++        save(&save_dir, "FORGED_FINAL", &forged);
++    }
++    // ---- a different chunk (chunk B: other contract constants, ctx and roots) ----
++    if env_usize("E2E_SECOND", 1) == 1 {
++        let fx_b = SliceBase::new("wrap");
++        let claim_b = fx_b.claim();
++        let (vk0b, p0b) = fx_b.keygen_and_prove(&base_engine);
++        assert_eq!(vk0b.pre_hash, vk0.pre_hash, "one base vk for both chunks");
++        println!("B_BASE_PROOF_BYTES {}", proof_sizes(&p0b));
++        let (_, fin_b, bound_b) = chain("B_", k, log_rows, &fixed, &engine, &final_engine, &vk0b, &p0b, &save_dir);
++        assert_eq!(fin_b.vk.pre_hash, pinned.vk_final.pre_hash, "one final vk for both chunks");
++        println!("E2E_G1 final programs of chunks A and B equal: {} (bound A={bound} B={bound_b})", fin_b.program == fin_a.program);
++        vd(&unpinned, &claim_b, &fin_b.proof).expect("V_d (unpinned) rejects the honest chunk B");
++        println!("E2E_VD_ACCEPT chunk B, program unpinned");
++        match vd(&pinned, &claim_b, &fin_b.proof) {
++            Ok(()) => println!("E2E_VD_ACCEPT chunk B with chunk A's pinned program"),
++            Err(e) => println!("E2E_VD_G1 honest chunk B rejected under chunk A's pinned program: {e}"),
++        }
++        reject("[unpinned] proof of chunk B against claim A", &unpinned, &claim_a, &fin_b.proof);
++        reject("[pinned] proof of chunk B against claim A", &pinned, &claim_a, &fin_b.proof);
++    }
++    println!("E2E_SLICE_DONE");
++}
++
++/// Real-settings probe (ignored): the base proof at the pinned base parameters (env BASE_*), then
++/// L1's verifier program and natural trace heights without proving L1 (L1 proving at these
++/// settings exceeds the lane's memory cap; the main session schedules it).
++#[test]
++#[ignore]
++fn e2e_real_base_probe() {
++    let base_engine = Sha384CpuEngine::new(base_params());
++    describe("E2E_BASE", base_engine.params());
++    let fx = SliceBase::new("positive");
++    let _ = std::fs::write("/proc/self/clear_refs", "5");
++    let t = std::time::Instant::now();
++    let (vk0, p0) = fx.keygen_and_prove(&base_engine);
++    println!("BASE_RESOURCES wall_s={:.1} peak_rss_gb={:.2}", t.elapsed().as_secs_f64(), hwm_gb());
++    let t = std::time::Instant::now();
++    base_engine.verify(&vk0, &p0).unwrap();
++    println!("BASE_VERIFY_S {:.3}", t.elapsed().as_secs_f64());
++    soundness("BASE", &vk0);
++    println!("BASE_PROOF_BYTES {}", proof_sizes(&p0));
++    if let Some(d) = std::env::var("E2E_SAVE_DIR").ok() {
++        save(&Some(d), "REAL_BASE", &p0);
++    }
++    let log_rows = env_usize("NV_LOG_ROWS", 21);
++    let _ = std::fs::write("/proc/self/clear_refs", "5");
++    let t = std::time::Instant::now();
++    let circ = NvCircuit::new(vk0.inner.params.k_whir(), log_rows, 1);
++    if env_usize("E2E_PROBE_TRACES", 1) == 1 {
++        let (mats, b) = circ.generate(&vk0, &p0);
++        assert!(b.failures.is_empty(), "{:?}", b.failures);
++        let h: Vec<usize> = mats.iter().map(p3_matrix::Matrix::height).collect();
++        println!(
++            "L1_PROBE program_rows={} jobs={} merkle_nodes={} heights={h:?} gen_s={:.1} peak_rss_gb={:.2}",
++            b.instrs.len(),
++            b.job_units.len(),
++            b.merkle_nodes,
++            t.elapsed().as_secs_f64(),
++            hwm_gb()
++        );
++        assert!(check_statement(&b.public_values(), &fx.claim().public_values()));
++    } else {
++        let mut b = Builder::new(log_rows, circ.reserved());
++        b.prog_log = circ.prog_log;
++        b.begin();
++        build_verifier(&mut b, &vk0, &p0);
++        b.finish();
++        assert!(b.failures.is_empty(), "{:?}", b.failures);
++        println!("L1_PROBE program_rows={} jobs={} merkle_nodes={} gen_s={:.1}", b.instrs.len(), b.job_units.len(), b.merkle_nodes, t.elapsed().as_secs_f64());
++    }
++}
+diff --git a/crates/recursion/src/nv/mod.rs b/crates/recursion/src/nv/mod.rs
+index 9823e17..c349e84 100644
+--- a/crates/recursion/src/nv/mod.rs
++++ b/crates/recursion/src/nv/mod.rs
+@@ -1,6 +1,7 @@
+ //! NV: narrow fixed-point verifier circuit (see results/pq-recursion-nv/DESIGN.md).
+ pub mod builder;
+ pub mod circuit;
++pub mod e2e;
+ pub mod fmt;
+ pub mod glue;
+ pub mod hash;
+@@ -17,6 +18,8 @@ mod faithful_tr_tests;
+ #[cfg(test)]
+ mod tests;
+ #[cfg(test)]
++mod e2e_tests;
++#[cfg(test)]
+ mod faithful_dof;
+ #[cfg(test)]
+ mod faithful_tests;

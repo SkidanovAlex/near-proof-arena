@@ -1,0 +1,70 @@
+
+running 1 test
+test nv::e2e_tests::e2e_slice_chain ... E2E_BASE_PARAMS l_skip=2 n_stack=8 k=3 log_blowup=1 queries=[10, 4, 2] pow(mu,fold,query,logup)=(3,2,1,2)
+BASE_RESOURCES wall_s=0.0 peak_rss_gb=0.01
+BASE_SOUNDNESS total=5.2 logup=334.9 proximity=348.9 query=5.2
+BASE_PROOF_BYTES total=54061 gkr=8456 relations=30720 stacking=1552 whir=12188
+NV_PARENT_PARAMS l_skip=2 n_stack=17 k=3 log_blowup=3 queries=[7, 5, 3, 3, 2, 2] pow(mu,fold,query,logup)=(0,0,0,0)
+NV_PARENT_O2 target=10 margin_milli=50 m=64 rounds(n,k,A,q,first_order)=[(4194304, 524288, 1494496, 7, false), (2097152, 65536, 373624, 5, false), (1048576, 8192, 93406, 3, false), (524288, 1024, 23352, 3, false), (262144, 128, 5838, 2, false), (131072, 16, 1460, 2, false)]
+NV_FINAL_PARAMS l_skip=2 n_stack=17 k=3 log_blowup=3 queries=[7, 5, 3, 3, 2, 2] pow(mu,fold,query,logup)=(0,0,0,0)
+NV_FINAL_O2 target=10 margin_milli=50 m=64 rounds(n,k,A,q,first_order)=[(4194304, 524288, 1494496, 7, false), (2097152, 65536, 373624, 5, false), (1048576, 8192, 93406, 3, false), (524288, 1024, 23352, 3, false), (262144, 128, 5838, 2, false), (131072, 16, 1460, 2, false)]
+E2E_FIXED_HEIGHTS [262144, 524288, 128, 65536]
+A_B1_RESOURCES wall_s=1199.7 peak_rss_gb=18.17 program_rows=22446 merkle_nodes=232 heights=[262144, 524288, 128, 65536] bind=false child_nv=false
+A_B1_SOUNDNESS total=10.4 logup=327.4 proximity=305.9 query=10.4
+A_B1_PROOF_BYTES total=136089 gkr=48056 relations=26496 stacking=7792 whir=53560
+A_B1_LEVEL 1
+A_B2_RESOURCES wall_s=1373.1 peak_rss_gb=18.19 program_rows=74574 merkle_nodes=534 heights=[262144, 524288, 128, 65536] bind=true child_nv=false
+A_B2_SOUNDNESS total=10.4 logup=327.4 proximity=305.9 query=10.4
+A_B2_PROOF_BYTES total=136089 gkr=48056 relations=26496 stacking=7792 whir=53560
+A_B2_LEVEL 2
+A_FINAL_RESOURCES wall_s=1381.4 peak_rss_gb=18.17 program_rows=74574 merkle_nodes=534 heights=[262144, 524288, 128, 65536] bind=true child_nv=false
+A_FINAL_SOUNDNESS total=10.4 logup=327.4 proximity=305.9 query=10.4
+A_FINAL_PROOF_BYTES total=136089 gkr=48056 relations=26496 stacking=7792 whir=53560
+A_FINAL_LEVEL 3
+E2E_CHAIN bound=true final_level=3 levels=3
+E2E_VD_ACCEPT chunk A, program pinned, vd_s=0.104
+E2E_VD_ACCEPT chunk A, program unpinned
+E2E_VD_REJECT [pinned] wrong S_S (final gas): statement digest differs from the claim's (ctx, enc S_0, enc S_S)
+E2E_VD_REJECT [pinned] wrong S_S (post-state root, stub field): statement digest differs from the claim's (ctx, enc S_0, enc S_S)
+E2E_VD_REJECT [pinned] wrong ctx (height): statement digest differs from the claim's (ctx, enc S_0, enc S_S)
+E2E_VD_REJECT [pinned] wrong S_0 (contract immediate): statement digest differs from the claim's (ctx, enc S_0, enc S_S)
+E2E_VD_REJECT [pinned] claim of chunk B, proof of chunk A: statement digest differs from the claim's (ctx, enc S_0, enc S_S)
+E2E_VD_REJECT [pinned] final public value limb: final proof: BatchConstraintError(GkrVerificationFailed(LayerConsistencyCheckFailed { round: 1, expected: BinomialExtensionField { value: [1424266515, 467362018, 1531878254, 281693871, 21555743, 1133957030, 984025899, 387647900, 860085567, 323909733, 877841118, 1077933524], _phantom: PhantomData<p3_monty_31::monty_31::MontyField31<p3_baby_bear::baby_
+E2E_VD_REJECT [pinned] inner-domain proof presented as final: final proof: BatchConstraintError(GkrVerificationFailed(LayerConsistencyCheckFailed { round: 1, expected: BinomialExtensionField { value: [762302738, 1730709881, 1763101946, 1302468301, 3449564, 946360179, 618174908, 1213386412, 249627476, 573461935, 1818858406, 1606207496], _phantom: PhantomData<p3_monty_31::monty_31::MontyField31<p3_b
+E2E_VD_REJECT [pinned] pinned level: level 3 != pinned 4
+E2E_VD_REJECT [unpinned] wrong S_S (final gas): statement digest differs from the claim's (ctx, enc S_0, enc S_S)
+E2E_VD_REJECT [unpinned] wrong S_S (post-state root, stub field): statement digest differs from the claim's (ctx, enc S_0, enc S_S)
+E2E_VD_REJECT [unpinned] wrong ctx (height): statement digest differs from the claim's (ctx, enc S_0, enc S_S)
+E2E_VD_REJECT [unpinned] wrong S_0 (contract immediate): statement digest differs from the claim's (ctx, enc S_0, enc S_S)
+E2E_VD_REJECT [unpinned] claim of chunk B, proof of chunk A: statement digest differs from the claim's (ctx, enc S_0, enc S_S)
+E2E_VD_REJECT [unpinned] final public value limb: final proof: BatchConstraintError(GkrVerificationFailed(LayerConsistencyCheckFailed { round: 1, expected: BinomialExtensionField { value: [1424266515, 467362018, 1531878254, 281693871, 21555743, 1133957030, 984025899, 387647900, 860085567, 323909733, 877841118, 1077933524], _phantom: PhantomData<p3_monty_31::monty_31::MontyField31<p3_baby_bear::bab
+E2E_VD_REJECT [unpinned] inner-domain proof presented as final: final proof: BatchConstraintError(GkrVerificationFailed(LayerConsistencyCheckFailed { round: 1, expected: BinomialExtensionField { value: [762302738, 1730709881, 1763101946, 1302468301, 3449564, 946360179, 618174908, 1213386412, 249627476, 573461935, 1818858406, 1606207496], _phantom: PhantomData<p3_monty_31::monty_31::MontyField31<p3
+E2E_VD_REJECT [unpinned] pinned level: level 3 != pinned 4
+E2E_VD_REJECT program pinned to the L1 program: final program openings differ from the pinned program
+E2E_VD_REJECT pinned program, one word changed: final program openings differ from the pinned program
+FORGED_RESOURCES wall_s=1251.3 program_rows=776 bytes=total=136089 gkr=48056 relations=26496 stacking=7792 whir=53560
+E2E_VD_FORGERY_ACCEPTED by V_d without the program check (gap G1): a false claim (final gas 1, post root 0x07..) verifies
+E2E_VD_REJECT forgery (program verifies nothing), program pinned: final program openings differ from the pinned program
+B_BASE_PROOF_BYTES total=54061 gkr=8456 relations=30720 stacking=1552 whir=12188
+B_B1_RESOURCES wall_s=1235.6 peak_rss_gb=18.32 program_rows=22446 merkle_nodes=232 heights=[262144, 524288, 128, 65536] bind=false child_nv=false
+B_B1_SOUNDNESS total=10.4 logup=327.4 proximity=305.9 query=10.4
+B_B1_PROOF_BYTES total=136089 gkr=48056 relations=26496 stacking=7792 whir=53560
+B_B1_LEVEL 1
+B_B2_RESOURCES wall_s=1473.0 peak_rss_gb=18.56 program_rows=74574 merkle_nodes=534 heights=[262144, 524288, 128, 65536] bind=true child_nv=false
+B_B2_SOUNDNESS total=10.4 logup=327.4 proximity=305.9 query=10.4
+B_B2_PROOF_BYTES total=136089 gkr=48056 relations=26496 stacking=7792 whir=53560
+B_B2_LEVEL 2
+B_FINAL_RESOURCES wall_s=1217.3 peak_rss_gb=18.71 program_rows=74574 merkle_nodes=534 heights=[262144, 524288, 128, 65536] bind=true child_nv=false
+B_FINAL_SOUNDNESS total=10.4 logup=327.4 proximity=305.9 query=10.4
+B_FINAL_PROOF_BYTES total=136089 gkr=48056 relations=26496 stacking=7792 whir=53560
+B_FINAL_LEVEL 3
+E2E_G1 final programs of chunks A and B equal: false (bound A=true B=true)
+E2E_VD_ACCEPT chunk B, program unpinned
+E2E_VD_G1 honest chunk B rejected under chunk A's pinned program: final program openings differ from the pinned program
+E2E_VD_REJECT [unpinned] proof of chunk B against claim A: statement digest differs from the claim's (ctx, enc S_0, enc S_S)
+E2E_VD_REJECT [pinned] proof of chunk B against claim A: final program openings differ from the pinned program
+E2E_SLICE_DONE
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 75 filtered out; finished in 9133.68s
+
