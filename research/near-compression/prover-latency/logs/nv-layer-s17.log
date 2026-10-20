@@ -1,0 +1,66 @@
+[1;32mINFO    [0m ｉ [info]: FibonacciAir         | Constraint Deg = 2  | Prep Cols = 0  | Main Cols = [2]      |    5 Constraints |   0 Interactions
+[1;32mINFO    [0m ｉ [info]: Actual max constraint degree across all AIRs (2) does not match configured max constraint degree (4)
+[1;32mINFO    [0m stark_prove_excluding_trace [ 71.1ms | 58.41% / 100.00% ] phase: "prover"
+[1;32mINFO    [0m ┝━ ｉ [info]:  | num_airs_present: 1
+[1;32mINFO    [0m ┝━ prover.main_trace_commit [ 19.4ms | 0.00% / 27.20% ] phase: "prover"
+[1;32mINFO    [0m │  ┕━ trace_commit_cpu [ 19.4ms | 0.05% / 27.20% ]
+[1;32mINFO    [0m │     ┕━ stacked_commit_odd [ 19.3ms | 0.01% / 27.15% ]
+[1;32mINFO    [0m │        ┝━ rs_code_matrix [ 18.8ms | 26.48% ]
+[1;32mINFO    [0m │        ┕━ merkle_tree [ 467µs | 0.66% ]
+[1;32mINFO    [0m ┝━ prove_zerocheck_and_logup [ 3.02ms | 3.56% / 4.25% ]
+[1;32mINFO    [0m │  ┝━ fractional_sumcheck_with [ 151ns | 0.00% ]
+[1;32mINFO    [0m │  ┕━ prover.batch_constraints.mle_rounds [ 489µs | 0.69% ] phase: "prover"
+[1;32mINFO    [0m ┝━ prove_stacked_opening_reduction [ 5.73ms | 8.05% ]
+[1;32mINFO    [0m ┝━ merkle_tree [ 431µs | 0.61% ]
+[1;32mINFO    [0m ┕━ merkle_tree [ 1.06ms | 1.49% ]
+NVL_PARAMS l_skip=2 n_stack=18 k=4 log_blowup=1 queries=[106, 87, 50, 36, 28] pow(mu,fold,query,logup)=(0,0,0,0)
+[1;32mINFO    [0m ｉ [info]: NvAir                | Constraint Deg = 8  | Prep Cols = 0  | Main Cols = [73]     |  525 Constraints |  55 Interactions
+[1;32mINFO    [0m ｉ [info]: Sha512Air            | Constraint Deg = 21 | Prep Cols = 0  | Main Cols = [171]    |  329 Constraints |  14 Interactions
+[1;32mINFO    [0m ｉ [info]: TableAir             | Constraint Deg = 4  | Prep Cols = 0  | Main Cols = [13]     |   28 Constraints |   2 Interactions
+[1;32mINFO    [0m ｉ [info]: ByteAir              | Constraint Deg = 3  | Prep Cols = 0  | Main Cols = [5]      |    9 Constraints |   1 Interactions
+NV_PHASE before_dag 1286
+NV_DAG air=0 nodes=21 rows_so_far=1336
+NV_PHASE after_dag 1349
+NV_PHASE after_stacking 1657
+NV_QCOST round=0 queries=10 rows=2693 per_query=269 nbits=8 k=3 merkle_nodes=80
+NV_QCOST round=1 queries=4 rows=1056 per_query=264 nbits=7 k=3 merkle_nodes=108
+NV_QCOST round=2 queries=2 rows=504 per_query=252 nbits=6 k=3 merkle_nodes=120
+NV_PHASE end 8747
+[1;32mINFO    [0m stark_prove_excluding_trace [ 1812s | 2.58% / 100.00% ] phase: "prover"
+[1;32mINFO    [0m ┝━ ｉ [info]:  | num_airs_present: 4
+[1;32mINFO    [0m ┝━ prover.main_trace_commit [ 8.62s | 0.00% / 0.48% ] phase: "prover"
+[1;32mINFO    [0m │  ┕━ trace_commit_cpu [ 8.62s | 0.01% / 0.48% ]
+[1;32mINFO    [0m │     ┕━ stacked_commit_odd [ 8.43s | 0.19% / 0.46% ]
+[1;32mINFO    [0m │        ┕━ rs_code_matrix_odd [ 5.00s | 0.28% ]
+[1;32mINFO    [0m ┝━ prove_zerocheck_and_logup [ 1754s | 8.16% / 96.80% ]
+[1;32mINFO    [0m │  ┝━ fractional_sumcheck_with [ 72.5s | 4.00% ]
+[1;32mINFO    [0m │  ┕━ prover.batch_constraints.mle_rounds [ 1534s | 84.64% ] phase: "prover"
+[1;32mINFO    [0m ┕━ prove_stacked_opening_reduction [ 2.47s | 0.14% ]
+NVL_AIR 0 h=262144 w=73 int/row=55 deg=8
+NVL_AIR 1 h=131072 w=171 int/row=14 deg=21
+NVL_AIR 2 h=64 w=13 int/row=2 deg=4
+NVL_AIR 3 h=65536 w=5 int/row=1 deg=3
+NVL_SUMMARY wall_s=1812.4 (keygen+tracegen+prove+verify) peak_rss_gb=9.97 cells=41878336 (2^25.32) program_rows=8748 proof_bytes=428399
+	Command being timed: "/data/illia/nearproof-wt/pq-prover-latency/research/near-compression/prover-latency/run_bench.sh nv_layer"
+	User time (seconds): 20736.76
+	System time (seconds): 26.32
+	Percent of CPU this job got: 1139%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 30:21.84
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 10459104
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 10846957
+	Voluntary context switches: 72119
+	Involuntary context switches: 11075060
+	Swaps: 0
+	File system inputs: 48
+	File system outputs: 276480
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
