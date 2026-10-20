@@ -15,6 +15,11 @@ pub const OP_JIF: u64 = 0x103;
 pub const OP_HALT: u64 = 0x104;
 pub const OP_HIF: u64 = 0x105;
 
+/// The HOST argument window (`Chips.Host.nArgs`): every D3α host function has `np ≤ 9`.
+pub const HOST_NARGS: u64 = 9;
+/// The HOSTQ message length (`Chips.Host.qMsg.length = 4 + 2·nArgs`, mirrored in `Chips.HostO.qLen`).
+pub const HOST_QLEN: usize = 4 + 2 * HOST_NARGS as usize;
+
 #[derive(Clone, Debug)]
 pub struct Prep {
     pub records: Vec<[u64; 8]>,
@@ -420,12 +425,24 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                 if (hid as usize) < host_calls.len() {
                     host_calls[hid as usize] += 1;
                 }
+                assert!(np <= HOST_NARGS, "host arity {np} exceeds the HOST window {HOST_NARGS}");
                 let sb2 = sb + h - np;
-                let mut args = vec![0u64; 2];
-                for j in 0..np {
+                let mut args = vec![0u64; HOST_NARGS as usize];
+                // the producer time of each argument, from the stack entry itself (a host call may
+                // consume several arguments pushed at different times)
+                let mut argTp = vec![0u64; HOST_NARGS as usize];
+                // `args[0]` is the *lowest* stack slot (the spec's `popArgs` reverses the pops), so
+                // pop `np` entries top-first and then reverse.
+                let mut popped = Vec::new();
+                for _ in 0..np {
                     let a = stack.pop().unwrap();
                     assert_eq!(a.tag, 1, "host arguments are i64");
-                    args[j as usize] = a.val;
+                    popped.push(a);
+                }
+                popped.reverse();
+                for (j, a) in popped.iter().enumerate() {
+                    args[j] = a.val;
+                    argTp[j] = a.tp;
                 }
                 assert_eq!(stack.len() as u64, sb2, "host call stack height");
                 let ga = ev.g_after;
@@ -436,7 +453,7 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                 r.u("act", 1).u("hid", hid).u("np", np).u("ar", ar).u("st", ev.st).u("nres", ev.ar * (1 - ev.st));
                 r.limbs("ga", gl);
                 r.limbs("r", rl);
-                for j in 0..2u64 {
+                for j in 0..HOST_NARGS {
                     let pl = limbs(args[j as usize]);
                     let present = (j < np) as u64;
                     let tag = present; // i64
@@ -444,9 +461,8 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                     r.limbs(&format!("P{j}_"), pl);
                     r.u(&format!("tP{j}"), 0).u(&format!("hP{j}"), 0);
                     if present == 1 {
-                        // producer time: the argument was pushed at some earlier time; we use the
-                        // row clock minus one (valid: `tchk` only needs tp < ts)
-                        let tp = ts - 1;
+                        // producer time: the clock of the row that pushed this stack entry
+                        let tp = argTp[j as usize];
                         let hp = st.tchk(ts, tp);
                         r.u(&format!("tP{j}"), tp).u(&format!("hP{j}"), hp);
                     }
@@ -455,16 +471,23 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                     st.r16(gl[i]);
                     st.r16(rl[i]);
                 }
-                for j in 0..2 {
+                for j in 0..HOST_NARGS {
                     for i in 0..4 {
-                        st.r16(limbs(args[j])[i]);
+                        st.r16(limbs(args[j as usize])[i]);
                     }
                 }
-                // HOSTO row: request + response
+                // HOSTO row: request `[ts, hid, S, np, (aLo j, aHi j) …]` + response
                 let mut o = hosto.as_mut().unwrap().row();
-                let req = [ts, hid, s, args[0], args[1], 0, 0, np];
-                for i in 0..8 {
-                    o.u(&format!("q{i}"), req[i]);
+                let req: Vec<u64> = vec![ts, hid, s, np]
+                    .into_iter()
+                    .chain(args.iter().flat_map(|&a| {
+                        let l = limbs(a);
+                        [l[0] | (l[1] << 16), l[2] | (l[3] << 16)]
+                    }))
+                    .collect();
+                assert_eq!(req.len(), HOST_QLEN);
+                for (i, v) in req.iter().enumerate() {
+                    o.u(&format!("q{i}"), *v);
                 }
                 o.u("st", ev.st).limbs("r", rl).limbs("g", gl).u("ar", ar).u("mult", 1);
                 // HOSTB rows: a fixed 4-byte request stream (dir 0) and a fixed 4-byte response

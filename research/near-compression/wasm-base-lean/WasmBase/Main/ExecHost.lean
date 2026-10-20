@@ -248,13 +248,16 @@ constraints `Host.cActPf`/`Host.cActNres` force inactive rows to emit nothing. -
 /-- No inactive HOST row carries a CH message (all `pf j` and `nres` are zero off the active rows). -/
 def HostTraceOK (tr : Trace) (pub : List F) : Prop :=
   ∀ r, r < tr.height 22 → ¬ rowAct Host.table tr pub 22 r →
-    rowNat tr 22 r (Host.pf 0) = 0 ∧ rowNat tr 22 r (Host.pf 1) = 0 ∧ rowNat tr 22 r Host.nres = 0
+    (∀ j, j < Host.nArgs → rowNat tr 22 r (Host.pf j) = 0) ∧ rowNat tr 22 r Host.nres = 0
 
 /-- Under `HostTraceOK`, `rowCons` vanishes on inactive HOST rows. -/
 theorem host_row_cons_inactive {tr : Trace} {pub : List F} {r : Nat}
-    (h0 : rowNat tr 22 r (Host.pf 0) = 0) (h1 : rowNat tr 22 r (Host.pf 1) = 0) :
+    (h : ∀ j ∈ Host.argRange, rowNat tr 22 r (Host.pf j) = 0) :
     rowCons Host.table tr pub 22 r = [] := by
-  rw [host_row_cons (by omega) (by omega), h0, h1]
+  rw [host_row_cons]
+  rw [List.flatMap_eq_nil_iff]
+  intro j hj
+  rw [h j hj]
   rfl
 
 /-- Under `HostTraceOK`, `rowProd` vanishes on inactive HOST rows. -/
@@ -271,8 +274,8 @@ theorem host_part_ch_recv_active {nloc ngl : Nat} {tr : Trace} {pub : List F}
     (part Host.table tr pub 22 busStk false).map decMsg =
       (List.range (tr.height 22)).flatMap fun r =>
         (if rowAct Host.table tr pub 22 r then
-          ((if rowNat tr 22 r (Host.pf 0) = 1 then [argMsg tr r 0] else []) ++
-           (if rowNat tr 22 r (Host.pf 1) = 1 then [argMsg tr r 1] else []))
+          (Host.argRange.flatMap fun j =>
+            (if rowNat tr 22 r (Host.pf j) = 1 then [argMsg tr r j] else []))
         else []) := by
   rw [host_part_ch_recv]
   refine flatMap_congr_on _ _ _ ?_
@@ -280,10 +283,10 @@ theorem host_part_ch_recv_active {nloc ngl : Nat} {tr : Trace} {pub : List F}
   rw [List.mem_range] at hr
   by_cases ha : rowAct Host.table tr pub 22 r
   · rw [if_pos ha]
-    obtain ⟨hb0, hb1⟩ := host_pf_bits H hr ha
-    exact host_row_cons hb0 hb1
-  · obtain ⟨h0, h1, hn⟩ := HT r hr ha
-    rw [if_neg ha, host_row_cons_inactive h0 h1]
+    -- the active row's consumed messages are exactly its present arguments
+    exact host_row_cons
+  · obtain ⟨h0, hn⟩ := HT r hr ha
+    rw [if_neg ha, host_row_cons_inactive (fun j hj => h0 j (argRange_lt hj))]
 
 /-- **The CH sends of a host trace, restricted to active HOST rows.** -/
 theorem host_part_ch_send_active {nloc ngl : Nat} {tr : Trace} {pub : List F}
@@ -298,7 +301,7 @@ theorem host_part_ch_send_active {nloc ngl : Nat} {tr : Trace} {pub : List F}
   rw [List.mem_range] at hr
   by_cases ha : rowAct Host.table tr pub 22 r
   · rw [if_pos ha, host_row_prod]
-  · obtain ⟨h0, h1, hn⟩ := HT r hr ha
+  · obtain ⟨h0, hn⟩ := HT r hr ha
     rw [if_neg ha, host_row_prod_inactive hn]
 
 /-! ## The HOST rows' arguments as live stack messages (piece 1 composed with the trace)
@@ -313,7 +316,8 @@ theorem host_arg_stack {X : Ctx} {E : Env} {s : St} {f : Frame} {tps tpl : Nat �
     {live : Msg → Prop} {S_seg segb : Nat} (R : RelW X E s f tps tpl t pc S live S_seg segb)
     {tr : Trace} {r j : Nat} (hr : r < tr.height 22)
     (hsb : rowNat tr 22 r Host.kSb = E.sb) (h3 : rowNat tr 22 r cH = s.stack.size - E.sb)
-    (hnp : rowNat tr 22 r Host.np ≤ s.stack.size) (hj : j < rowNat tr 22 r Host.np) (hj2 : j < 2)
+    (hnp : rowNat tr 22 r Host.np ≤ s.stack.size) (hj : j < rowNat tr 22 r Host.np)
+    (hj2 : j < Host.nArgs)
     (hin : live (argMsg tr r j)) :
     argMsg tr r j ∈ stackView s.stack tps :=
   (host_arg_view R (host_arg_slot R hsb h3 hnp hj2) hj hnp hin).1

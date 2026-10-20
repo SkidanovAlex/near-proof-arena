@@ -6,10 +6,10 @@ First slice of README §14.2: a `call` of an imported function is a straight-lin
 signature is taken from a **fixed host table**, bound through a cached trace exactly like FUNC.
 Every domain condition is explicit and decidable.
 
-A HOST row (`np ≤ 2`, `ar ≤ 1`):
+A HOST row (`np ≤ 9`, `ar ≤ 1`):
 
 * consumes `np` values from the operand stack (channel space 0, in argument order);
-* sends one request `[ts, hid, S, a0lo, a0hi, a1lo, a1hi, np]` on `HOSTQ`;
+* sends one request `[ts, hid, S, np, a0lo, a0hi, …, a8lo, a8hi]` (22 fields) on `HOSTQ`;
 * receives one response `[ts, st, rlo, rhi, glo, ghi, ar, 0]` on `HOSTR`, where `st = 0` means
   success and `st = 1` means the host aborted (`g := g_after` still applies);
 * produces `(1 − st)·ar` result words at the stack base `sb + h − np`;
@@ -23,6 +23,26 @@ relative to that oracle: the proof says "if the state side supplies these respon
 takes this host-call step".  Joining with the state proof (README §14.2) replaces `HOSTO` by the
 state tables on the same buses.  Keeping the oracle in-trace also makes the native bus pre-check
 exact rather than partial.
+
+## Why one wide `HOSTQ` and not one message per argument
+
+README §14.2 sketches "a second message row for more than five words" for `np > 5`; §14.3 of that
+document also keeps the whole request on one ordered bus.  Both were evaluated:
+
+* **One message per argument** (`HOSTQ_k`, `k` messages) needs either a second bus per `k` or a
+  message index field plus a per-`k` count column, i.e. a *variable-length* wire.  The state side
+  would have to reassemble the request, and the HOST chip would need `np` gated interactions with
+  `np`-dependent counts (`k < np`), which is a range condition the chip has no comparison for.  The
+  join's `HOSTQ` balance would become a per-`(ts, k)` balance.  More rows, more columns, new gadgets.
+* **One 22-field message** is a single interaction, a single balance obligation, an exact bus
+  pre-check, and no new comparison gadget.  Its cost is LogUp message length only.
+
+The backend's NV envelope is `log_max_message_length = 7`, i.e. `message.len() + 1 ≤ 128` (bus
+included; `stark-backend .../keygen/mod.rs:146-151`).  22 + 1 = 23 ≤ 128, so **the wide message fits
+with a factor of 5 to spare** and no protocol parameter changes.  Sixteen 16-bit limbs per argument
+would still fit; nine arguments with four 16-bit limbs each (`np ≤ 9`) is the chosen shape because it
+is exactly the D3α maximum (`promise_then`, `promise_yield_create_with_id`,
+`promise_batch_action_add_key_with_function_call`).  The `HOSTR` response keeps its 8 fields.
 
 The HOST table is not appended to `wasmBaseAir`: that would shift every table index of the proved
 F1/memory/globals/calls slice.  Host programs use `wasmBaseHostAir`, which appends HOST (22),
@@ -45,11 +65,53 @@ def busHostR : Nat := 209
 def busHostB : Nat := 210
 def busHostT : Nat := 9
 
-/-- Fixed host table `(id, name, #params, #results)`; `np ≤ 2`, `ar ≤ 1` (the message shape). -/
-def hostFns : List (Nat × String × Nat × Nat) :=
+/-! ## The promise / receipt family (PART 2 table extension)
+
+The 23 importable promise functions of PV86 (`NearSpecV3.Wasm.hostSigs`, the `promise_*` family
+minus the four real-gated gas-key / global-contract / state-init actions).  Appended **after** the
+eight linear-memory/context hosts, so ids `0..7` are unchanged and the cached `HOSTT` table of an
+already-checked module is byte-identical for those.
+
+Arity is `(np, ar)`: every one of them has `np ≤ 9` and `ar ≤ 1`, so the widened HOST chip
+(`Host.nArgs = 9`) types all of them.  `promise_yield_resume*` push an **i32** (result tag 0), which
+is the one place the chip's fixed result tag `1` is too coarse — recorded in
+`results/pq-host-promise/DESIGN.md` §3, not fixed here. -/
+def promiseFns : List (Nat × String × Nat × Nat) :=
+  [(8, "promise_create", 8, 1),
+   (9, "promise_then", 9, 1),
+   (10, "promise_and", 2, 1),
+   (11, "promise_batch_create", 2, 1),
+   (12, "promise_batch_then", 3, 1),
+   (13, "promise_set_refund_to", 3, 0),
+   (14, "promise_batch_action_create_account", 1, 0),
+   (15, "promise_batch_action_deploy_contract", 3, 0),
+   (16, "promise_batch_action_function_call", 7, 0),
+   (17, "promise_batch_action_function_call_weight", 8, 0),
+   (18, "promise_batch_action_transfer", 2, 0),
+   (19, "promise_batch_action_stake", 4, 0),
+   (20, "promise_batch_action_add_key_with_full_access", 4, 0),
+   (21, "promise_batch_action_add_key_with_function_call", 9, 0),
+   (22, "promise_batch_action_delete_key", 3, 0),
+   (23, "promise_batch_action_delete_account", 3, 0),
+   (24, "promise_yield_create", 7, 1),
+   (25, "promise_yield_create_with_id", 9, 1),
+   (26, "promise_yield_resume", 4, 1),
+   (27, "promise_yield_resume_with_yield_id", 4, 1),
+   (28, "promise_results_count", 0, 1),
+   (29, "promise_result", 2, 1),
+   (30, "promise_return", 1, 0)]
+
+/-- The linear-memory / context hosts of the first slice (`np ≤ 2`, `ar ≤ 1`).  Their ids are
+pinned: they are the entries every already-checked module's cached `HOSTT` table contains. -/
+def hostFnsBase : List (Nat × String × Nat × Nat) :=
   [(0, "block_index", 0, 1), (1, "block_timestamp", 0, 1), (2, "epoch_height", 0, 1),
    (3, "storage_usage", 0, 1), (4, "prepaid_gas", 0, 1), (5, "used_gas", 0, 1),
    (6, "register_len", 1, 1), (7, "panic", 0, 0)]
+
+/-- Fixed host table `(id, name, #params, #results)`: the base entries (`id 0..7`, unchanged) then
+the 23 promise/receipt functions (`id 8..30`, `Chips.promiseFns` above).  With `Host.nArgs = 9` the
+wide HOST chip types every entry; `ar ≤ 1` throughout. -/
+def hostFns : List (Nat × String × Nat × Nat) := hostFnsBase ++ promiseFns
 
 /-- Host id of an imported function name (`none`: not in the fixed table ⇒ outside the domain). -/
 def hostIdOf (name : String) : Option Nat :=
@@ -66,6 +128,12 @@ def hostRow (id np ar : Nat) : List Nat := [id, np, ar, 0, 0, 0, 0, 0]
 def opHost : Nat := 0x1FF
 
 namespace Host
+/-- The argument window width.  `np ≤ 9` covers every D3α host function including `promise_then`,
+`promise_yield_create_with_id` and `promise_batch_action_add_key_with_function_call`. -/
+def nArgs : Nat := 9
+/-- The argument indices `0 … nArgs − 1`. -/
+def argRange : List Nat := List.range nArgs
+
 def act : Nat := 5
 def hid : Nat := 6
 def np : Nat := 7
@@ -75,19 +143,21 @@ def st : Nat := 9
 def nres : Nat := 10
 def ga : Nat := 11     -- g_after limbs 11..14
 def rb : Nat := 15     -- result limbs 15..18
-def pf (j : Nat) : Nat := 19 + j
-def tagP (j : Nat) : Nat := 21 + 7 * j
-def P (j : Nat) : Nat := 22 + 7 * j    -- 4 limbs
-def tP (j : Nat) : Nat := 26 + 7 * j
-def hP (j : Nat) : Nat := 27 + 7 * j
-def kSb : Nat := 35
-def kCid : Nat := 36
+def pf (j : Nat) : Nat := 19 + j              -- 19..27: argument j present (j < nArgs)
+def tagP (j : Nat) : Nat := 28 + 7 * j
+def P (j : Nat) : Nat := 29 + 7 * j           -- 4 limbs
+def tP (j : Nat) : Nat := 33 + 7 * j
+def hP (j : Nat) : Nat := 34 + 7 * j
+def kSb : Nat := 91
+def kCid : Nat := 92
+
+def argCols (j : Nat) : List String :=
+  [s!"tagP{j}", s!"P{j}_0", s!"P{j}_1", s!"P{j}_2", s!"P{j}_3", s!"tP{j}", s!"hP{j}"]
 
 def cols : List String := headerCols ++
   ["act", "hid", "np", "ar", "st", "nres", "ga0", "ga1", "ga2", "ga3",
-   "r0", "r1", "r2", "r3", "pf0", "pf1",
-   "tagP0", "P0_0", "P0_1", "P0_2", "P0_3", "tP0", "hP0",
-   "tagP1", "P1_0", "P1_1", "P1_2", "P1_3", "tP1", "hP1"] ++ frameCols
+   "r0", "r1", "r2", "r3"] ++
+  (argRange.map fun j => s!"pf{j}") ++ (argRange.flatMap argCols) ++ frameCols
 
 def sbNew : Expr := v kSb + v cH - v np
 def aLo (j : Nat) : Expr := v (P j) + 65536 * v (P j + 1)
@@ -98,16 +168,27 @@ def rLo : Expr := v rb + 65536 * v (rb + 1)
 def rHi : Expr := v (rb + 2) + 65536 * v (rb + 3)
 def ok : Expr := 1 - v st
 
+/-- The left fold of a list of expressions (so that `cNp` / message shapes are spelled
+uniformly for any `nArgs`). -/
+def sumE (l : List Nat) (f : Nat → Expr) : Expr := (l.map f).foldl (· + ·) 0
+/-- `np = Σ_j pf j`. -/
+def pfSum : Expr := sumE argRange (fun j => v (pf j))
+
 /-! Constraints.  `S` advances by the instruction `fee` only: host ext costs are burnt by the state
 side (`sync`) and returned as `g_after`, not counted in instruction-gas units.  Each constraint is
 named so its membership is `by simp`. -/
 def cAct : Expr := bool (v act)
 def cSt : Expr := bool (v st)
-def cP0 : Expr := bool (v (pf 0))
-def cP1 : Expr := bool (v (pf 1))
-/-- `pf1 = pf0·pf1` (with `pf0` a bit: `pf1·(1−pf0) = 0`). -/
-def cP1P0 : Expr := v (pf 1) - v (pf 0) * v (pf 1)
-def cNp : Expr := v np - v (pf 0) - v (pf 1)
+def cP (j : Nat) : Expr := bool (v (pf j))
+def cP0 : Expr := cP 0
+def cP1 : Expr := cP 1
+/-- `pf j` is prefix-closed: `pf (j+1) = pf j · pf (j+1)` (with `pf j` a bit:
+`pf (j+1)·(1−pf j) = 0`).  This is what makes `np = Σ pf j` the number of *leading* arguments and
+therefore what makes the stack slots `sb + h − np + j` line up with the stack messages. -/
+def cPOrder (j : Nat) : Expr := v (pf (j + 1)) - v (pf j) * v (pf (j + 1))
+/-- The historical two-argument name (`pf1 = pf0·pf1`). -/
+def cP1P0 : Expr := cPOrder 0
+def cNp : Expr := v np - pfSum
 def cAr : Expr := bool (v ar)
 /-- `nres = (1−st)·ar`. -/
 def cNres : Expr := v nres - v ar + v st * v ar
@@ -116,10 +197,12 @@ def cGHi : Expr := gHi - (v (ga + 2) + 65536 * v (ga + 3))
 def cRLo : Expr := rLo - (v rb + 65536 * v (rb + 1))
 def cRHi : Expr := rHi - (v (rb + 2) + 65536 * v (rb + 3))
 /-- The argument padding: an absent argument has zero tag and zero limbs; a present one has tag 1. -/
-def cPad0 : Expr := v (tagP 0) - v (pf 0) * v (tagP 0)
-def cPad1 : Expr := v (tagP 1) - v (pf 1) * v (tagP 1)
-def cTag0 : Expr := v (pf 0) * v (tagP 0) - v (pf 0)
-def cTag1 : Expr := v (pf 1) * v (tagP 1) - v (pf 1)
+def cPad (j : Nat) : Expr := v (tagP j) - v (pf j) * v (tagP j)
+def cTag (j : Nat) : Expr := v (pf j) * v (tagP j) - v (pf j)
+def cPad0 : Expr := cPad 0
+def cPad1 : Expr := cPad 1
+def cTag0 : Expr := cTag 0
+def cTag1 : Expr := cTag 1
 
 def cPadL (j : Nat) : List Expr :=
   (List.range 4).map fun i => v (P j + i) - v (pf j) * v (P j + i)
@@ -131,29 +214,50 @@ turn `pf j` and `nres` off on inactive rows, which is what makes the bus decompo
 def cActPf (j : Nat) : Expr := (1 - v act) * v (pf j)
 def cActNres : Expr := (1 - v act) * v nres
 
-def constraints : List Expr :=
-  [cAct, cSt, cP0, cP1, cP1P0, cNp, cAr, cNres, cGLo, cGHi, cRLo, cRHi, cPad0, cPad1, cTag0, cTag1] ++
-  cPadL 0 ++ cPadL 1 ++ [cActPf 0, cActPf 1, cActNres]
+/-- The constraints, split into named groups so that membership is one `List.mem_append` step each. -/
+def cBase : List Expr := [cAct, cSt, cAr, cNres, cGLo, cGHi, cRLo, cRHi, cNp]
+def cFlags : List Expr := argRange.map cP
+def cOrder : List Expr := argRange.filterMap fun j => if j + 1 < nArgs then some (cPOrder j) else none
+def cPads : List Expr := argRange.flatMap fun j => [cPad j, cTag j] ++ cPadL j
+def cGates : List Expr := argRange.map cActPf
+
+def constraints : List Expr := cBase ++ cFlags ++ cOrder ++ cPads ++ cGates ++ [cActNres]
+
+/-- The HOSTQ request message: `[ts, hid, S, np]` then `(aLo j, aHi j)` for every argument. -/
+def qMsg : List Expr := [v cTs, v hid, v cS, v np] ++ (argRange.flatMap fun j => [aLo j, aHi j])
 
 def inters : List Inter :=
   [stateIn (v cPc) (v cTs) (v cS) (v kSb) (v kCid) (v act),
    stateOut (v cPc + 1) (v cTs + 1) (v cS + v cFee) (2 * v st) (v kSb) (v kCid) (v act),
    fetch (v cPc) (Expr.c opHost) (v cH) (v cFee) [v hid, v np, v ar, 0] (v act),
    ⟨busHostT, true, v act, [v hid, v np, v ar, 0, 0, 0, 0, 0]⟩,
-   ⟨busHostQ, true, v act, [v cTs, v hid, v cS, aLo 0, aHi 0, aLo 1, aHi 1, v np]⟩,
+   ⟨busHostQ, true, v act, qMsg⟩,
    ⟨busHostR, false, v act, [v cTs, v st, rLo, rHi, gLo, gHi, v ar, 0]⟩] ++
   (List.range 4).map (fun i => r16 (v (ga + i)) (v act)) ++
   (List.range 4).map (fun i => r16 (v (rb + i)) (v act)) ++
-  [r16 (v (P 0)) (v act), r16 (v (P 0 + 1)) (v act), r16 (v (P 0 + 2)) (v act),
-   r16 (v (P 0 + 3)) (v act), r16 (v (P 1)) (v act), r16 (v (P 1 + 1)) (v act),
-   r16 (v (P 1 + 2)) (v act), r16 (v (P 1 + 3)) (v act)] ++
-  ((List.range 2).flatMap fun j =>
+  (argRange.flatMap fun j => (List.range 4).map (fun i => r16 (v (P j + i)) (v act))) ++
+  (argRange.flatMap fun j =>
     [stkRecv (sbNew + Expr.c j) (v (tagP j)) (limbsOf (P j)) (v (tP j)) (v (pf j))] ++
     timeChk (v cTs) (v (tP j)) (v (hP j)) (v (pf j))) ++
   [stkSend sbNew 1 (limbsOf rb) (v cTs) (v nres)]
 
 def table : Table := ⟨"HOST", cols, constraints, inters⟩
 end Host
+
+/-- Every entry of the fixed host table fits the widened HOST chip: `np ≤ Host.nArgs`, `ar ≤ 1`,
+and the HOSTQ request stays inside the backend's NV envelope (`log_max_message_length = 7`, i.e.
+`message.len() + 1 ≤ 128`, bus included).  Kernel-checked, so a future table edit that breaks the
+window fails the build rather than the prover. -/
+theorem hostFns_shape :
+    hostFns.all (fun x => x.2.2.1 ≤ Host.nArgs && x.2.2.2 ≤ 1) = true := by
+  simp only [hostFns, hostFnsBase, promiseFns, Host.nArgs, List.all_append, List.all_cons,
+    List.all_nil, Bool.and_eq_true, Bool.true_and, Nat.le_refl, Nat.reduceLeDiff, and_true]
+  decide
+
+/-- The HOSTQ message is 23 fields including the bus, so it fits NV's `log_max_message_length = 7`
+(128 fields).  `Host.qMsg.length = 22`. -/
+theorem hostQ_len : Host.qMsg.length + 1 ≤ 128 := by decide
+
 
 namespace HostTab
 def mult : Nat := 8
@@ -163,22 +267,29 @@ def table : Table := ⟨"HOSTT", ["id", "np", "ar", "z0", "z1", "z2", "z3", "z4"
 end HostTab
 
 /-! The witness oracle of the host responses (one row per host call): it absorbs the HOSTQ request
-and emits the HOSTR response; on the joined proof the state side plays this role. -/
+and emits the HOSTR response; on the joined proof the state side plays this role.
+
+The request is copied verbatim from the HOST row (`Host.qMsg`), so the oracle must hold all
+`Host.qMsg.length = 22` fields.  `q i` for `i < 22` is the request; `st`, `rb`, `ga`, `ar` and
+`mult` follow.  The response reuses `q 0` (`ts`) exactly as before. -/
 namespace HostO
-def q (i : Nat) : Nat := i        -- request columns 0..7
-def st : Nat := 8
-def rb : Nat := 9                 -- response word limbs 9..12
-def ga : Nat := 13                -- g_after limbs 13..16
-def ar : Nat := 17
-def mult : Nat := 18
-def cols : List String := ["q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "st",
+/-- The request length, *derived* from the HOST chip's message so the two can never drift. -/
+def qLen : Nat := Host.qMsg.length
+def q (i : Nat) : Nat := i        -- request columns 0..21
+def st : Nat := 22
+def rb : Nat := 23                -- response word limbs 23..26
+def ga : Nat := 27                -- g_after limbs 27..30
+def ar : Nat := 31
+def mult : Nat := 32
+def cols : List String := (List.range qLen).map (fun i => s!"q{i}") ++ ["st",
   "r0", "r1", "r2", "r3", "g0", "g1", "g2", "g3", "ar", "mult"]
 def gLo : Expr := v ga + 65536 * v (ga + 1)
 def gHi : Expr := v (ga + 2) + 65536 * v (ga + 3)
 def rLo : Expr := v rb + 65536 * v (rb + 1)
 def rHi : Expr := v (rb + 2) + 65536 * v (rb + 3)
+def qMsg : List Expr := (List.range qLen).map fun i => v (q i)
 def table : Table := ⟨"HOSTO", cols, [], [
-  ⟨busHostQ, false, v mult, (List.range 8).map (fun i => v (q i))⟩,
+  ⟨busHostQ, false, v mult, qMsg⟩,
   ⟨busHostR, true, v mult, [v (q 0), v st, rLo, rHi, gLo, gHi, v ar, 0]⟩]⟩
 end HostO
 

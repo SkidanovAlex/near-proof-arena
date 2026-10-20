@@ -308,6 +308,31 @@ def hosttrap():
     return {'name': 'hosttrap', 'result': 'i64', 'locals': [], 'body': b, 'imports': imps}
 
 
+def hostwide():
+    """A host import with three arguments (`promise_set_refund_to(idx, len, ptr)`), the `np > 2`
+    shape, plus the nine-argument `promise_batch_action_add_key_with_function_call`.
+
+    The calls abort (no such promise), which is what we want: the HOST chip still has to consume all
+    `np` arguments in order and put all of them on HOSTQ, so the widened window is exercised end to
+    end (`Host.nArgs = 9`) without needing the promise state modelled."""
+    imps = [('env', 'promise_set_refund_to', ['i64', 'i64', 'i64'], None),
+            ('env', 'promise_batch_action_add_key_with_function_call',
+             ['i64'] * 9, None)]
+    b = [('i64.const', 0)] * 3 + [('call', 0), ('i64.const', 7)]
+    return {'name': 'hostwide', 'result': 'i64', 'locals': [], 'body': b, 'imports': imps}
+
+
+def hostwide9():
+    """The nine-argument maximum (`promise_batch_action_add_key_with_function_call`).
+
+    Nine distinct argument values are pushed, so the HOSTQ request must carry all nine in order
+    (a swap or an off-by-one in the argument window shows up as an unbalanced CH bus).  The call
+    aborts on the account-id check, which is enough to exercise the window."""
+    imps = [('env', 'promise_batch_action_add_key_with_function_call', ['i64'] * 9, None)]
+    b = [('i64.const', i) for i in range(9)] + [('call', 0), ('i64.const', 7)]
+    return {'name': 'hostwide9', 'result': 'i64', 'locals': [], 'body': b, 'imports': imps}
+
+
 def main():
     out = sys.argv[1]
     iters = [int(a) for a in sys.argv[2:]] or [8, 64]
@@ -319,7 +344,7 @@ def main():
     progs += [memkat()] + [memloop(n) for n in iters]
     progs += [globkat(n) for n in iters]
     progs += [callkat(n) for n in iters] + [fib(n) for n in (1, 10)] + [calltrap()]
-    progs += [hostkat(n) for n in iters[:2]] + [hostarg(), hosttrap()]
+    progs += [hostkat(n) for n in iters[:2]] + [hostarg(), hosttrap(), hostwide(), hostwide9()]
     for p in progs:
         res, steps = run(p)
         with open(os.path.join(out, p['name'] + '.wasm'), 'wb') as f:
