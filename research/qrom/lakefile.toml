@@ -1,0 +1,19 @@
+# QROM game formalization (research, NOT part of the gated zk-formal package).
+#
+# `zk-formal` is bound by the challenge's `allowed_packages = [ArenaCore, NearSpec]`
+# (docs/zk-formal/DESIGN.md F4: no Mathlib). This package exists so the QROM
+# arguments can be developed with Mathlib available, and any result that needs to
+# enter the formal certificate must be re-proved in `zk-formal` without it.
+name = "Qrom"
+version = "0.1.0"
+defaultTargets = ["Qrom"]
+
+[leanOptions]
+autoImplicit = false
+
+[[lean_lib]]
+name = "Qrom"
+
+[[require]]
+name = "mathlib"
+path = "/data/illia/nearproof-deps/arklib-dkt/ArkLib/.lake/packages/mathlib"

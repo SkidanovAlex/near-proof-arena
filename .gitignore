@@ -6,3 +6,5 @@ __pycache__/
 *.pyc
 /var/
 .env
+research/*/.lake/
+research/*/lake-manifest.json
