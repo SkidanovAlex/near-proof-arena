@@ -191,6 +191,14 @@ level induction over the action list, not a new AIR fact.
    be confused with a transaction/local/access-key/queue walk on `FINAL`.  The nibble-stream
    length is fixed by the key (`cdKey_nibble_count`).  The `val`/`ups` halves and the
    `RealStore.writes` ordering remain with the state render lemmas.
+   **The nibble source is settled** (`PQ/Join/HostKeyNib.lean`): the `HOSTB` route, as this doc
+   prefers.  `hostNibStream` splits the key bytes into `CDKEYNIB` symbols and
+   `hostNibStream_syms` proves those symbols are `nibbles bytes ++ [SYM_END]` — the path
+   `contractDataPath` walks.  `hostKeyNib_agrees_with_cdKib` proves the byte route and the
+   `cdKibV3` relay route emit the *same* symbols, so the choice changes only where the bytes come
+   from.  `hostRoute_needs_no_new_bus` records why it is the cheaper route: `CDKEYNIB = 76` is
+   inside the state AIR's range, whereas the relay would need `B_CDPKEY = 77`, above
+   `stateBusMax = 76`.
 4. **The `runCall` fold / coverage theorem** (§4.3).  **Shape proved**
    (`PQ/Join/RunCallFold.lean`): `d3_only_execution` shows `d3Hooks` and `d2Hooks` agree on every
    action except `FunctionCall`, so the fold is a plain list induction (`fold_step`, `fold_of_all`)
