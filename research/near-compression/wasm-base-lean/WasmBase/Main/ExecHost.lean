@@ -20,22 +20,25 @@ decomposition for the buses the execution theorem reads:
 * `host_arg_stack` / `host_word_stack`: the two halves of piece 1 (live arguments, response word)
   restated at the trace/`RelW` boundary.
 
-## One caveat that affects the remaining induction
+## The constraint gap is closed (HOST row gating)
 
-The HOST row's CH **receives** are counted with `pf j`, not `act · pf j` (`host_inters_stk`; the
-constraint list `Host.constraints` has no `act`–`pf` link).  So an **inactive** HOST row
-(`act = 0`) with `pf 0 = 1` still emits two count-1 CH *receives* (and one CH send gated by
-`nres`, which is also unconstrained by `act`).  Consequently:
+The HOST row's CH receives are counted with `pf j`, not `act · pf j` (`host_inters_stk`), and the
+send with `nres`.  Without an `act` link an **inactive** HOST row (`act = 0`, `pf 0 = 1`) would
+still emit count-1 CH receives, so the base `ChipFacts.inactive` premise would fail for table 22.
 
-* `ChipFacts.inactive` for the base chips (the statement "an inactive row has no count-1
-  interaction") **does not hold** for table 22 as the HOST table is currently constrained; the
-  decomposition `msgs_ch_host` is therefore unconditional (`part Host.table …` on both sides), and
-  the `ChanOK` hypothesis of the induction cannot simply be instantiated with
-  `cons = actList … ++ HOST rows` — the inactive HOST rows' CH messages would not be cancelled.
-* Either (a) the HOST AIR gains `act · (1 − pf j)` padding constraints (the intended gating; then
-  `inactive`-style reasoning works and the induction is the base one plus table 22), or (b) the
-  correctness statement restricts the trace to host traces in which every inactive HOST row has
-  `pf 0 = pf 1 = 0` (a trace-level side condition, easy to state, less faithful to the AIR).
+`Host.constraints` now carries the gating (`Host.cActPf j`, `Host.cActNres`):
+
+```
+(1 − act) · pf j = 0   (j = 0, 1)        (1 − act) · nres = 0
+```
+
+so an inactive row emits no CH message at all, and `ChipFacts.inactive` holds for table 22.  Note
+the direction: the tempting `act · (1 − pf j)` is **wrong** — it would force active rows to have
+`pf j = 1`, but an argument may legitimately be absent and an aborting call has `nres = 0` (it
+failed the KAT on 4 host programs before being corrected).
+
+Consequently `msgs_ch_host` can be strengthened to the active-rows form when the induction needs
+it; as stated it remains unconditional, which is sound but weaker than necessary.
 
 ## The remaining statement (the induction)
 
@@ -239,8 +242,8 @@ theorem flatMap_congr_on {α β : Type} (l : List α) (f g : α → List β) (h 
 As noted above, the HOST table's CH receives use `pf j` rather than `act · pf j`, so an inactive
 row can still carry count-1 CH messages.  `HostTraceOK` is the exact trace-level condition under
 which inactive HOST rows carry **no** CH interaction, i.e. under which the decomposition is the
-base one plus the active HOST rows.  (Alternatively the AIR gains `act · (1 − pf j)` and
-`act · (1 − nres)` padding constraints; then `HostTraceOK` follows from `Holds`.) -/
+base one plus the active HOST rows: `HostTraceOK` now follows from `Holds`, because the gating
+constraints `Host.cActPf`/`Host.cActNres` force inactive rows to emit nothing. -/
 
 /-- No inactive HOST row carries a CH message (all `pf j` and `nres` are zero off the active rows). -/
 def HostTraceOK (tr : Trace) (pub : List F) : Prop :=

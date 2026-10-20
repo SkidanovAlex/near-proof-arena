@@ -97,16 +97,20 @@ segment, each HOST row restarts it via `StepHost.host_seg` / `Main.Host.host_row
 statement then reports the last segment rather than the global `R·S_final + g = g0`, exactly as
 `exec_of_rows` already does for one fixed segment.
 
-**A real constraint gap found while doing piece 2:** the HOST row's CH receives are counted with
-`pf j`, not `act·pf j`, and `Host.constraints` has no `act`–`pf` link, so an **inactive** HOST row
-(`act = 0`, `pf 0 = 1`) still emits count-1 CH receives (and its send is gated only by `nres`).
-Hence the base `ChipFacts.inactive` statement does not hold for table 22 as currently constrained.
-Two honest fixes:
+**A real constraint gap found while doing piece 2 — since CLOSED.**  The HOST row's CH receives
+are counted with `pf j`, not `act·pf j`, and `Host.constraints` had no `act`–`pf` link, so an
+**inactive** HOST row (`act = 0`, `pf 0 = 1`) still emitted count-1 CH receives.  The base
+`ChipFacts.inactive` premise therefore did not hold for table 22.  Fixed by commit
+`edae7a53d` (option 1 below), which adds to `Host.constraints`:
 
-1. add `act·(1 − pf j) = 0` (`j = 0,1`) and `act·(1 − nres) = 0` to `Host.constraints`; then
-   `HostTraceOK` follows from `Holds` and the induction is the base one plus table 22; or
-2. keep the AIR and carry `HostTraceOK` as an explicit trace-level hypothesis (defined in
-   `ExecHost.lean`), which is what the decomposition lemmas there are stated against.
+```
+(1 − act) · pf j = 0   (j = 0, 1)        (1 − act) · nres = 0
+```
+
+so an inactive row emits nothing and `HostTraceOK` follows from `Holds` alone.  Note the
+direction: `act·(1 − pf j)` is **wrong** (it would force active rows to have `pf j = 1`, but an
+argument may be absent and an aborting call has `nres = 0`); that form failed the KAT on 4 host
+programs before being corrected.
 
 `wasm_base_sound` is unaffected by this (it uses `wasmBaseAir`, whose tables are untouched).
 
