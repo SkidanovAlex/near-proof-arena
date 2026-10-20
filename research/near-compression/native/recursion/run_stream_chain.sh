@@ -8,7 +8,8 @@
 # leaves, x15, every lever; m = 64 + certificate-gated O-2 via NEARPROOF_DKT_CERTS).
 #   run_stream_chain.sh <tag>
 # env: penultimate PB PNS PK PK1 PLF (default 7 18 4 2 6), final FB FNS FK FK1 FLF (7 18 4 1 7),
-#      NV_LOG_ROWS (18), NV_PROG_LOG (18), BIN, CERTS, OUT, HEAVY_MEM (90G), NV_RESUME_PROOF (opt.)
+#      NV_LOG_ROWS (18), NV_PROG_LOG (18), BIN, CERTS, OUT, HEAVY_MEM (90G), NV_RESUME_PROOF (opt.),
+#      INTERACTION_LOG (28: the recorded lane settings; the production default is 2^30)
 set -uo pipefail
 TAG=$1
 DEPS=${NEARPROOF_PQ_DEPS:-/data/illia/nearproof-deps/pq-stream}
@@ -32,6 +33,7 @@ env HEAVY_MEM=${HEAVY_MEM:-90G} taskset -c 0-31 /data/illia/nearproof-deps/bin/h
   env RAYON_NUM_THREADS=32 NEARPROOF_DIGEST_BYTES=42 NEARPROOF_COSET_LEAF=1 NEARPROOF_MEMPROF=1 \
   NEARPROOF_STREAM_COMMIT=1 NEARPROOF_STREAM_DROP=${NEARPROOF_STREAM_DROP:-4} NEARPROOF_DKT_CERTS="$CERTS" NEARPROOF_DKT_EXCLUDE="$EXCL" \
   NV_LEVELS=${NV_LEVELS_:-0} NV_PHASE_A=${NV_PHASE_A:-4} ${NV_FIXED_OVERRIDE:+NV_FIXED_OVERRIDE=$NV_FIXED_OVERRIDE} NV_LOG_ROWS=${NV_LOG_ROWS:-18} NV_PROG_LOG=${NV_PROG_LOG:-18} NV_SAVE_DIR="$OUT" $RES \
+  PARENT_INTERACTION_LOG=${INTERACTION_LOG:-28} FINAL_INTERACTION_LOG=${INTERACTION_LOG:-28} \
   $P PARENT_LOG_BLOWUP=${PB:-7} PARENT_N_STACK=${PNS:-18} PARENT_K=${PK:-4} PARENT_K1=${PK1:-2} PARENT_LOG_FINAL=${PLF:-6} \
   $FIN \
   /usr/bin/time -v "$BIN" nv::tests::nv_chain --ignored --exact --nocapture --test-threads 1 >> "$OUT/run.log" 2>&1
