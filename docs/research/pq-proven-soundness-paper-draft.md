@@ -755,13 +755,18 @@ capacity form) would not affect them either.
 
 ## 10. Limitations and open obligations
 
-1. **DKT26 → WHIR.** The RS-level MCA/list statements (Lean-proven) are lifted to
-   WHIR's rbr errors via WHIR Thm 5.2 as corrected by Puš26. This step is
-   paper-level and has not been formalised. It is the highest-value remaining
-   proof obligation.
+1. **WHIR Thm 5.2 (Puš26 correction).** The lift *from an MCA count to the
+   `LineGap` that folding consumes* is now Lean-proved and parametric in the DKT26
+   constant (`zk-formal/ZkFormal/Udr/McaToGap.lean`: `mca_count_to_gap`,
+   `strong_from_mca`, `fold_union`). What is still not formalised is WHIR Thm 5.2
+   itself as corrected by Puš26, i.e. the step from RS-level gaps to WHIR's
+   per-round error terms.
 2. **Review/formalisation of `T*` and Theorem R.** Both are new proofs, complete
-   as written but not yet peer reviewed. Theorem 6.4 and the weak-binding
-   Lemmas 1–2 should be independently reviewed or formalised.
+   as written but not yet peer reviewed. For Theorem 6.4, ANALYSIS Lemmas 1 and 2
+   and the counting half of Fact A are now Lean-proved in the `research/qrom`
+   package (Mathlib; not the gated set), and the whole chain is assembled in
+   `qrom_bound`. Two inputs remain cited: the compressed oracle's matrix entries
+   (CFHL21 Lemma 4.3) and the replacement inequality (CFHL21 Cor 4.2).
 3. **Circuit faithfulness.** NV-faithful (the circuit arithmetises the verifier
    exactly) and Base-faithful (layer-0 AIRs encode chunk validation) are
    engineering obligations in progress, stated as precise lemmas.
