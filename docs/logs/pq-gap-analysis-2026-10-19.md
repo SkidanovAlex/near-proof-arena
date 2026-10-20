@@ -34,6 +34,10 @@ never been built or measured, and because the sealed challenge excludes it (`e.g
 | D1 envelope: 23/30 tables proven; per-table data cross-checked | `pq-d1-envelope`, `tools/d1-pq-envelope` |
 | Direct-Wasm base: F1+div+locals+memory+globals+calls, Lean `wasm_base_sound` | `pq-wasm-base` §11–13 |
 | Lean bridge ingredients for SWIRL⇒`HoldsP`, `multBoundP < p` kernel-checked | `pq-state-port` §2 |
+| **Full** SWIRL⇒`HoldsP` (`holdsP_of_swirl`), D0a/D1 composition, vk⇔Lean difftest | `pq-state-port` §2.1 |
+| D1 on PQ: all 30 tables, no stand-in, tamper 23/23 | `pq-state-port` §3 |
+| TAPE canonical table + `tapeNet_canon`; TAPE root as a statement component | `pq-state-port` §2.2 |
+| Wasm join: bus partition proved; interface + coverage statement fixed | `pq-state-port` §5 |
 
 ## 2. What is missing, ordered by what blocks A
 
@@ -53,10 +57,18 @@ Wasm proof + state proof over shared buses (`HOSTQ`/`HOSTR`/`HOSTB`), plus `code
 `data_root` = the state side's code hash. Requires the `runCall` fold over the D1 extraction and
 `wasm_base_sound` (D3α-style). Neither side's theorem covers the joined system.
 
-### 2.4 The remaining D1 tables on PQ (medium)
-7 of 30: `codec`, `scandist`, `proc`, `mem`, `cmp`, `rcptD1`, `mrkD1`. Six are the fixed-2^22
-renders; they need the natural-height re-cut (`statedump.rs` already does it for D0a) and 24 GB.
-Their bus traffic is currently supplied by the unsound `EXT` stand-in.
+*Bus partition and the interface are now fixed* (`lane/pq-state-port`): classical buses `< 128`
+(kernel-proved) vs Wasm `0–6`, so `+128` separates them and 200/201/202 are the new host buses
+(`Join.lean`, `JOIN-INTERFACE.md`).  The coverage statement is `JoinFold.lean` (`HostAnswer`,
+`HostResp`, `WasmRunStmt`, `JoinStmt`, `join_additive`).  Still missing: the HOST chip itself.
+
+### 2.4 The remaining D1 tables on PQ — **done**
+All 30 tables now, with **no `EXT` stand-in** (`lane/pq-state-port`, `4cb4a5f88`): the natural-height
+re-cut handles the six fixed-2^22 renders, 4.47 M cells, 1,289,274 B, prove 20.3 s, tamper 23/23,
+V_d statement check OK.  The `EXT` stand-in described here was the envelope demo's, not the port's.
+The tamper suite also documents one honest case: `rid` is all-zero padding on the fixtures, so its
+payload is legitimately unconstrained (multiplicity 0); the suite reports it as skipped rather than
+claiming a vacuous rejection.
 
 ### 2.5 Statement plumbing (medium, enumerated)
 * **TAPE**: the public-message table's cached commitment must be carried up through every NV level
@@ -76,6 +88,11 @@ Their bus traffic is currently supplied by the unsound `EXT` stand-in.
 ### 2.6 Coverage theorem (medium)
 `wasm_base_sound` proves execution. There is no theorem from (Wasm proof ∧ state proof) to the chunk
 relation, and `ChunkStmtAir` has no Lean refinement. G4 in `pq-e2e-slice`.
+
+*Shape fixed*: `JoinFold.JoinStmt` states it — `RelD1a` is preserved when every `FunctionCall`
+action is backed by a `WasmRunStmt` whose host answers are the state tables'.  `join_additive`
+records that the join only *requires* the Wasm backing and does not change the state relation.
+The proof needs the HOST chip and the `d3Hooks`/`runCall` correspondence.
 
 ## 3. What is missing for B (1 Pgas) beyond A
 
