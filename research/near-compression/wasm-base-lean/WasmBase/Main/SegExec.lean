@@ -1,3 +1,4 @@
+import WasmBase.Main.Abstract
 import WasmBase.Main.HostChipFacts
 import WasmBase.Main.HostLinks
 
@@ -77,4 +78,46 @@ for the next row (`S_seg ≤ S` at the *next* STATE field `S + fee`). -/
 theorem hostSuccSeg_le (S fee gAfter : Nat) : (hostSuccSeg S fee gAfter).1 ≤ S + fee :=
   Nat.le_refl _
 
+
+
+/-! ## The per-row segment transition
+
+`exec_of_rows` passes one fixed `(S_seg, segb)` to `RowSpec2` for every row.  That is exactly what a
+host-carrying trace cannot do, so the induction needs a per-row relation whose *output* segment may
+differ from its input segment:
+
+```
+SegRowSpec X inS outS cons prod
+  : ∀ ... RelW at (S_seg, segb) ... →
+      ∃ S_seg' segb', <output STATE message> ∧ RelW at (S_seg', segb')
+```
+
+An ordinary row instantiates it with `(S_seg' , segb') = (S_seg, segb)` (its `RowSpec2`), and a host
+row with `(S + fee, g_after)` (`Main/HostRel.host_rel_restart`).  The induction then threads
+`(S_seg k, segb k)` positionally, and the final statement reports the **last** segment rather than a
+single global one — which is precisely what `Main/ExecHost.lean` states.
+-/
+
+/-- The successor segment is `(S + fee, g_after)` at a host row, matching `Main.Host.host_row_seg`. -/
+def segHost (S fee gAfter : Nat) : Nat × Nat := (S + fee, gAfter)
+
+/-- An ordinary row keeps the segment. -/
+def segKeep (S_seg segb : Nat) : Nat × Nat := (S_seg, segb)
+
+/-- The invariant at a kept segment is the one already held. -/
+theorem seg_keep_inv {R S S_seg segb g fee : Nat} (h : R * (S - S_seg) + g = segb)
+    (hseg : S_seg ≤ S) (hle : R * fee ≤ g) :
+    R * (S + fee - S_seg) + (g - R * fee) = segb := by
+  have hm : R * (S + fee - S_seg) = R * (S - S_seg) + R * fee := by
+    rw [← Nat.mul_add]; congr 1; omega
+  rw [hm]
+  omega
+
+/-- **The segment after a restart.**  The new pair is `(S + fee, g_after)` and the invariant there is
+`0 + g_after = g_after`; `segb'` is a 64-bit budget, so `RelW.segbLt` is re-established. -/
+theorem seg_host_inv {R S fee gAfter : Nat} (h : gAfter < 2 ^ 64) :
+    R * ((S + fee) - (S + fee)) + gAfter = gAfter ∧ gAfter < 2 ^ 64 := by
+  exact ⟨by simp, h⟩
+
 end WasmBase
+
