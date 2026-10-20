@@ -1,15 +1,31 @@
-# A proven-soundness post-quantum succinct proof for NEAR chunk validation
+# A proven-soundness post-quantum succinct proof for the NEAR chunk-validation *recursion tail*
 
 **The near-proof-arena contributors**
 
-*DRAFT, 2026-10-19. Not peer reviewed. Not for circulation.*
+*DRAFT, 2026-10-20 (paused). Not peer reviewed. Not for circulation.*
 
-> **Read `docs/logs/pq-paper-audit-2026-10-19.md` first.** This draft is the first
-> pass and contains known factual mismatches and status overclaims; the audit note
-> lists every correction (scope, query schedules, certificate coverage, `T*` cost,
-> the provisional 287,477 B run, and the model-only 99 KB figure). Items 1-12 of
-> the audit have since been corrected in this text; the remaining gaps are the
-> proof-system obligations listed in §10.
+> **Scope.** This paper covers the **recursive final layer** of a NEAR
+> chunk-validation stack: the proof that aggregates base proofs into a single
+> short post-quantum proof. It does **not** yet cover a NEAR chunk end to end.
+> The Wasm/state join, the contract-data storage tables and the chunk-relation
+> coverage theorem are future work (§10, §9 is therefore absent from this
+> draft). A companion earlier draft assumed the full chunk relation; that framing
+> was wrong and has been removed.
+>
+> **Status of the numbers.** `293,077 B` is the sound measured final (G2 gate,
+> binding on at every level). The earlier `287,477 B` ran with `bind = false` and
+> is superseded. The `≈ 99 KB` `×15` saving is a model figure, not a measurement.
+>
+> **Formal status.** Sections 3–6 and the aggregation section rest on
+> **gated** Lean (`zk-formal`, `allowed_packages = [ArenaCore, NearSpec]`, no
+> Mathlib). Section 7's QROM core is machine-checked in a **Mathlib-based
+> companion development** (`research/qrom`) that is outside that package; two
+> inputs there are cited, not derived. See §7.1 and §10 item 2.
+>
+> **History.** `docs/logs/pq-paper-audit-2026-10-19.md` records the audit that
+> found thirteen factual mismatches in the first pass (scope, query schedules,
+> certificate coverage, `T*` cost, the provisional run, the model-only 99 KB
+> figure). All thirteen are corrected in this text.
 
 ---
 
@@ -43,9 +59,13 @@ from *proven* proximity and soundness bounds: we never invoke the
    squared list from breaking the batching term.
 5. **QROM straight-line knowledge soundness for recursive layer families.**
    A single database-measurement extractor handles all recursion layers at once
-   with truncated commitments; the error does not grow with depth. A separate
+   with truncated commitments, so the error does not grow with depth. A separate
    program-pinning check is required, and its omission yields a concrete
-   forgery.
+   forgery. We formalize the quantitative core of this argument (the
+   one-query transition bound, the path lemma, and the counting half of the
+   real-oracle-to-measured-database step) in a Mathlib-based companion
+   development; that development is outside the admitted `zk-formal` package and
+   two inputs remain cited.
 6. **Systems realisation.** Streamed Reed–Solomon/WHIR commitments never
    materialise the codeword (an 853 GB virtual codeword committed in 480 s at a
    14.9 GB peak), proofs are byte-identical to the in-memory prover, and the
@@ -122,10 +142,11 @@ sub-code. A round-0 fallback to Johnson handles the case where multiple
 commitments square the list. Section 6.
 
 **C5 (Recursion soundness).** We give a QROM straight-line knowledge-soundness
-theorem for families of recursive layers with truncated commitments, using a
-single database measurement; the error is independent of depth. We also show
-that a recursive final proof is forgeable unless the verifier pins the final
-program. Section 7.
+argument for families of recursive layers with truncated commitments, using a
+single database measurement, with error independent of depth. Its quantitative
+core is formalized in a Mathlib-based companion development (not the admitted
+package); two inputs are cited. We also show that a recursive final proof is
+forgeable unless the verifier pins the final program. Section 7.
 
 **C6 (Systems).** We describe streamed RS/WHIR commitments that reproduce
 in-memory proofs byte for byte, a SHA-512 compression AIR at 7,353 main cells
@@ -608,6 +629,17 @@ A recursion chain has layers `0, …, d`. Layer `i` proves that layer `i−1`'s
 verifier accepts. In the QROM game the adversary has one random oracle and one
 database.
 
+**Formal status of this section.** The quantitative core of the argument —
+ANALYSIS Lemma 1 (the one-query transition bound, all three cases), Lemma 2 (the
+path/chain lemma), the entrywise-to-operator bridge, and the counting half of
+Fact A — is machine-checked in a **Mathlib-based companion development**,
+`research/qrom` in the repository, and the whole chain is assembled there as
+`qrom_bound`. That development is **not** part of the admitted `zk-formal`
+package: the challenge's `allowed_packages` forbids Mathlib (`DESIGN.md` F4), and
+the admitted certificate does **not** depend on it. Two inputs remain cited
+rather than derived (Section 10, item 2). Readers should treat Section 7 as a
+carefully checked analysis, not as formally admitted material.
+
 ### 7.2 Theorem 6.4
 
 **Theorem 7.1 (sketch).** Let `ε_rbr` be the per-layer rbr knowledge error, `t`
@@ -763,10 +795,13 @@ capacity form) would not affect them either.
    per-round error terms.
 2. **Review/formalisation of `T*` and Theorem R.** Both are new proofs, complete
    as written but not yet peer reviewed. For Theorem 6.4, ANALYSIS Lemmas 1 and 2
-   and the counting half of Fact A are now Lean-proved in the `research/qrom`
-   package (Mathlib; not the gated set), and the whole chain is assembled in
+   and the counting half of Fact A are Lean-proved in `research/qrom`, a
+   **Mathlib-based companion development that is outside the admitted
+   `zk-formal` package** (`allowed_packages` forbids Mathlib; the admitted
+   certificate does not depend on it). The chain is assembled there as
    `qrom_bound`. Two inputs remain cited: the compressed oracle's matrix entries
-   (CFHL21 Lemma 4.3) and the replacement inequality (CFHL21 Cor 4.2).
+   (CFHL21 Lemma 4.3) and the replacement inequality (CFHL21 Cor 4.2). No claim
+   in this paper rests on those two beyond what Section 7 states.
 3. **Circuit faithfulness.** NV-faithful (the circuit arithmetises the verifier
    exactly) and Base-faithful (layer-0 AIRs encode chunk validation) are
    engineering obligations in progress, stated as precise lemmas.
