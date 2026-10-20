@@ -36,107 +36,82 @@ User directives (binding):
   * Keys and secrets live outside the repo. Never print keys, env files or env vars.
   * Never modify signed challenges (`challenges/chl_*.json`), the frozen `oracle/v3`, or any pinned file. `make pin-check` must pass.
 
-## PQ direct-Wasm research handoff (2026-10-17)
+## PQ track: state after the 2026-10-20 merge
 
-Read [the research handover](logs/direct-wasm-pq-handover-2026-10-17.md) before continuing this lane.
-Closed Lean proofs now connect the concrete byte-packed AIR family to supported prepared Wasm
-execution, conditional on semantic `HoldsP`, eligibility and fuel. Best measured 193-instruction
-transport is **357,069 bytes including request**. This is a limited straight-line slice, not a
-full NEAR transition or a certified post-quantum proof system. Native acceptance-to-`HoldsP`,
-concrete QROM bounds and the SHA-384/Ext12 recursive parent remain open. The handover records
-reproduction commands, dependency patches, boundary tests and the final gas-failure native run.
-**2026-10-17 follow-up (`lane/pq-native-hermetic`):** native deps pinned and rebuilt from upstream +
-patches (`research/near-compression/native/`; fresh re-proof byte-identical). Calibrated final-layer
-model (`docs/logs/pq-final-layer-model-2026-10-17.md`): SWIRL/WHIR SHA-384/Ext12 final layer ≈ 0.5–0.8 MB
-in the list-decoding regime, whose MCA is now proven (CCC 2026, Thm 5); 300 KB not reached by this family.
-Next: a narrow SHA-384/Ext12 recursive parent with measured in-circuit SHA cost.
-**Later 2026-10-17:** corrected model: hash-only final ≈ 444–570 KB (today) / 356–449 KB (all levers).
-Lattice wrap study `docs/zk-formal/PQ-LATTICE-WRAP-STUDY.md`: Akita-type ≈ 80–150 KB but no QROM proof exists.
-User: run **L3** (hash-only baseline; `lane/pq-sha384-air`, narrow SHA-384 AIR) and **L2** (lattice QROM research;
-`lane/pq-lattice-qrom`, plan `PQ-LATTICE-QROM-PLAN.md`: structural obstruction, hybrid-lifting bet ≈ 180–230 KB,
-20–35 % odds, gates G1–G3) in parallel, plus **L4** hash-only research bets.
+**Everything below is now on `main`.** All 25 PQ lanes are merged (298 commits from the previous
+main tip). `make pin-check` passes, `zk-formal` builds (3,034 jobs), `cargo fmt --check` and
+`clippy -D warnings` pass, and the workspace tests pass (`runners/sandbox` needs
+`ARENA_DEV_UNSAFE=1`, an environment requirement, not a merge regression).
 
-## PQ recursion gate G2: PASSED, measured (2026-10-19)
+### What is measured, not modelled
 
-The G2 binding design is **measured end-to-end at real PQ settings**, not just modelled.
-Evidence: `lane/pq-stream-commit` `research/near-compression/results/pq-stream-commit/g2-gate/`
-(`run.log`, `L1..L5.proof`, `FINAL.proof`, `MANIFEST.json`, `reproduce.sh`, `README.md`);
-model log `lane/pq-native-hermetic:docs/logs/pq-final-layer-model-2026-10-17.md`.
-
-| criterion | result |
+| result | evidence |
 |---|---|
-| FINAL bytes <= ~296 KB | **293,077 B** (6,923 B under 300 KB) |
-| V_d accepts under the pinned program | pass, level 6, 125,550-row program |
-| forged verify-nothing FINAL rejected | pass; accepted without the program check (control live) |
-| reproduces on a clean deps setup | `MANIFEST.json` + `reproduce.sh`; independent re-run outstanding |
+| **Recursion tail: FINAL 293,077 B**, V_d accepts, forgery control live | `research/near-compression/results/pq-stream-commit/g2-gate/` (`MANIFEST.json` pins 6 proof hashes + 10 log markers; `reproduce.sh` verifies) |
+| Fast CPU prover: 147x, byte-identical; L1 over a real base 152 s / 10 GB (was 190-230 GB estimated) | `results/pq-cpu-prover/README.md` |
+| D0a state tables on SWIRL: all 25, no stand-in, tamper 19/19 | `results/pq-state-port/` |
+| D1 on PQ: all 30 tables, no stand-in, tamper 23/23 | `results/pq-state-port/` |
+| `holdsP_of_swirl` (SWIRL => HoldsP) proved, composed into `extractV3` / `ExtractD1Stmt` | `zk-formal/ZkFormal/PQ/StatePort/{Bridge,D0a,D1}.lean` |
+| Wasm join: bus partition proved; interface + coverage statement fixed | `zk-formal/ZkFormal/PQ/StatePort/{Join,JoinFold}.lean`, `JOIN-INTERFACE.md` |
+| HOST chip first slice: import calls representable, 77/77 KATs | `results/pq-host-chip/`, `wasm-base-lean/WasmBase/HostChip.lean` |
+| Ed25519 costed: 1,514,194 cells / 27,163 interactions per signature | `results/pq-ed25519-air/CENSUS.md` |
+| D1 envelope: every hard limit passes; one protocol edit needed | `tools/d1-pq-envelope/` |
 
-Settings: 268 bits = 236 query + z 32, 42-B digests, coset leaves, x15, every lever, m = 64 with
-kernel-proved O-2 only. Chain L1 -> L5 -> FINAL; L2/L3/L4 anchor at M = 1/2/3, **L5 binds by BIND**
-and the program converges at 125,550 rows. Only FINAL is transmitted. 46 min, 24 threads, 17 GB.
+### Two corrections that must not be lost
 
-**Two corrections to earlier figures (both matter):**
-1. 293,077 B is 5,600 B **above** the 287,477 B provisional number, which ran with `bind = false`.
-   The real margin to 300 KB is **2.3 %**.
-2. The NvAir 2^18 headroom is **thin and real**. The model said 256,031 rows (2.3 % under); a paired
-   run failed with `NvAir: 262572 rows exceed 2^18` (+428). Model-vs-measured is ~2.5 %, not 0.2 %.
-   Any program growth (wider app table, D1-class base) can cost L 24 -> 25 and eat the margin.
+1. **293,077 B is the sound measured FINAL** (binding on at every level). The earlier 287,477 B ran
+   with `bind = false` and is not the sound configuration. Margin to 300 KB is **2.3 %**.
+2. **The NvAir 2^18 headroom is thin and real.** A paired run failed at `NvAir: 262572 rows exceed
+   2^18` (+428 over). Model-vs-measured is ~2.5 %, not the 0.2 % once claimed. Program growth costs
+   L 24 -> 25.
 
-Also since the last handover:
-* `lane/pq-d1-envelope` @ `7cd1a7135`: 23/30 `nearAirV3D1` tables proven unchanged on SWIRL with
-  real D1a traces (1,261,284 B, 82 s, tamper 14/14); per-table envelope CSVs.
-* `lane/pq-state-port` @ `c69358866`: **all 25 D0a `nearAirV3` tables** ported with no stand-in
-  table (1.02-1.60 MB, tamper 19/19), plus the Lean bridge `ZkFormal.PQ.StatePort` with
-  `multBoundP < p` kernel-checked. This is the port path, and the decision to take it.
-* `lane/pq-wasm-base` README §14: the HOST/storage/gas/receipt interface between direct-Wasm and
-  the state tables (design note).
+### Read next
 
-## Gap to e2e 1 Pgas under 300 KB (2026-10-19)
+* `docs/logs/pq-gap-analysis-2026-10-19.md` — the gap list, kept current by the lanes.
+* `docs/logs/pq-final-layer-model-2026-10-17.md` — size/latency model and every measured point.
+* `tools/d1-pq-envelope/README.md` — per-table envelope verdict.
+* `results/pq-state-port/JOIN-INTERFACE.md` — the Wasm/state contract both sides must obey.
+
+## Gap to e2e 1 Pgas under 300 KB (2026-10-20)
 
 Read `docs/logs/pq-gap-analysis-2026-10-19.md`. Summary:
 
 * **Two goals are conflated.** The signed challenge caps at `G_α` = 2^22·822,756 = 3.451e12 gas
-  (2^41.65). 1 Pgas is **289.8×** that and exists only as `Scope.checkD3Peta` (a research
-  definition). At 1 Pgas one proof is impossible at any W (needs W = 35k–71k, pin is 24), so it
-  requires ~1,880–3,760 segments and a recursion tree that has never been built or measured.
+  (2^41.65). 1 Pgas is **289.8x** that and exists only as `Scope.checkD3Peta` (a research
+  definition). At 1 Pgas one proof is impossible at any width (W would be 35k-71k; the pin is 24),
+  so it needs ~1,880-3,760 segments and a recursion tree never built at that scale.
 * **The 293,077 B is the recursion tail only.** It does not cover a NEAR chunk.
-* **Blocking gaps for a `G_α` chunk:** HOST chip + `HOSTQ`/`HOSTR`/`HOSTB` buses (design only),
-  Ed25519/SHA-512 in-circuit (weeks), the Wasm↔state join (15–25 days), D1's remaining 7 tables,
-  TAPE commitment passthrough, `max_interaction_count 2^30`, `holdsP_of_swirl` composition.
-* **Next experiment:** prove one `storage_write` on both sides and join on the host buses. That
-  one run decides whether the join is 15 days or a rewrite, and needs no Ed25519.
+* **Remaining blockers for a `G_α` chunk:** (a) the HOST chip's gas-invariant generalisation
+  (`g := remaining` breaks `R·S + g = g0`; ~112 sites), (b) `HOSTB` byte movement + register
+  space, (c) contract-data storage tables (D1 is transfer-only; `ContractData` is D3 work),
+  (d) the `runCall` fold / coverage theorem, (e) TAPE root passthrough through NV to V_d,
+  (f) `max_interaction_count` 2^28 -> 2^30 in the production shape.
+* **Ed25519 is decided:** a separate signature proof layer (16-26 days), not in-AIR per chunk.
 
-Realistic: **~2–3 months to a `G_α` chunk under 300 KB**, end to end. 1 Pgas is a separate
-research project on top.
+Realistic: **~2-3 months to a `G_α` chunk under 300 KB**. 1 Pgas is a separate project on top.
 
-## D1-on-PQ envelope check (2026-10-19)
+## Parallel lanes to run next
 
-A computed answer to "can the kernel-checked `nearAirV3D1` tables be carried on the PQ stack
-instead of re-deriving their semantics in `pq-wasm-base`". Tool: `tools/d1-pq-envelope/check.py`,
-log `docs/logs/d1-pq-envelope-2026-10-19.md`.
+The dependency order below is what the merge proved: the state side, the recursion tail and the
+audits are all done, so the remaining work is the Wasm side plus the join. Lanes 1-4 can run
+concurrently; 5-6 follow.
 
-Three findings:
-1. **Every hard limit passes.** 33 tables, degree 6 formal / 8 backend, `multBound 2^29.74`,
-   `fpBound 2^34.91`, message 36 fields, max per-bus mass `2^27.39 < p`. The AIR is admissible.
-2. **One protocol edit is required, and D0a needs it too:** `max_interaction_count` 2^28 -> 2^30
-   (D1 N = 2^29.59, D0a N = 2^29.55). Costs 2 bits on the backend LogUp term (310.88 bits at
-   `log_msg_len=7`); no WHIR query count moves.
-3. **Carry it as five base shards, with >= 3 NV levels.** One 33-table base proof is 11.9 G
-   committed cells / 179 G x15 LDE and 2.52 M-row L1 (~597 s, ~40 GB); each shard's L1 is
-   0.7-1.05 M rows (~170-250 s), today's direct-Wasm scale. At the full D1 width L1's stacked
-   height caps the blowup at b=2; sharding keeps it at the direct-Wasm b=4. The final is the
-   lane's converged 293.1 KB (model) / 287.5 KB (measured), and V_d pinning the converged
-   program forces >= 3 NV levels.
+| # | lane | scope | blocks | est. |
+|---|---|---|---|---|
+| 1 | `lane/pq-host-gas` | Generalise the gas invariant to `R·(S − S_seg) + g = g_seg` between host boundaries, then state and prove `wasm_base_sound_host` (the relative form taking `HostResp`). ~112 sites, mechanical. | everything on the Wasm side | 5-8 d |
+| 2 | `lane/pq-host-bytes` | `HOSTB` bus (208/209 are taken; use 210), MEMIO row family, space-6 register space, `(ptr,len)` byte moves both directions | `storage_write`, `input`, registers | 5-7 d |
+| 3 | `lane/pq-cd-storage` | Contract-data storage on the state side: extend the D3 `RealStore` overlay into walk/val/ups tables under the `ContractData` prefix (prefix + tables already prototyped in `pq-d3-join`), plus the `upsV3` write | the state half of any `storage_write` | 8-12 d |
+| 4 | `lane/pq-nv-tape` | Rust: carry the TAPE cached root and the host-wire commitments through L1..FINAL to V_d; enforce the per-table height cap in vk/NV/V_d; set `max_interaction_count` 2^30 in the production shape | V_d accepting a joined proof | 5-8 d |
+| 5 | `lane/pq-runCall-fold` | The coverage theorem: `join_additive` + `d3Hooks`/`runCall` correspondence, so a joined proof implies the D3 chunk relation. Shape is stated in `JoinFold.JoinStmt`. | the end-to-end claim | 10-15 d |
+| 6 | `lane/pq-sig-layer` | The separate Ed25519 proof layer: ZK-friendly curve arithmetic (`baby-jubjub`) + a SHA-512 witness over the preimage, proving `Ed25519.verify` at 128 bits; a NIZK over non-native Ed25519. The census is done. | signed transactions | 16-26 d |
+| 7 | `lane/pq-1pgas-scale` | Research only: measure one 2^28.25-cell segment at real settings, then extrapolate the aggregation tree; no 1 Pgas claim | goal B | research |
 
-Cross-checked against two lanes that did this independently the same day:
-`lane/pq-d1-envelope` @ 7cd1a7135 (per-table CSVs from the same exports; 23/30 D1 tables proven on
-SWIRL, 1,261,284 B, tamper 14/14) and `lane/pq-state-port` @ c69358866 (all 25 D0a tables, no
-stand-in, 1.02-1.60 MB, tamper 19/19). Per-table data agrees on all 33 tables. One correction
-absorbed: formal max constraint degree is 6, not 7.
+Merge discipline that worked here: merge the **frontier** lane (the one that contains the others'
+commits) rather than every lane; shared log files conflict additively and the resolution is to keep
+both sections; a file that main already has a newer version of should keep main's version. Always
+run `pin-check` plus the `zk-formal` build before promoting a merge branch to main.
 
-Not established: full NEAR / 1 Pgas coverage, host functions, or a measured PQ proof. G3 is
-untouched; this only replaces re-proving the existing D1 table semantics.
-
-## 0a. State at stop (2026-10-15, main after this commit)
+## 0a. State at stop (2026-10-15) — HISTORICAL, superseded by the sections above
 
 * **Signed + live (local operator key; registered on the live arena):**
   `chl_56077279…` `near-chunk-validation-d0-stark` (D0a) and `chl_497bbbf1…` `near-chunk-v3`
@@ -191,6 +166,19 @@ untouched; this only replaces re-proving the existing D1 table semantics.
 
 
 ## 2. Repository state
+
+* **2026-10-20: the whole PQ track merged into main** (298 commits, 25 lanes). D0a/D1 state tables on
+  the PQ base layer, the measured G2 recursion tail (293,077 B), the HOST chip first slice, the
+  Ed25519 census, the D1 envelope tool and the join statement are all on main. Merge checks:
+  `make pin-check` OK; `zk-formal` builds (3,034 jobs); `cargo fmt --check` and
+  `clippy --workspace --all-targets -D warnings` OK; workspace tests pass with
+  `ARENA_DEV_UNSAFE=1` (`runners/sandbox` requires it; without it 22 bwrap tests fail on an env
+  assertion, independent of this merge).
+* **What the merge resolved:** three lanes disagreed on the HOST bus ids (7/8/9 vs 200/201/202 vs
+  208/209/210). `200/201/202` was **unsound**: the state port shifts classical buses by 128 and the
+  D1 export uses buses up to 75, so the occupied range is 128-203 and 200-202 landed on classical
+  buses 72-74. Final allocation is **HOSTQ 208 / HOSTR 209 / HOSTB 210**, `HOSTT` 9 (Wasm-internal).
+  See `results/pq-d3-join/BUS-NUMBERING.md`.
 
 * **2026-10-14:** `lane/v3-size-opt` merged to main (`584d55ff`): compact hint codec spec-first
   (`NearSpecV3.HintCompact` + `ZkFormal.V3.HintCompact`, axioms ⊆ std3, builds on the merged base),

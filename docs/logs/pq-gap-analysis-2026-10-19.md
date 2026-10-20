@@ -151,6 +151,24 @@ bus.** Concretely:
 That one experiment decides whether the join is 15 agent-days or a rewrite, and it does not require
 Ed25519 (no signature if the transaction is a system receipt or the witness is supplied).
 
+## 4a. State after the 2026-10-20 merge
+
+All 25 PQ lanes are on main. What changed for this list:
+
+* §2.3's *bus partition and interface* are proved and merged (`PQ/StatePort/{Join,JoinFold}.lean`),
+  and `holdsP_of_swirl` is proved and composed into `extractV3`/`ExtractD1Stmt`. The bus ids are
+  fixed at **208/209/210** after a real collision was found and corrected (200-202 hit classical
+  buses 72-74 under the +128 shift).
+* §2.4 (D1's remaining tables) is **done**: all 30, no stand-in.
+* §2.5's TAPE Lean side and `max_interaction_count` in the demo driver are done; the NV passthrough
+  and the production parameter are not.
+* §2.1's HOST chip is a **first slice**; the gas-invariant generalisation and `HOSTB` remain.
+* §2.2 is **decided**: separate signature layer.
+* §2.6's shape is stated (`JoinFold.JoinStmt`); the proof needs the HOST work.
+
+So the critical path is now: **host gas invariant -> host bytes -> contract-data storage ->
+runCall fold -> NV tape passthrough.** That ordering is the lane table in `docs/HANDOVER.md`.
+
 ## 5. Honest sizing
 
 | milestone | work | confidence |
