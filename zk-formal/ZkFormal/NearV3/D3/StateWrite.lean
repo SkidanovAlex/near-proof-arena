@@ -225,7 +225,11 @@ value after its step, and by `cd_write_find_other` no later step at a different 
 theorem applyLog_chain_ok (t : PTrie) (ws : List CdWrite) (t' : PTrie)
     (h : applyLog t ws = some t') : True := trivial
 
-/-- **`upsert` preserves well-formedness** — *stated as a hypothesis*, not proved here:
+/-- **`upsert` preserves well-formedness** — *stated as a hypothesis*, and **FALSE as written**:
+`ZkFormal.NearV3.D3.UpsertWf` proves two independent counterexamples (`not_upsertPreservesWf_valueLen`,
+`not_upsertPreservesWf_mem`) and states the corrected obligation (`UpsertPreservesWfWithBounds`,
+with the canonical-usage `PTrie.memOk` and headroom `PTrie.memLe memHead` hypotheses).  The
+original note follows:
 `TrieUpsertProofs` proves `find_upsert_self`/`find_upsert_other` *given* `t.wf`, but does not
 carry `wf` through the upsert (it would need the new value's `length < 2^32` and `hexPrefix` bound,
 plus `memory_usage < 2^64`).  Those bounds hold for chunk values (`maxLengthStorageValue` is
