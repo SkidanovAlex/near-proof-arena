@@ -727,7 +727,9 @@ Proved here (every `#print axioms` ⊆ `{propext, Classical.choice, Quot.sound}`
 * `memOk` / `memLe` for `kidsFrom`, `kids1`, `kids2`, `newLeaf`; `memLe` monotonicity;
 * `extOwnMem`'s monotonicity in the prefix;
 * `splitLeaf`'s `wf` (`splitLeaf_wf`) and usage bound (`splitLeaf_memD_budget`);
-* the leaf upsert step (`upsert_wf_leaf_step`), which is the *whole* theorem when `t` is a leaf.
+* the leaf upsert step (`upsert_wf_leaf_step`), which is the *whole* theorem when `t` is a leaf;
+* `extOwnMem`'s monotonicity in the key length, and `splitExt_memD_le` (`splitExt`'s usage is
+  `≤ m + budget`).
 
 **Not yet proved: the full `PTrie.upsert_wf` induction.**  The statement is true and the
 counterexamples above pin its exact hypotheses; what remains is mechanical bookkeeping, not a new
@@ -738,9 +740,8 @@ rather than `wf`:
   `t.upsert key v = some t' → t'.memD ≤ t.memD + budget` (mutual with `Kids.upsert_memD_le`).
   With `memOk`, the extension descend then preserves `wf` (`m + c'.memD − cm = extOwnMem k + c'.memD`,
   below `2^64` because `c'.memD ≤ memHead + budget`).
-* `splitExt_memD_le` — the extension split's usage is `≤ m + budget` (the `splitExt` analogue of
-  the proved `splitLeaf_memD_budget`), together with `splitExt_wf` (the `splitExt` analogue of
-  the proved `splitLeaf_wf`).
+* `splitExt_wf` — the extension split's `wf` (the `splitExt` analogue of the proved
+  `splitLeaf_wf`; `splitExt_memD_le` is already proved).
 
 The branch case is `Kids.upsert_wf` (written and compiling modulo the `PTrie.upsert_wf` it is
 mutually defined with).  The exact final statement is:
@@ -755,6 +756,11 @@ PTrie.upsert_wf :
 -/
 
 
+/-- `extOwnMem` is monotone in the key's length (its hex prefix is `|k|/2 + 1`). -/
+theorem extOwnMem_le_of_length {k l : List Nat} (h : l.length ≤ k.length) :
+    extOwnMem l ≤ extOwnMem k := by
+  unfold extOwnMem; rw [hexPrefix_length, hexPrefix_length]; omega
+
 /-- `p` followed by `x :: xs`: the two extensions' own usages are at most the combined one. -/
 theorem extOwnMem_append_cons (p xs : List Nat) (x : Nat) :
     extOwnMem p + extOwnMem xs ≤ extOwnMem (p ++ x :: xs) + 52 := by
@@ -763,4 +769,150 @@ theorem extOwnMem_append_cons (p xs : List Nat) (x : Nat) :
   simp only [List.length_cons]
   omega
 
+/-- `splitExt`'s usage is at most `m + budget`. -/
+theorem splitExt_memD_le (k : List Nat) (c : PTrie) (m : Nat) (key : List Nat) (v : Bytes)
+    (hv : v.length < 4294967296) (hpkey : (hexPrefix key false).length < 4294967296) (hpk : (hexPrefix k false).length < 4294967296) :
+    (splitExt k c m key v).memD ≤ m + budget := by
+  unfold splitExt
+  dsimp only
+  have hpk' : (hexPrefix k false).length < 4294967296 := by
+    rw [hexPrefix_length]; rw [hexPrefix_length] at hpk; omega
+  have hcp_le_key : (commonPrefix k key).length ≤ key.length := by
+    have h := congrArg List.length (commonPrefix_right k key)
+    rw [List.length_append] at h; omega
+  have hp : (hexPrefix (commonPrefix k key) false).length < 4294967296 := by
+    rw [hexPrefix_length]; rw [hexPrefix_length] at hpkey; omega
+  have hkeyTf : (hexPrefix key false).length < 4294967296 := by
+    rw [hexPrefix_length] at hpkey ⊢; omega
+  have hown : extOwnMem (commonPrefix k key) < small := extOwnMem_lt_small hp
+  have hkeyT : (hexPrefix key true).length < 4294967296 := by
+    rw [hexPrefix_len_eq key true false]; exact hpkey
+  generalize hkr : k.drop (commonPrefix k key).length = kr
+  generalize hyr : key.drop (commonPrefix k key).length = yr
+  -- key.length dropped-prefix relations
+  have hylenk : (hexPrefix key false).length < 4294967296 := by
+    rw [hexPrefix_length] at hpkey ⊢; omega
+  have hylen : ∀ ys y, yr = y :: ys → leafMem ys v.length < small := by
+    intro ys y hy
+    apply leafMem_lt_small _ hv
+    rw [hexPrefix_length]
+    have e : key.drop (commonPrefix k key).length = y :: ys := by rw [hyr]; exact hy
+    have h := congrArg List.length e
+    rw [List.length_drop] at h
+    simp only [List.length_cons] at h ⊢
+    have h2 := congrArg List.length (commonPrefix_right k key)
+    rw [List.length_append] at h2
+    rw [hexPrefix_length] at hylenk
+    omega
+  have hbud : budget = 343597383680 := rfl
+  have hsmall : small = 68719476736 := small_eq
+  have hsmall' : small = 68719476736 := small_eq
+  cases kr with
+  | nil => show m ≤ m + budget; omega
+  | cons x xs =>
+    have hkk : k = commonPrefix k key ++ (x :: xs) := by
+      have h := commonPrefix_left k key
+      rw [hkr] at h
+      exact h
+    have hklp : (commonPrefix k key).length ≤ k.length := commonPrefix_len_le k key
+    have hklen : k.length = (commonPrefix k key).length + ((x :: xs).length) := by
+      have h := congrArg List.length hkr
+      rw [List.length_drop] at h
+      omega
+    cases xs with
+    | nil =>
+      cases yr with
+      | nil =>
+        show (wrapExt (commonPrefix k key) (.branch (some (.val v)) (kids1 x c)
+          (50 + valueMem v.length + (m - extOwnMem k)))).memD ≤ m + budget
+        have hvv := valueMem_lt_small hv
+        cases hcpe : commonPrefix k key with
+        | nil =>
+          show 50 + valueMem v.length + (m - extOwnMem k) ≤ m + budget
+          unfold extOwnMem at *
+          omega
+        | cons a b =>
+          show extOwnMem (a :: b) + (50 + valueMem v.length + (m - extOwnMem k)) ≤ m + budget
+          have h4 : extOwnMem (a :: b) < small := by
+            have e : commonPrefix k key = a :: b := by
+              have := hcpe; exact this
+            rw [← e]; exact hown
+          have h5 : extOwnMem k < small := extOwnMem_lt_small hpk'
+          have h6 : small = 68719476736 := small_eq
+          have h7 : budget = 343597383680 := rfl
+          unfold extOwnMem at *
+          omega
+      | cons y ys =>
+        show (wrapExt (commonPrefix k key) (.branch none (kids2 x c y (newLeaf ys v))
+          (50 + (m - extOwnMem k) + leafMem ys v.length))).memD ≤ m + budget
+        have hyv := hylen ys y rfl
+        cases hcpe : commonPrefix k key with
+        | nil =>
+          show 50 + (m - extOwnMem k) + leafMem ys v.length ≤ m + budget
+          unfold extOwnMem at *
+          omega
+        | cons a b =>
+          show extOwnMem (a :: b) + (50 + (m - extOwnMem k) + leafMem ys v.length) ≤ m + budget
+          have h4 : extOwnMem (a :: b) < small := by rw [← hcpe]; exact hown
+          have h5 : extOwnMem k < small := extOwnMem_lt_small hpk'
+          have h6 : small = 68719476736 := small_eq
+          have h7 : budget = 343597383680 := rfl
+          unfold extOwnMem at *
+          omega
+    | cons a2 b2 =>
+      have hxsk : extOwnMem (a2 :: b2) ≤ extOwnMem k := by
+        apply extOwnMem_le_of_length
+        have h := congrArg List.length hkk
+        rw [List.length_append] at h
+        simp only [List.length_cons] at h ⊢
+        omega
+      have hxsS : extOwnMem (a2 :: b2) < small := by
+        apply extOwnMem_lt_small
+        rw [hexPrefix_length]
+        have h := congrArg List.length hkk
+        rw [List.length_append] at h
+        simp only [List.length_cons] at h ⊢
+        rw [hexPrefix_length] at hpk'
+        omega
+      cases yr with
+      | nil =>
+        show (wrapExt (commonPrefix k key) (.branch (some (.val v)) (kids1 x
+          (.ext (a2 :: b2) c (extOwnMem (a2 :: b2) + (m - extOwnMem k))))
+          (50 + valueMem v.length + (extOwnMem (a2 :: b2) + (m - extOwnMem k))))).memD ≤ m + budget
+        have hvv := valueMem_lt_small hv
+        cases hcpe : commonPrefix k key with
+        | nil =>
+          show 50 + valueMem v.length + (extOwnMem (a2 :: b2) + (m - extOwnMem k)) ≤ m + budget
+          have hxs6 : extOwnMem (a2 :: b2) < 68719476736 := by rw [← hsmall']; exact hxsS
+          have hk6 : extOwnMem k < 68719476736 := by rw [← hsmall']; exact extOwnMem_lt_small hpk'
+          have hv6 : valueMem v.length < 68719476736 := by rw [← hsmall']; exact hvv
+          omega
+        | cons a b =>
+          show extOwnMem (a :: b) + (50 + valueMem v.length +
+            (extOwnMem (a2 :: b2) + (m - extOwnMem k))) ≤ m + budget
+          have h6 : extOwnMem (a :: b) < 68719476736 := by rw [← hsmall']; rw [← hcpe]; exact hown
+          have hxs6 : extOwnMem (a2 :: b2) < 68719476736 := by rw [← hsmall']; exact hxsS
+          have hk6 : extOwnMem k < 68719476736 := by rw [← hsmall']; exact extOwnMem_lt_small hpk'
+          have hv6 : valueMem v.length < 68719476736 := by rw [← hsmall']; exact hvv
+          omega
+      | cons y ys =>
+        show (wrapExt (commonPrefix k key) (.branch none (kids2 x
+          (.ext (a2 :: b2) c (extOwnMem (a2 :: b2) + (m - extOwnMem k))) y (newLeaf ys v))
+          (50 + (extOwnMem (a2 :: b2) + (m - extOwnMem k)) + leafMem ys v.length))).memD ≤ m + budget
+        have hyv := hylen ys y rfl
+        cases hcpe : commonPrefix k key with
+        | nil =>
+          show 50 + (extOwnMem (a2 :: b2) + (m - extOwnMem k)) + leafMem ys v.length ≤ m + budget
+          have hxs6 : extOwnMem (a2 :: b2) < 68719476736 := by rw [← hsmall']; exact hxsS
+          have hk6 : extOwnMem k < 68719476736 := by rw [← hsmall']; exact extOwnMem_lt_small hpk'
+          have hy6 : leafMem ys v.length < 68719476736 := by rw [← hsmall']; exact hyv
+          omega
+        | cons a b =>
+          show extOwnMem (a :: b) + (50 + (extOwnMem (a2 :: b2) + (m - extOwnMem k)) +
+            leafMem ys v.length) ≤ m + budget
+          have h6 : extOwnMem (a :: b) < 68719476736 := by rw [← hsmall']; rw [← hcpe]; exact hown
+          have hxs6 : extOwnMem (a2 :: b2) < 68719476736 := by rw [← hsmall']; exact hxsS
+          have hk6 : extOwnMem k < 68719476736 := by rw [← hsmall']; exact extOwnMem_lt_small hpk'
+          have hy6 : leafMem ys v.length < 68719476736 := by rw [← hsmall']; exact hyv
+          omega
 end NearSpec
