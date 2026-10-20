@@ -1,5 +1,4 @@
 diff --git a/crates/backend-tests/src/lib.rs b/crates/backend-tests/src/lib.rs
-index 08e139b..8a74104 100644
 --- a/crates/backend-tests/src/lib.rs
 +++ b/crates/backend-tests/src/lib.rs
 @@ -148,6 +148,7 @@ pub fn proof_shape_verifier_rng_system_params<E: StarkEngine<SC = SC>>() -> eyre
@@ -37,7 +36,6 @@ index 08e139b..8a74104 100644
  }
  
 diff --git a/crates/cpu-backend/src/device.rs b/crates/cpu-backend/src/device.rs
-index c2ced4f..fb39746 100644
 --- a/crates/cpu-backend/src/device.rs
 +++ b/crates/cpu-backend/src/device.rs
 @@ -9,15 +9,15 @@ use openvm_stark_backend::{
@@ -193,7 +191,6 @@ index c2ced4f..fb39746 100644
  
  /// In-place PLE evaluation-to-coefficient conversion.
 diff --git a/crates/cpu-backend/src/logup_zerocheck/mod.rs b/crates/cpu-backend/src/logup_zerocheck/mod.rs
-index f58378f..fda776a 100644
 --- a/crates/cpu-backend/src/logup_zerocheck/mod.rs
 +++ b/crates/cpu-backend/src/logup_zerocheck/mod.rs
 @@ -24,10 +24,10 @@ use openvm_stark_backend::{
@@ -324,7 +321,6 @@ index f58378f..fda776a 100644
      Ok((gkr_proof, batch_constraint_proof, r))
  }
 diff --git a/crates/cpu-backend/src/merkle.rs b/crates/cpu-backend/src/merkle.rs
-index db55c08..606af18 100644
 --- a/crates/cpu-backend/src/merkle.rs
 +++ b/crates/cpu-backend/src/merkle.rs
 @@ -288,6 +288,7 @@ where
@@ -336,7 +332,6 @@ index db55c08..606af18 100644
      hasher: &H,
      l_skip: usize,
 diff --git a/crates/cpu-backend/src/pcs_data.rs b/crates/cpu-backend/src/pcs_data.rs
-index 45390ec..5cdea4b 100644
 --- a/crates/cpu-backend/src/pcs_data.rs
 +++ b/crates/cpu-backend/src/pcs_data.rs
 @@ -1,70 +1,4 @@
@@ -415,7 +410,6 @@ index 45390ec..5cdea4b 100644
 +//! the reference PCS (commit and WHIR opening) apply unchanged (nearproof unified backend).
 +pub type CpuStackedPcsData<F, Digest> = openvm_stark_backend::prover::stacked_pcs::StackedPcsData<F, Digest>;
 diff --git a/crates/cpu-backend/src/stacked_reduction.rs b/crates/cpu-backend/src/stacked_reduction.rs
-index 1d23302..eb17d55 100644
 --- a/crates/cpu-backend/src/stacked_reduction.rs
 +++ b/crates/cpu-backend/src/stacked_reduction.rs
 @@ -175,7 +175,7 @@ where
@@ -443,7 +437,6 @@ index 1d23302..eb17d55 100644
                  } else {
                      None
 diff --git a/crates/cpu-backend/src/whir.rs b/crates/cpu-backend/src/whir.rs
-index 711791d..45ddae4 100644
 --- a/crates/cpu-backend/src/whir.rs
 +++ b/crates/cpu-backend/src/whir.rs
 @@ -291,6 +291,9 @@ where
@@ -456,8 +449,24 @@ index 711791d..45ddae4 100644
      })
  }
  
+diff --git a/crates/stark-backend/src/any_air.rs b/crates/stark-backend/src/any_air.rs
+--- a/crates/stark-backend/src/any_air.rs
++++ b/crates/stark-backend/src/any_air.rs
+@@ -24,6 +24,13 @@ pub trait PartitionedBaseAir<F>: BaseAir<F> {
+     fn common_main_width(&self) -> usize {
+         self.width()
+     }
++    /// Optional per-AIR cap on `log_height` (`maxLog_t` for a ported classical table, the
++    /// height the soundness argument is proved for).  `None` = only the global
++    /// `l_skip + n_stack` bound applies.  The cap is stored in the vk and enforced by the
++    /// native verifier and by the NV program generator.
++    fn max_log_trace_height(&self) -> Option<usize> {
++        None
++    }
+ }
+ 
+ /// Shared reference to any Interactive Air.
 diff --git a/crates/stark-backend/src/config.rs b/crates/stark-backend/src/config.rs
-index c776e1c..42e5fc0 100644
 --- a/crates/stark-backend/src/config.rs
 +++ b/crates/stark-backend/src/config.rs
 @@ -188,6 +188,200 @@ pub struct WhirConfig {
@@ -867,7 +876,6 @@ index c776e1c..42e5fc0 100644
  
      /// Pure function to calculate the number of queries necessary for a given WHIR round.
 diff --git a/crates/stark-backend/src/hasher.rs b/crates/stark-backend/src/hasher.rs
-index d03985a..8ca44f0 100644
 --- a/crates/stark-backend/src/hasher.rs
 +++ b/crates/stark-backend/src/hasher.rs
 @@ -39,6 +39,15 @@ pub trait MerkleHasher: 'static + Clone + Send + Sync {
@@ -887,7 +895,6 @@ index d03985a..8ca44f0 100644
  
  /// [MerkleHasher] implementation built from a cryptographic hash function and a compression
 diff --git a/crates/stark-backend/src/keygen/mod.rs b/crates/stark-backend/src/keygen/mod.rs
-index 3074dd0..ca452af 100644
 --- a/crates/stark-backend/src/keygen/mod.rs
 +++ b/crates/stark-backend/src/keygen/mod.rs
 @@ -20,7 +20,7 @@ use crate::{
@@ -946,20 +953,24 @@ index 3074dd0..ca452af 100644
      ) -> Result<StarkProvingKey<SC>, KeygenError> {
          let air_name = self.air.name();
  
-@@ -289,10 +306,12 @@ impl<SC: StarkProtocolConfig> AirKeygenBuilder<SC> {
+@@ -289,10 +306,16 @@ impl<SC: StarkProtocolConfig> AirKeygenBuilder<SC> {
          let max_rotation = dag.constraints.max_rotation();
          debug_assert!(max_rotation <= 1);
          let need_rot = max_rotation == 1;
 +        let rot_mask = next_mask.then(|| rotated_columns(&dag, &width));
++        let max_log_trace_height = self.air.max_log_trace_height();
          let vparams = StarkVerifyingParams {
              width,
              num_public_values,
              need_rot,
 +            rot_mask,
++            // M4 (per-table height cap): the AIR's `maxLog` goes into the vk and is enforced by
++            // every verifier (`verifier::verify` and the NV program generator).
++            max_log_trace_height,
          };
  
          let unused_variables = find_unused_vars(&dag, &vparams.width, need_rot);
-@@ -332,13 +351,15 @@ impl<SC: StarkProtocolConfig> PrepKeygenData<SC> {
+@@ -332,13 +355,15 @@ impl<SC: StarkProtocolConfig> PrepKeygenData<SC> {
          let preprocessed_trace = BaseAir::<SC::F>::preprocessed_trace(air);
          let vpdata_opt = preprocessed_trace.map(|trace| {
              let trace = ColMajorMatrix::from_row_major(&trace);
@@ -977,7 +988,7 @@ index 3074dd0..ca452af 100644
              )
              .unwrap();
              debug_assert_eq!(trace.width(), data.mat_view(0).width());
-@@ -368,6 +389,32 @@ impl<SC: StarkProtocolConfig> PrepKeygenData<SC> {
+@@ -368,6 +393,32 @@ impl<SC: StarkProtocolConfig> PrepKeygenData<SC> {
      }
  }
  
@@ -1011,10 +1022,9 @@ index 3074dd0..ca452af 100644
      constraints: &SymbolicConstraintsDag<F>,
      width: &TraceWidth,
 diff --git a/crates/stark-backend/src/keygen/types.rs b/crates/stark-backend/src/keygen/types.rs
-index 493a87f..f1bd1e6 100644
 --- a/crates/stark-backend/src/keygen/types.rs
 +++ b/crates/stark-backend/src/keygen/types.rs
-@@ -102,6 +102,33 @@ pub struct StarkVerifyingParams {
+@@ -102,6 +102,38 @@ pub struct StarkVerifyingParams {
      /// of the constraints and/or interactions across all trace parts (common,
      /// preprocessed if there is one, all cached).
      pub need_rot: bool,
@@ -1023,6 +1033,11 @@ index 493a87f..f1bd1e6 100644
 +    /// interaction. `None`: every column of every part iff `need_rot` (upstream).
 +    #[serde(default, skip_serializing_if = "Option::is_none")]
 +    pub rot_mask: Option<Vec<Vec<bool>>>,
++    /// Per-AIR cap on `log_height` (`maxLog_t` for a ported classical table).  `None` = only the
++    /// global `l_skip + n_stack` bound.  Part of the vk pre-hash when set, so a proof whose AIR
++    /// outgrows its table's cap cannot be verified under a vk that pins the cap.
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub max_log_trace_height: Option<usize>,
 +}
 +
 +impl StarkVerifyingParams {
@@ -1049,7 +1064,6 @@ index 493a87f..f1bd1e6 100644
  
  /// Verifier data for preprocessed trace for a single AIR.
 diff --git a/crates/stark-backend/src/lib.rs b/crates/stark-backend/src/lib.rs
-index 8d78cee..95bb5d4 100644
 --- a/crates/stark-backend/src/lib.rs
 +++ b/crates/stark-backend/src/lib.rs
 @@ -55,6 +55,8 @@ mod config;
@@ -1063,7 +1077,6 @@ index 8d78cee..95bb5d4 100644
  pub use engine::*;
 diff --git a/crates/stark-backend/src/odd_domain.rs b/crates/stark-backend/src/odd_domain.rs
 new file mode 100644
-index 0000000..84d3de3
 --- /dev/null
 +++ b/crates/stark-backend/src/odd_domain.rs
 @@ -0,0 +1,107 @@
@@ -1175,7 +1188,6 @@ index 0000000..84d3de3
 +    blocks.concat()
 +}
 diff --git a/crates/stark-backend/src/proof.rs b/crates/stark-backend/src/proof.rs
-index 30b7914..1236858 100644
 --- a/crates/stark-backend/src/proof.rs
 +++ b/crates/stark-backend/src/proof.rs
 @@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
@@ -1785,7 +1797,6 @@ index 30b7914..1236858 100644
      }
  }
 diff --git a/crates/stark-backend/src/prover/cpu_backend.rs b/crates/stark-backend/src/prover/cpu_backend.rs
-index c4c53ae..331fb76 100644
 --- a/crates/stark-backend/src/prover/cpu_backend.rs
 +++ b/crates/stark-backend/src/prover/cpu_backend.rs
 @@ -13,7 +13,7 @@ use crate::{
@@ -1877,7 +1888,6 @@ index c4c53ae..331fb76 100644
          }
          let (stacking_proof, u_prisma) =
 diff --git a/crates/stark-backend/src/prover/hal.rs b/crates/stark-backend/src/prover/hal.rs
-index 89f5a89..17cd810 100644
 --- a/crates/stark-backend/src/prover/hal.rs
 +++ b/crates/stark-backend/src/prover/hal.rs
 @@ -84,6 +84,12 @@ pub trait ProverDevice<PB: ProverBackend, TS>:
@@ -1894,7 +1904,6 @@ index 89f5a89..17cd810 100644
  
  /// This trait is responsible for the proving steps that reduce AIR zerocheck constraints and
 diff --git a/crates/stark-backend/src/prover/logup_zerocheck/cpu.rs b/crates/stark-backend/src/prover/logup_zerocheck/cpu.rs
-index a070663..a4af4c7 100644
 --- a/crates/stark-backend/src/prover/logup_zerocheck/cpu.rs
 +++ b/crates/stark-backend/src/prover/logup_zerocheck/cpu.rs
 @@ -185,6 +185,7 @@ where
@@ -1930,7 +1939,6 @@ index a070663..a4af4c7 100644
                              .collect_vec()
                      })
 diff --git a/crates/stark-backend/src/prover/logup_zerocheck/fractional_sumcheck_gkr.rs b/crates/stark-backend/src/prover/logup_zerocheck/fractional_sumcheck_gkr.rs
-index 7c37275..c0b6192 100644
 --- a/crates/stark-backend/src/prover/logup_zerocheck/fractional_sumcheck_gkr.rs
 +++ b/crates/stark-backend/src/prover/logup_zerocheck/fractional_sumcheck_gkr.rs
 @@ -56,11 +56,22 @@ impl<EF: Field> Add<Frac<EF>> for Frac<EF> {
@@ -1972,7 +1980,6 @@ index 7c37275..c0b6192 100644
                  }
                  round_polys_eval.push(s_evals);
 diff --git a/crates/stark-backend/src/prover/logup_zerocheck/mod.rs b/crates/stark-backend/src/prover/logup_zerocheck/mod.rs
-index d0a5646..13ff23e 100644
 --- a/crates/stark-backend/src/prover/logup_zerocheck/mod.rs
 +++ b/crates/stark-backend/src/prover/logup_zerocheck/mod.rs
 @@ -14,10 +14,10 @@ use crate::{
@@ -2060,7 +2067,6 @@ index d0a5646..13ff23e 100644
      Ok((gkr_proof, batch_constraint_proof, r))
  }
 diff --git a/crates/stark-backend/src/prover/logup_zerocheck/single.rs b/crates/stark-backend/src/prover/logup_zerocheck/single.rs
-index aeb5938..30436c8 100644
 --- a/crates/stark-backend/src/prover/logup_zerocheck/single.rs
 +++ b/crates/stark-backend/src/prover/logup_zerocheck/single.rs
 @@ -24,6 +24,8 @@ pub struct EvalHelper<'a, F> {
@@ -2073,7 +2079,6 @@ index aeb5938..30436c8 100644
  }
  
 diff --git a/crates/stark-backend/src/prover/matrix.rs b/crates/stark-backend/src/prover/matrix.rs
-index d3c67c8..47f4eab 100644
 --- a/crates/stark-backend/src/prover/matrix.rs
 +++ b/crates/stark-backend/src/prover/matrix.rs
 @@ -66,6 +66,18 @@ pub struct StridedColMajorMatrixView<'a, F> {
@@ -2096,7 +2101,6 @@ index d3c67c8..47f4eab 100644
          assert_eq!(values.len() % width, 0);
          let height = values.len() / width;
 diff --git a/crates/stark-backend/src/prover/mod.rs b/crates/stark-backend/src/prover/mod.rs
-index 59e87a0..b8a662d 100644
 --- a/crates/stark-backend/src/prover/mod.rs
 +++ b/crates/stark-backend/src/prover/mod.rs
 @@ -127,13 +127,19 @@ where
@@ -2131,7 +2135,6 @@ index 59e87a0..b8a662d 100644
                      transcript.observe_commit(*commit);
                  }
 diff --git a/crates/stark-backend/src/prover/stacked_pcs.rs b/crates/stark-backend/src/prover/stacked_pcs.rs
-index 97271aa..5880f4e 100644
 --- a/crates/stark-backend/src/prover/stacked_pcs.rs
 +++ b/crates/stark-backend/src/prover/stacked_pcs.rs
 @@ -52,9 +52,58 @@ pub struct StackedSlice {
@@ -2721,7 +2724,6 @@ index 97271aa..5880f4e 100644
              debug_assert_eq!(
                  row.len(),
 diff --git a/crates/stark-backend/src/prover/stacked_reduction.rs b/crates/stark-backend/src/prover/stacked_reduction.rs
-index 504c7b3..53a292b 100644
 --- a/crates/stark-backend/src/prover/stacked_reduction.rs
 +++ b/crates/stark-backend/src/prover/stacked_reduction.rs
 @@ -37,7 +37,7 @@ pub trait StackedReductionProver<'a, PB: ProverBackend, PD> {
@@ -2886,7 +2888,6 @@ index 504c7b3..53a292b 100644
                  // Folding above did nothing, and we update the eq(u[1+n_T..=round],
                  // b_{T,j}[..=round-n_T-1]) value
 diff --git a/crates/stark-backend/src/prover/whir.rs b/crates/stark-backend/src/prover/whir.rs
-index 6bdbaa8..d693db1 100644
 --- a/crates/stark-backend/src/prover/whir.rs
 +++ b/crates/stark-backend/src/prover/whir.rs
 @@ -90,6 +90,13 @@ where
@@ -3103,7 +3104,6 @@ index 6bdbaa8..d693db1 100644
  }
  
 diff --git a/crates/stark-backend/src/soundness/calculator.rs b/crates/stark-backend/src/soundness/calculator.rs
-index 7ba58fb..a994776 100644
 --- a/crates/stark-backend/src/soundness/calculator.rs
 +++ b/crates/stark-backend/src/soundness/calculator.rs
 @@ -100,7 +100,8 @@ impl SoundnessCalculator {
@@ -3311,35 +3311,36 @@ index 7ba58fb..a994776 100644
              logup: LogUpSecurityParameters {
                  max_interaction_count: 1 << 20,
 diff --git a/crates/stark-backend/src/soundness/vk.rs b/crates/stark-backend/src/soundness/vk.rs
-index fb6d6cf..f13b0ff 100644
 --- a/crates/stark-backend/src/soundness/vk.rs
 +++ b/crates/stark-backend/src/soundness/vk.rs
-@@ -184,6 +184,7 @@ mod tests {
+@@ -184,6 +184,8 @@ mod tests {
                              },
                              num_public_values: 3,
                              need_rot: false,
 +                            rot_mask: None,
++                            max_log_trace_height: None,
                          },
                          symbolic_constraints: constraints_with_counts(4, 0),
                          max_constraint_degree: 1,
-@@ -200,6 +201,7 @@ mod tests {
+@@ -200,6 +202,8 @@ mod tests {
                              },
                              num_public_values: 0,
                              need_rot: false,
 +                            rot_mask: None,
++                            max_log_trace_height: None,
                          },
                          symbolic_constraints: constraints_with_counts(0, 1),
                          max_constraint_degree: 1,
-@@ -216,6 +218,7 @@ mod tests {
+@@ -216,6 +220,8 @@ mod tests {
                              },
                              num_public_values: 0,
                              need_rot: false,
 +                            rot_mask: None,
++                            max_log_trace_height: None,
                          },
                          symbolic_constraints: constraints_with_counts(0, 1),
                          max_constraint_degree: 1,
 diff --git a/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs b/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs
-index 8428705..99fe3e1 100644
 --- a/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs
 +++ b/crates/stark-backend/src/test_utils/dummy_airs/interaction/dummy_interaction_air.rs
 @@ -14,7 +14,7 @@ use crate::{
@@ -3370,7 +3371,6 @@ index 8428705..99fe3e1 100644
          .unwrap();
  
 diff --git a/crates/stark-backend/src/test_utils/mod.rs b/crates/stark-backend/src/test_utils/mod.rs
-index e6d2fbd..4c0829f 100644
 --- a/crates/stark-backend/src/test_utils/mod.rs
 +++ b/crates/stark-backend/src/test_utils/mod.rs
 @@ -18,7 +18,7 @@ use crate::{
@@ -3419,7 +3419,6 @@ index e6d2fbd..4c0829f 100644
                  .unwrap();
                  assert_eq!(common.height(), cached.height());
 diff --git a/crates/stark-backend/src/transcript/traits.rs b/crates/stark-backend/src/transcript/traits.rs
-index ecd6dec..d35c18b 100644
 --- a/crates/stark-backend/src/transcript/traits.rs
 +++ b/crates/stark-backend/src/transcript/traits.rs
 @@ -51,6 +51,25 @@ where
@@ -3499,7 +3498,6 @@ index ecd6dec..d35c18b 100644
      fn grind(&mut self, bits: usize) -> SC::F {
          assert!(bits < (u32::BITS as usize));
 diff --git a/crates/stark-backend/src/verifier/batch_constraints.rs b/crates/stark-backend/src/verifier/batch_constraints.rs
-index e677b48..312b6b7 100644
 --- a/crates/stark-backend/src/verifier/batch_constraints.rs
 +++ b/crates/stark-backend/src/verifier/batch_constraints.rs
 @@ -13,10 +13,10 @@ use crate::{
@@ -3642,7 +3640,6 @@ index e677b48..312b6b7 100644
  
          let mut factorials = vec![SC::F::ONE; s_deg + 1];
 diff --git a/crates/stark-backend/src/verifier/fractional_sumcheck_gkr.rs b/crates/stark-backend/src/verifier/fractional_sumcheck_gkr.rs
-index be62b0f..d85a15e 100644
 --- a/crates/stark-backend/src/verifier/fractional_sumcheck_gkr.rs
 +++ b/crates/stark-backend/src/verifier/fractional_sumcheck_gkr.rs
 @@ -1,9 +1,12 @@
@@ -3891,7 +3888,6 @@ index be62b0f..d85a15e 100644
      transcript: &mut TS,
      claims: &GkrLayerClaims<SC>,
 diff --git a/crates/stark-backend/src/verifier/mod.rs b/crates/stark-backend/src/verifier/mod.rs
-index 4ee438b..533e585 100644
 --- a/crates/stark-backend/src/verifier/mod.rs
 +++ b/crates/stark-backend/src/verifier/mod.rs
 @@ -25,6 +25,11 @@ pub enum VerifierError<EF: core::fmt::Debug + core::fmt::Display + PartialEq + E
@@ -3962,7 +3958,6 @@ index 4ee438b..533e585 100644
      }
  
 diff --git a/crates/stark-backend/src/verifier/proof_shape.rs b/crates/stark-backend/src/verifier/proof_shape.rs
-index a3216a9..214002d 100644
 --- a/crates/stark-backend/src/verifier/proof_shape.rs
 +++ b/crates/stark-backend/src/verifier/proof_shape.rs
 @@ -52,6 +52,8 @@ pub enum ProofShapeVDataError {
@@ -3974,7 +3969,22 @@ index a3216a9..214002d 100644
      #[error("AIR {air_idx} has no TraceVData, but a non-zero amount of public values")]
      PublicValuesNoVData { air_idx: usize },
      #[error(
-@@ -188,6 +190,10 @@ pub enum StackingProofShapeError {
+@@ -69,6 +71,14 @@ pub enum ProofShapeVDataError {
+         n_stack: usize,
+         actual: usize,
+     },
++    /// M4: the AIR's own `maxLog` (a vk constant for a ported classical table) is exceeded.
++    /// Height soundness (e.g. `multBoundP < p`) is proved for `log_height <= maxLog`.
++    #[error("AIR {air_idx} should have log_height <= {max_log} (its maxLog), but has {actual}")]
++    LogHeightExceedsTableCap {
++        air_idx: usize,
++        max_log: usize,
++        actual: usize,
++    },
+     #[error("AIR {air_idx} should have {expected} public values, but has {actual}")]
+     InvalidPublicValues {
+         air_idx: usize,
+@@ -188,6 +198,10 @@ pub enum StackingProofShapeError {
  
  #[derive(Debug, Error, PartialEq, Eq)]
  pub enum WhirProofShapeError {
@@ -3985,7 +3995,22 @@ index a3216a9..214002d 100644
      #[error(
          "whir_sumcheck_polys should have num_whir_sumcheck_rounds = {expected} polynomials, but it has {actual}"
      )]
-@@ -466,8 +472,23 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -357,6 +371,14 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+                         actual: vdata.log_height,
+                     },
+                 );
++            } else if let Some(max_log) = vk.params.max_log_trace_height.filter(|&m| vdata.log_height > m) {
++                return ProofShapeError::invalid_vdata(
++                    ProofShapeVDataError::LogHeightExceedsTableCap {
++                        air_idx,
++                        max_log,
++                        actual: vdata.log_height,
++                    },
++                );
+             } else if vk.params.num_public_values != pvs.len() {
+                 return ProofShapeError::invalid_vdata(ProofShapeVDataError::InvalidPublicValues {
+                     air_idx,
+@@ -466,8 +488,23 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
      }
  
      for (part_openings, &(air_idx, vk, _)) in batch_proof.column_openings.iter().zip(&per_trace) {
@@ -4011,7 +4036,7 @@ index a3216a9..214002d 100644
          if part_openings.len() != vk.num_parts() {
              return ProofShapeError::invalid_batch_constraint(
                  BatchProofShapeError::InvalidColumnOpeningsPerAir {
-@@ -476,7 +497,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -476,7 +513,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: part_openings.len(),
                  },
              );
@@ -4020,7 +4045,7 @@ index a3216a9..214002d 100644
              return ProofShapeError::invalid_batch_constraint(
                  BatchProofShapeError::InvalidColumnOpeningsPerAirMain {
                      air_idx,
-@@ -485,7 +506,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -485,7 +522,7 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                  },
              );
          } else if let Some(preprocessed_width) = &vk.params.width.preprocessed {
@@ -4029,7 +4054,7 @@ index a3216a9..214002d 100644
                  return ProofShapeError::invalid_batch_constraint(
                      BatchProofShapeError::InvalidColumnOpeningsPerAirPreprocessed {
                          air_idx,
-@@ -496,13 +517,14 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -496,13 +533,14 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
              }
          }
  
@@ -4046,7 +4071,7 @@ index a3216a9..214002d 100644
                  return ProofShapeError::invalid_batch_constraint(
                      BatchProofShapeError::InvalidColumnOpeningsPerAirCached {
                          air_idx,
-@@ -535,12 +557,33 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -535,12 +573,33 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
          );
      }
  
@@ -4082,7 +4107,7 @@ index a3216a9..214002d 100644
              .collect_vec(),
      )
      .unwrap();
-@@ -568,6 +611,13 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -568,6 +627,13 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
          .into_iter()
          .chain(other_layouts)
          .collect_vec();
@@ -4096,7 +4121,7 @@ index a3216a9..214002d 100644
  
      let total_stacked_width: usize = layouts.iter().map(StackedLayout::width).sum();
      if total_stacked_width > mvk.params.w_stack {
-@@ -610,9 +660,16 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -610,9 +676,16 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
      let log_stacked_height = mvk.params.log_stacked_height();
      let num_whir_rounds = mvk.params.num_whir_rounds();
      let num_whir_sumcheck_rounds = mvk.params.num_whir_sumcheck_rounds();
@@ -4114,7 +4139,7 @@ index a3216a9..214002d 100644
      if whir_proof.whir_sumcheck_polys.len() != num_whir_sumcheck_rounds {
          return ProofShapeError::invalid_whir(WhirProofShapeError::InvalidSumcheckPolys {
              expected: num_whir_sumcheck_rounds,
-@@ -633,9 +690,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -633,9 +706,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
              expected: num_whir_sumcheck_rounds,
              actual: whir_proof.folding_pow_witnesses.len(),
          });
@@ -4128,7 +4153,7 @@ index a3216a9..214002d 100644
              actual: whir_proof.query_phase_pow_witnesses.len(),
          });
      } else if whir_proof.initial_round_opened_rows.len() != layouts.len() {
-@@ -682,11 +741,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -682,11 +757,11 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: opened_rows.len(),
                  },
              );
@@ -4142,7 +4167,7 @@ index a3216a9..214002d 100644
                      actual: merkle_proofs.len(),
                  },
              );
-@@ -717,8 +776,10 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -717,8 +792,10 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
              }
          }
  
@@ -4155,7 +4180,7 @@ index a3216a9..214002d 100644
              if proof.len() != merkle_depth {
                  return ProofShapeError::invalid_whir(
                      WhirProofShapeError::InvalidInitialRoundMerkleProofDepth {
-@@ -749,31 +810,34 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
+@@ -749,31 +826,34 @@ pub fn verify_proof_shape<SC: StarkProtocolConfig>(
                      actual: opened_values_per_query.len(),
                  },
              );
@@ -4197,7 +4222,6 @@ index a3216a9..214002d 100644
                  return ProofShapeError::invalid_whir(
                      WhirProofShapeError::InvalidCodewordMerkleProofDepth {
 diff --git a/crates/stark-backend/src/verifier/stacked_reduction.rs b/crates/stark-backend/src/verifier/stacked_reduction.rs
-index f4085b1..1555fac 100644
 --- a/crates/stark-backend/src/verifier/stacked_reduction.rs
 +++ b/crates/stark-backend/src/verifier/stacked_reduction.rs
 @@ -7,10 +7,11 @@ use tracing::{debug, instrument};
@@ -4293,7 +4317,6 @@ index f4085b1..1555fac 100644
                      coeffs[s.col_idx] += eq_mle * batched * ind;
                  });
 diff --git a/crates/stark-backend/src/verifier/transcript_extractor.rs b/crates/stark-backend/src/verifier/transcript_extractor.rs
-index 846ff0a..c65fdc7 100644
 --- a/crates/stark-backend/src/verifier/transcript_extractor.rs
 +++ b/crates/stark-backend/src/verifier/transcript_extractor.rs
 @@ -20,6 +20,9 @@ pub enum TranscriptExtractionError {
@@ -4336,7 +4359,6 @@ index 846ff0a..c65fdc7 100644
  }
  
 diff --git a/crates/stark-backend/src/verifier/whir.rs b/crates/stark-backend/src/verifier/whir.rs
-index 756e26f..e8e219e 100644
 --- a/crates/stark-backend/src/verifier/whir.rs
 +++ b/crates/stark-backend/src/verifier/whir.rs
 @@ -44,6 +44,13 @@ pub fn verify_whir<SC: StarkProtocolConfig, TS: FiatShamirTranscript<SC>>(
@@ -4668,7 +4690,6 @@ index 756e26f..e8e219e 100644
      hasher: &H,
      root: H::Digest,
 diff --git a/crates/stark-backend/tests/integration.rs b/crates/stark-backend/tests/integration.rs
-index 19c9196..302764a 100644
 --- a/crates/stark-backend/tests/integration.rs
 +++ b/crates/stark-backend/tests/integration.rs
 @@ -77,8 +77,8 @@ fn test_stacked_opening_reduction(log_trace_degree: usize) -> eyre::Result<()> {
@@ -4683,7 +4704,6 @@ index 19c9196..302764a 100644
          device,
          &mut default_duplex_sponge(),
 diff --git a/crates/stark-backend/tests/keygen_validation.rs b/crates/stark-backend/tests/keygen_validation.rs
-index dc30d26..18cbf60 100644
 --- a/crates/stark-backend/tests/keygen_validation.rs
 +++ b/crates/stark-backend/tests/keygen_validation.rs
 @@ -74,3 +74,19 @@ fn keygen_rejects_interaction_with_empty_message() {
@@ -4707,7 +4727,6 @@ index dc30d26..18cbf60 100644
 +    assert_eq!(pre(15), pre(15));
 +}
 diff --git a/crates/stark-backend/tests/stacked_reduction.rs b/crates/stark-backend/tests/stacked_reduction.rs
-index d723097..f6ac119 100644
 --- a/crates/stark-backend/tests/stacked_reduction.rs
 +++ b/crates/stark-backend/tests/stacked_reduction.rs
 @@ -31,7 +31,7 @@ struct StackedReductionTestCase {
@@ -4735,7 +4754,6 @@ index d723097..f6ac119 100644
          r,
          omega_pows,
 diff --git a/crates/stark-backend/tests/transcript.rs b/crates/stark-backend/tests/transcript.rs
-index e5f1c24..a23cee8 100644
 --- a/crates/stark-backend/tests/transcript.rs
 +++ b/crates/stark-backend/tests/transcript.rs
 @@ -95,3 +95,13 @@ fn test_read_only_transcript_wrong_value() {

@@ -160,8 +160,10 @@ All 25 PQ lanes are on main. What changed for this list:
   fixed at **208/209/210** after a real collision was found and corrected (200-202 hit classical
   buses 72-74 under the +128 shift).
 * §2.4 (D1's remaining tables) is **done**: all 30, no stand-in.
-* §2.5's TAPE Lean side and `max_interaction_count` in the demo driver are done; the NV passthrough
-  and the production parameter are not.
+* §2.5's TAPE Lean side, the **NV passthrough** and the **production parameter** are now done
+  (`results/pq-nv-tape/README.md`): the cached root is in the statement V_d checks, `maxLog` is a vk
+  field enforced in the proof shape / NV / V_d, and the production LogUp budget is 2^30.  What
+  remains is wiring `maxLog` from the ported tables and the host-wire tables' commitments.
 * §2.1's HOST chip is a **first slice**; the gas-invariant generalisation and `HOSTB` remain.
 * §2.2 is **decided**: separate signature layer.
 * §2.6's shape is stated (`JoinFold.JoinStmt`); the proof needs the HOST work.
