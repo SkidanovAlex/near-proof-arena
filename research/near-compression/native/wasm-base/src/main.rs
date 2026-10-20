@@ -562,6 +562,27 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
             cases.push((format!("HOSTT[row {r}].mult+1"), cell(tt, r, m, plus1())));
         }
     }
+    if let Ok(thb) = std::panic::catch_unwind(|| tb("HOSTB")) {
+        let (w, act) = (g.mats[thb].width, col(thb, "act"));
+        let active: Vec<usize> = (0..g.rows_per_table[thb].1)
+            .filter(|&r| g.mats[thb].values[r * w + act] == F::ONE)
+            .collect();
+        if let Some(&r) = active.first() {
+            // byte value: the BYTE lookup and the wire message both move
+            cases.push((format!("HOSTB[row {r}].byte+1"), cell(thb, r, col(thb, "byte"), plus1())));
+            // non-boolean dir
+            cases.push((format!("HOSTB[row {r}].dir=2"), cell(thb, r, col(thb, "dir"), Box::new(|_| F::from_u64(2)))));
+            // duplicate pos inside the first group (a continuation row repeats its predecessor's)
+            if let Some(&c) = active.iter().find(|&&q| q > r) {
+                let (p, f) = (col(thb, "pos"), col(thb, "f"));
+                cases.push((format!("HOSTB dup pos rows {r},{c}"), Box::new(move |g: &mut Gen| {
+                    let w = g.mats[thb].width;
+                    g.mats[thb].values[c * w + p] = g.mats[thb].values[r * w + p];
+                    g.mats[thb].values[c * w + f] = F::ZERO;
+                })));
+            }
+        }
+    }
     // swap two ADD rows' timestamps (reorders execution)
     let ta = tb("ADD");
     if g.rows_per_table[ta].1 >= 2 {

@@ -362,8 +362,15 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     let mut host = if has_host { Some(Tab::new(&air.tables[air.index("HOST")])) } else { None };
     let mut hosto = if has_host { Some(Tab::new(&air.tables[air.index("HOSTO")])) } else { None };
     let mut hostt = if has_host { Some(Tab::new(&air.tables[air.index("HOSTT")])) } else { None };
+    let mut hostb = if has_host { Some(Tab::new(&air.tables[air.index("HOSTB")])) } else { None };
     let mut host_calls: Vec<u64> = vec![0; prep.host_tab.len()];
     let mut host_ix = 0usize;
+    // HOSTB rows `(ts, dir, pos, byte, act, f)`, grouped by `(ts, dir)`: the request (`dir = 0`)
+    // and the response (`dir = 1`) of the first host call.  The 4 request bytes are the low four
+    // bytes of the first argument, the 4 response bytes those of the result word; the bytes are a
+    // placeholder for the `(ptr, len)` memory range, which this slice does not model.
+    let mut hostb_rows: Vec<[u64; 6]> = vec![];
+    let mut hostb_done = false;
     let mut func_calls: Vec<u64> = vec![0; prep.funcs.len()];
     // dead callee locals `(space, slot, entry)`, left over in the channel after their frame returned
     let mut dead: Vec<(u64, u64, Ent)> = vec![];
@@ -460,6 +467,23 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                     o.u(&format!("q{i}"), req[i]);
                 }
                 o.u("st", ev.st).limbs("r", rl).limbs("g", gl).u("ar", ar).u("mult", 1);
+                // HOSTB rows: a fixed 4-byte request stream (dir 0) and a fixed 4-byte response
+                // stream (dir 1) for the first host call.  The bytes are the low four bytes of the
+                // first argument and of the result word; a `(ptr, len)` memory range is not
+                // modelled in this slice.
+                if !hostb_done {
+                    hostb_done = true;
+                    let qb = bytes(args[0]);
+                    let sb_ = bytes(ev.word);
+                    for dir in 0..2u64 {
+                        let src = if dir == 0 { qb } else { sb_ };
+                        for pos in 0..4u64 {
+                            let b = src[pos as usize];
+                            hostb_rows.push([ts, dir, pos, b, 1, (pos == 0) as u64]);
+                            st.byte(0, b, 0);
+                        }
+                    }
+                }
                 if ev.st == 0 && ar == 1 {
                     stack.push(Ent { tag: 1, val: ev.word, tp: ts });
                 } else {
@@ -1245,7 +1269,7 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
         dat, fun] {
         tabs.insert(tb.spec.name.clone(), tb);
     }
-    if let (Some(h), Some(o), Some(ht)) = (host, hosto, hostt) {
+    if let (Some(h), Some(o), Some(ht), Some(hb)) = (host, hosto, hostt, hostb) {
         // HOSTT: the fixed host table as a cached trace, multiplicities = calls per host id
         let rows = {
             let mut rows: Vec<[u64; 8]> = if prep.host_tab.is_empty() { vec![[0; 8]] } else { prep.host_tab.clone() };
@@ -1265,6 +1289,20 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
         tabs.insert("HOSTT".into(), ht);
         tabs.insert("HOST".into(), h);
         tabs.insert("HOSTO".into(), o);
+        // HOSTB: the byte stream, padded by group-start rows (`f = 1`, `act = 0`), which keeps
+        // `first`/`last` at a group break and never fires a continuation constraint.
+        let mut hb = hb;
+        for rec in hostb_rows.iter() {
+            let mut r = hb.row();
+            for (k, name) in ["ts", "dir", "pos", "byte", "act", "f"].iter().enumerate() {
+                r.u(name, rec[k]);
+            }
+        }
+        let hgt = (hb.rows.len() + 1).max(4).next_power_of_two();
+        while hb.rows.len() < hgt {
+            hb.row().u("act", 0).u("f", 1);
+        }
+        tabs.insert("HOSTB".into(), hb);
     }
     let mut mats = vec![];
     let mut rows_per_table = vec![];
