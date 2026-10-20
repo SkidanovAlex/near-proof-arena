@@ -1,0 +1,14 @@
+pow(p-2): {'powAux.call': 1, 'powAux.level': 256, 'F.mul': 509}
+pow((p-5)/8): {'powAux.call': 1, 'powAux.level': 256, 'F.mul': 507}
+max popcount(s) for s<L: 252
+L bitlen: 253
+fixtures: 7265 checked, 0 mismatches
+accepting fixtures: 3543
+popcount(s): min 0 avg 123.4 max 151
+popcount(k): min 90 avg 125.8 max 155
+sha512 input bytes: min 64 max 1087
+executed F.mul: min 7850 avg 9414.8 max 9830
+executed add/sub: min 4962 avg 6099.7 max 6402
+executed Point.add: min 620 avg 762.2 max 800
+sample closed form: {'F.mul': 8059, 'F.add/F.sub': 5114, 'F.neg': 5, 'Point.add': 639, 'Point.doubling': 512, 'F.inv (pow p-2)': 1, 'F.pow (p-5)/8': 1, 'sqrtRatio.call': 1, 'sqrtM1_branch': 0}
+sample executed     : {'F.mul': 8060, 'F.sub': 2557, 'F.add': 2557, 'Point.add': 639}
