@@ -4,6 +4,12 @@ Lane `lane/pq-final-soundness`, 2026-10-18. Research and proof only; no backend 
 Companion files: `calc/bound.py` (every number below; output in `calc/bound.out`) and
 `GAPS.md` (status of every step, and every code-vs-proof mismatch).
 
+**Proximity basis U-13 (2026-10-18; MCA-UPGRADE.md):** §4 uses DKT26 (ePrint 2026/2056; Lean
+proofs in github.com/quangvdao/ArkLib @ a5aa2677, verified on `lane/pq-dkt-verify` @ d9dc1c0e3,
+DKT-VERIFY.md) instead of BCGM Thm 9.2 at m = 3: Thm 5.12 line MCA at the Johnson radius
+(O-1) and first-order beyond-Johnson certificates (O-2). The superseded BCGM accounting is kept
+in `calc/bound.py --bcgm`.
+
 Contract: V3-D3A-STUDY §D, rows U-2 (proven bounds only), U-6 (failure ≤ 2⁻¹²⁸ against
 ≤ 2⁶⁴ quantum queries), U-7 (SHA-384 throughout), U-8, U-9, U-10 (42-B digests, z = 32,
 WHIR-Y).
@@ -43,12 +49,12 @@ quantum adversary that makes at most t = 2⁶⁴ queries and outputs a final pro
 probability that the native verifier V_d accepts π_d while the chunk-validation statement it
 names is false is at most
 
-  **ε_total ≤ (2t·G + 2⁻¹⁶⁰)² ≤ 2⁻¹³⁵·²**, where G² = 10·max(3·2t/2³³⁶, ε_rbr + 2²⁰(4t+1)/2³⁸⁴),
+  **ε_total ≤ (2t·G + 2⁻¹⁶⁰)² ≤ 2⁻¹³⁴·⁷**, where G² = 10·max(3·2t/2³³⁶, ε_rbr + 2²⁰(4t+1)/2³⁸⁴),
 
-and ε_rbr = 2⁻²⁶⁸·⁵⁵ is the largest per-move round-by-round knowledge error over all layers
-(§5). The worst move is the round-0 WHIR query move of the inner NV layers, with grinding.
+and ε_rbr = 2⁻²⁶⁸·⁰¹ is the largest per-move round-by-round knowledge error over all layers
+(§5, U-13). The worst move is the round-1 WHIR query move of the final layer, with grinding.
 A union over 7 layers is not needed (Theorem 7.4 uses one database), but even with it the
-bound is 2⁻¹³²·⁴.
+bound is 2⁻¹³¹·⁹.
 
 **What this does and does not meet.**
 * Without A-IC, nothing is proven about the recursive statement (§8). **U-2 is not met on
@@ -71,16 +77,20 @@ bound is 2⁻¹³²·⁴.
 * p = 15·2²⁷ + 1 (BabyBear). F = Ext12 = F_p[X]/(X¹² − 31), |F| = p¹² = 2^370.88.
 * Per-round target 268 bits, accounted as **236 query bits + z = 32 PoW bits**:
   `protocol_security_level = security_bits − query_phase_pow_bits` (U config.rs:416), and
-  q_i = ⌈236 / (−log₂ α_i)⌉ with α_i = √ρ_i·(1 + 1/(2m)) (config.rs:332-346, 405-457).
-* m = 3 (ListDecoding). ρ_i = 2^(−lir_i)/15 (×15 domains, config.rs:447-452). lir₀ = b and
+  q_i = ⌈236 / (−log₂ a_i)⌉, where a_i = A_i/n_i is the agreement at which round i is analysed
+  (U-13): a_i = √ρ_i(1 + 1/128) (backend ListDecoding m = 64; O-1, base layer) or the certified
+  first-order A_i of `calc/dkt_certs.json` (O-2, final and inner layers; per-round table bound
+  into the vk). The O-1 rule is the existing config.rs:332-346, 405-457 formula with m = 64.
+* ρ_i = 2^(−lir_i)/15 (×15 domains, config.rs:447-452). lir₀ = b and
   lir_{i+1} = lir_i + k_i (keep_domain). The first round folds k₁; the others fold k
   (config.rs:472-478).
 * Shapes are those of the NV fixed point (`extrapolate_nv2.py`, 268/z = 32/42 B row):
   * final layer: b = 8, log h = 19, k₁ = 1, k = 3, final length 2⁹, W = 141, queries
-    [42, 38, 31, 26];
-  * inner layers: b = 6, k = 4, final length 2⁶, queries [50, 46, 33, 26].
+    [38, 35, 29, 24] (U-13, O-2; were [42, 38, 31, 26] under BCGM m = 3);
+  * inner layers: b = 6, k = 4, final length 2⁶, queries [45, 41, 31, 24] (were [50, 46, 33, 26]);
+  * base (stress) layer: O-1, queries [48, 44, 32, 25].
 
-  `bound.py` re-derives both schedules from the backend formula and asserts equality.
+  `bound.py` re-derives the schedules and asserts them.
 
 ### 1.2 The protocol
 One SWIRL layer proves, for a multi-AIR verifying key vk with public values x:
@@ -98,7 +108,7 @@ The sub-protocols are:
 * LogUp with a fractional-sum GKR (Gruen rounds, derived claims);
 * the batch-constraint zerocheck with univariate skip (Gruen rounds);
 * the stacking reduction (tight heights, rotation mask);
-* WHIR (×15 domains, k₁, keep-domain, m = 3, multiproof, coset leaves, WHIR-Y, grinding).
+* WHIR (×15 domains, k₁, keep-domain, U-13 agreements, multiproof, coset leaves, WHIR-Y, grinding).
 
 ### 1.3 Hash, framing, oracles [C]
 * Every hash is SHA-384. A framed hash is
@@ -152,14 +162,14 @@ follows a verifier move (a "lucky challenge"), or it follows a prover move and E
 that prefix. Definition 2.1 implies CMS19's rbr knowledge soundness. It is the shape that
 Theorem 6.4 consumes. E need not be efficient for the soundness conclusion of the Main Theorem
 (§7.4); an efficient E exists here anyway (Guruswami–Sudan list decoding up to the Johnson
-radius used below).
+radius used below; beyond Johnson, DKT26 §9's deterministic decoders).
 
 **Definition 2.2 (list states).** Let F = (F₁..F_W) be the stacked round-0 oracle, a word of
-the interleaved code RS^W[F, L₀, 2^{log h}]. Let δ₀ = J_m(ρ₀) := 1 − (1 + 1/2m)√ρ₀ and
-Λ₀ := Λ^W(F, δ₀), the codewords within relative distance δ₀. By the Johnson bound
-[P, WHIR Thm 4.3 and Lemma 4.4],
+the interleaved code RS^W[F, L₀, 2^{log h}]. Let δ₀ := 1 − a₀ (§1.1, U-13) and
+Λ₀ := Λ^W(F, δ₀), the codewords within relative distance δ₀. By the list bound of §4 (DKT26
+eq. (67) pairwise term for O-1, Lemma 5.11 / Cor 7.5 certificate for O-2; both width-free),
 
-  |Λ₀| ≤ ℓ₀ := 1/(2η√ρ₀) = m/ρ₀,  with η = √ρ₀/2m.
+  |Λ₀| ≤ ℓ₀ (2¹⁰·⁹ … 2⁴⁰·⁰ at the §1.1 shapes; `calc/bound.out`).
 
 For c ∈ Λ₀, write unstack(c) for the trace that c encodes. This is a deterministic map,
 given the layout (Lemma 3.7).
@@ -370,7 +380,7 @@ NV-faithful(F2) covers it. ∎
 
 ---
 
-## 4. WHIR (×15 domains, m = 3, k₁, keep-domain, WHIR-Y, grinding)
+## 4. WHIR (×15 domains, U-13 proximity inputs, k₁, keep-domain, WHIR-Y, grinding)
 
 Notation as in WHIR (ePrint 2024/1586, Construction 5.1) with OpenVM round indexing:
 * round i folds f_i k_i times;
@@ -381,7 +391,20 @@ Notation as in WHIR (ePrint 2024/1586, Construction 5.1) with OpenVM round index
 * then the y_{i,·} are absorbed (WHIR-Y);
 * then γ_i (U whir.rs:130-330).
 
-δ_i = J_m(ρ_i), ℓ_i = m/ρ_i, n_i = |L_i| = 15·2^{log h + b} for every i (keep-domain).
+n_i = |L_i| = 15·2^{log h + b} for every i (keep-domain). δ_i = 1 − a_i with a_i = A_i/n_i (§1.1).
+C^(i,s) := RS[L_i^(2^s), m_i − s], s = 0..k_i. ℓ_i := max_s of the list bound of C^(i,s) at
+agreement ⌈a_i·|L_i^(2^s)|⌉:
+* O-1: the pairwise term ⌊n(A−D)/(A²−nD)⌋ of DKT26 Thm 5.12 eq. (67) [P, Lean
+  `closePolynomialSet_finite_and_ncard_le_johnsonPairwise`] (the B_jet term is not used);
+* O-2: the Lemma 5.11 bound of the certificate [P, Lean `finiteSquarefreeListBound_of_profile`;
+  kernel-checked in lane/pq-dkt-verify `lean/DKTCerts.lean`].
+Both hold at every interleaving width (DKT26 Lemma 7.4 / Cor 7.5).
+
+**Status of the WHIR binding.** The RS-level statements above are Lean-proven. The step from
+them to the WHIR round-by-round errors (Lemmas 4.2–4.7) is paper-level: WHIR Thm 5.2 as
+corrected in Pus26 Thm 5.3. Pus26's hypotheses: char F ≠ 2; every C^(i,s) list-decodable at
+δ_i (the ℓ_i above); MCA radius B⋆(C^(i,s), 2) ≥ ρ_i (holds: a_i > a₁(ρ_i) > ρ_i). Open item
+GAPS S-28.
 
 **Lemma 4.1 (WHIR on 15·2^K domains) [P′ x15-domains SOUNDNESS.md, checked here].** WHIR
 Thm 5.2 and its lemmas hold verbatim for evaluation domains that are cosets of order c·2^K
@@ -393,7 +416,8 @@ Of the domain properties, WHIR uses only:
 * disjoint 2^k-fibres;
 * power-of-two degree.
 
-BCGM Thm 9.2 and the Johnson bound hold for arbitrary evaluation sets. The query terms need
+DKT26 Thm 5.12 and Prop 5.10 + Lemma 5.6 hold for any n distinct evaluation points. The
+first-order ones need char > max(k−1, B∂): p = 2³⁰·⁹ > 2²¹ ≥ k and B∂ ≤ 52. The query terms need
 exactly uniform indices. **[C]** The index sampler rejects x = p − 1 and returns x mod 15·2^j
 (U traits.rs:62-71, odd_domain.rs:71-81). Since 15·2^j | p − 1, this is exactly uniform. The
 circuit rejects the proof on p − 1 instead (NV verifier.rs:244-249): that changes completeness
@@ -402,22 +426,34 @@ by ≈ q/p and soundness not at all.
 I re-checked the four uses (x15 SOUNDNESS.md table) against WHIR §4–5 and agree. The one
 edit to WHIR Thm 5.2's hypothesis is the definitional one stated there.
 
-**Lemma 4.2 (μ batching of the W stacked columns) [P BCGM Thm 9.2; P′ HROB Lemma 4.8 at m = 0].**
-  ε_μ ≤ err⋆_{W−1}(δ₀) + ℓ₀(W − 1)/|F|,
-with err⋆_d(δ) = (m + ½)⁷/(3ρ^{3/2})·d·n²/|F| for δ ≤ J_m(ρ), m ≥ 3 (BCGM ePrint 2025/2051,
-Def 9.1 and Thm 9.2, for the powers generator of degree W − 1). The batched stacking claims
+**Lemma 4.2 (μ batching of the W stacked columns) [P DKT26 (Lean); P′ HROB Lemma 4.8 at m = 0].**
+  ε_μ ≤ E_{W−1}/|F| + ℓ₀(W − 1)/|F|,
+where E_{W−1} is the full agreement-set exceptional count of the powers curve of degree W − 1
+at agreement a₀: DKT26 Prop 5.10 + Lemma 5.6 / Cor 7.3 with the support certificate of
+`calc/dkt_certs.json` (Lean: `CurveCertificate.exists_exceptional_exact_powerAgreement_squarefree_sharp_optimized`;
+the three instances, W = 141, 141, 601, are kernel-checked in lane/pq-dkt-verify
+`lean/DKTCerts.lean`). This is valid at any a₀ > a₁(ρ₀), so also at the O-1 radius used by the
+base layer; O-1 as configured is therefore not purely Johnson-regime. Values: 2⁻²⁸²·¹ (final),
+2⁻²⁸³·⁰ (inner), 2⁻²⁸⁷·⁵ (base, W = 601). The batched stacking claims
 are linear in the codeword, so Λ₀'s claims become one constrained-RS claim.
 
-**Lemma 4.3 (fold moves α_{i,s}) [P WHIR Thm 5.2 + BCGM Thm 9.2].**
-  ε_fold(i,s) ≤ err⋆_1(δ_i; n = n_i/2^{s−1}, ρ_i) + 3ℓ_i/|F|.
+**Lemma 4.3 (fold moves α_{i,s}) [P WHIR Thm 5.2 / Pus26 Thm 5.3 + DKT26 (Lean)].**
+  ε_fold(i,s) ≤ max_{s′} E(C^(i,s′))/|F| + 3ℓ_i/|F|.
+O-1: E = `johnsonE0`, the constant the Lean theorem `johnson_lineMCA_probability` proves (the
+4Dμh form of DKT26 Thm 5.12 (68), ≥ the paper's Ψ_D form). O-2: E = the Lemma 5.6 count of the
+certificate. The fold word is a line in the 2-interleaved code, so Cor 7.7 transfers E with no
+width factor: Thm 5.12 → Cor 7.7/7.8 is proven in Lean in lane/pq-dkt-verify
+`lean/DKTGlue.lean` (`johnson_levelWitness`, `johnson_tensorFold`, `o1_line_mcaError`); for O-2,
+`uniformExactInterleavedPowerAgreement_of_scalar_arbitrary` applied to `DKTCerts.mca_i`.
 The WHIR sumcheck polynomials have degree 2; using 3 is conservative.
 
-**Lemma 4.4 (OOD) [P WHIR Thm 5.2, ε^out].** ε_out(i) ≤ ℓ_i²/2 · 2^{m_i}/|F|, where m_i is
-the variable count of f_i.
+**Lemma 4.4 (OOD) [P WHIR Thm 5.2, ε^out].** ε_out(i) ≤ ℓ_i²/2 · (2^{m_i}/|F|)^{u_i}, where
+m_i is the variable count of f_i and u_i the number of OOD samples; u_i = 1 suffices at every
+shape here (worst 2⁻²⁷¹·⁹, final r1, with ℓ = 2⁴¹·⁰).
 
 **Lemma 4.5 (shift queries) [P WHIR Thm 5.2, ε^shift and ε^fin; Lemma 4.1].** Without
 grinding,
-  Pr[query move flips S] ≤ (1 − δ_i)^{t_i}.
+  Pr[query move flips S] ≤ (1 − δ_i)^{t_i} = a_i^{t_i}.
 At m = 0 the candidate set Y has |Y| ≤ 1 after the OOD sample (HROB §4.3 variant L at m = 0).
 In the final round Y ⊆ {p}. With grinding see Lemma 5.1.
 
@@ -501,16 +537,14 @@ is absorbed before the first challenge (mod.rs:129-164). ∎
 
 | layer | worst move | 2nd | WHIR μ (W = 141) | PIOP worst | per-round query+z |
 |---|---|---|---|---|---|
-| final | query r1: **2⁻²⁶⁸·⁷⁸** | fold r3.1 (MCA, ρ = 2⁻¹⁸·⁹, n = 2³⁰·⁹): 2⁻²⁶⁹·⁶⁴ | 2⁻²⁷³·⁰ | LogUp 2⁻³⁰⁵·⁷ | 272.7 / 268.8 / 271.7 / 272.0 |
-| inner NV | query r0: **2⁻²⁶⁸·⁵⁵** | query r2: 2⁻²⁷⁰·⁶ | 2⁻²⁸⁰·⁰ | LogUp 2⁻³⁰⁷·⁷ | 268.6 / 272.6 / 270.6 / 272.0 |
-| base (stress, W = 601) | query r0: 2⁻²⁶⁸·⁵⁵ | fold r3.1: 2⁻²⁶⁹·⁶⁴ | 2⁻²⁷³·⁹ | LogUp 2⁻²⁹¹·⁹ | as inner |
+| final (O-2) | query r1: **2⁻²⁶⁸·⁰¹** | OOD r1: 2⁻²⁷¹·⁹ | 2⁻²⁸²·¹ | LogUp 2⁻²⁷⁹·² | 268.1 / 268.0 / 268.1 / 268.0 |
+| inner NV (O-2) | query r2: **2⁻²⁶⁸·⁰²** | OOD r1: 2⁻²⁷⁴·³ | 2⁻²⁸³·⁰ | LogUp 2⁻²⁷⁹·⁶ | 268.0 / 268.1 / 268.0 / 268.0 |
+| base (stress, W = 601; O-1) | query r3: 2⁻²⁶⁸·⁰⁶ | μ batching: 2⁻²⁸⁷·⁵ | 2⁻²⁸⁷·⁵ | LogUp 2⁻²⁹³·¹ | 269.2 / 271.5 / 270.2 / 268.1 |
 
-**ε_rbr = 2⁻²⁶⁸·⁵⁵.**
+**ε_rbr = 2⁻²⁶⁸·⁰¹** (U-13; 2⁻²⁶⁸·⁵⁵ under the superseded BCGM m = 3, `bound.py --bcgm`).
 * The worst round is a WHIR query move: by design it sits at the 268-bit target, rounded up.
-* The binding non-query term is the late-round fold MCA under keep-domain, at 2⁻²⁶⁹·⁶⁴. It is
-  1.1 bits below the query term. ρ^{−3/2} grows by 2^{4.5} per round while n stays fixed (as
-  x15 SOUNDNESS.md predicted).
-* m = 8 would push it above 2⁻²⁶⁸, so m = 3 is required.
+* Every fold MCA term is ≤ 2⁻²⁸⁰·⁷ (the BCGM-era binding term 2⁻²⁶⁹·⁶⁴ is gone); the binding
+  non-query term is now OOD with one sample, 2⁻²⁷¹·⁹, driven by first-order lists up to 2⁴³·⁴.
 
 ---
 
@@ -648,8 +682,8 @@ reads π's transcript from D, and applies E_v to the prefix where S flips. This 
 §8.5.2's extractor. It is **straight-line**: no rewinding, one run. For the Main Theorem only
 the probability statement about D is used (§7.4).
 
-**Corollary 6.5 (single layer).** For one layer under T\*, with ε = 2⁻²⁶⁸·⁵⁵ and t = 2⁶⁴, the
-failure is ≤ 2⁻¹³⁵·². This is fully proven (with Theorem 6.4 [T]) and needs no A-IC.
+**Corollary 6.5 (single layer).** For one layer under T\*, with ε = 2⁻²⁶⁸·⁰¹ and t = 2⁶⁴, the
+failure is ≤ 2⁻¹³⁴·⁷. This is fully proven (with Theorem 6.4 [T]) and needs no A-IC.
 
 **Cross-checks** (`bound.py`; the theorem above is the one claimed):
 * CMS19 Thm 8.6's explicit 6(t²ε + 4t³/2^λ) evaluates to 2⁻¹³⁷·⁵. It does not apply verbatim:
@@ -868,28 +902,29 @@ layer i says nothing about statements that mention the hash's code.
 
 ## 9. Final numeric bound (every term)
 
-For t = 2⁶⁴, T\*, z = 32, m = 3, ×15, 42-B digests. Output of `calc/bound.py`:
+For t = 2⁶⁴, T\*, z = 32, U-13 proximity inputs, ×15, 42-B digests. Output of `calc/bound.py`:
 
 | term | value (log₂) | source |
 |---|---:|---|
-| worst per-move rbr-KS error ε (inner NV, WHIR query r0, 236.55 + 32 bits) | −268.55 | Lemma 5.1 |
-| next: final layer query r1 | −268.78 | Lemma 5.1 |
-| worst non-query: fold MCA, round 3, keep-domain (n = 2³⁰·⁹¹, ρ = 2⁻¹⁸·⁹¹) | −269.64 | Lemma 4.3, BCGM Thm 9.2 |
-| WHIR μ batching, W = 141 / 601 | −273.0 / −273.9 | Lemma 4.2 |
-| worst PIOP (LogUp, ℓ₀ = 2¹³·⁵) | −291.9 (app stress) / −305.7 | Lemma 3.1 |
-| OOD / γ / GKR / zerocheck / stacking | ≤ −318.9 | §3–§4 |
+| worst per-move rbr-KS error ε (final, WHIR query r1, 236.01 + 32 bits) | −268.01 | Lemma 5.1 |
+| next: inner NV query r2 | −268.02 | Lemma 5.1 |
+| worst non-query: OOD r1 (final, ℓ = 2⁴¹·⁰, one sample) | −271.91 | Lemma 4.4 |
+| worst PIOP (LogUp, ℓ₀ = 2⁴⁰·⁰) | −279.16 | Lemma 3.1 |
+| worst fold MCA (DKT26) | −280.74 | Lemma 4.3 |
+| WHIR μ batching, W = 141 / 141 / 601 (first-order curve) | −282.1 / −283.0 / −287.5 | Lemma 4.2 |
 | narrow transition 10·3t′/2³³⁶ | −266.1 → below ε-term | Thm 6.4 step 3 |
 | wide transition 10·J(2t′+1)/2³⁸⁴ | −294.7 | Thm 6.4 steps 4–5 |
-| challenge transition 10(ε + …) | −265.23 | Thm 6.4 step 5 |
+| challenge transition 10(ε + …) | −264.69 | Thm 6.4 step 5 |
 | Fact A √(ℓ_V/2³³⁶), ℓ_V ≤ 2¹⁶ | −160 | Thm 6.4 step 7 |
 | simulation factor t → 2t | +1 bit on t | Lemma 6.3 |
-| **total (one database, all layers)** | **−135.23** | Thm 7.4 |
-| total, union over 7 layers | −132.42 | — |
+| **total (one database, all layers)** | **−134.69** | Thm 7.4 |
+| total, union over 7 layers | −131.89 | — |
 | contract | −128 | U-6 |
-| margin | 7.2 bits (4.4 with the union) | |
+| margin | 6.7 bits (3.9 with the union) | |
 
-**Conditional on:** T\* (G-1, G-2), NV-faithful, Base-faithful, A-IC (open), and review of
-Theorem 6.4 [T]. See GAPS.md.
+**Conditional on:** T\* (G-1, G-2), NV-faithful, Base-faithful, A-IC(τ), review of
+Theorem 6.4 [T], and the paper-level DKT26 → WHIR step (Pus26 Thm 5.3; GAPS S-28). See GAPS.md.
+Under the superseded BCGM m = 3 inputs the same table gave −135.23 (−132.42 with the union).
 
 ---
 
@@ -897,7 +932,14 @@ Theorem 6.4 [T]. See GAPS.md.
 * [ACFY] Arnon, Chiesa, Fenzi, Yogev. WHIR. ePrint 2024/1586 (21 Nov 2024). Thm 5.2, Thm 4.3,
   Lemma 4.4, Construction 5.1.
 * [BCGM] Bordage, Chiesa, Guan, Manzur. All polynomial generators preserve distance with
-  mutual correlated agreement. CCC 2026; ePrint 2025/2051 (19 May 2026). Def 9.1, Thm 9.2.
+  mutual correlated agreement. CCC 2026; ePrint 2025/2051 v5 (19 May 2026). Def 9.1, Thm 9.2
+  (superseded basis; `bound.py --bcgm`).
+* [DKT26] Dao, Kominers, Thaler. Reed–Solomon codes beyond Johnson. ePrint 2026/2056 (16 Sep
+  2026). Thm 5.12, Prop 5.10, Lemmas 5.6, 5.11, Cors 7.3, 7.5, 7.7, 7.8. Lean: ArkLib fork
+  github.com/quangvdao/ArkLib @ a5aa2677fee4e3a79d6bb05136631cce4a08587d; checked on
+  `lane/pq-dkt-verify` @ d9dc1c0e3 (DKT-VERIFY.md, `lean/DKTGlue.lean`, `lean/DKTCerts.lean`).
+* [Pus26] Puškin. An analysis of the WHIR IOPP. MSc thesis, Univ. Tartu, Feb 2026
+  (hdl 10062/119861). Thm 5.3 (corrected WHIR Thm 5.2), Lemma 3.40, Thm 3.41.
 * [BCIKS20] Proximity gaps for RS codes. ePrint 2020/654. Thm 5.1.
 * [CMS19] Chiesa, Manohar, Spooner. Succinct arguments in the QROM. TCC 2019; ePrint 2019/834.
   Thm 8.6, §8.5.1–8.5.2, Lemmas 4.9, 5.13, 6.11, 8.13.

@@ -13,7 +13,7 @@ Regimes (one per WHIR round; MCA-UPGRADE.md section 2 has the theorem statements
          Line MCA, every characteristic, any evaluation set: DKT26 Thm 5.12 (Lean:
          johnson_lineMCA_probability).  Multi-variable fold: DKT26 Cor 7.7/7.8 (Lean:
          fullSetLevelWitness_interleaved_of_exactAgreement, tensorFoldBad_card_le) -- one
-         line count per fold sub-round, width independent.  List: Thm 5.12 eq (67).
+         line count per fold sub-round, width independent.  List: pairwise term of Thm 5.12 eq (67) (Lean-proved).
          mu-batching of the W stacked columns (powers, degree W-1) -- three options:
             'bchks46' BCHKS25 Thm 4.6 (powers MCA up to Johnson; proof sketched),
             'tensor'  backend change: batch with eq-weights of h = ceil(log2 W) challenges,
@@ -21,11 +21,11 @@ Regimes (one per WHIR round; MCA-UPGRADE.md section 2 has the theorem statements
             'affine'  backend change: W-1 independent challenges, BCGM Lemma 7.1 /
                       DKT26 Cor 7.2 -> E_line / (|F|-1),
             'first-curve' no backend change: DKT26 first-order powers-curve certificate
-                      (Lemma 5.9 / Cor 7.3, curve degree W-1; Lean:
-                      exists_exceptional_retainedSquarefreeCurveMCA_sharp_*) at the same
+                      (Prop 5.10 + Lemma 5.6 / Cor 7.3, curve degree W-1; Lean:
+                      CurveCertificate.exists_exceptional_exact_powerAgreement_squarefree_sharp_optimized) at the same
                       agreement (valid for any a > a1(rho), so also at the Johnson radius).
-  F      O-2, first-order beyond Johnson.  a = A/n below sqrt(rho).  DKT26 Thm 5.8 /
-         Prop 5.10 / Lemma 5.9 / Lemma 5.11 with an explicit finite certificate
+  F      O-2, first-order beyond Johnson.  a = A/n below sqrt(rho).  DKT26
+         Prop 5.10 + Lemma 5.6 (squarefree transfer) / Lemma 5.11 with an explicit finite certificate
          (m, B_d, B_jet) per code, produced and checked with the authors' exact-arithmetic
          engine (github.com/quangvdao/rs-beyond-johnson @ 60b7257) by dkt_certs.py; the
          resulting integers are stored in dkt_certs.json and read here.  Needs
@@ -88,6 +88,7 @@ def dkt_johnson(n, k, A):
 
     E is the larger of the two printed forms of E_ord^(1) (Lemma 5.3 with L = D+1, and the
     Thm 5.8 display (2b-1)h + lam (h + b + 4Dbh) + (n-D-1)b), so either reading is covered.
+    The larger is always e2 = the Lean `johnsonE0` (quangvdao/ArkLib @ a5aa267).
     """
     D = k - 1
     assert 1 <= D <= n - 2
@@ -103,7 +104,7 @@ def dkt_johnson(n, k, A):
     e2 = (2 * Bj - 1) * H + lam * (H + Bj + 4 * D * Bj * H) + (n - D - 1) * Bj
     E = max(e1, e2)
     pair = Fraction(n * (A - D), A * A - n * D) if A * A > n * D else math.inf
-    lst = min(Bj, math.floor(pair))
+    lst = math.floor(pair)          # pairwise term only (the Lean-proved part of (67))
     return LOG2(E), lst, m
 
 
