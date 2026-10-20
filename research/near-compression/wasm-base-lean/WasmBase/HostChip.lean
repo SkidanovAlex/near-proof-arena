@@ -41,6 +41,8 @@ AIR uses bus 75, so the occupied range is 128-203) and above every Wasm bus (0-9
 See `lane/pq-d3-join:research/near-compression/results/pq-d3-join/BUS-NUMBERING.md`. -/
 def busHostQ : Nat := 208
 def busHostR : Nat := 209
+/-- `HOSTB` (byte strings).  208/209 are taken and the state side's shifted buses occupy 128-203. -/
+def busHostB : Nat := 210
 def busHostT : Nat := 9
 
 /-- Fixed host table `(id, name, #params, #results)`; `np ≤ 2`, `ar ≤ 1` (the message shape). -/
@@ -173,12 +175,75 @@ def table : Table := ⟨"HOSTO", cols, [], [
   ⟨busHostR, true, v mult, [v (q 0), v st, rLo, rHi, gLo, gHi, v ar, 0]⟩]⟩
 end HostO
 
+/-! ## HOSTB: the byte-string wire of a host call
+
+One row per byte moved by a host call, message `[ts, dir, pos, byte]`: `dir = 0` is a request
+byte (Wasm → state), `dir = 1` a response byte (state → Wasm).  Rows are **groups** delimited by
+the break flag `f = 1` on the first row of a group; inside a group `ts` and `dir` are constant and
+`pos` increases by exactly one per row (so a `(ts, dir)` group is a contiguous run with distinct,
+consecutive positions).
+* `cFirst` — row 0 is a group start, so the cyclic `next` of the last row is a start and the
+  continuation constraints do not fire across the wrap;
+* `cLast` — the last row is a group start too: the table begins and ends at a group break (the
+  final-row check, the analogue of RANGE16's endpoint pin).  The trace generator pads to a power
+  of two with group-start rows, so this is always satisfiable;
+* `act` is row activity (0 on padding rows); padding rows are group starts with `act = 0` and
+  `byte = 0`, so their interactions have count 0 and are invisible on the bus;
+* `byte < 256` is a `BYTE` kind-0 lookup with count `act`, as in every other byte-carrying chip.
+
+All constraints have degree ≤ 2.
+
+Not modelled here: the memory pointer, the byte length, the register space (space 6), and the
+content of the byte strings (a byte value inside `0..255` is a free witness: it is not yet tied to
+memory or to the state side). -/
+namespace HostB
+def ts : Nat := 0
+def dir : Nat := 1
+def pos : Nat := 2
+def bv : Nat := 3
+def act : Nat := 4
+def f : Nat := 5
+def cols : List String := ["ts", "dir", "pos", "byte", "act", "f"]
+
+def cAct : Expr := bool (v act)
+def cF : Expr := bool (v f)
+def cDir : Expr := bool (v dir)
+def cFirst : Expr := .first * (1 - v f)
+def cLast : Expr := .last * (1 - v f)
+/-- A group continues with the same `ts`. -/
+def cTs : Expr := (1 - nv f) * (nv ts - v ts)
+/-- A group continues with the same `dir`. -/
+def cDirG : Expr := (1 - nv f) * (nv dir - v dir)
+/-- A group continues at the next position (strictly increasing, consecutively). -/
+def cPos : Expr := (1 - nv f) * (nv pos - v pos - 1)
+def constraints : List Expr := [cAct, cF, cDir, cFirst, cLast, cTs, cDirG, cPos]
+
+def msg : List Expr := [v ts, v dir, v pos, v bv]
+/-- The Wasm side sends request bytes (`dir = 0`) and receives response bytes (`dir = 1`), each with
+a 0/1 count (`act · dir` and `act · (1 − dir)` are bits).  Because the state side is not modelled
+yet, both the send and the matching receive of every message sit in this table: the wire is
+balanced by construction (a self-permutation), exactly as `HOSTO` stands in for the state side on
+`HOSTQ`/`HOSTR`.  A joined proof keeps the two wasm-side interactions and replaces the other two
+by the state tables on bus 210.  The bytes are free witnesses in `0..255` here (no memory pointer,
+no length, no register space yet). -/
+def inters : List Inter :=
+  [⟨busHostB, true, v act * (1 - v dir), msg⟩,
+   ⟨busHostB, false, v act * (1 - v dir), msg⟩,
+   ⟨busHostB, true, v act * v dir, msg⟩,
+   ⟨busHostB, false, v act * v dir, msg⟩,
+   byteQ 0 (v bv) 0 0 (v act)]
+
+def table : Table := ⟨"HOSTB", cols, constraints, inters⟩
+end HostB
+
 end Chips
 
 /-- The direct-Wasm base AIR **with host calls**: the proved F1/memory/globals/calls tables plus
-HOST (22), the response oracle HOSTO (23) and the cached HOSTT table (24). -/
+HOST (22), the response oracle HOSTO (23), the cached HOSTT table (24) and the byte wire HOSTB
+(25). -/
 def wasmBaseHostAir (nloc ngl : Nat) : Air :=
-  { tables := (wasmBaseAir nloc ngl).tables ++ [Chips.Host.table, Chips.HostO.table, Chips.HostTab.table]
+  { tables := (wasmBaseAir nloc ngl).tables ++
+      [Chips.Host.table, Chips.HostO.table, Chips.HostTab.table, Chips.HostB.table]
     numPub := (wasmBaseAir nloc ngl).numPub }
 
 end WasmBase
