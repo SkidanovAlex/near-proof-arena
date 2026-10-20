@@ -13,9 +13,10 @@ python3 "$HERE/programs/gen.py" "$OUT/progs" "$@" >/dev/null
 pass=0; fail=0
 for w in "$OUT"/progs/*.wasm; do
   n=$(basename "$w" .wasm)
-  "$TOOL" prep "$w" main $G0 > "$OUT/progs/$n.prep.json"
-  read -r nloc ngl nimp <<<"$(python3 -c "import json;d=json.load(open('$OUT/progs/$n.prep.json'));print(len(d['localTags']),d.get('ngl',0),1 if d.get('hosts') else 0)")"
-  AIRK=air; [ "$nimp" = 1 ] && AIRK=airH
+  INP=$(python3 -c "import json;print(json.load(open('$OUT/progs/$n.json')).get('input',''))")
+  "$TOOL" prep "$w" main $G0 "$INP" > "$OUT/progs/$n.prep.json"
+  read -r nloc ngl nimp nreg <<<"$(python3 -c "import json;d=json.load(open('$OUT/progs/$n.prep.json'));hs=d.get('hosts',[]);reg=any(h.get('hid') in (12,13,6) and h.get('regs') for h in hs);print(len(d['localTags']),d.get('ngl',0),1 if hs else 0,1 if reg else 0)")"
+  AIRK=air; [ "$nimp" = 1 ] && AIRK=airH; [ "$nreg" = 1 ] && AIRK=airR
   [ -f "$OUT/$AIRK-$nloc-g$ngl.json" ] || "$TOOL" $AIRK "$nloc" "$ngl" > "$OUT/$AIRK-$nloc-g$ngl.json"
   # Python reference vs Lean spec (value and step count).  Host programs are not gas-modelled by the
   # Python interpreter, so only the outcome is compared there.

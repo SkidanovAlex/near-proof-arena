@@ -45,11 +45,41 @@ def busHostR : Nat := 209
 def busHostB : Nat := 210
 def busHostT : Nat := 9
 
-/-- Fixed host table `(id, name, #params, #results)`; `np ≤ 2`, `ar ≤ 1` (the message shape). -/
+/-- Fixed host table `(id, name, #params, #results)`; `np ≤ 2`, `ar ≤ 1` (the message shape).
+
+`register_len` (6) and `panic` (7) are the two entries already present.  The D3α log/panic and
+register/return functions covered by this lane are appended with **fresh** ids, so the existing ids
+stay stable.  `hostFns_all_arity` below proves that every entry still has `np ≤ 2` and `ar ≤ 1`:
+the HOST chip's message shape is *not* widened here. -/
 def hostFns : List (Nat × String × Nat × Nat) :=
   [(0, "block_index", 0, 1), (1, "block_timestamp", 0, 1), (2, "epoch_height", 0, 1),
    (3, "storage_usage", 0, 1), (4, "prepaid_gas", 0, 1), (5, "used_gas", 0, 1),
-   (6, "register_len", 1, 1), (7, "panic", 0, 0)]
+   (6, "register_len", 1, 1), (7, "panic", 0, 0),
+   -- logs and panics (`value_return` is in the register/return group below)
+   (8, "log_utf8", 2, 0), (9, "log_utf16", 2, 0), (10, "panic_utf8", 2, 0),
+   -- registers and return
+   (12, "input", 1, 0), (13, "read_register", 2, 0), (15, "value_return", 2, 0)]
+
+/-- Host functions of the same D3α groups that **cannot** be admitted while the HOST chip's message
+shape is `np ≤ 2`.  They are listed here (ids reserved, names and arities fixed) so the checker, the
+trace generator and the state side agree on their numbering, but `hostIdOf`/`hostSig` below do **not**
+accept them: a module that imports one stays outside the proved domain until the arity is widened
+(owned by another lane).  `write_register` is a register *writer* (`mem → register`); its register
+half is covered by the space-6 model (`WasmBase.RegisterSpace`). -/
+def hostFnsWide : List (Nat × String × Nat × Nat) :=
+  [(11, "abort", 4, 0), (14, "write_register", 3, 0)]
+
+/-- Every admitted host function fits the HOST message shape (`np ≤ 2`, `ar ≤ 1`).  This is the
+guard that the D3α extension does not silently widen the chip. -/
+theorem hostFns_all_arity : ∀ x ∈ hostFns, x.2.2.1 ≤ 2 ∧ x.2.2.2 ≤ 1 := by decide
+
+/-- Every host function is admitted by id or is one of the two arity-blocked ones. -/
+theorem hostFns_covered : ∀ x ∈ hostFnsWide, x.2.2.1 > 2 := by decide
+
+/-- Host ids whose call carries a **byte payload** on `HOSTB` (`log_utf8`, `log_utf16`,
+`panic_utf8`, `value_return`).  `input`, `read_register` and `register_len` are the register-space
+functions (space 6); `panic` has no payload. -/
+def hostByteIds : List Nat := [8, 9, 10, 15]
 
 /-- Host id of an imported function name (`none`: not in the fixed table ⇒ outside the domain). -/
 def hostIdOf (name : String) : Option Nat :=
@@ -58,6 +88,8 @@ def hostIdOf (name : String) : Option Nat :=
 /-- Signature `(np, ar)` of a host id. -/
 def hostSig (id : Nat) : Option (Nat × Nat) :=
   (hostFns.find? (fun x => x.1 = id)).map fun x => (x.2.2.1, x.2.2.2)
+
+theorem hostByteIds_mem : ∀ i ∈ hostByteIds, (hostSig i).isSome := by decide
 
 /-- The cached host-table row `[id, np, ar, 0, 0, 0, 0, 0]`. -/
 def hostRow (id np ar : Nat) : List Nat := [id, np, ar, 0, 0, 0, 0, 0]
@@ -200,9 +232,10 @@ consecutive positions).
 
 All constraints have degree ≤ 2.
 
-Not modelled here: the memory pointer, the byte length, the register space (space 6), and the
-content of the byte strings (a byte value inside `0..255` is a free witness: it is not yet tied to
-memory or to the state side). -/
+With `reg = 1` a byte is a register byte and one half of the wire is in `REG` (space 6).
+
+Not modelled here: the memory pointer and the `(ptr, len)` range into linear memory (a byte value
+inside `0..255` is a free witness: it is not yet tied to memory), and the state side. -/
 namespace HostB
 def ts : Nat := 0
 def dir : Nat := 1
@@ -213,16 +246,24 @@ def hid : Nat := 5
 def gap : Nat := 6
 def act : Nat := 7
 def f : Nat := 8
+/-- `reg = 1`: this byte **also** fills a register.  `HOSTB` then owns only the state-side half of
+the message; the Wasm-side half (receiving it into channel space 6) is `REG` (`WasmBase.RegChip`).
+Such a byte is always a *response* byte (`dir = 1`, state → Wasm) — `cRegDir` below.  With
+`reg = 0` the byte is a plain host payload and `HOSTB` keeps both halves (a self-permutation). -/
+def reg : Nat := 9
 /-- `len` is the group's byte count, committed on every row of the group (so it is a function of
 `ts` rather than a free witness per row), and `hid` ties the group to the host call it belongs to.
 Together they are the HOSTB <-> HOSTQ link: the same `(ts, hid)` pair appears on HOSTQ, so a byte
 group cannot be spliced onto a different call.  The `(ptr, len)` memory range is still not modelled
 (the bytes are not yet tied to linear memory). -/
-def cols : List String := ["ts", "dir", "pos", "byte", "len", "hid", "gap", "act", "f"]
+def cols : List String := ["ts", "dir", "pos", "byte", "len", "hid", "gap", "act", "f", "reg"]
 
 def cAct : Expr := bool (v act)
 def cF : Expr := bool (v f)
 def cDir : Expr := bool (v dir)
+def cReg : Expr := bool (v reg)
+/-- Only a response byte can fill a register (a request byte is Wasm → state). -/
+def cRegDir : Expr := v reg * (1 - v dir)
 def cFirst : Expr := .first * (1 - v f)
 def cLast : Expr := .last * (1 - v f)
 /-- A group continues with the same `ts`. -/
@@ -245,23 +286,26 @@ def cLenConst : Expr := (1 - nv f) * (nv blen - v blen)
 def cHidConst : Expr := (1 - nv f) * (nv hid - v hid)
 
 def constraints : List Expr :=
-  [cAct, cF, cDir, cFirst, cLast, cTs, cDirG, cPos, cPosLtLen, cLenConst, cHidConst]
+  [cAct, cF, cDir, cReg, cRegDir, cFirst, cLast, cTs, cDirG, cPos, cPosLtLen, cLenConst, cHidConst]
 
 def msg : List Expr := [v ts, v hid, v dir, v pos, v bv]
-/-- The Wasm side sends request bytes (`dir = 0`) and receives response bytes (`dir = 1`), each with
-a 0/1 count (`act · dir` and `act · (1 − dir)` are bits).  Because the state side is not modelled
-yet, both the send and the matching receive of every message sit in this table: the wire is
-balanced by construction (a self-permutation), exactly as `HOSTO` stands in for the state side on
-`HOSTQ`/`HOSTR`.  A joined proof keeps the two wasm-side interactions and replaces the other two
-by the state tables on bus 210.  The bytes are free witnesses in `0..255` here (no memory pointer,
-no length, no register space yet). -/
+/-- **The register link.**  When `reg = 1` the byte fills a register and the Wasm-side half of
+the wire lives in `REG` (`WasmBase.RegChip`): the fill (`dir = 1`) is *sent* here and *received* by
+`REG` (whose `cDirRd` makes a fill byte a response byte).  One
+register byte is Wasm-side only, so it never travels back).  When `reg = 0` the byte is a plain
+payload and this table carries both halves (the self-permutation of the minimum slice), exactly as
+`HOSTO` stands in for the state side on `HOSTQ`/`HOSTR`.  A joined proof keeps the Wasm-side halves
+and replaces the others by the state tables on bus 210.  All counts are bits. -/
 def inters : List Inter :=
-  [⟨busHostB, true, v act * (1 - v dir), msg⟩,
-   ⟨busHostB, false, v act * (1 - v dir), msg⟩,
-   ⟨busHostB, true, v act * v dir, msg⟩,
-   ⟨busHostB, false, v act * v dir, msg⟩,
-   byteQ 0 (v bv) 0 0 (v act),
-   r16 (v gap) (v act)]
+  [⟨busHostB, true, v act * (1 - v dir) * (1 - v reg), msg⟩,
+   ⟨busHostB, false, v act * (1 - v dir) * (1 - v reg), msg⟩,
+   ⟨busHostB, true, v act * v dir * (1 - v reg), msg⟩,
+   ⟨busHostB, false, v act * v dir * (1 - v reg), msg⟩,
+   -- the state-side half of a register-filling byte (`cRegDir` forces `dir = 1`)
+   ⟨busHostB, true, v act * v reg, msg⟩,
+   -- a register-filling byte (`reg = 1`) is looked up by `REG`, which owns the register wire
+   byteQ 0 (v bv) 0 0 (v act * (1 - v reg)),
+   r16 (v gap) (v act * (1 - v reg))]
 
 def table : Table := ⟨"HOSTB", cols, constraints, inters⟩
 end HostB

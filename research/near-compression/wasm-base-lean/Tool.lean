@@ -1,5 +1,6 @@
 import WasmBase.Check
 import WasmBase.HostChip
+import WasmBase.RegChip
 import WasmBase.HostCheck
 /-!
 `wasmbase-tool` — exporter and verifier-side preparation for the direct-Wasm base layer.
@@ -13,6 +14,8 @@ import WasmBase.HostCheck
 * `wasmbase-tool eval <nloc> <ngl> <points>`: evaluate every constraint, interaction count and message
   of `wasmBaseAir nloc ngl` at the given points (difftest; selectors are free field values).
 * `wasmbase-tool evalH <nloc> <ngl> <points>`: the same for `wasmBaseHostAir`.
+* `wasmbase-tool airR <nloc> <ngl>`: `wasmBaseRegAir` (= `wasmBaseHostAir` plus the REG table).
+* `wasmbase-tool evalR <nloc> <ngl> <points>`: the same for `wasmBaseRegAir`.
 -/
 open NearSpecV3.Wasm WasmBase ZkFormal.Algebra
 
@@ -91,12 +94,16 @@ structure HostEv where
   st : Nat
   word : Nat
   gAfter : Nat
+  /-- the register file the call left behind (`[id, bytes]`), i.e. what it filled -/
+  regs : List (Nat × List Nat) := []
   deriving Inhabited
 
 def hostEvJson (e : HostEv) : String :=
   "{\"hid\":" ++ toString e.hid ++ ",\"np\":" ++ toString e.np ++ ",\"ar\":" ++ toString e.ar ++
   ",\"args\":" ++ natList e.args ++ ",\"st\":" ++ toString e.st ++ ",\"word\":" ++ toString e.word ++
-  ",\"gAfter\":" ++ toString e.gAfter ++ "}"
+  ",\"gAfter\":" ++ toString e.gAfter ++
+  ",\"regs\":" ++ jList ((e.regs).map fun (id, bs) =>
+    "[" ++ toString id ++ "," ++ natList bs ++ "]") ++ "}"
 
 /-- The signature of an import index, from the fixed host table. -/
 def hostSigOf (p : Prepared) (fi : Nat) : Option (Nat × Nat × Nat) :=
@@ -134,10 +141,12 @@ def runStepsH (cfg : NearCfg) (p : Prepared) :
            | .i32 v => v.toNat
            | .i64 v => v.toNat
            | .ref _ => 0) else 0
-        let ev : HostEv := { hid, np, ar, args, st := 0, word, gAfter := os.gas.g }
+        let ev : HostEv := { hid, np, ar, args, st := 0, word, gAfter := os.gas.g,
+                             regs := os.registers.toList.map fun (id, d) => (id, d.toList.map (·.toNat)) }
         runStepsH cfg p k os (n + 1) (evs ++ [ev])
       | .abort os e =>
-        let ev : HostEv := { hid, np, ar, args, st := 1, word := 0, gAfter := os.gas.g }
+        let ev : HostEv := { hid, np, ar, args, st := 1, word := 0, gAfter := os.gas.g,
+                             regs := os.registers.toList.map fun (id, d) => (id, d.toList.map (·.toNat)) }
         (n + 1, .abort os e, evs ++ [ev])
       | r => (n + 1, r, evs)
     | none =>
@@ -150,7 +159,22 @@ def valLimbs : Val → (Nat × List Nat)
   | .i64 v => (1, limbs4 v.toNat)
   | .ref _ => (2, [0, 0, 0, 0])
 
-def prep (path exportName : String) (g0 : Nat) : IO Unit := do
+/-- Hex digits → bytes (`none` on a malformed string). -/
+def hexBytes (s : String) : Option (List Nat) := Id.run do
+  let cs := s.toList
+  if cs.length % 2 != 0 then return none
+  let mut out : List Nat := []
+  let mut hi : Option Nat := none
+  for c in cs do
+    let d := "0123456789abcdef".toList.findIdx? (· = c.toLower)
+    let some d := d | return none
+    match hi with
+    | none => hi := some d
+    | some h => out := out ++ [h * 16 + d]; hi := none
+  return some out
+
+/-- `input` bytes from the optional hex argument (the `CallCtx.input` the state side would supply). -/
+def prep (path exportName : String) (g0 : Nat) (inputHex : String := "") : IO Unit := do
   let code ← IO.FS.readBinFile path
   let cfg := pv86
   match prepare cfg code with
@@ -165,10 +189,15 @@ def prep (path exportName : String) (g0 : Nat) : IO Unit := do
       let M := MH.mod
       let ck := M.cks.getD 0 default
       let gas : Gas := { Gas.init g0 with g := g0 }
+      let some inb := hexBytes inputHex | throw (IO.userError "bad input hex")
       match instantiate cfg p gas with
       | .error e => throw (IO.userError s!"instantiate: {e}")
       | .ok s =>
-        let s := { s with gas := gas, stack := #[], frames := [] }
+        let inBytes : ByteArray := ⟨inb.toArray.map UInt8.ofNat⟩
+        let emptyStack : Array Val := #[]
+        let emptyFrames : List Frame := []
+        let newCtx : CallCtx := { s.ctx with input := inBytes }
+        let s : St := { s with gas := gas, stack := emptyStack, frames := emptyFrames, ctx := newCtx }
         match enter p s fi with
         | .cont s1 =>
           let g1 := s1.gas.g
@@ -191,8 +220,11 @@ def prep (path exportName : String) (g0 : Nat) : IO Unit := do
   | .unmodeled w => IO.println s!"\{\"eligible\":false,\"prepare\":{jStr w}}"
 
 /-- `points` file: one point per line, `t sf sl st cur... | nxt... | pub...` as decimals. -/
-def evalPoints (nloc ncode : Nat) (path : String) (hostAir : Bool := false) : IO Unit := do
-  let A := if hostAir then wasmBaseHostAir nloc ncode else wasmBaseAir nloc ncode
+def evalPoints (nloc ncode : Nat) (path : String) (which : Nat := 0) : IO Unit := do
+  let A := match which with
+    | 1 => wasmBaseHostAir nloc ncode
+    | 2 => wasmBaseRegAir nloc ncode
+    | _ => wasmBaseAir nloc ncode
   let lines ← IO.FS.lines path
   for ln in lines do
     if ln.isEmpty then continue
@@ -216,7 +248,10 @@ def main (args : List String) : IO Unit := do
   match args with
   | ["air", l, n] => IO.println (airJson (wasmBaseAir l.toNat! n.toNat!))
   | ["airH", l, n] => IO.println (airJson (wasmBaseHostAir l.toNat! n.toNat!))
+  | ["airR", l, n] => IO.println (airJson (wasmBaseRegAir l.toNat! n.toNat!))
   | ["prep", path, exportName, g0] => prep path exportName g0.toNat!
+  | ["prep", path, exportName, g0, inp] => prep path exportName g0.toNat! inp
   | ["eval", l, n, path] => evalPoints l.toNat! n.toNat! path
-  | ["evalH", l, n, path] => evalPoints l.toNat! n.toNat! path true
-  | _ => IO.eprintln "usage: wasmbase-tool air|airH <nloc> <ngl> | prep <wasm> <exportName> <g0> | eval|evalH <nloc> <ngl> <points>"
+  | ["evalH", l, n, path] => evalPoints l.toNat! n.toNat! path 1
+  | ["evalR", l, n, path] => evalPoints l.toNat! n.toNat! path 2
+  | _ => IO.eprintln "usage: wasmbase-tool air|airH|airR <nloc> <ngl> | prep <wasm> <exportName> <g0> [inputHex] | eval|evalH|evalR <nloc> <ngl> <points>"

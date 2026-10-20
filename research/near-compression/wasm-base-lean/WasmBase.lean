@@ -37,6 +37,8 @@ import WasmBase.Main.RowLoad
 import WasmBase.StepCall
 import WasmBase.Local.Call
 import WasmBase.HostChip
+import WasmBase.RegisterSpace
+import WasmBase.RegChip
 import WasmBase.HostCheck
 import WasmBase.StepHost
 import WasmBase.Main.RowHost
@@ -45,3 +47,4 @@ import WasmBase.Main.HostChipFacts
 import WasmBase.Main.HostLinks
 import WasmBase.Main.RowHostSpec
 import WasmBase.Main.ExecHost
+import WasmBase.Main.RegFacts

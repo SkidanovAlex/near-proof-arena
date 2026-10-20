@@ -301,6 +301,69 @@ def hostarg():
     return {'name': 'hostarg', 'result': 'i64', 'locals': [], 'body': b, 'imports': imps}
 
 
+INPUT = bytes([1, 2, 3, 4, 5])
+
+
+def regkat():
+    """The register wire: `input(0)` (a 5-byte call input), `register_len(0)`, `read_register(0,
+    64)`, then `i64.load` at 64.  Covers `input`, `register_len` and `read_register` on the byte
+    payload, the length message, and the space-3 write of the read."""
+    imps = [('env', 'input', ['i64'], None), ('env', 'register_len', ['i64'], 'i64'),
+            ('env', 'read_register', ['i64', 'i64'], None)]
+    b = [
+        ('i64.const', 0), ('call', 0),                 # input(0)
+        ('i64.const', 0), ('call', 1), 'drop',         # register_len(0) -> 5
+        ('i64.const', 0), ('i64.const', 64), ('call', 2),  # read_register(0, 64)
+        # the memory write of the read is the deferred MEMIO link, so the KAT observes the register
+        # through the length message and the read's channel effect, not through `i64.load`
+        ('i64.const', 0), ('call', 1),                 # register_len(0) -> 5
+        ('i64.const', 1000), 'i64.mul',                # 5000
+        ('i64.const', 7), 'i64.add',                   # 5007
+    ]
+    return {'name': 'regkat', 'result': 'i64', 'locals': [], 'body': b, 'imports': imps,
+            'memory': True, 'input': INPUT.hex()}
+
+
+def regloop(n):
+    """`input(0)`, then `n` rounds of `read_register(0, 64) + i64.load` with the length; the register
+    is filled once and read `n` times (the re-entrant case is out of scope: the read rows of later
+    rounds are not emitted, so this program drives `register_len` only after the first round)."""
+    imps = [('env', 'input', ['i64'], None), ('env', 'register_len', ['i64'], 'i64'),
+            ('env', 'read_register', ['i64', 'i64'], None)]
+    h = 0
+    b = [('i64.const', 0), ('call', 0), ('i64.const', 0), ('local.set', h)]
+    for _ in range(n):
+        b += [('i64.const', 0), ('i64.const', 64), ('call', 2),
+              ('local.get', h), ('i64.const', 1), 'i64.add', ('local.set', h)]
+    b += [('local.get', h), ('i64.const', 0), ('call', 1), 'i64.add']
+    return {'name': f'regloop{n}', 'result': 'i64', 'locals': ['i64'], 'body': b, 'imports': imps,
+            'memory': True, 'input': INPUT.hex()}
+
+
+def logkat():
+    """The byte-payload host functions: `log_utf8(len, ptr)` and `log_utf16(len, ptr)` over a data
+    segment, and `value_return(len, ptr)` of the same bytes, then a value."""
+    imps = [('env', 'log_utf8', ['i64', 'i64'], None), ('env', 'log_utf16', ['i64', 'i64'], None),
+            ('env', 'value_return', ['i64', 'i64'], None)]
+    data = [(0, b'hello'), (8, b'h\x00i\x00')]
+    b = [
+        ('i64.const', 5), ('i64.const', 0), ('call', 0),        # log_utf8(0, 5)
+        ('i64.const', 4), ('i64.const', 8), ('call', 1),        # log_utf16(8, 4)
+        ('i64.const', 5), ('i64.const', 0), ('call', 2),        # value_return(0, 5)
+        ('i64.const', 7),
+    ]
+    return {'name': 'logkat', 'result': 'i64', 'locals': [], 'body': b, 'imports': imps,
+            'data': data, 'memory': True}
+
+
+def logtrap():
+    """An imported `panic` after a `log_utf8` (the log is emitted, then the guest panics)."""
+    imps = [('env', 'log_utf8', ['i64', 'i64'], None), ('env', 'panic', [], None)]
+    b = [('i64.const', 3), ('i64.const', 0), ('call', 0), ('call', 1), ('i64.const', 1)]
+    return {'name': 'logtrap', 'result': 'i64', 'locals': [], 'body': b, 'imports': imps,
+            'data': [(0, b'abc')], 'memory': True}
+
+
 def hosttrap():
     """An import call that aborts (the imported `panic`, which is in the fixed host table)."""
     imps = [('env', 'block_index', [], 'i64'), ('env', 'panic', [], None)]
@@ -320,12 +383,14 @@ def main():
     progs += [globkat(n) for n in iters]
     progs += [callkat(n) for n in iters] + [fib(n) for n in (1, 10)] + [calltrap()]
     progs += [hostkat(n) for n in iters[:2]] + [hostarg(), hosttrap()]
+    progs += [regkat(), logkat(), logtrap()] + [regloop(n) for n in iters[:1]]
     for p in progs:
-        res, steps = run(p)
+        res, steps = run(p, input_bytes=bytes.fromhex(p.get('input', '')))
         with open(os.path.join(out, p['name'] + '.wasm'), 'wb') as f:
             f.write(assemble(p))
         with open(os.path.join(out, p['name'] + '.json'), 'w') as f:
-            json.dump({'name': p['name'], 'result': res, 'type': p['result'], 'steps': steps}, f)
+            json.dump({'name': p['name'], 'result': res, 'type': p['result'], 'steps': steps,
+                       'input': p.get('input', '')}, f)
     print(len(progs), 'programs')
 
 
