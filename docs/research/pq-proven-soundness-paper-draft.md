@@ -1,16 +1,21 @@
-# A proven-soundness post-quantum succinct proof for the NEAR chunk-validation *recursion tail*
+# A proven-soundness post-quantum succinct proof for hash-based recursion tails under 300 KB
 
 **The near-proof-arena contributors**
 
 *DRAFT, 2026-10-20 (paused). Not peer reviewed. Not for circulation.*
 
-> **Scope.** This paper covers the **recursive final layer** of a NEAR
-> chunk-validation stack: the proof that aggregates base proofs into a single
-> short post-quantum proof. It does **not** yet cover a NEAR chunk end to end.
-> The Wasm/state join, the contract-data storage tables and the chunk-relation
-> coverage theorem are future work (§10, §9 is therefore absent from this
-> draft). A companion earlier draft assumed the full chunk relation; that framing
-> was wrong and has been removed.
+> **Scope.** This paper is about the **recursion tail**: the layer that
+> aggregates base proofs into one short post-quantum proof. It is written for
+> any workload whose base proof fits a stated envelope (§2.6); NEAR chunk
+> validation is one instantiation, discussed in §1.1. What the tail proves is
+> generic in the statement type — the Lean development contains no workload
+> types (§1.2).
+>
+> The proof size is governed by the final layer's fixed-point shape, not by the
+> workload or by the aggregation shape (§8.3). The measured `293,077 B` run is a
+> **Wasm fixture**, not a NEAR chunk, and no workload has been joined end to end
+> (§10). The earlier draft claimed NEAR chunk validation; that framing was wrong
+> and has been removed.
 >
 > **Status of the numbers.** `293,077 B` is the sound measured final (G2 gate,
 > binding on at every level). The earlier `287,477 B` ran with `bind = false` and
@@ -32,11 +37,17 @@
 ## Abstract
 
 We describe a succinct, transparent-setup, hash-only proof system for the
-**recursive final layer** of a NEAR chunk-validation stack, aimed at 128-bit security against quantum adversaries making up to
-`2^64` oracle queries. The design is unusual in that every parameter is derived
-from *proven* proximity and soundness bounds: we never invoke the
-"proximity conjecture", the list-decoding-capacity regime, or the ethSTARK
-"random-words" heuristic. We report six technical ingredients:
+**recursion tail** of a hash-based proof stack: the layer that aggregates an
+arbitrary collection of base proofs into a single short post-quantum proof. It
+is parameterised by the base relation, not by a particular application; the
+development contains no application types. Target: 128-bit security against
+quantum adversaries making up to `2^64` oracle queries, with the final proof
+under 300 KB.
+
+The design is unusual in that every parameter is derived from *proven*
+proximity and soundness bounds: we never invoke the "proximity conjecture", the
+list-decoding-capacity regime, or the ethSTARK "random-words" heuristic. We
+report six technical ingredients:
 
 1. **Domain flexibility.** WHIR's soundness theorem holds for Reed–Solomon
    evaluation domains that are multiplicative cosets of order `c·2^K` with `c`
@@ -82,10 +93,23 @@ setup, algebraic-group, lattice, or PoW-hardness assumption is used.
 
 ### 1.1 Context
 
-A NEAR chunk is validated by executing all transactions in the chunk and
-checking the resulting state roots. A succinct proof of this relation lets a
-light client verify a chunk with constant work, independent of the chunk's gas.
-The target here is a proof under 300 KB, verifiable in seconds, produced without
+A hash-based proof stack has two parts: a **base relation** (an execution or
+state claim proved by a STARK over an AIR set) and a **tail** that aggregates
+many base proofs into one short proof. The tail is what a light client verifies,
+so its size and soundness are what matter operationally: constant work,
+independent of how much the base relation covered.
+
+Our running instantiation is NEAR chunk validation — executing a chunk's
+transactions and checking the resulting state roots — because that is the
+workload the base-layer work in this repository targets. But **nothing in the
+tail depends on that choice**: the aggregation theorems are parameterised by the
+statement type, the domain and sampling results are field-generic, and the QROM
+core is over an abstract state space (§1.2, §2.6). A different base relation
+(e.g. a ZK-rollup state transition, a signature-aggregation claim, or a
+different chain's execution proof) reuses the same tail, provided its base
+proof fits the envelope in §2.6.
+
+The target is a tail proof under 300 KB, verifiable in seconds, produced without
 a trusted setup, and secure against quantum adversaries.
 
 Hash-based STARKs are the natural tool: transparent setup, plausibly
@@ -110,9 +134,18 @@ on them is at best heuristically secure. We therefore set a stricter contract:
 > random-words heuristic, no unproven grinding or binding credit.
 
 This paper reports what that contract forces — and, surprisingly, that it still
-yields a sub-300 KB recursive final layer.
+yields a sub-300 KB recursion tail.
 
 ### 1.2 Contributions
+
+**C0 (Genericity).** The tail is a function of the base relation, not of an
+application. This is structural, not rhetorical: the aggregation development
+(`zk-formal/ZkFormal/PQ/Aggregation/`) is defined over an arbitrary statement
+type `S`; the domain and sampler lemmas are stated over an abstract field; the
+QROM core is stated over an abstract Hilbert space; and the base envelope in
+§2.6 is a list of numeric bounds on the base AIR set, not on its meaning. Any
+workload supplying a base proof inside that envelope gets the same tail, with
+the same size, at the same security.
 
 **C1 (Domain).** We prove that WHIR's smoothness hypothesis can be relaxed from
 "order a power of two" to "order `c·2^K`, `c` odd", with one definitional edit,
@@ -281,6 +314,32 @@ Let `RS[K, D, k]` be the Reed–Solomon code of dimension `k` on evaluation set
 
 The first two are theorems. The third is the false conjecture. Our design uses
 Johnson and a *proven* first-order region slightly below `√ρ`, never capacity.
+
+### 2.6 The base-layer envelope
+
+The tail takes any base proof satisfying the bounds below. They are **numeric
+bounds on the base AIR set**, with no reference to what it proves; this is what
+makes the construction workload-agnostic.
+
+| parameter | bound | why it is there |
+|---|---|---|
+| field / extension | BabyBear, Ext12 | one field for base and tail (U-7/U-10) |
+| hash, digests | SHA-384, `T*` transcript, 42-B Merkle, 48-B FS | U-7, U-10 |
+| `l_skip`, `n_stack` | 2, 22 (stacked height `2^24`) | cheap round-0 leaves in the verifier |
+| stacked width `W` | `≤ 24` | verifier circuit size; **this is the one bound that moves the final size** (§8.3) |
+| AIRs / degree / constraints / opened columns | `≤ 32` / `≤ 8` / `≤ 2^14` / `≤ 1024` | the verifier's fixed cost |
+| interactions, message length | `≤ 2^28`, `≤ 16` | LogUp width |
+| commitments | 1 (common main) | current NV restriction |
+| WHIR (base) | `c = 1`, `b = 1`, `m = 16`, `k₁ = 1`, `k = 4` | rate 1/2 base LDE |
+
+These are the same bounds the base-layer study pins (`DESIGN-BASE.md` §3) and
+`base_bound.py` checks: at them the base layer passes `2^-134.88`.
+
+**Scope of "any workload".** Any relation whose base proof fits this envelope
+reuses the tail unchanged. What is *not* claimed is that every plausible
+workload fits: an AIR set wider than `W = 24` or with more than 32 AIRs needs a
+different base shape, and the final size changes accordingly (§8.3). The
+envelope is the interface; a new workload is supported exactly when it meets it.
 
 ---
 
@@ -739,6 +798,32 @@ folds the round constant into a lookup at zero cost. Both are validated by
 mutation sweeps: 5,921/5,921 (v2.1) and 6,321/6,321 (v4) detected; 5,848 is
 v4's constraint-DAG node count, not a mutation count.
 
+### 8.3 What determines the final size
+
+Three things move the tail's bytes, and **the workload is not one of them**:
+
+1. **The final layer's fixed-point shape** — `b`, `log_h`, `k₁`, `k`, `W`. This
+   is the dominant term (WHIR openings plus Merkle auth).
+2. **The aggregation shape** — *not* a factor. The final layer verifies an inner
+   NV proof of the fixed-point shape, and no node's shape enters its bytes
+   (`DESIGN-BASE.md` §5.4; proved as statement-level shape independence in
+   `PQ/Aggregation/Shape.lean`).
+3. **The base-layer width `W`** — indirectly, through the fixed point it induces
+   in the verifier's own program.
+
+Measured finals, same machinery, different shapes:
+
+| shape | final | note |
+|---|---|---|
+| b=2 chain | 416,171 B | streamed == in-memory (sha256 identical) |
+| b=7, W=106, `m=3` | 339,747 B | model within +0.11 % |
+| b=7, W=106, `m=64` | 330,149 B | model within +0.20 % |
+| **G2 gate, binding at every level** | **293,077 B** | the sound headline number |
+
+So "under 300 KB" holds at the G2 fixed-point shape with binding, for any
+workload whose base proof fits §2.6. A wider base proof raises `W` and the
+bytes; that is a base-envelope question, not a tail redesign.
+
 ---
 
 ## 9. The assumption ledger
@@ -752,7 +837,7 @@ v4's constraint-DAG node count, not a mutation count.
 | DKT26 Thm 5.12 / Prop 5.10 | proximity statements used for O-1/O-2 | Lean-proven, kernel-checked; paper unrefereed |
 | BCGM / BCHKS25 | Johnson-regime MCA/CA for arbitrary `D` | refereed / ECCC |
 | WHIR Thm 5.2 (Puš26 correction) | rbr soundness of the PCS | published, correction checked |
-| circuit faithfulness | the NV circuit arithmetises the verifier; layer-0 AIRs encode chunk validation | engineering obligation, specified as Lemma 7.1 / Lemma 7.2; in progress |
+| circuit faithfulness | the NV circuit arithmetises the verifier (workload-generic); layer-0 AIRs encode the base relation (workload-specific) | engineering obligation, specified as Lemma 7.1 / Lemma 7.2; in progress |
 
 ### 9.2 Not used
 
@@ -802,9 +887,11 @@ capacity form) would not affect them either.
    `qrom_bound`. Two inputs remain cited: the compressed oracle's matrix entries
    (CFHL21 Lemma 4.3) and the replacement inequality (CFHL21 Cor 4.2). No claim
    in this paper rests on those two beyond what Section 7 states.
-3. **Circuit faithfulness.** NV-faithful (the circuit arithmetises the verifier
-   exactly) and Base-faithful (layer-0 AIRs encode chunk validation) are
-   engineering obligations in progress, stated as precise lemmas.
+3. **Circuit faithfulness.** Two obligations, stated as precise lemmas and in
+   progress. *NV-faithful*: the NV circuit arithmetises the verifier exactly. It
+   is workload-generic. *Base-faithful*: the layer-0 AIR set encodes the base
+   relation — workload-specific by nature, and for NEAR still open (the join,
+   item 8).
 4. **A-IC.** Unprovable in a query-only oracle model by Theorem O; adopted with a
    time bound. This is the one point on which "proven bounds only" is not fully
    met, and by necessity rather than choice.
@@ -812,7 +899,15 @@ capacity form) would not affect them either.
    is validated by code and 24 tamper tests but not yet derived line by line.
 6. **Program-binding rerun.** The 287,477 B O-2 chain ran with `bind = false` and
    is superseded; 293,077 B (G2 gate) is the sound measured number.
-7. **Backends.** The `×15` and streaming patches must be ported to the CPU and
+7. **No workload joined end to end.** The 293,077 B result is the recursion tail
+   measured on a Wasm fixture. For any workload, closing the gap needs
+   Base-faithful (item 3) and, for a joined Wasm/state system, the
+   coverage/composition theorem. This is the paper's largest open item and the
+   reason it is scoped to the tail.
+8. **NEAR-specific join (instance only).** For the NEAR instantiation the
+   remaining work is the Wasm/state join, contract-data storage tables, and the
+   `Joint → RelD3` coverage theorem. None of it affects the tail's theorems.
+9. **Backends.** The `×15` and streaming patches must be ported to the CPU and
    CUDA backends; unpatched backends fail closed rather than producing unsound
    proofs.
 
@@ -823,9 +918,13 @@ obligation.
 
 ## 11. Conclusion
 
-We have shown that a hash-only, transparent-setup, post-quantum succinct proof
-can be built at `≈ 287–293 KB` for a NEAR chunk while using **only proven
-proximity and soundness bounds**. The key methodological move is to separate the
+We have shown that a hash-only, transparent-setup, post-quantum succinct
+**recursion tail** can be built at **293,077 B measured** while using **only
+proven proximity and soundness bounds**. The tail is generic in the base
+relation: the aggregation, domain, sampler and QROM developments contain no
+application types, and any base proof meeting the envelope of §2.6 reuses it
+unchanged. NEAR chunk validation is the running instantiation, not a
+dependency. The key methodological move is to separate the
 two knobs that are often conflated: the evaluation domain (a rate lever) and the
 decoding radius (where the proximity conjecture lives). We change the domain,
 not the radius, and we buy `≈ 1.95` bits per query from BabyBear's `×15`
@@ -834,6 +933,11 @@ transcript (`T*`), prove a block-robust weak-binding property (WHIR-Y),
 instantiate certificate-gated agreement tables, give a depth-independent QROM
 knowledge-soundness theorem for recursive layers, and realise the whole thing
 with streamed commitments that never materialise the codeword.
+
+The remaining work is not in the tail: it is the base-relation side — for any
+workload, Base-faithful; for the NEAR instance, additionally the Wasm/state join
+and its coverage theorem (§10 items 3, 7–8). Those are the reason this paper is
+scoped to the tail rather than to a joined system.
 
 The assumption ledger is short and explicit. The one unavoidable non-standard
 assumption, A-IC, is stated precisely, is proven necessary in the query-only
