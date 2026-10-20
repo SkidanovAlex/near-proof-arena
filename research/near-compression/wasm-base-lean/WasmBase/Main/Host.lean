@@ -14,12 +14,23 @@ function `HostResp`.
 `RowHost.host_rowfacts` proves the **field-level** facts of an active HOST row (the flags, `np =
 pf0 + pf1`, `nres = (1−st)·ar`, the STATE input/output messages, and that `HOSTQ`/`HOSTR` are
 balanced by the witness oracle row).  `StepHost.step_host_ok` proves the spec step given the
-oracle's continuation.  What is still missing for the top-level `wasm_base_sound_host` is the row's
-`RowSpec`: turning the row's `stkRecv`/`stkSend` bus occurrences into "the consumed arguments are
-live stack messages" and "the produced result words are the response's", plus the bus decomposition
-of `Exec.lean` repeated for `wasmBaseHostAir` (tables 22/23/24, outside the proved `1..14` and
-`0/15..21` ranges).  Both are mechanical but broad; the exact statements are recorded here so the
-composition with the state proof (JOIN-INTERFACE §4.3) can be written against them.
+oracle's continuation.
+
+The two pieces named in `results/pq-host-gas/RESULTS.md` §3 are now in sibling files:
+
+* **piece 1** — `Main/RowHostSpec.lean`: the HOST row's `RowSpec`.  `host_row_cons` /
+  `host_row_prod` give the row's consumed/produced messages (`argMsg`, `wordMsg`),
+  `host_arg_view` (+ `host_arg_slot`) proves the consumed arguments are the live **stack** messages
+  the Wasm side sent, `host_word_is_resp` proves the produced message is the encoding of the
+  response's result word (via the R16 soundness of `Main/HostLinks.lean`), and `HostRowSpec` /
+  `host_rowspec` package the trace-level predicate.
+* **piece 2** — `Main/ExecHost.lean`: the STATE/CH bus decomposition of `Exec.lean` repeated for
+  `wasmBaseHostAir` (`host_msgs_air`, `msgs_state_host`, `msgs_ch_host`, `host_part_ch_recv`,
+  `host_part_ch_send`), plus the `HostTraceOK` side condition and the precise statement of the
+  remaining segmented induction.
+
+`HostOK.word` below is the extra binding piece 1(b) needs (the response's result word is the row's
+`rb` limbs).
 
 Everything in this file is proved or is a definition. -/
 namespace WasmBase
@@ -56,6 +67,12 @@ structure HostOK (tr : Trace) (resp : Nat → HostAnswer) : Prop where
       (resp ts).gAfter
   /-- the row's `ar` is the response's result count -/
   ar : ∀ r, r < tr.height 22 → ∀ ts, rowNat tr 22 r Host.ar = (resp ts).results.length
+  /-- the response's result word is the row's `rb` limbs (reconstructed from its four 16-bit limbs):
+  this is the binding the HOST row's `stkSend` needs (`HostRowSpec.prod`) -/
+  word : ∀ r, r < tr.height 22 → ∀ ts, (resp ts).results =
+    (if rowNat tr 22 r Host.ar = 0 then [] else
+      [rowNat tr 22 r Host.rb + 65536 * rowNat tr 22 r (Host.rb + 1) +
+        65536 ^ 2 * rowNat tr 22 r (Host.rb + 2) + 65536 ^ 3 * rowNat tr 22 r (Host.rb + 3)])
 
 /-- **`HostResp` and `HostOK` give a 64-bit row budget.**  This is the side condition
 `StepHost.host_seg` needs, derived from the response rather than assumed on the trace. -/

@@ -55,28 +55,75 @@ fixed), `HostOK.gAfter_lt` (the 64-bit side condition from `HostResp`), `host_ne
 
 ## 3. What is not done
 
-The **top-level** `wasm_base_sound_host` is not stated as a finished theorem.  Two pieces are
-missing and both are `RowSpec`-level work, not gas work:
+`wasm_base_sound_host` is not yet a finished theorem.  The two pieces named in the previous version
+of this section are now **proved** (lane `lane/wasm-hostrow`):
 
-1. the HOST row's `RowSpec`: turning its `stkRecv`/`stkSend` occurrences into "the consumed
-   arguments are live stack messages" and "the produced result words are the response's";
-2. the bus decomposition of `Exec.lean` repeated for `wasmBaseHostAir` (tables 22/23/24, outside the
-   proved `1..14` chip range and the `0/15..21` fixed range), plus threading `S_seg`/`segb` through
-   the induction (each HOST row changes the segment; every other row keeps it).
+### 3.1 Piece 1 — the HOST row's `RowSpec` (`WasmBase/Main/RowHostSpec.lean`)
 
-`Main/Host.lean`'s header records the exact statements so the composition (JOIN-INTERFACE §4.3) can
-be written against them.
+* `host_inters_state` / `host_inters_stk` — the HOST table's STATE and CH interactions, by direction.
+* `argMsg` / `wordMsg` / `argRaw` / `wordRaw` — the row's argument and result messages;
+  `host_rawCons` / `host_rawProd` / `host_row_cons` / `host_row_prod` — the row's CH receive/send
+  contents (`rowCons`, `rowProd`).
+* `RelW.size_bound` / `RelW.size_lt` — the stack of a `RelW`-related state is `< 2^28 + 2^16 < p`.
+* `host_arg_slot` — the `j`-th argument sits at stack slot `size − np + j`.
+* **`host_arg_view`** — piece 1(a): a live argument message is the live stack message the Wasm side
+  sent (one of `stackView`).
+* **`host_word_is_resp`** — piece 1(b): the produced message is `enc 0 (size − np) (.i64 w) ts`,
+  where `w` is the response's result word (`HostOK.word`), using `host_rb_limb`.
+* `HostRowSpec` / `host_rowspec` — the trace-level packed predicate (activity, `np`/`nres` fields,
+  `cons`/`prod`, and the response binding of `st`/`ar`/`g_after`/word).
+* `nres_from` — `nres = (1−st)·ar` from the field equation for bit `st`, `ar`.
+
+### 3.2 Piece 2 — the bus decomposition (`WasmBase/Main/ExecHost.lean`)
+
+* `host_air_len`, `host_air_append`, `host_air_get`, `host_air_22/23/24` — the table layout.
+* `host_msgs_air` / `host_occs_air` — every bus and the occurrence list split as
+  `wasmBaseAir ++ (HOST ++ HOSTO ++ HOSTT)`.
+* `msgs_state_host` / `msgs_ch_host` — the STATE and CH decompositions in the shape of
+  `Exec.msgs_state` / `Exec.msgs_ch`.
+* `rowMsgs_host_state`, `host_part_state_T/F` — the HOST rows' STATE send/receive.
+* `host_part_nil_env` — the oracle (23) and cached host table (24) carry no STATE/CH interaction.
+* `host_part_ch_recv` / `host_part_ch_send` — the decoded HOST CH messages are `rowCons`/`rowProd`.
+* `HostTraceOK`, `host_part_ch_recv_active`, `host_part_ch_send_active` — the same restricted to
+  **active** HOST rows under the trace-level side condition that inactive rows carry no CH message.
+* `host_arg_stack` / `host_word_stack` — piece 1 at the trace/`RelW` boundary.
+
+### 3.3 The remaining step: the segmented induction
+
+`exec_of_rows` (and hence `wasm_base_exec`) has **not** been re-run for `wasmBaseHostAir`.  Doing so
+requires (i) `HostChipFacts`, the `ChipFacts` analogue with table 22's row facts given by
+`host_rowspec`, and (ii) threading `S_seg`/`segb` through the induction: each base row keeps the
+segment, each HOST row restarts it via `StepHost.host_seg` / `Main.Host.host_row_seg`.  The final
+statement then reports the last segment rather than the global `R·S_final + g = g0`, exactly as
+`exec_of_rows` already does for one fixed segment.
+
+**A real constraint gap found while doing piece 2:** the HOST row's CH receives are counted with
+`pf j`, not `act·pf j`, and `Host.constraints` has no `act`–`pf` link, so an **inactive** HOST row
+(`act = 0`, `pf 0 = 1`) still emits count-1 CH receives (and its send is gated only by `nres`).
+Hence the base `ChipFacts.inactive` statement does not hold for table 22 as currently constrained.
+Two honest fixes:
+
+1. add `act·(1 − pf j) = 0` (`j = 0,1`) and `act·(1 − nres) = 0` to `Host.constraints`; then
+   `HostTraceOK` follows from `Holds` and the induction is the base one plus table 22; or
+2. keep the AIR and carry `HostTraceOK` as an explicit trace-level hypothesis (defined in
+   `ExecHost.lean`), which is what the decomposition lemmas there are stated against.
+
+`wasm_base_sound` is unaffected by this (it uses `wasmBaseAir`, whose tables are untouched).
 
 ## 4. Verification
 
 ```
-HEAVY_MEM=16G taskset -c 8-10,24-25 heavy lake build WasmBase wasmbase-tool
-  -> Build completed successfully (120 jobs)
-#print axioms wasm_base_sound / wasm_base_exec / exec_of_rows / RelW.gas_global / Rel.gas_global
-  / step_host_ok / step_host_ok_seg / step_host_abort_seg / host_rowfacts / host_row_seg
-  -> [propext, Classical.choice, Quot.sound]   (host_seg / host_next_seg: [propext])
-grep sorry|native_decide|implemented_by WasmBase/  -> CLEAN
-make pin-check  -> passes
-bash native/wasm-base/run_kat.sh /tmp/katrun_pqhg2 8 64
+HEAVY_MEM=16G taskset -c 8-11 lake build WasmBase wasmbase-tool
+  -> Build completed successfully (123 jobs)
+#print axioms wasm_base_sound / wasm_base_exec / exec_of_rows / host_row_seg / host_rowspec
+  / host_arg_view / host_word_is_resp / host_r16_sound / host_rb_limb / host_msgs_air
+  / msgs_state_host / msgs_ch_host / host_part_ch_recv / host_part_ch_send / host_arg_stack
+  / host_word_stack
+  -> ⊆ [propext, Classical.choice, Quot.sound]
+grep -rn '\bsorry\b' WasmBase/                      -> empty
+grep -rn 'native_decide|implemented_by|^axiom' WasmBase/  -> empty
+make pin-check  -> passes (exit 0)
+bash research/near-compression/native/wasm-base/run_kat.sh /tmp/katrun_hostrow 8 64
   -> KAT: 77 passed, 0 failed
 ```
+
