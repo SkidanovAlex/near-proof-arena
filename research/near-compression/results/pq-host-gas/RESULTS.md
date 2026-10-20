@@ -114,6 +114,18 @@ programs before being corrected.
 
 `wasm_base_sound` is unaffected by this (it uses `wasmBaseAir`, whose tables are untouched).
 
+### 3.4 The consequence of the gating is now proved
+
+`Main/HostChipFacts.lean` proves `host_row_inactive_emits_nothing`: on an inactive HOST row the
+row's `cons` and `prod` are both empty, so every CH interaction of that row has count 0.  That is
+the **table-22 instance of `ChipFacts.inactive`**, i.e. the premise `Exec`'s bus decomposition
+needs, and it now follows from `Holds` plus the gating constraints rather than being carried as a
+hypothesis.  Axioms: `[propext, Classical.choice, Quot.sound]`.
+
+What is still not done for `wasm_base_sound_host` is only the segmented induction itself:
+`HostChipFacts` now has its inactivity field, but the `Exec` re-run still has to thread
+`(S_seg, segb)` through `IH` (each base row keeps the segment; each HOST row restarts it).
+
 ## 4. Verification
 
 ```
