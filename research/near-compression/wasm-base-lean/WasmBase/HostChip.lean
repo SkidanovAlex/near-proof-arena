@@ -124,9 +124,16 @@ def cTag1 : Expr := v (pf 1) * v (tagP 1) - v (pf 1)
 def cPadL (j : Nat) : List Expr :=
   (List.range 4).map fun i => v (P j + i) - v (pf j) * v (P j + i)
 
+/-- An inactive row emits nothing: the CH channels are gated by `pf j` / `nres`, so without these
+links the `ChipFacts.inactive` premise fails (see `results/pq-host-gas/RESULTS.md` §3.3).  These
+turn `pf j` and `nres` off on inactive rows, which is what makes the bus decomposition in
+`Main/ExecHost.lean` follow from `Holds` alone. -/
+def cActPf (j : Nat) : Expr := (1 - v act) * v (pf j)
+def cActNres : Expr := (1 - v act) * v nres
+
 def constraints : List Expr :=
   [cAct, cSt, cP0, cP1, cP1P0, cNp, cAr, cNres, cGLo, cGHi, cRLo, cRHi, cPad0, cPad1, cTag0, cTag1] ++
-  cPadL 0 ++ cPadL 1
+  cPadL 0 ++ cPadL 1 ++ [cActPf 0, cActPf 1, cActNres]
 
 def inters : List Inter :=
   [stateIn (v cPc) (v cTs) (v cS) (v kSb) (v kCid) (v act),
