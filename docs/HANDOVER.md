@@ -112,17 +112,43 @@ KAT **77/77**; the G2 gate's 6 proof hashes still verify.
    the merge base through shared history — verify content (`git merge-base --is-ancestor <sha> HEAD`
    and check the files), not just whether HEAD moved.
 
-**Still open after lanes 1-4:**
-* `wasm_base_sound_host` is **not** stated: the gas/boundary layer is done, but the HOST row's
-  `RowSpec` (argument liveness, result equality) and the `Exec` bus decomposition for
-  `wasmBaseHostAir` are not. `Main/Host.lean` records the exact statements.
-* `HOSTB` does **not** yet model the memory pointer/`(ptr,len)` range, the length bound, the
-  register space (space 6), or the link from a `HOSTB` group to its `HOSTQ` call. Bytes are free
-  witnesses, not tied to memory or the state side.
-* CD storage: 4 stated `Prop`s remain (`WalkKeyIsContractData`, `RealStoreMatchesTables`,
-  `UpsV3AppliesLog`, `UpsertPreservesWf`).
-* NV: `maxLog` is plumbed end to end but ships as `None` in every AIR; host-wire commitments reuse
-  the TAPE mechanism once the AIRs exist.
+**Finished after lanes 1-4** (2026-10-20, on main):
+
+* **`pq-host-gas`: the HOST CH-channel soundness bug is fixed.** `Host.constraints` had no
+  `act`–`pf`/`nres` link, so an *inactive* HOST row still emitted count-1 CH receives and broke the
+  base `ChipFacts.inactive` premise. Added `(1−act)·pf j = 0` and `(1−act)·nres = 0`. (The first
+  attempt wrote the constraint backwards and KAT caught it: active rows would have required
+  `pf = 1`. Verified: lake build 123 jobs, KAT 77/77.)
+* **`pq-host-bytes`: HOSTB groups now carry their call and prove `pos < len`.** New columns
+  `len`/`hid`/`gap`; `len` and `hid` constant within a group; `pos + gap + 1 = len` with `gap`
+  `RANGE16`-checked, which proves `pos < len` for `len < 2^16` (a stated domain condition). The wire
+  message is `[ts, hid, dir, pos, byte]`, so a group cannot be spliced onto a different host call.
+  Tamper **65/65 rejected** on `hostarg`, including the new `len+1`/`hid+1`/`gap+1`.
+* **`pq-cd-storage`: `UpsertPreservesWfWithBounds` is now a THEOREM, not a stated `Prop`.** The
+  full `PTrie.upsert_wf` induction was proved (mutual `Kids.upsert_wf` too), plus
+  `upsert_memD_le`. **The originally proposed `splitExt_wf` statement was FALSE** — `splitExt`
+  rebuilds a usage from the stored `m`, so `m < 2^64` is insufficient; it needs the headroom
+  `m < memHead` that the induction actually supplies. Proved with that hypothesis and shipped a
+  machine-checked counterexample (`not_splitExt_wf_64`). Axioms on all of it:
+  `[propext, Classical.choice, Quot.sound]`.
+* **`pq-nv-tape`: `maxLog` is wired** from each ported table into `max_log_trace_height`, so the cap
+  reaches the vk, the native proof shape, the NV generator and V_d.
+
+**Still genuinely open after lanes 1-4:**
+
+* `wasm_base_sound_host` is not a finished theorem. The gas/boundary layer, the HOST `RowSpec` and
+  the host-AIR bus decomposition are all done; what remains is the `Exec` **segmented induction**
+  for `wasmBaseHostAir` (`HostChipFacts` + threading `S_seg`/`segb`). `Main/Host.lean` and
+  `results/pq-host-gas/RESULTS.md` §3.3 state it exactly.
+* `HOSTB` still does not model the `(ptr, len)` range into linear memory, nor the register space
+  (space 6). `len < 2^16` is a domain condition.
+* CD storage: `RealStoreMatchesTables` remains stated (it needs the D3 render + overlay replay,
+  engineering E1/E3, not a new AIR fact). `memOk`/`memLe` preservation across an upsert is not
+  proved; `memLe` is only a hypothesis.
+* NV: the `maxLog` wiring is built but **not validated end to end** — `run_demo.sh` panics earlier
+  in the classical trace dump (`statedump: srcp: classical constraint failure`), which reproduces
+  with the change stashed. Also the `pq-state-port` deps tree predates the
+  `max_log_trace_height` trait method, so it needs a `setup.sh` refresh.
 
 ## Parallel lanes to run next
 
