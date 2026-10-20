@@ -140,6 +140,13 @@ same finite-difference / Horner evaluation with room to run).
 `PartitionedBaseAir::max_log_trace_height`, so the cap reaches the vk, the native proof-shape check,
 the NV generator and V_d for every ported state table. Builds clean.
 
+**Dependency note.** The trait method `PartitionedBaseAir::max_log_trace_height` is supplied by
+`native/recursion/patches/stark-backend-unified.patch`; the `pq-state-port` deps tree
+(`/data/illia/nearproof-deps/pq-state-port`) was built before that patch gained it, so a run needs
+`research/near-compression/native/pq-state-port/setup.sh` re-run against a refreshed source. Hand-
+editing the deps tree is wrong: `setup.sh` pins the overlay hash
+(`051a037b…`) and a hand-edit breaks it.
+
 **Not validated end to end here.** `run_demo.sh` panics earlier, inside the classical trace dump:
 `statedump: srcp: classical constraint failure [(118, 0), (118, 161), (118, 322)]`. That failure is
 **pre-existing** — it reproduces with the `max_log_trace_height` method stashed, on both
