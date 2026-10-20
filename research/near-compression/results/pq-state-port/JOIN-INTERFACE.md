@@ -131,6 +131,23 @@ wasm_base_sound_host :
 table, `np`/`ar` are its signature, and the response message it consumed is exactly `(ts, resp ts)`.
 `HostResp` is an **abstract host-response function** `Nat → (status, results, g_after, bytes)`.
 
+### 4.2a The gas invariant is the real blocker (verified)
+
+`WasmBase.RelW.gas` is `R · S + s.gas.g = g0`: the remaining budget is a function of the
+instruction counter and the *fixed* initial budget.  A successful host call replaces the budget by
+`g := remaining` (`NearSpecV3/Wasm/Machine.lean:149`, `remaining = prepaid − used`), which is
+**not** a function of `S` and `g0`.  So `RelW.gas` cannot be re-established after a host call, and
+`wasm_base_sound`'s top-level conclusion
+(`R · S + sN.gas.g = g0`, `Main/Final.lean:100`) no longer holds in that form.
+
+This is why `pq-host-chip` recorded "the top-level gas invariant has to be generalised before a
+host-aware `wasm_base_sound` can be stated" (`StepHost.lean` header), and it is confirmed here
+against the spec: the invariant shows up in ~112 places across `WasmBase/{Step*,Main/*}.lean`, so
+the generalisation is mechanical but broad.  The natural replacement is to carry the invariant
+only *between* host calls (a per-segment `R · (S − S_seg) + g = g_seg`), with `g_seg` fixed by the
+state side at each host boundary — exactly the `S_prev`/`g_after` pair the HOST chip already puts
+on `HOSTQ`/`HOSTR`.
+
 That abstraction is the whole point: the Wasm proof is relative to `resp`, and the state proof
 discharges `resp` by building the actual trie reads/writes, gas and receipts.  Neither side embeds
 the other.
