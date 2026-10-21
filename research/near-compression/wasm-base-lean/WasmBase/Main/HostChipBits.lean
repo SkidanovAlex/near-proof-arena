@@ -297,4 +297,49 @@ theorem host_inter_bound {nloc ngl : Nat} {pub : List F} {tr : Trace}
   · rw [← h]; rw [col_eval]; exact host_pf_le H hr (by simpa [Host.argRange] using hj)
   · rw [h]; rw [col_eval]; exact host_nres_le H hr
 
+/-! ## `occ_bits` for the host AIR on buses STATE/CH -/
+
+/-- **Every STATE/CH occurrence of `wasmBaseHostAir` has count ≤ 1.**  Tables 0-21 come from the
+base AIR's `occ_bits` via `occs_mono_host`; `HOST`'s interactions on these buses are bounded by
+`host_inter_bound`; `HOSTO`/`HOSTT`/`HOSTB` have none (`env_inters_nil`), which is why their
+multiplicities never enter. -/
+theorem occ_bits_host {X : Ctx} {nloc ngl : Nat} {pub : List F} {tr : Trace}
+    (H : Holds (wasmBaseHostAir nloc ngl) pub tr)
+    (H0 : Holds (wasmBaseAir nloc ngl) pub tr)
+    (hpub : PubOK X nloc ngl pub) (CF : ChipFacts X nloc ngl pub tr) :
+    ∀ o ∈ occs (wasmBaseHostAir nloc ngl) tr pub, o.1 = busState ∨ o.1 = busStk → o.2.2.2 ≤ 1 := by
+  intro o ho hk
+  rcases occ_table_host ho with ⟨t, ht, r, hr, i, hi, rfl⟩ | ⟨r, hr, i, hi, rfl⟩ |
+    ⟨r, hr, i, hi, rfl⟩ | ⟨r, hr, i, hi, rfl⟩ | ⟨r, hr, i, hi, rfl⟩
+  · exact occ_bits H0 hpub CF _
+      (mem_occs.mpr ⟨t, by simp [air_len]; exact ht, r, hr, i, hi, rfl⟩)
+      (by
+        have e : i.bus = busState ∨ i.bus = busStk := by
+          rcases hk with h | h
+          · exact Or.inl (by simpa using h)
+          · exact Or.inr (by simpa using h)
+        rcases e with h | h <;> simp [h])
+  · exact host_inter_bound H hr i hi (by simpa using hk)
+  · have := env_inters_nil.1
+    rw [List.eq_nil_iff_forall_not_mem] at this
+    have hb' : i.bus = busState ∨ i.bus = busStk := by
+      rcases hk with h | h
+      · exact Or.inl (by simpa using h)
+      · exact Or.inr (by simpa using h)
+    exact absurd (List.mem_filter.mpr ⟨hi, by rcases hb' with h | h <;> simp [h]⟩) (this i)
+  · have := env_inters_nil.2.1
+    rw [List.eq_nil_iff_forall_not_mem] at this
+    have hb' : i.bus = busState ∨ i.bus = busStk := by
+      rcases hk with h | h
+      · exact Or.inl (by simpa using h)
+      · exact Or.inr (by simpa using h)
+    exact absurd (List.mem_filter.mpr ⟨hi, by rcases hb' with h | h <;> simp [h]⟩) (this i)
+  · have := env_inters_nil.2.2
+    rw [List.eq_nil_iff_forall_not_mem] at this
+    have hb' : i.bus = busState ∨ i.bus = busStk := by
+      rcases hk with h | h
+      · exact Or.inl (by simpa using h)
+      · exact Or.inr (by simpa using h)
+    exact absurd (List.mem_filter.mpr ⟨hi, by rcases hb' with h | h <;> simp [h]⟩) (this i)
+
 end WasmBase
