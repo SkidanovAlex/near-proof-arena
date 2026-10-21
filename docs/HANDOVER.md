@@ -150,6 +150,47 @@ KAT **77/77**; the G2 gate's 6 proof hashes still verify.
   with the change stashed. Also the `pq-state-port` deps tree predates the
   `max_log_trace_height` trait method, so it needs a `setup.sh` refresh.
 
+## Host-function coverage: the four lanes are merged (2026-10-21)
+
+All four host-coverage lanes are on main (`f77f748d7`), pushed, `pin-check` + `lake build` (3,050
+jobs) + `cargo fmt` green, KAT **88/88** (main was 79 before the merges).
+
+| lane | what landed |
+|---|---|
+| `pq-host-promise` | HOST chip widened `np ≤ 2` -> `np ≤ 9` (HOSTQ 8 -> 22 fields, inside the NV 128-field envelope), 23 promise entries, `wasm_base_exec_host`, `HostChipBits` re-derived on the new layout; 2 latent Rust bugs fixed (arg order vs spec `popArgs`, producer time) |
+| `pq-host-ctx` | 19 context/state-read hosts; **no AIR needed** — arity/type agreement with `hostSigs` is a kernel check (`hostFns_arity_agrees`, `hostFns_types`) |
+| `pq-host-logreg` | log/panic + register/return, the space-6 `RegisterSpace`, the `REG` chip, and `HOSTB`'s `reg` column (a register fill byte is a response byte) |
+| `pq-host-storage2` | `storage_read`/`has_key`/`remove`/`usage` **proved**; `storage_iter_*` **proved out of domain** |
+
+**The structural finding.** The HOST chip is *generic*: it never names a function. Coverage is
+therefore a `hostFns` entry plus a state-side response plus a KAT — not a chip per function. That is
+why 44 of the 64 D3α functions cost almost nothing. The exceptions:
+
+* **hash (`sha256`, `keccak256/512`, `ripemd160`)** — need arithmetic AIRs that do not exist on the PQ
+  stack at all. The classical stack has a SHA-256 table; nothing on PQ does.
+* **promise / receipt (23 functions)** — need a receipt-construction AIR that does not exist
+  (`D2/Actions.d2Hooks.functionCall` errors out). Priced in `results/pq-host-promise/DESIGN.md` at
+  ~7-12 lane-weeks, the borsh `ActionR` encoder being the dominant cost.
+
+**Merge lessons (this took far longer than it should have):**
+1. Three lanes chose three different host-id schemes. Only ids `0..7` are pinned (they are what a
+   cached `HOSTT` contains); nothing indexes a host id numerically, so one canonical table resolves
+   them. `tools/host-fns/canonical.txt` is it (64 D3α entries).
+2. `origin/main` was **broken** for a period: `pq-host-promise` branched before `HostChipBits`
+   existed, so merging it broke a file no lane had compiled against, and the follow-up commit's
+   "build 128 jobs" claim was false. Verify a build yourself; do not trust a commit message.
+3. Editing another agent's proof file under merge pressure produced real corruption (twice I
+   truncated a 331-line file to 76 lines). Delegate that with the exact goal printed via
+   `trace_state` rather than guessing the proof state.
+4. Rebuild `wasmbase-tool` and the Rust crate after any Lean table change; a stale binary produced
+   four false KAT failures.
+
+**Still open in this lane:**
+* `HOSTB` does not model the `(ptr,len)` range into linear memory, nor the register group walk
+  (`Register.RegLenAgree`), nor the `HOSTB`<->`HOSTQ` container relay (`CdKeynibFromHostB`).
+* `gas` remains out of domain (its parameter is `i32`, the row's argument slots are `i64`).
+* The hash and receipt families above.
+
 ## Parallel lanes to run next
 
 Lanes 1-4 are done (see above). The remaining critical path is the **tightening** of what landed,
