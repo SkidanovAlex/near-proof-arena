@@ -10,7 +10,10 @@ This is for the next lead agent. Read it first. The raw working log for 2026-10-
 
 **Current target.** A **succinct proof of a NEAR chunk state transition, with a formal proof of correctness.** It must be a drop-in replacement for the stateless validator's `validate_chunk_state_witness`.
 
-**Updated 2026-10-21:** the Wasm side's host-aware execution theorem (`wasm_base_exec_host`) is proved; the join's remaining gap is the CH-bus permutation (`hch`), then `Compose`.
+**Updated 2026-10-21 (later):** the Wasm join's bus side is **complete**. `wasm_base_exec_host` is
+proved and both of its bus premises are now theorems about `Holds` (`host_hst` on 2026-10-20,
+`host_hch` + the pair `host_buses` on 2026-10-21). What remains is the per-row instantiation layer
+and `Compose`, not a bus fact. Evidence: `results/pq-hch/RESULTS.md`.
 
 User directives (binding):
 * **Don't shortcut.**
@@ -69,6 +72,8 @@ main tip). `make pin-check` passes, `zk-formal` builds (3,034 jobs), `cargo fmt 
 
 ### Read next
 
+* `docs/logs/pq-hch-2026-10-21.md` — the CH-bus permutation lane (raw log; summary in
+  `results/pq-hch/RESULTS.md`).
 * `docs/logs/pq-gap-analysis-2026-10-19.md` — the gap list, kept current by the lanes.
 * `docs/logs/pq-final-layer-model-2026-10-17.md` — size/latency model and every measured point.
 * `tools/d1-pq-envelope/README.md` — per-table envelope verdict.
@@ -228,7 +233,7 @@ induction: `exec_of_rows` threads *one* gas segment, but a host call resynchroni
 | item | state |
 |---|---|
 | `hst` (STATE-bus `Perm`) | **proved** (`host_hst`) |
-| `hch` (CH-bus `Perm`) | **open**. `msgs_ch_host` gives `part Host.table … busStk s`, a flatMap over **all** rows; `hostActRows` is only the **active** ones. The gap is a `flatMap` congruence using `host_rowMsgs_inactive_false`/`_true` (both proved). Straightforward, ~30 lines; `List.flatMap_map`'s shape does not match, which is where it stalled. |
+| `hch` (CH-bus `Perm`) | **proved** (`Main/HostBus.host_hch`, plus `host_buses` = `hst ∧ hch`). Two gaps the "~30 lines" estimate missed: `HostTraceOK` had no derivation from `Holds` (`host_row_inactive_counts` gives the raw `pf j`/`nres` counts, `host_trace_ok` packages them), and `msgs_ch` interleaves the HOST block *differently* on the two sides (memory block after the instruction rows on the true side, drain block between them on the false side), so a bare `flatMap` congruence does not suffice — `perm_ch_host` needs one `perm_mid` association swap per side. `List.flatMap_map`'s shape was the wrong tool. |
 | `HOSTB` `(ptr,len)` -> memory | **open** (lane 6 below) |
 | `RealStoreMatchesTables` / `UpsV3AppliesLog` | **open, and not a proof task.** `upsert` is hard-coded at `[0,15]` as a *constraint polynomial* (`Tables/Ups.lean` `symE`, `Extract/Ups/QNodes` `UpsSpec.key`), so a ContractData path is a different polynomial, not a different instance. This needs a **table parameterisation (a render change)**, or the statement drops it. `UpsertPreservesWf` was already shown **false as stated** and corrected to `UpsertPreservesWfWithBounds` (headroom `m < memHead`), which is proved. |
 
@@ -248,16 +253,17 @@ then the join. Lanes 5-7 and 9-10 are independent; 8 depends on 5 and 7.
 
 | # | lane | scope | blocks | est. |
 |---|---|---|---|---|
-| 5 | ~~`lane/pq-host-rowfacts`~~ **DONE 2026-10-21** | `exec_of_rows_seg`, `wasm_base_exec_host`, `host_rel_restart`, `host_hst`, `occ_bits_host` all proved (see the section above). Only `hch` remains, ~30 lines. | — | done |
+| 5 | ~~`lane/pq-host-rowfacts`~~ **DONE 2026-10-21** | `exec_of_rows_seg`, `wasm_base_exec_host`, `host_rel_restart`, `host_hst`, `occ_bits_host` all proved (see the section above). `hch` followed in ~~`lane/pq-hch`~~ **DONE 2026-10-21** (`host_hch`, `host_buses`). The bus side is closed. | — | done |
 | 6 | `lane/pq-host-memio` | `HOSTB` -> memory: the `(ptr,len)` range, `pos < len`, and the register space (space 6), plus the link from a `HOSTB` group to its `HOSTQ` call. The bus and table exist; this gives them meaning. | any real byte-moving host call | 5-7 d |
 | 7 | `lane/pq-cd-props` (**not a pure proof lane** — see the note) | `WalkKeyIsContractData` has been **proved for the HOSTB route** (`PQ/Join/CdWalkView.lean`, residual `CdKeynibFromHostB`); `UpsertPreservesWf` was **false as stated** and its corrected form `UpsertPreservesWfWithBounds` is **proved**. Remaining: `RealStoreMatchesTables` (render + overlay replay, engineering E1/E3) and `UpsV3AppliesLog`, which needs a **table parameterisation** because `upsert` is hard-coded at `[0,15]` as a constraint polynomial. | the state half being a theorem, not a check | 6-10 d, and the `upsert` rework is the long pole |
 | 8 | `lane/pq-runCall-fold` | The coverage theorem: `join_additive` + `d3Hooks`/`runCall` correspondence, so a joined proof implies the D3 chunk relation. Shape stated in `JoinFold.JoinStmt`. | the end-to-end claim | 10-15 d |
 | 9 | `lane/pq-sig-layer` | The separate Ed25519 proof layer: ZK-friendly curve arithmetic + a SHA-512 witness over the preimage, proving `Ed25519.verify` at 128 bits. Census done (`results/pq-ed25519-air/CENSUS.md`). | signed transactions | 16-26 d |
 | 10 | `lane/pq-1pgas-scale` | Research only: measure one 2^28.25-cell segment at real settings, then extrapolate the aggregation tree. No 1 Pgas claim. | goal B | research |
 
-**Suggested first batch:** finish `hch` (small, unblocks nothing else but completes the theorem), then
-6 and 7 in parallel. 8 (the runCall fold) can start now: `wasm_base_exec_host` exists. 9 is
-independent and long; 10 is independent and cheap.
+**Suggested first batch:** 6 and 7 in parallel. 8 (the runCall fold) can start now:
+`wasm_base_exec_host` exists and its `hst`/`hch` are discharged from `Holds`, so the instantiation
+layer is the only thing between it and a `Holds`-only statement. 9 is independent and long; 10 is
+independent and cheap.
 
 **7 is not a proof lane.** Read the `UpsV3AppliesLog` note above before dispatching it: `upsert` at a
 ContractData key needs a table parameterisation, which is a render/AIR change with a size/model cost.
