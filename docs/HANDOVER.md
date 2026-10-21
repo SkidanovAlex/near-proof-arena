@@ -246,6 +246,75 @@ induction: `exec_of_rows` threads *one* gas segment, but a host call resynchroni
   branch mid-session and a merge landed in it (`MERGE_HEAD` + `UU` conflicts) while I was editing.
 * **Verify content, not HEAD movement** (already lesson 4 below; it bit again).
 
+## Hash and receipt families: both lanes landed (2026-10-21)
+
+Two parallel lanes on top of `origin/main` @ `f51c8563c`, merged and pushed as `57bbd3478`.
+Verified independently on a clean worktree: `lake build` 219 (wasm-base) + 3,057 (zk-formal) jobs,
+KAT **97/97** (was 88), `make pin-check`, no `sorry`/`native_decide`/`implemented_by`.
+
+### `pq-hash-air` — a SHA-256 AIR on the PQ stack
+
+**What it is.** `WasmBase/ShaAir.lean` (454 lines): a 44-column, 17-rows-per-block SHA-256 AIR,
+degree 4, 5 interactions/row, 9,333 cells per block. Plus `ShaSound.lean` (the soundness leg) and
+`ShaVectors.lean`. Exported as `wasmbase-tool airX`; `wasmBaseAir` stays byte-identical.
+
+**Measured.** Real proof of a 100-byte-input SHA program: 1,637,754 B, 43.7 s prove, 0.054 s verify,
+268.4-bit soundness. Differential test against `sha2` on **16/16 vectors** (empty, 1, 3, 55, 56, 63,
+64, 65, 100, 119, 120, 127, 128, 129, 200, 1000 bytes) — AIR cells equal the reference on message
+bytes and digest. Tamper 11/11 rejected. KAT contributed 9 new hash programs (88 -> 97).
+
+**Per-function verdict.**
+
+| function | cells/call | feasible on PQ? |
+|---|---:|---|
+| `sha256` | 9,333 · blocks | **built** |
+| `ripemd160` | ≈9-11k · blocks | yes, ~2-3 weeks |
+| `keccak256` / `keccak512` | ≈3-5k **per round**, degree ≥ 9 | **blocked**: 64-bit lane rotate/xor with no 64-bit-multiply gadget in the base layer |
+
+Envelope: 27 AIRs total (≤32), degree 4 (≤8), widest message 12 fields incl. bus (≤128). The
+classical `ZkFormal.Sha.Table` was the reference; porting it beat a from-scratch narrow AIR.
+
+**Finding worth noting:** before the declaration bus (212) was added, a `Dmult = 0` trace was
+*accepted* — the digest declaration was not bound. That is recorded in the lane README; the fix is
+in the merged tree.
+
+### `pq-receipt-air` — the promise/receipt bookkeeping AIR, and a corrected price
+
+**What it is.** `zk-formal/ZkFormal/PQ/Receipt/{Table,Ids,Rows,Statement,Wire,Cost,Bookkeeping}.lean`:
+`PBC`, one row per `promise_*` call in `ts` order — **49 columns, 51 constraints (degree ≤ 4), 29
+interactions, maxLog 16**, `Air.wf` clean at maxDeg 8. The 13 class fields live in a cached `PBK`
+table consumed on bus 211 (the `HOSTT`/`CODE`/`TAPE` pattern), so static columns are pinned by a bus
+receive rather than witnessed. Wire reuses `HOSTQ`/`HOSTR`/`HOSTB` (+2 interactions, no second wire).
+
+**Proved** (axioms ⊆ std3): the class transcription is checked against a **second independently
+written** list via `decide` (`promiseClasses_*`); the row/chain lemmas (`rcpt_row`, `prm_row`,
+`rcpt_chain`, `tgt_lt` i.e. `tgt < rcpt`, `dep_le` i.e. `dep ≤ 128`); and the counter obligation
+`Statement.prevR_counter_is_count` — **the receipt counter is `#{k<n | addR k = 1}`**, a count of
+`PBK` bits, not a guessed integer.
+
+**Stated-not-proved** (named `Prop`s): `HostCallTrace`, `TgtIsReceipt`, `ActionBytesAreHostBytes`,
+`ActionEncodingIsBorsh`.
+
+**The price correction — this changes the plan.** DESIGN.md called the borsh `ActionR` encoder the
+dominant cost (4-6 weeks). Measured at the D3α limits (4,194,722-byte maximum receipt): the encoder
+is 268 M cells and the SHA over those bytes is 606 M — **the hash is 69 %, the encoder 31 %**. The
+encoder is separable from the SHA/`RIDS` work, so the sequence becomes SHA/`RIDS` first and the
+encoder optional. Total ≈6-10 lane-weeks (was 7-12).
+
+**Two flags for the join:**
+1. `two_max_receipts_over_cap`: two 4 MiB-argument receipts exceed a 2^21 SHA table — the per-byte
+   path does not compose past a couple of maximum receipts. This is a real capacity constraint.
+2. `PQ/Join/Statement.lean`'s `HOSTQ`/`HOSTB` are **still the stale 8- and 4-field shapes**;
+   `hostQ_no_bridge` / `hostB_no_bridge` prove they cannot silently merge with the widened wire.
+   **Fix this before any join work.**
+
+### Still open
+
+* `ripemd160` AIR; the two Keccaks need a 64-bit-multiply gadget first (a base-layer change).
+* The receipt `ActionR` encoder, `RIDS`/`SRC`/`RCL` + `newReceipts` fold, and the `HostCallTrace`
+  induction (Wasm side).
+* The `Join/Statement.lean` wire fork above.
+
 ## Parallel lanes to run next
 
 Lanes 1-4 are done (see above). The remaining critical path is the **tightening** of what landed,
