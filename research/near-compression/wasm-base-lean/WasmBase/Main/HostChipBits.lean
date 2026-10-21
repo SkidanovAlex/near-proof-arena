@@ -137,9 +137,11 @@ theorem occ_table_host {nloc ngl : Nat} {tr : Trace} {pub : List F} {o : Occ}
 bus 2 carries two `stkRecv` (count `pf j`) and one `stkSend` (count `nres`). -/
 theorem host_state_ch_inters :
     (Host.table.inters.filter (fun i => i.bus = busState ∨ i.bus = busStk)) =
-      [Host.table.inters.getD 0 default, Host.table.inters.getD 1 default,
-       Host.table.inters.getD 22 default, Host.table.inters.getD 25 default,
-       Host.table.inters.getD 28 default] := by
+      [Host.table.inters.getD 0 default, Host.table.inters.getD 1 default] ++
+      (Host.argRange.map fun j => Host.table.inters.getD (Host.chBase + Host.chStride * j) default) ++
+      [Host.table.inters.getD Host.sendIdx default] := by
+  simp only [Host.table, Host.inters, Host.argRange, Host.nArgs, Host.chBase, Host.chStride,
+    Host.sendIdx, List.range_succ, List.map_cons, List.map_nil, List.append_nil]
   decide
 
 /-- **HOSTO/HOSTT/HOSTB have no STATE/CH interaction at all**, so their (unconstrained) counts on

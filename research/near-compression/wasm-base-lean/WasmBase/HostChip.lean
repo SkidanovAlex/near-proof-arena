@@ -131,6 +131,17 @@ namespace Host
 /-- The argument window width.  `np ≤ 9` covers every D3α host function including `promise_then`,
 `promise_yield_create_with_id` and `promise_batch_action_add_key_with_function_call`. -/
 def nArgs : Nat := 9
+/-- Index of the first per-argument stack receive in `inters`: the 6 header interactions
+(stateIn, stateOut, fetch, hostT, hostQ, hostR), the 4 `ga` and 4 `rb` range checks, and the
+`4·nArgs` argument-limb range checks.  Per argument `inters` then holds (`stkRecv j`, two `r16`s of
+`timeChk j`), i.e. **stride 3**; the single `stkSend` follows the last argument.  Deriving these
+keeps `Main/HostChipBits` independent of `nArgs`. -/
+def chBase : Nat := 6 + 4 + 4 + 4 * nArgs
+/-- Stride between consecutive arguments' `stkRecv` in `inters`. -/
+def chStride : Nat := 3
+/-- Index of the `stkSend` (`nres`) interaction. -/
+def sendIdx : Nat := chBase + chStride * nArgs
+
 /-- The argument indices `0 … nArgs − 1`. -/
 def argRange : List Nat := List.range nArgs
 
