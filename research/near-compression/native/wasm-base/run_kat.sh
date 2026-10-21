@@ -24,8 +24,8 @@ for w in "$OUT"/progs/*.wasm; do
     fi
     fail=$((fail+1)); echo "FAIL $n (unexpectedly ineligible)"; continue
   fi
-  read -r nloc ngl nimp nreg <<<"$(python3 -c "import json;d=json.load(open('$OUT/progs/$n.prep.json'));hs=d.get('hosts',[]);reg=any(h.get('hid') in (48,49) and h.get('regs') for h in hs);print(len(d['localTags']),d.get('ngl',0),1 if hs else 0,1 if reg else 0)")"
-  AIRK=air; [ "$nimp" = 1 ] && AIRK=airH; [ "$nreg" = 1 ] && AIRK=airR
+  read -r nloc ngl nimp nreg nsha <<<"$(python3 -c "import json;d=json.load(open('$OUT/progs/$n.prep.json'));hs=d.get('hosts',[]);reg=any(h.get('hid') in (48,49) and h.get('regs') for h in hs);sha=any(h.get('hid')==53 for h in hs);print(len(d['localTags']),d.get('ngl',0),1 if hs else 0,1 if reg else 0,1 if sha else 0)")"
+  AIRK=air; [ "$nimp" = 1 ] && AIRK=airH; [ "$nreg" = 1 ] && AIRK=airR; [ "$nsha" = 1 ] && AIRK=airX
   [ -f "$OUT/$AIRK-$nloc-g$ngl.json" ] || "$TOOL" $AIRK "$nloc" "$ngl" > "$OUT/$AIRK-$nloc-g$ngl.json"
   # Python reference vs Lean spec (value and step count).  Host programs are not gas-modelled by the
   # Python interpreter, so only the outcome is compared there.
