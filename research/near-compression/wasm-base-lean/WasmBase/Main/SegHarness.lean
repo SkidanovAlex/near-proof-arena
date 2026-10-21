@@ -437,7 +437,8 @@ The conclusion is `wasm_base_exec`'s plus the segment map.
 
 /-- The active HOST rows, as `(22, r)` pairs. -/
 def hostActRows (tr : Trace) (pub : List F) : List (Nat × Nat) :=
-  (actRows tr pub 22).map fun r => (22, r)
+  ((List.range (tr.height 22)).filter fun r => decide (rowAct Host.table tr pub 22 r)).map
+    fun r => (22, r)
 
 /-- The action list of `wasmBaseHostAir`: the base instruction rows, then the active HOST rows. -/
 def actListHost (tr : Trace) (pub : List F) : List (Nat × Nat) :=
