@@ -59,6 +59,8 @@ pub struct HostEv {
     pub st: u64,
     pub word: u64,
     pub g_after: u64,
+    /// the register file the call left behind `(id, bytes)`, i.e. what it filled
+    pub regs: Vec<(u64, Vec<u64>)>,
 }
 
 impl Prep {
@@ -128,6 +130,15 @@ impl Prep {
                             st: e["st"].as_u64().unwrap(),
                             word: e["word"].as_u64().unwrap(),
                             g_after: e["gAfter"].as_u64().unwrap(),
+                            regs: e
+                                .get("regs")
+                                .and_then(|r| r.as_array())
+                                .map(|r| {
+                                    r.iter()
+                                        .map(|p| (p[0].as_u64().unwrap(), nums(&p[1])))
+                                        .collect()
+                                })
+                                .unwrap_or_default(),
                         })
                         .collect()
                 })
@@ -368,14 +379,29 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
     let mut hosto = if has_host { Some(Tab::new(&air.tables[air.index("HOSTO")])) } else { None };
     let mut hostt = if has_host { Some(Tab::new(&air.tables[air.index("HOSTT")])) } else { None };
     let mut hostb = if has_host { Some(Tab::new(&air.tables[air.index("HOSTB")])) } else { None };
-    let mut host_calls: Vec<u64> = vec![0; prep.host_tab.len()];
+    // The register wire (channel space 6): present only in `wasmBaseRegAir` (table index 26).
+    let has_reg = air.tables.iter().any(|x| x.name == "REG");
+    let mut reg = if has_reg { Some(Tab::new(&air.tables[air.index("REG")])) } else { None };
+    // indexed by **host id**: the table's ids are not contiguous (`abort`/`write_register`
+    // reserve 11/14), so the vector must reach the largest id, not the row count
+    let mut host_calls: Vec<u64> =
+        vec![0; prep.host_tab.iter().map(|r| r[0] as usize + 1).max().unwrap_or(0)];
     let mut host_ix = 0usize;
     // HOSTB rows `(ts, dir, pos, byte, act, f)`, grouped by `(ts, dir)`: the request (`dir = 0`)
     // and the response (`dir = 1`) of the first host call.  The 4 request bytes are the low four
     // bytes of the first argument, the 4 response bytes those of the result word; the bytes are a
     // placeholder for the `(ptr, len)` memory range, which this slice does not model.
-    let mut hostb_rows: Vec<[u64; 9]> = vec![];
+    let mut hostb_rows: Vec<[u64; 10]> = vec![];
     let mut hostb_done = false;
+    // The register file as the trace sees it (`space 6`): content, fill time, and whether the
+    // register's message is still live (filled and not yet read).  `filled_seen` makes the fill
+    // rows fire exactly once per register (the KAT keeps one fill per register).
+    let mut regs: HashMap<u64, Vec<u64>> = HashMap::new();
+    // the most recent producer time of the register's space-6 **byte** and **length** messages
+    // (every access re-produces its own kind; a `register_len` does not touch the bytes)
+    let mut reg_bts: HashMap<u64, u64> = HashMap::new();
+    let mut reg_lts: HashMap<u64, u64> = HashMap::new();
+    let mut reg_rows: Vec<[u64; 15]> = vec![];
     let mut func_calls: Vec<u64> = vec![0; prep.funcs.len()];
     // dead callee locals `(space, slot, entry)`, left over in the channel after their frame returned
     let mut dead: Vec<(u64, u64, Ent)> = vec![];
@@ -434,16 +460,14 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                 // `args[0]` is the *lowest* stack slot (the spec's `popArgs` reverses the pops), so
                 // pop `np` entries top-first and then reverse.
                 let mut popped = Vec::new();
-                for _ in 0..np {
-                    let a = stack.pop().unwrap();
+                for _ in 0..np {                    let a = stack.pop().unwrap();
                     assert_eq!(a.tag, 1, "host arguments are i64");
                     popped.push(a);
                 }
                 popped.reverse();
                 for (j, a) in popped.iter().enumerate() {
                     args[j] = a.val;
-                    argTp[j] = a.tp;
-                }
+                    argTp[j] = a.tp;                }
                 assert_eq!(stack.len() as u64, sb2, "host call stack height");
                 let ga = ev.g_after;
                 let gl = limbs(ga);
@@ -462,8 +486,7 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                     r.u(&format!("tP{j}"), 0).u(&format!("hP{j}"), 0);
                     if present == 1 {
                         // producer time: the clock of the row that pushed this stack entry
-                        let tp = argTp[j as usize];
-                        let hp = st.tchk(ts, tp);
+                        let tp = argTp[j as usize];                        let hp = st.tchk(ts, tp);
                         r.u(&format!("tP{j}"), tp).u(&format!("hP{j}"), hp);
                     }
                 }
@@ -487,14 +510,114 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                     .collect();
                 assert_eq!(req.len(), HOST_QLEN);
                 for (i, v) in req.iter().enumerate() {
-                    o.u(&format!("q{i}"), *v);
-                }
+                    o.u(&format!("q{i}"), *v);                }
                 o.u("st", ev.st).limbs("r", rl).limbs("g", gl).u("ar", ar).u("mult", 1);
+                // The register wire.  `input` (host id 12) fills register 0 with the spec's
+                // `ctx.input`; `read_register` (13) reads one; `register_len` (6) reads only a
+                // length.  The bytes come from the spec's own post-call register file (`ev.regs`),
+                // so the trace is exactly what the spec did.
+                if has_reg && ev.st == 0 {
+                    match hid {
+                        12 => {
+                            // the register the call filled (the only one present in `ev.regs`)
+                            if let Some((rid, bs)) = ev.regs.first() {
+                                let rid = *rid;
+                                let blen = bs.len() as u64;
+                                regs.insert(rid, bs.clone());
+                                // fill rows: one per byte, plus one length row
+                                for (pos, &b) in bs.iter().enumerate() {
+                                    // [act, kind, rd, rid, pos, len, byte, hid, ts, dir, gap,
+                                    //  fresh, tp, hp, ptr]
+                                    reg_rows.push([1, 0, 0, rid, pos as u64, blen, b, hid, ts, 1,
+                                        blen - pos as u64 - 1, 0, 0, 0, 0]);
+                                    // the HOSTB byte of a fill is the state-side half, `reg = 1`
+                                    hostb_rows.push([ts, 1, pos as u64, b, blen, hid,
+                                        blen - pos as u64 - 1, 1, (pos == 0) as u64, 1]);
+                                    st.byte(0, b, 0);
+                                    st.r16(blen - pos as u64 - 1);
+                                    st.r16(blen);
+                                    st.r16(rid);
+                                }
+                                reg_rows.push([1, 1, 0, rid, 0, blen, 0, hid, ts, 0, 0, 0, 0, 0, 0]);
+                                st.r16(blen);
+                                st.r16(rid);
+                                // the fill re-produces both messages at `ts`
+                                reg_bts.insert(rid, ts);
+                                reg_lts.insert(rid, ts);
+                            }
+                        }
+                        13 => {
+                            // `read_register(id, ptr)`: consumes byte `i` of register `id`
+                            if let Some(bs) = regs.get(&args[0]).cloned() {
+                                let rid = args[0];
+                                let blen = bs.len() as u64;
+                                let ft = *reg_bts.get(&rid).unwrap();
+                                let ptr = args[1];
+                                for (pos, &b) in bs.iter().enumerate() {
+                                    let h = st.tchk(ts, ft);
+                                    // the memory write at `ptr + pos` is the deferred MEMIO link;
+                                    // this slice only records the address
+                                    reg_rows.push([1, 0, 1, rid, pos as u64, blen, b, hid, ts, 0,
+                                        blen - pos as u64 - 1, 1, ft, h, ptr]);
+                                    st.byte(0, b, 0);
+                                    st.r16(blen - pos as u64 - 1);
+                                    st.r16(blen);
+                                    st.r16(rid);
+                                }
+                                let lt = *reg_lts.get(&rid).unwrap();
+                                let hl = st.tchk(ts, lt);
+                                reg_rows.push([1, 1, 1, rid, 0, blen, 0, hid, ts, 0, 0, 1, lt, hl, ptr]);
+                                st.r16(blen);
+                                st.r16(rid);
+                                // the read re-produces both messages at `ts`
+                                reg_bts.insert(rid, ts);
+                                reg_lts.insert(rid, ts);
+                                let _ = ft;
+                            }
+                        }
+                        6 => {
+                            // `register_len(id)`: consumes only the length message
+                            if let Some(bs) = regs.get(&args[0]).cloned() {
+                                let rid = args[0];
+                                let blen = bs.len() as u64;
+                                let lt = *reg_lts.get(&rid).unwrap();
+                                let h = st.tchk(ts, lt);
+                                reg_rows.push([1, 1, 1, rid, 0, blen, 0, hid, ts, 0, 0, 1, lt, h, 0]);
+                                st.r16(blen);
+                                st.r16(rid);
+                                reg_lts.insert(rid, ts);
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                // The register length is consumed (not produced) by the register's own fill row,
+                // so a fill register's `len` message never leaks; nothing else to do here.
                 // HOSTB rows: a fixed 4-byte request stream (dir 0) and a fixed 4-byte response
                 // stream (dir 1) for the first host call.  The bytes are the low four bytes of the
                 // first argument and of the result word; a `(ptr, len)` memory range is not
                 // modelled in this slice.
-                if !hostb_done {
+                // The byte payload of the log/return functions (`log_utf8` 8, `log_utf16` 9,
+                // `panic_utf8` 10, `value_return` 15): a `dir = 0` request group (Wasm -> state)
+                // carrying the memory bytes at `(ptr, len)`, taken from the trace's own memory at
+                // the time of the call.  `(ts, hid)` is the host call's, so the group cannot be
+                // spliced onto another call.  `len` is capped at 40 bytes (the KAT's payloads).
+                if has_host && [8u64, 9, 10, 15].contains(&hid) {
+                    let (ptr, blen) = (args[0], args[1]);
+                    let blen = blen.min(40);
+                    for pos in 0..blen {
+                        let (b, _) = mem.get(ptr + pos);
+                        hostb_rows.push([ts, 0, pos, b, blen, hid, blen - pos - 1, 1,
+                            (pos == 0) as u64, 0]);
+                        st.byte(0, b, 0);
+                        st.r16(blen - pos - 1);
+                    }
+                }
+                // The placeholder byte stream belongs to the minimum slice.  With the REG table the
+                // byte payload is driven by the register wire instead (`hid = 12/13/6`), so the
+                // placeholder must not add unrelated bytes; and a log/return call has its own
+                // payload group above.
+                if !hostb_done && !has_reg && ![8u64, 9, 10, 15].contains(&hid) {
                     hostb_done = true;
                     let qb = bytes(args[0]);
                     let sb_ = bytes(ev.word);
@@ -503,8 +626,11 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
                         let blen = 4u64;
                         for pos in 0..blen {
                             let b = src[pos as usize];
-                            // [ts, dir, pos, byte, len, hid, gap, act, f]; gap = len - pos - 1
-                            hostb_rows.push([ts, dir, pos, b, blen, hid, blen - pos - 1, 1, (pos == 0) as u64]);
+                            // [ts, dir, pos, byte, len, hid, gap, act, f, reg]; gap = len - pos - 1.
+                            // A `dir = 1` byte that fills a register (`input`) has `reg = 1`:
+                            // HOSTB then carries only the state-side half, REG the Wasm side.
+                            let is_reg = 0;
+                            hostb_rows.push([ts, dir, pos, b, blen, hid, blen - pos - 1, 1, (pos == 0) as u64, is_reg]);
                             st.byte(0, b, 0);
                             st.r16(blen - pos - 1);
                         }
@@ -1189,6 +1315,23 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
         drn.row().u("act", 1).u("space", 3).u("slot", a).u("tag", 0).limbs("v", [b, 0, 0, 0]).u("tp", tp)
             .s("inv", fe(3).inverse());
     }
+    // the final register file is left over at the end (space 6): one length message and one byte
+    // message per register, at the register's latest producer time.  This is exactly
+    // `Register.view` -- the leftover space-6 messages are the register file.
+    let mut rid_sorted: Vec<u64> = regs.keys().copied().collect();
+    rid_sorted.sort_unstable();
+    for &rid in rid_sorted.iter() {
+        let bs = regs.get(&rid).unwrap();
+        let btp = *reg_bts.get(&rid).unwrap();
+        let ltp = *reg_lts.get(&rid).unwrap();
+        let blen = bs.len() as u64;
+        for (pos, &b) in bs.iter().enumerate() {
+            drn.row().u("act", 1).u("space", 6).u("slot", rid * (1u64 << 24) + pos as u64 + 1)
+                .u("tag", 0).limbs("v", [b, 0, 0, 0]).u("tp", btp).s("inv", fe(6).inverse());
+        }
+        drn.row().u("act", 1).u("space", 6).u("slot", rid * (1u64 << 24)).u("tag", 2)
+            .limbs("v", [blen, 0, 0, 0]).u("tp", ltp).s("inv", fe(6).inverse());
+    }
     // MEMINIT: one row per touched byte, sorted, with its initial byte; DATA multiplicities
     let mut mi = Tab::new(t("MEMINIT"));
     let mut data_mult = vec![0u64; (prep.data_end as usize).max(1)];
@@ -1310,7 +1453,12 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
             for (k, name) in ["id", "np", "ar", "z0", "z1", "z2", "z3", "z4"].iter().enumerate() {
                 r.u(name, rec[k]);
             }
-            r.u("mult", if j < host_calls.len() { host_calls[j] } else { 0 });
+            // the multiplicity is the number of calls of **this row's** host id (the table's ids
+            // are not contiguous: `abort`/`write_register` reserve 11/14), not of row `j`
+            let id = rec[0] as usize;
+            // padding rows repeat the last record: they carry no call
+            let real = j < prep.host_tab.len();
+            r.u("mult", if real && id < host_calls.len() { host_calls[id] } else { 0 });
         }
         tabs.insert("HOSTT".into(), ht);
         tabs.insert("HOST".into(), h);
@@ -1320,7 +1468,7 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
         let mut hb = hb;
         for rec in hostb_rows.iter() {
             let mut r = hb.row();
-            for (k, name) in ["ts", "dir", "pos", "byte", "len", "hid", "gap", "act", "f"].iter().enumerate() {
+            for (k, name) in ["ts", "dir", "pos", "byte", "len", "hid", "gap", "act", "f", "reg"].iter().enumerate() {
                 r.u(name, rec[k]);
             }
         }
@@ -1329,6 +1477,21 @@ pub fn generate(air: &AirSpec, prep: &Prep) -> Gen {
             hb.row().u("act", 0).u("f", 1).u("gap", 0);
         }
         tabs.insert("HOSTB".into(), hb);
+        if let Some(rg) = reg {
+            let mut rg = rg;
+            for rec in reg_rows.iter() {
+                let mut r = rg.row();
+                for (k, name) in ["act", "kind", "rd", "rid", "pos", "len", "byte", "hid", "ts",
+                    "dir", "gap", "fresh", "tp", "hp", "ptr"].iter().enumerate() {
+                    r.u(name, rec[k]);
+                }
+            }
+            let hgt = (rg.rows.len() + 1).max(4).next_power_of_two();
+            while rg.rows.len() < hgt {
+                rg.row().u("act", 0);
+            }
+            tabs.insert("REG".into(), rg);
+        }
     }
     let mut mats = vec![];
     let mut rows_per_table = vec![];
@@ -1445,6 +1608,30 @@ pub fn check_buses(air: &AirSpec, g: &Gen) -> Result<(), String> {
                 *e += if it.send { c as i128 } else { -(c as i128) };
             }
         }
+    }
+    if std::env::var("WASMBASE_BUS_DEBUG").is_ok() {
+        let mut per: HashMap<(u16, Vec<u32>), i128> = HashMap::new();
+        for (ti, spec) in air.tables.iter().enumerate() {
+            let m = &g.mats[ti];
+            let w = spec.cols.len();
+            let h = m.values.len() / w;
+            for r in 0..h {
+                let cur = &m.values[r * w..(r + 1) * w];
+                let nr = (r + 1) % h;
+                let nxt = &m.values[nr * w..(nr + 1) * w];
+                let sel = [fe((r == 0) as u64), fe((r == h - 1) as u64), fe((r != h - 1) as u64)];
+                for it in &spec.inters {
+                    let c = it.count.eval_f(cur, nxt, &g.pubs, sel).as_canonical_u32();
+                    if c == 0 { continue; }
+                    let msg: Vec<u32> = it.msg.iter().map(|e| e.eval_f(cur, nxt, &g.pubs, sel).as_canonical_u32()).collect();
+                    if it.bus == 3 || (it.bus == 4 && msg[0] == 0) {
+                        eprintln!("BUS {} send={} {:?} {}", spec.name, it.send, msg, c);
+                        per.entry((it.bus, msg)).or_insert(0);
+                    }
+                }
+            }
+        }
+        let _ = per;
     }
     let bad: Vec<_> = bal.iter().filter(|(_, v)| **v != 0).take(5).collect();
     if bad.is_empty() { Ok(()) } else { Err(format!("unbalanced: {bad:?}")) }

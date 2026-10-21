@@ -643,6 +643,54 @@ fn cmd_tamper(air_path: &str, prep_path: &str) {
             cases.push((format!("HOSTB[row {r}].gap+1"), cell(thb, r, col(thb, "gap"), plus1())));
         }
     }
+    // the register wire (channel space 6)
+    if let Ok(tr) = std::panic::catch_unwind(|| tb("REG")) {
+        let (w, act) = (g.mats[tr].width, col(tr, "act"));
+        let nrows = g.rows_per_table[tr].1;
+        let active: Vec<usize> = (0..nrows)
+            .filter(|&r| g.mats[tr].values[r * w + act] == F::ONE)
+            .collect();
+        let (kind, rd) = (col(tr, "kind"), col(tr, "rd"));
+        let is_byte = |r: usize| g.mats[tr].values[r * w + kind] == F::ZERO;
+        if let Some(&r) = active.iter().find(|&&r| is_byte(r)) {
+            // wrong byte: the BYTE lookup and the space-6 message both move
+            cases.push((format!("REG[row {r}].byte+1"), cell(tr, r, col(tr, "byte"), plus1())));
+            // wrong byte position: `pos + gap + 1 != len`
+            cases.push((format!("REG[row {r}].pos+1"), cell(tr, r, col(tr, "pos"), plus1())));
+            // a byte moved to another register (the register id is in the message key)
+            cases.push((format!("REG[row {r}].rid+1"), cell(tr, r, col(tr, "rid"), plus1())));
+            // wrong byte value on the HOSTB half (the wire message moves, not the space-6 one)
+            cases.push((format!("REG[row {r}].bv+1"), cell(tr, r, col(tr, "byte"), plus1())));
+            // `rd` flipped: the fill becomes a read (and `cDirRd` fires)
+            cases.push((format!("REG[row {r}].rd=1-rd"),
+                cell(tr, r, rd, Box::new(|_| F::ONE))));
+            // `kind` flipped: a byte row becomes a length row (`cDirRd`/`cKind`)
+            cases.push((format!("REG[row {r}].kind=1"),
+                cell(tr, r, kind, Box::new(|_| F::ONE))));
+            // `fresh` flipped on a *fill* row: `cFreshFill` fires
+            let fillr = active.iter().find(|&&q| is_byte(q) && g.mats[tr].values[q * w + rd] == F::ZERO);
+            if let Some(&f) = fillr {
+                cases.push((format!("REG[row {f}].fresh=1"),
+                    cell(tr, f, col(tr, "fresh"), Box::new(|_| F::ONE))));
+            }
+        }
+        // a length row's value
+        if let Some(&r) = active.iter().find(|&&r| !is_byte(r)) {
+            cases.push((format!("REG[row {r}].len+1"), cell(tr, r, col(tr, "len"), plus1())));
+        }
+        // duplicate slot: two active byte rows of one register at the same position
+        let (rid, pos) = (col(tr, "rid"), col(tr, "pos"));
+        if active.len() >= 2 {
+            let (a, b) = (active[0], active[1]);
+            if is_byte(a) && is_byte(b) {
+                cases.push((format!("REG dup (rid,pos) rows {a},{b}"), Box::new(move |g: &mut Gen| {
+                    let w = g.mats[tr].width;
+                    g.mats[tr].values[b * w + pos] = g.mats[tr].values[a * w + pos];
+                    g.mats[tr].values[b * w + rid] = g.mats[tr].values[a * w + rid];
+                })));
+            }
+        }
+    }
     // swap two ADD rows' timestamps (reorders execution)
     let ta = tb("ADD");
     if g.rows_per_table[ta].1 >= 2 {

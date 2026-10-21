@@ -109,10 +109,19 @@ def hostFnsBase : List (Nat × String × Nat × Nat) :=
    (3, "storage_usage", 0, 1), (4, "prepaid_gas", 0, 1), (5, "used_gas", 0, 1),
    (6, "register_len", 1, 1), (7, "panic", 0, 0)]
 
-/-- The 19 D3α context / state-read hosts (`lane/pq-host-ctx`).  Ids continue after the promise
-family; arities are the exact ones of `NearSpecV3.Wasm.hostSigs`.  Two entries are listed for
-completeness but rejected by `hostChipIdOf`, because they do not fit the HOST row's shape:
-`validator_stake` has `np = 3` and `gas` takes an `i32` (the row's argument slots are `i64`). -/
+/-- Fixed host table `(id, name, #params, #results)`: the base entries (`id 0..7`, pinned), the 23
+promise/receipt functions (`id 8..30`) and the log/panic + register/return functions (`id 45..52`).
+With `Host.nArgs = 9` the wide HOST chip types every entry; `ar ≤ 1` throughout.
+
+The D3α log/panic and register/return functions (`lane/pq-host-logreg`).  Ids are fresh, so
+every previously assigned id stays stable.  `abort` (np = 4) and `write_register` (np = 3) are
+admitted by the widened chip (`Host.nArgs = 9`). -/
+def hostLogFns : List (Nat × String × Nat × Nat) :=
+  [(45, "log_utf8", 2, 0), (46, "log_utf16", 2, 0), (47, "panic_utf8", 2, 0),
+   (48, "input", 1, 0), (49, "read_register", 2, 0), (50, "value_return", 2, 0),
+   (51, "abort", 4, 0), (52, "write_register", 3, 0)]
+
+/-- The 19 D3α context / state-read hosts (`lane/pq-host-ctx`), ids 31..44. -/
 def hostCtxFns : List (Nat × String × Nat × Nat) :=
   [(31, "current_account_id", 1, 0), (32, "chain_id", 1, 0),
    (33, "signer_account_id", 1, 0), (34, "signer_account_pk", 1, 0),
@@ -122,19 +131,13 @@ def hostCtxFns : List (Nat × String × Nat × Nat) :=
    (41, "current_contract_code", 1, 1), (42, "gas", 1, 0),
    (43, "validator_total_stake", 1, 0), (44, "validator_stake", 3, 0)]
 
-/-- Fixed host table `(id, name, #params, #results)`: the base entries (`id 0..7`, unchanged), then
-the 23 promise/receipt functions (`id 8..30`), then the 19 context/state-read hosts (`id 31..44`).
-With `Host.nArgs = 9` the wide HOST chip types every entry; `ar ≤ 1` throughout. -/
-def hostFns : List (Nat × String × Nat × Nat) := hostFnsBase ++ promiseFns ++ hostCtxFns
+def hostFns : List (Nat × String × Nat × Nat) := hostFnsBase ++ promiseFns ++ hostCtxFns ++ hostLogFns
 
-/-- The HOST row accepts up to `Host.nArgs` arguments and at most one result.  This is the widened
-window (`nArgs = 9`); before the widening it was `np ≤ 2`. -/
+/-- The HOST row accepts up to 9 arguments and at most one result. -/
 def hostShapeOk (np ar : Nat) : Bool := np ≤ 9 && ar ≤ 1
 
-/-- The HOST row's argument slots are **i64** (`cTag0`/`cTag1` force `tagP j = 1` and the trace
-generator asserts `tag = 1`), so a function with an `i32` parameter cannot be called either: its
-argument would carry tag `0`.  Only `gas` (`params = [i32]`) is affected; widening the tag is a chip
-change for a later lane. -/
+/-- The HOST row's argument slots are `i64`-tagged, so a function with an `i32` parameter cannot be
+called (`gas`, `abort`); widening the tag is a later lane's change. -/
 def hostArgsI64 (name : String) : Bool :=
   match NearSpecV3.Wasm.hostSigs.find? (·.1 = name) with
   | some (_, ft) => ft.params.all (· == .i64)
@@ -154,8 +157,15 @@ def hostIdOf (name : String) : Option Nat :=
 def hostSig (id : Nat) : Option (Nat × Nat) :=
   (hostFns.find? (fun x => x.1 = id)).map fun x => (x.2.2.1, x.2.2.2)
 
-/-- Host id of `name` **if its signature fits the HOST row**: `np ≤ 2`, `ar ≤ 1`, and every
-parameter is `i64`.  This is what the checker uses, so a listed-but-unusable entry is not callable. -/
+/-- Host ids whose call carries a **byte payload** on `HOSTB` (`log_utf8`, `log_utf16`,
+`panic_utf8`, `value_return`).  `input`, `read_register` and `register_len` are the register-space
+functions (space 6); `panic` has no payload. -/
+def hostByteIds : List Nat := [45, 46, 47, 50]
+
+theorem hostByteIds_mem : ∀ i ∈ hostByteIds, (hostSig i).isSome := by decide
+
+/-- Host id of `name` **if its signature fits the HOST row**: `np ≤ 9`, `ar ≤ 1`, and every
+parameter is `i64`.  This is what the checker uses. -/
 def hostChipIdOf (name : String) : Option Nat :=
   (hostFns.find? (fun x => x.2.1 = name && hostShapeOk x.2.2.1 x.2.2.2 && hostArgsI64 name)).map (·.1)
 
@@ -168,7 +178,6 @@ def hostChipSig (id : Nat) : Option (Nat × Nat) :=
        | none => none)
     else none
 
-/-- The cached host-table row `[id, np, ar, 0, 0, 0, 0, 0]`. -/
 def hostRow (id np ar : Nat) : List Nat := [id, np, ar, 0, 0, 0, 0, 0]
 
 /-- FETCH opcode of an import call (not a Wasm opcode of the F1 family). -/
@@ -308,8 +317,7 @@ and the HOSTQ request stays inside the backend's NV envelope (`log_max_message_l
 window fails the build rather than the prover. -/
 theorem hostFns_shape :
     hostFns.all (fun x => x.2.2.1 ≤ Host.nArgs && x.2.2.2 ≤ 1) = true := by
-  simp only [hostFns, hostFnsBase, promiseFns, Host.nArgs, List.all_append, List.all_cons,
-    List.all_nil, Bool.and_eq_true, Bool.true_and, Nat.le_refl, Nat.reduceLeDiff, and_true]
+  simp only [hostFns, Host.nArgs]
   decide
 
 /-- The HOSTQ message is 23 fields including the bus, so it fits NV's `log_max_message_length = 7`
@@ -382,16 +390,24 @@ def hid : Nat := 5
 def gap : Nat := 6
 def act : Nat := 7
 def f : Nat := 8
+/-- `reg = 1`: this byte **also** fills a register.  `HOSTB` then owns only the state-side half of
+the message; the Wasm-side half (receiving it into channel space 6) is `REG` (`WasmBase.RegChip`).
+Such a byte is always a *response* byte (`dir = 1`, state → Wasm) — `cRegDir` below.  With
+`reg = 0` the byte is a plain host payload and `HOSTB` keeps both halves (a self-permutation). -/
+def reg : Nat := 9
 /-- `len` is the group's byte count, committed on every row of the group (so it is a function of
 `ts` rather than a free witness per row), and `hid` ties the group to the host call it belongs to.
 Together they are the HOSTB <-> HOSTQ link: the same `(ts, hid)` pair appears on HOSTQ, so a byte
 group cannot be spliced onto a different call.  The `(ptr, len)` memory range is still not modelled
 (the bytes are not yet tied to linear memory). -/
-def cols : List String := ["ts", "dir", "pos", "byte", "len", "hid", "gap", "act", "f"]
+def cols : List String := ["ts", "dir", "pos", "byte", "len", "hid", "gap", "act", "f", "reg"]
 
 def cAct : Expr := bool (v act)
 def cF : Expr := bool (v f)
 def cDir : Expr := bool (v dir)
+def cReg : Expr := bool (v reg)
+/-- Only a response byte can fill a register (a request byte is Wasm → state). -/
+def cRegDir : Expr := v reg * (1 - v dir)
 def cFirst : Expr := .first * (1 - v f)
 def cLast : Expr := .last * (1 - v f)
 /-- A group continues with the same `ts`. -/
@@ -414,23 +430,26 @@ def cLenConst : Expr := (1 - nv f) * (nv blen - v blen)
 def cHidConst : Expr := (1 - nv f) * (nv hid - v hid)
 
 def constraints : List Expr :=
-  [cAct, cF, cDir, cFirst, cLast, cTs, cDirG, cPos, cPosLtLen, cLenConst, cHidConst]
+  [cAct, cF, cDir, cReg, cRegDir, cFirst, cLast, cTs, cDirG, cPos, cPosLtLen, cLenConst, cHidConst]
 
 def msg : List Expr := [v ts, v hid, v dir, v pos, v bv]
-/-- The Wasm side sends request bytes (`dir = 0`) and receives response bytes (`dir = 1`), each with
-a 0/1 count (`act · dir` and `act · (1 − dir)` are bits).  Because the state side is not modelled
-yet, both the send and the matching receive of every message sit in this table: the wire is
-balanced by construction (a self-permutation), exactly as `HOSTO` stands in for the state side on
-`HOSTQ`/`HOSTR`.  A joined proof keeps the two wasm-side interactions and replaces the other two
-by the state tables on bus 210.  The bytes are free witnesses in `0..255` here (no memory pointer,
-no length, no register space yet). -/
+/-- **The register link.**  When `reg = 1` the byte fills a register and the Wasm-side half of
+the wire lives in `REG` (`WasmBase.RegChip`): the fill (`dir = 1`) is *sent* here and *received* by
+`REG` (whose `cDirRd` makes a fill byte a response byte).  One
+register byte is Wasm-side only, so it never travels back).  When `reg = 0` the byte is a plain
+payload and this table carries both halves (the self-permutation of the minimum slice), exactly as
+`HOSTO` stands in for the state side on `HOSTQ`/`HOSTR`.  A joined proof keeps the Wasm-side halves
+and replaces the others by the state tables on bus 210.  All counts are bits. -/
 def inters : List Inter :=
-  [⟨busHostB, true, v act * (1 - v dir), msg⟩,
-   ⟨busHostB, false, v act * (1 - v dir), msg⟩,
-   ⟨busHostB, true, v act * v dir, msg⟩,
-   ⟨busHostB, false, v act * v dir, msg⟩,
-   byteQ 0 (v bv) 0 0 (v act),
-   r16 (v gap) (v act)]
+  [⟨busHostB, true, v act * (1 - v dir) * (1 - v reg), msg⟩,
+   ⟨busHostB, false, v act * (1 - v dir) * (1 - v reg), msg⟩,
+   ⟨busHostB, true, v act * v dir * (1 - v reg), msg⟩,
+   ⟨busHostB, false, v act * v dir * (1 - v reg), msg⟩,
+   -- the state-side half of a register-filling byte (`cRegDir` forces `dir = 1`)
+   ⟨busHostB, true, v act * v reg, msg⟩,
+   -- a register-filling byte (`reg = 1`) is looked up by `REG`, which owns the register wire
+   byteQ 0 (v bv) 0 0 (v act * (1 - v reg)),
+   r16 (v gap) (v act * (1 - v reg))]
 
 def table : Table := ⟨"HOSTB", cols, constraints, inters⟩
 end HostB

@@ -57,8 +57,11 @@ def binop(name, a, b):
     raise ValueError(name)
 
 
-def run(prog, fuel=10 ** 8):
-    """Runs function 0 (`prog`); `prog['funcs']` are functions 1, 2, ... (callable by `('call', i)`)."""
+def run(prog, fuel=10 ** 8, input_bytes=()):
+    """Runs function 0 (`prog`); `prog['funcs']` are functions 1, 2, ... (callable by `('call', i)`).
+    `input_bytes` is the `CallCtx.input` the imported `input` copies into a register."""
+    INPUT = list(input_bytes)
+    regs = {}
     imports = prog.get('imports', [])
     nimp = len(imports)
     funcs = [prog] + prog.get('funcs', [])
@@ -97,7 +100,22 @@ def run(prog, fuel=10 ** 8):
             # host functions of the fixed table; the D3a context getters with the harness defaults
             # (`NearSpecV3.Wasm.CallCtx`), plus `panic`.  The register fillers and the arithmetic
             # `gas` have no observable value: they are modelled by their side effect only.
+            # host functions of the fixed table; the context getters, panic, and the register wire
+            # (`input` / `register_len` / `read_register`)
             name = imports[fi][1]
+            if name == 'input':
+                regs[args[0]] = list(INPUT)
+                return None
+            if name == 'register_len':
+                return len(regs[args[0]]) if args[0] in regs else (1 << 64) - 1
+            if name == 'read_register':
+                d = regs.get(args[0])
+                if d is None:
+                    raise Trap('InvalidRegisterId')
+                ptr = args[1]
+                for k, x in enumerate(d):
+                    mem[ptr + k] = x
+                return None
             if name == 'block_index':
                 return 10
             if name == 'block_timestamp':
@@ -130,6 +148,11 @@ def run(prog, fuel=10 ** 8):
                 # the promise family is not modelled: an aborting call is what these KAT programs
                 # expect (they exist to exercise the HOST row's argument window)
                 raise Trap('host abort')
+            # D3α logs and return data: no effect on the returned value, no trap
+            if name in ('log_utf8', 'log_utf16', 'value_return'):
+                return None
+            if name == 'panic_utf8':
+                raise Trap('GuestPanic')
             raise RuntimeError('host not modelled: ' + name)
         f = funcs[fi - nimp]
         body, end_of = prep(fi)

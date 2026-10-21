@@ -17,9 +17,12 @@ binp = os.environ.get('WASMBASE_BIN', '/data/illia/nearproof-deps/pq-wasm-base/t
 os.makedirs(out, exist_ok=True)
 airp, pts, rj = (os.path.join(out, f) for f in ('air.json', 'points.txt', 'rust.jsonl'))
 host = os.environ.get('WASMBASE_AIRH') == '1'
-open(airp, 'w').write(subprocess.check_output([tool, 'airH' if host else 'air', nloc, ncode], text=True))
+reg = os.environ.get('WASMBASE_AIRR') == '1'
+kind = 'airR' if reg else ('airH' if host else 'air')
+ev = 'evalR' if reg else ('evalH' if host else 'eval')
+open(airp, 'w').write(subprocess.check_output([tool, kind, nloc, ncode], text=True))
 subprocess.check_call([binp, 'difftest', airp, pts, rj, n], stdout=subprocess.DEVNULL)
-lean = subprocess.check_output([tool, 'evalH' if host else 'eval', nloc, ncode, pts], text=True).splitlines()
+lean = subprocess.check_output([tool, ev, nloc, ncode, pts], text=True).splitlines()
 rust = open(rj).read().splitlines()
 air = json.load(open(airp))
 assert len(lean) == len(rust), (len(lean), len(rust))
