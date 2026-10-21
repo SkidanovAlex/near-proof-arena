@@ -163,7 +163,7 @@ theorem host_st_bit {nloc ngl : Nat} {pub : List F} {tr : Trace}
   have ht : 22 < (wasmBaseHostAir nloc ngl).tables.length := by simp [wasmBaseHostAir, air_len]
   have hcon : ∀ e ∈ Host.table.constraints, e.eval (natRow (rowNat tr 22 r) (tr.row pub 22 r)) = 0 :=
     table_constr H ht hr
-  have hs := hcon Host.cSt (by simp [Host.table, Host.constraints])
+  have hs := hcon Host.cSt host_cSt_mem
   simp only [Host.cSt, Chips.bool, Chips.v, Expr.eval_mul', Expr.eval_sub', Expr.eval_col,
     Expr.eval_ofNat', Host.st, natRow] at hs
   exact bool_nat (rowNat_lt tr 22 r 9) hs
@@ -176,7 +176,7 @@ theorem host_ar_bit {nloc ngl : Nat} {pub : List F} {tr : Trace}
   have ht : 22 < (wasmBaseHostAir nloc ngl).tables.length := by simp [wasmBaseHostAir, air_len]
   have hcon : ∀ e ∈ Host.table.constraints, e.eval (natRow (rowNat tr 22 r) (tr.row pub 22 r)) = 0 :=
     table_constr H ht hr
-  have ha := hcon Host.cAr (by simp [Host.table, Host.constraints])
+  have ha := hcon Host.cAr host_cAr_mem
   simp only [Host.cAr, Chips.bool, Chips.v, Expr.eval_mul', Expr.eval_sub', Expr.eval_col,
     Expr.eval_ofNat', Host.ar, natRow] at ha
   exact bool_nat (rowNat_lt tr 22 r 8) ha
@@ -193,7 +193,7 @@ theorem host_nres_bit {nloc ngl : Nat} {pub : List F} {tr : Trace}
   have ht : 22 < (wasmBaseHostAir nloc ngl).tables.length := by simp [wasmBaseHostAir, air_len]
   have hcon : ∀ e ∈ Host.table.constraints, e.eval (natRow (rowNat tr 22 r) (tr.row pub 22 r)) = 0 :=
     table_constr H ht hr
-  have hn := hcon Host.cNres (by simp [Host.table, Host.constraints])
+  have hn := hcon Host.cNres host_cNres_mem
   simp only [Host.cNres, Chips.v, Expr.eval_add', Expr.eval_sub', Expr.eval_mul', Expr.eval_col,
     Expr.eval_ofNat', Host.nres, Host.st, Host.ar, natRow] at hn
   have hn' : (rowNat tr 22 r 10 : F) - (rowNat tr 22 r 8 : F) +
@@ -237,7 +237,7 @@ theorem host_act_bit {nloc ngl : Nat} {pub : List F} {tr : Trace}
   have ht : 22 < (wasmBaseHostAir nloc ngl).tables.length := by simp [wasmBaseHostAir, air_len]
   have hcon : ∀ e ∈ Host.table.constraints, e.eval (natRow (rowNat tr 22 r) (tr.row pub 22 r)) = 0 :=
     table_constr H ht hr
-  have hb := hcon Host.cAct (by simp [Host.table, Host.constraints])
+  have hb := hcon Host.cAct host_cAct_mem
   simp only [Host.cAct, Chips.bool, Chips.v, Expr.eval_mul', Expr.eval_sub', Expr.eval_col,
     Expr.eval_ofNat', Host.act, natRow] at hb
   have hb' : (rowNat tr 22 r 5 : F) * ((rowNat tr 22 r 5 : F) - 1) = 0 := hb
@@ -246,23 +246,17 @@ theorem host_act_bit {nloc ngl : Nat} {pub : List F} {tr : Trace}
 /-- **`pf j` is ≤ 1** for `j ≤ 1`, by `Host.cP0` / `Host.cP1`. -/
 theorem host_pf_le {nloc ngl : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseHostAir nloc ngl) pub tr) {r : Nat} (hr : r < tr.height 22)
-    {j : Nat} (hj : j ≤ 1) : rowNat tr 22 r (Host.pf j) ≤ 1 := by
+    {j : Nat} (hj : j < Host.nArgs) : rowNat tr 22 r (Host.pf j) ≤ 1 := by
+  show rowNat tr 22 r (19 + j) ≤ 1
   have ht : 22 < (wasmBaseHostAir nloc ngl).tables.length := by simp [wasmBaseHostAir, air_len]
   have hcon : ∀ e ∈ Host.table.constraints, e.eval (natRow (rowNat tr 22 r) (tr.row pub 22 r)) = 0 :=
     table_constr H ht hr
-  rcases (show j = 0 ∨ j = 1 by omega) with rfl | rfl
-  · show rowNat tr 22 r 19 ≤ 1
-    have hb := hcon Host.cP0 (by simp [Host.table, Host.constraints])
-    simp only [Host.cP0, Chips.bool, Chips.v, Expr.eval_mul', Expr.eval_sub', Expr.eval_col,
-      Expr.eval_ofNat', Host.pf, natRow] at hb
-    have hb' : (rowNat tr 22 r 19 = 0 ∨ rowNat tr 22 r 19 = 1) := bool_nat (rowNat_lt tr 22 r 19) hb
-    rcases hb' with h | h <;> omega
-  · show rowNat tr 22 r 20 ≤ 1
-    have hb := hcon Host.cP1 (by simp [Host.table, Host.constraints])
-    simp only [Host.cP1, Chips.bool, Chips.v, Expr.eval_mul', Expr.eval_sub', Expr.eval_col,
-      Expr.eval_ofNat', Host.pf, natRow] at hb
-    have hb' : (rowNat tr 22 r 20 = 0 ∨ rowNat tr 22 r 20 = 1) := bool_nat (rowNat_lt tr 22 r 20) hb
-    rcases hb' with h | h <;> omega
+  have hb := hcon (Host.cP j) (host_cP_mem j hj)
+  simp only [Host.cP, Chips.bool, Chips.v, Expr.eval_mul', Expr.eval_sub', Expr.eval_col,
+    Expr.eval_ofNat', Host.pf, natRow] at hb
+  have hb' : (rowNat tr 22 r (19 + j) = 0 ∨ rowNat tr 22 r (19 + j) = 1) :=
+    bool_nat (rowNat_lt tr 22 r (19 + j)) hb
+  rcases hb' with h | h <;> omega
 
 /-- **`nres` is ≤ 1.** -/
 theorem host_nres_le {nloc ngl : Nat} {pub : List F} {tr : Trace}
@@ -272,7 +266,17 @@ theorem host_nres_le {nloc ngl : Nat} {pub : List F} {tr : Trace}
 
 /-! ## `occ_bits` for the host AIR on buses STATE/CH -/
 
-/-- Each of `HOST`'s five STATE/CH interactions has count ≤ 1 on any `Holds` row. -/
+/-- **The counts of `HOST`'s STATE/CH interactions, as a list.**  Two `act` (the STATE messages),
+one `pf j` per argument, and one `nres` (the send).  Stating the *list of counts* rather than
+destructuring the interactions keeps this independent of the exact `inters` layout. -/
+theorem host_state_ch_count_list :
+    ((Host.table.inters.filter (fun i => i.bus = busState ∨ i.bus = busStk)).map (·.count)) =
+      Expr.col Host.act :: Expr.col Host.act ::
+        (Host.argRange.map (fun j => Expr.col (Host.pf j)) ++ [Expr.col Host.nres]) := by
+  simp only [Host.table, Host.inters, Host.chBase, Host.chStride, Host.sendIdx, Host.argRange]
+  decide
+
+/-- Each of `HOST`'s STATE/CH interactions has count ≤ 1 on any `Holds` row. -/
 theorem host_inter_bound {nloc ngl : Nat} {pub : List F} {tr : Trace}
     (H : Holds (wasmBaseHostAir nloc ngl) pub tr) {r : Nat} (hr : r < tr.height 22) :
     ∀ i ∈ Host.table.inters, (i.bus = busState ∨ i.bus = busStk) →
@@ -280,54 +284,17 @@ theorem host_inter_bound {nloc ngl : Nat} {pub : List F} {tr : Trace}
   intro i hi hb
   have hmem : i ∈ Host.table.inters.filter (fun j => j.bus = busState ∨ j.bus = busStk) :=
     List.mem_filter.mpr ⟨hi, by simpa using hb⟩
-  rw [host_state_ch_inters] at hmem
-  simp only [List.mem_cons, List.mem_nil_iff, or_false] at hmem
-  clear hi hb
-  rcases hmem with rfl | rfl | rfl | rfl | rfl
-  · -- stateIn: count `act`
-    show ((Expr.col Host.act).eval (tr.row pub 22 r)).toNat ≤ 1
-    rw [col_eval]; exact host_act_bit H hr
-  · -- stateOut: count `act`
-    show ((Expr.col Host.act).eval (tr.row pub 22 r)).toNat ≤ 1
-    rw [col_eval]; exact host_act_bit H hr
-  · -- stkRecv j=0: count `pf 0`
-    show ((Expr.col (Host.pf 0)).eval (tr.row pub 22 r)).toNat ≤ 1
-    rw [col_eval]; exact host_pf_le H hr (by omega)
-  · -- stkRecv j=1: count `pf 1`
-    show ((Expr.col (Host.pf 1)).eval (tr.row pub 22 r)).toNat ≤ 1
-    rw [col_eval]; exact host_pf_le H hr (by omega)
-  · -- stkSend: count `nres`
-    show ((Expr.col Host.nres).eval (tr.row pub 22 r)).toNat ≤ 1
-    rw [col_eval]; exact host_nres_le H hr
-
-/-- **Every STATE/CH occurrence of `wasmBaseHostAir` has count ≤ 1.**  Tables 0-21 come from the
-base AIR's `occ_bits` via `occs_mono_host`; `HOST`'s five interactions on these buses are bounded by
-`host_inter_bound`; `HOSTO`/`HOSTT`/`HOSTB` have no interaction on them (`env_inters_nil`). -/
-theorem occ_bits_host {X : Ctx} {nloc ngl : Nat} {pub : List F} {tr : Trace}
-    (H : Holds (wasmBaseHostAir nloc ngl) pub tr)
-    (H0 : Holds (wasmBaseAir nloc ngl) pub tr)
-    (hpub : PubOK X nloc ngl pub) (CF : ChipFacts X nloc ngl pub tr) :
-    ∀ o ∈ occs (wasmBaseHostAir nloc ngl) tr pub, o.1 = busState ∨ o.1 = busStk → o.2.2.2 ≤ 1 := by
-  intro o ho hk
-  rcases occ_table_host ho with ⟨t, ht, r, hr, i, hi, rfl⟩ | ⟨r, hr, i, hi, rfl⟩ |
-    ⟨r, hr, i, hi, rfl⟩ | ⟨r, hr, i, hi, rfl⟩ | ⟨r, hr, i, hi, rfl⟩
-  · exact occ_bits H0 hpub CF _
-      (mem_occs.mpr ⟨t, by simp [air_len]; exact ht, r, hr, i, hi, rfl⟩)
-      (by
-        have : i.bus = busState ∨ i.bus = busStk := by
-          rcases hk with h | h
-          · exact Or.inl (by simpa using h)
-          · exact Or.inr (by simpa using h)
-        rcases this with h | h <;> simp [h])
-  · exact host_inter_bound H hr i hi (by simpa using hk)
-  · have := env_inters_nil.1
-    rw [List.eq_nil_iff_forall_not_mem] at this
-    exact absurd (List.mem_filter.mpr ⟨hi, by simpa using hk⟩) (this i)
-  · have := env_inters_nil.2.1
-    rw [List.eq_nil_iff_forall_not_mem] at this
-    exact absurd (List.mem_filter.mpr ⟨hi, by simpa using hk⟩) (this i)
-  · have := env_inters_nil.2.2
-    rw [List.eq_nil_iff_forall_not_mem] at this
-    exact absurd (List.mem_filter.mpr ⟨hi, by simpa using hk⟩) (this i)
+  -- the count is one of `act`, `pf j`, `nres`
+  have hcount : i.count ∈ (Expr.col Host.act :: Expr.col Host.act ::
+      (Host.argRange.map (fun j => Expr.col (Host.pf j)) ++ [Expr.col Host.nres])) := by
+    have := List.mem_map_of_mem (f := (·.count)) hmem
+    rwa [host_state_ch_count_list] at this
+  simp only [List.mem_cons, List.mem_append, List.mem_map, List.mem_singleton,
+    Host.argRange, List.mem_range, or_false, List.not_mem_nil] at hcount
+  rcases hcount with h | h | ⟨j, hj, h⟩ | h
+  · rw [h]; rw [col_eval]; exact host_act_bit H hr
+  · rw [h]; rw [col_eval]; exact host_act_bit H hr
+  · rw [← h]; rw [col_eval]; exact host_pf_le H hr (by simpa [Host.argRange] using hj)
+  · rw [h]; rw [col_eval]; exact host_nres_le H hr
 
 end WasmBase

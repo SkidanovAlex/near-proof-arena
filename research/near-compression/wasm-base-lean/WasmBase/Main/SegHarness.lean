@@ -439,9 +439,77 @@ The conclusion is `wasm_base_exec`'s plus the segment map.
 def hostActRows (tr : Trace) (pub : List F) : List (Nat × Nat) :=
   (actRows tr pub 22).map fun r => (22, r)
 
-/-- The instruction rows of `wasmBaseHostAir`.  Tables 1-14 are the base tables index for index
-(`host_air_get`), so the same `actRows` applies. -/
+/-- The action list of `wasmBaseHostAir`: the base instruction rows, then the active HOST rows. -/
 def actListHost (tr : Trace) (pub : List F) : List (Nat × Nat) :=
-  (List.range 14).flatMap fun k => (actRows tr pub (k + 1)).map fun r => (k + 1, r)
+  actList tr pub ++ hostActRows tr pub
+
+/-- The chip table of an action row, HOST included. -/
+def chipTHost (t : Nat) : Table := if t = 22 then Host.table else chipT t
+
+/-- The STATE input message of an action row of the host AIR. -/
+def rowInH (tr : Trace) (pub : List F) (ρ : Nat × Nat) : List F :=
+  rowIn (chipTHost ρ.1) tr pub ρ.1 ρ.2
+/-- The STATE output message of an action row of the host AIR. -/
+def rowOutH (tr : Trace) (pub : List F) (ρ : Nat × Nat) : List F :=
+  rowOut (chipTHost ρ.1) tr pub ρ.1 ρ.2
+/-- The CH messages an action row of the host AIR consumes. -/
+def rowConsH (tr : Trace) (pub : List F) (ρ : Nat × Nat) : List Msg :=
+  rowCons (chipTHost ρ.1) tr pub ρ.1 ρ.2
+/-- The CH messages an action row of the host AIR produces. -/
+def rowProdH (tr : Trace) (pub : List F) (ρ : Nat × Nat) : List Msg :=
+  rowProd (chipTHost ρ.1) tr pub ρ.1 ρ.2
+
+/-! ## `wasm_base_exec_host`
+
+`exec_of_rows_seg` instantiated against `wasmBaseHostAir`: the action list is `actListHost` (base
+instruction rows then active HOST rows), the row facts are supplied per row, and the segment thread
+is `seg`.
+
+The bus-level premises (`hst`, `hch`) are hypotheses: assembling them is
+`msgs_state_host`/`msgs_ch_host` composed with `msgs_state`/`msgs_ch` and `msgs_perm` — the same
+shape as `wasm_base_exec`, one layer out.
+
+The conclusion reports the **last** segment: after a host call the global `R·S + g = g0` is false,
+which is the whole reason for the segmentation. -/
+theorem wasm_base_exec_host (X : Ctx) {nloc ngl : Nat} {pub : List F} {tr : Trace}
+    (seg : Nat → Nat × Nat) (init fin : List Msg) (st : Nat) (hst12 : st = 1 ∨ st = 2)
+    (hrows : ∀ r ∈ actListHost tr pub,
+      RowFactsSegMap X (rowInH tr pub r) (rowOutH tr pub r) (rowConsH tr pub r) (rowProdH tr pub r) seg)
+    (hrows2 : ∀ r ∈ actListHost tr pub,
+      RowFacts2 X (rowInH tr pub r) (rowOutH tr pub r) (rowConsH tr pub r) (rowProdH tr pub r))
+    (sbf cidf : F)
+    (hst : (stMsg 0 1 0 0 0 0 :: (actListHost tr pub).map (rowOutH tr pub)).Perm
+      ([tr.cell 0 0 Boundary.pcf, pub.getD Boundary.pubN 0, pub.getD Boundary.pubS 0,
+        (st : F), sbf, cidf] :: (actListHost tr pub).map (rowInH tr pub)))
+    (hch : (init ++ (actListHost tr pub).flatMap (fun r => rowProdH tr pub r)).Perm
+      (fin ++ (actListHost tr pub).flatMap (fun r => rowConsH tr pub r)))
+    (hinit : init.Nodup) (hinitTp : ∀ x ∈ init, x.tp = 0)
+    (hlen : (actListHost tr pub).length < 2 ^ 28)
+    (hfee : ((actListHost tr pub).length + 1) * (X.maxFee + 1) < ZkFormal.Algebra.P)
+    (hstepgas : ∀ t S : Nat, X.R * (S + X.maxFee - (seg t).1) ≤ (seg t).2)
+    (hg64 : X.g0 < 2 ^ 64)
+    {E0 : Env} (hE0 : E0.sb = 0 ∧ E0.cid = 0 ∧ E0.k = 0)
+    {s0 : St} {f0 : Frame}
+    (h0 : RelW X E0 s0 f0 (fun _ => 0) (fun _ => 0) 1 0 0 (· ∈ init) (seg 1).1 (seg 1).2) :
+    (actListHost tr pub).length + 1 = (pub.getD Boundary.pubN 0).toNat ∧
+    (st = 1 → ∃ (sN : St) (tps tpl : Nat → Nat) (locs : Array Val),
+      run X.cfg X.p (actListHost tr pub).length s0 = .fin sN ∧ sN.frames = [] ∧
+      X.R * ((pub.getD Boundary.pubS 0).toNat - (seg ((actListHost tr pub).length + 1)).1) +
+        sN.gas.g = (seg ((actListHost tr pub).length + 1)).2) ∧
+    (st = 2 → ∃ (sN : St) (e : String),
+      run X.cfg X.p (actListHost tr pub).length s0 = .abort sN e ∧
+      X.R * ((pub.getD Boundary.pubS 0).toNat - (seg ((actListHost tr pub).length + 1)).1) +
+        sN.gas.g = (seg ((actListHost tr pub).length + 1)).2) := by
+  obtain ⟨hN, h1, h2⟩ := exec_of_rows_seg X (actListHost tr pub) (rowInH tr pub) (rowOutH tr pub)
+    (rowConsH tr pub) (rowProdH tr pub) init fin
+    (tr.cell 0 0 Boundary.pcf) (pub.getD Boundary.pubN 0) (pub.getD Boundary.pubS 0) seg st hst12
+    hrows hrows2 sbf cidf hst hch hinit hinitTp hlen hfee hstepgas hg64 hE0 h0
+  refine ⟨hN, ?_, ?_⟩
+  · intro hs
+    obtain ⟨sN, tps, tpl, locs, hrun, hfr, hgas, _G⟩ := h1 hs
+    exact ⟨sN, tps, tpl, locs, hrun, hfr, hgas⟩
+  · intro hs
+    obtain ⟨sN, e, hrun, hgas⟩ := h2 hs
+    exact ⟨sN, e, hrun, hgas⟩
 
 end WasmBase
