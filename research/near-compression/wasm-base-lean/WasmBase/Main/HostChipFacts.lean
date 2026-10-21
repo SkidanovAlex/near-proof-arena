@@ -26,14 +26,14 @@ open NearSpecV3.Wasm hiding P
 set_option linter.unusedSimpArgs false
 set_option maxRecDepth 4000
 
-/-- **An inactive HOST row emits nothing.**  From `Holds` plus the `act`-gating constraints: `act`
+/-- **An inactive HOST row carries no count.**  From `Holds` plus the `act`-gating constraints: `act`
 is a bit and `rowAct` false means `act ≠ 1`, hence `act = 0`, and then `(1 − act)·pf j = 0` (for every
-`j < nArgs`) and `(1 − act)·nres = 0` force `pf j = 0` and `nres = 0`.  With `host_row_cons` /
-`host_row_prod` the row's `cons` and `prod` are empty. -/
-theorem host_row_inactive_emits_nothing {nloc ngl : Nat} {pub : List F} {tr : Trace} {r : Nat}
+`j < nArgs`) and `(1 − act)·nres = 0` force `pf j = 0` and `nres = 0`.  This is the raw count form of
+`host_row_inactive_emits_nothing`, and the table-22 instance of `HostTraceOK`. -/
+theorem host_row_inactive_counts {nloc ngl : Nat} {pub : List F} {tr : Trace} {r : Nat}
     (H : Holds (wasmBaseHostAir nloc ngl) pub tr) (hr : r < tr.height 22)
     (hneg : ¬ rowAct Host.table tr pub 22 r) :
-    rowCons Host.table tr pub 22 r = [] ∧ rowProd Host.table tr pub 22 r = [] := by
+    (∀ j, j < Host.nArgs → rowNat tr 22 r (Host.pf j) = 0) ∧ rowNat tr 22 r Host.nres = 0 := by
   have ht : 22 < (wasmBaseHostAir nloc ngl).tables.length := by simp [wasmBaseHostAir, air_len]
   have hcon : ∀ e ∈ Host.table.constraints, e.eval (natRow (rowNat tr 22 r) (tr.row pub 22 r)) = 0 :=
     table_constr H ht hr
@@ -67,9 +67,26 @@ theorem host_row_inactive_emits_nothing {nloc ngl : Nat} {pub : List F} {tr : Tr
       Host.act, Host.cActPf] at h
     rw [hone, Lean.Grind.Semiring.one_mul] at h
     exact (cast_inj_iff (rowNat_lt tr 22 r (Host.pf j)) (by decide : (0 : Nat) < P)).mp h
-  refine ⟨?_, ?_⟩
-  · exact host_row_cons_inactive (fun j hj => hpf0 j hj)
-  · rw [host_row_prod, hnr]
-    simp
+  exact ⟨fun j hj => hpf0 j (by simpa [Host.argRange] using hj), hnr⟩
+
+/-- **An inactive HOST row emits nothing.**  The `rowCons`/`rowProd` consequence of
+`host_row_inactive_counts`. -/
+theorem host_row_inactive_emits_nothing {nloc ngl : Nat} {pub : List F} {tr : Trace} {r : Nat}
+    (H : Holds (wasmBaseHostAir nloc ngl) pub tr) (hr : r < tr.height 22)
+    (hneg : ¬ rowAct Host.table tr pub 22 r) :
+    rowCons Host.table tr pub 22 r = [] ∧ rowProd Host.table tr pub 22 r = [] := by
+  obtain ⟨hpf, hnr⟩ := host_row_inactive_counts H hr hneg
+  refine ⟨host_row_cons_inactive (fun j hj => hpf j (argRange_lt hj)), ?_⟩
+  rw [host_row_prod, hnr]
+  simp
+
+/-- **`HostTraceOK` holds of every `Holds` host trace.**  This is the premise the active-rows CH
+decomposition (`host_part_ch_recv_active` / `host_part_ch_send_active`) needs, discharged here from
+the `act`-gating constraints: `HostTraceOK` takes `pf j = 0`/`nres = 0` for indices `j < nArgs`,
+which is exactly what `host_row_inactive_counts` gives. -/
+theorem host_trace_ok {nloc ngl : Nat} {pub : List F} {tr : Trace}
+    (H : Holds (wasmBaseHostAir nloc ngl) pub tr) : HostTraceOK tr pub := by
+  intro r hr hneg
+  exact host_row_inactive_counts H hr hneg
 
 end WasmBase

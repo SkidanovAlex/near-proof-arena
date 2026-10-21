@@ -37,8 +37,10 @@ the direction: the tempting `act · (1 − pf j)` is **wrong** — it would forc
 `pf j = 1`, but an argument may legitimately be absent and an aborting call has `nres = 0` (it
 failed the KAT on 4 host programs before being corrected).
 
-Consequently `msgs_ch_host` can be strengthened to the active-rows form when the induction needs
-it; as stated it remains unconditional, which is sound but weaker than necessary.
+Consequently the CH decomposition is available in the active-rows form the induction needs:
+`host_trace_ok` (`Main/HostChipFacts.lean`) derives `HostTraceOK` from `Holds`, and
+`host_part_ch_recv_active` / `host_part_ch_send_active` below use it.  `msgs_ch_host` itself stays
+unconditional, which is sound and is what `Main/HostBus.host_hch` starts from.
 
 ## The remaining statement (the induction)
 
