@@ -1,4 +1,4 @@
-# NEAR Proof Arena — handover (updated 2026-10-17)
+# NEAR Proof Arena — handover (updated 2026-10-21)
 
 This is for the next lead agent. Read it first. The raw working log for 2026-10-07 to 2026-10-09 (≈6,500 lines) now lives in `docs/logs/v3-progress-log-2026-10.md`. Use it only for evidence lookup.
 
@@ -9,6 +9,8 @@ This is for the next lead agent. Read it first. The raw working log for 2026-10-
 **Goal.** A self-hostable arena where candidates submit NEAR state-transition provers. Each submission comes with a machine-checked Lean certificate. The judge independently builds the submission, checks it formally (fixed trusted root), tests it, and benchmarks it.
 
 **Current target.** A **succinct proof of a NEAR chunk state transition, with a formal proof of correctness.** It must be a drop-in replacement for the stateless validator's `validate_chunk_state_witness`.
+
+**Updated 2026-10-21:** the Wasm side's host-aware execution theorem (`wasm_base_exec_host`) is proved; the join's remaining gap is the CH-bus permutation (`hch`), then `Compose`.
 
 User directives (binding):
 * **Don't shortcut.**
@@ -191,6 +193,54 @@ why 44 of the 64 D3α functions cost almost nothing. The exceptions:
 * `gas` remains out of domain (its parameter is `i32`, the row's argument slots are `i64`).
 * The hash and receipt families above.
 
+## The segmented induction and `wasm_base_exec_host` (2026-10-21)
+
+**What this closed.** `wasm_base_sound_host`'s last missing proof was the `Exec` segmented
+induction: `exec_of_rows` threads *one* gas segment, but a host call resynchronises the budget
+(`g := remaining`), so every instruction after it lives in a different segment. That is now done.
+
+| theorem | file | meaning |
+|---|---|---|
+| `exec_of_rows_seg` | `WasmBase/Main/SegHarness.lean` | `exec_of_rows` re-run with the segment threaded per row (`seg : Nat → Nat × Nat`, indexed by STATE time so it survives the `act`/`rs` permutation) |
+| `wasm_base_exec_host` | same | `exec_of_rows_seg` instantiated for `wasmBaseHostAir`; conclusion reports the **last** segment |
+| `host_rel_restart` | `WasmBase/Main/HostRel.lean` | lifts `step_host_ok_seg` to a full 20-field `RelW` at `(S+fee, g_after)` |
+| `host_hst` | `WasmBase/Main/HostBus.lean` | the STATE-bus `Perm` premise, discharged from `Holds` |
+| `occ_bits_host` | `WasmBase/Main/HostChipBits.lean` | every STATE/CH occurrence has count ≤ 1 |
+| `RowSpecSeg` / `RowFactsSegMap` | `WasmBase/Main/SegHarness.lean` | the row spec whose successor segment is a parameter |
+
+### Three findings that must not be lost
+
+1. **The per-row gas condition is not derivable.** `exec_of_rows` gets each row's
+   `R·(S+fee−S_seg) ≤ segb` from *monotonicity of one budget*. After a host restart that is false:
+   the next row needs `R·fee ≤ g_after`, a real machine fact. Hence `hstepgas` is a hypothesis.
+2. **`HOSTO.mult` is unconstrained and harmless.** `HostO.table.constraints = []` and both its
+   interactions count `mult`, so nothing forces `mult ≤ 1`. It does **not** block anything: the
+   induction needs "counts are bits" only on buses STATE(0)/CH(2), and `HOSTO`/`HOSTT`/`HOSTB` touch
+   neither (`hosto_avoids_state_ch`, `hosttab_avoids_state_ch`, `hostb_avoids_state_ch`). `mult > 1`
+   is the oracle's call count and is correct. **Do not "fix" it by constraining the AIR.**
+3. **`hostActRows` was silently selecting nothing.** It filtered with `rowAct (chipT 22)`, but
+   `chipT 22 = default`, not `Host.table`. Every HOST row was dropped from `actListHost`, which would
+   have made `wasm_base_exec_host` *vacuously true* over host traces. Fixed to filter with
+   `rowAct Host.table`. If you write another active-row helper for a non-`chipT` table, check this.
+
+### Still open for the join (was "four items", one and a half done)
+
+| item | state |
+|---|---|
+| `hst` (STATE-bus `Perm`) | **proved** (`host_hst`) |
+| `hch` (CH-bus `Perm`) | **open**. `msgs_ch_host` gives `part Host.table … busStk s`, a flatMap over **all** rows; `hostActRows` is only the **active** ones. The gap is a `flatMap` congruence using `host_rowMsgs_inactive_false`/`_true` (both proved). Straightforward, ~30 lines; `List.flatMap_map`'s shape does not match, which is where it stalled. |
+| `HOSTB` `(ptr,len)` -> memory | **open** (lane 6 below) |
+| `RealStoreMatchesTables` / `UpsV3AppliesLog` | **open, and not a proof task.** `upsert` is hard-coded at `[0,15]` as a *constraint polynomial* (`Tables/Ups.lean` `symE`, `Extract/Ups/QNodes` `UpsSpec.key`), so a ContractData path is a different polynomial, not a different instance. This needs a **table parameterisation (a render change)**, or the statement drops it. `UpsertPreservesWf` was already shown **false as stated** and corrected to `UpsertPreservesWfWithBounds` (headroom `m < memHead`), which is proved. |
+
+### Process lessons (paid for in this session)
+
+* **Never trust a build claim you did not make from a clean checkout.** `git archive <commit> | tar x`
+  into `/tmp`, build there, then quote the number. A stale `.olean` under an actively-merged tree
+  produced a false "128 jobs, KAT 77/77" for a commit that did not build at all.
+* **Work in a worktree, not the main checkout.** The main checkout was switched to another agent's
+  branch mid-session and a merge landed in it (`MERGE_HEAD` + `UU` conflicts) while I was editing.
+* **Verify content, not HEAD movement** (already lesson 4 below; it bit again).
+
 ## Parallel lanes to run next
 
 Lanes 1-4 are done (see above). The remaining critical path is the **tightening** of what landed,
@@ -198,16 +248,19 @@ then the join. Lanes 5-7 and 9-10 are independent; 8 depends on 5 and 7.
 
 | # | lane | scope | blocks | est. |
 |---|---|---|---|---|
-| 5 | `lane/pq-host-rowfacts` | Finish `wasm_base_sound_host`: the HOST row's `RowSpec` (argument liveness from `stkRecv`, result equality from `stkSend`) and the `Exec` bus decomposition for `wasmBaseHostAir` (tables 22-25), with `S_seg`/`segb` threaded through the induction. `Main/Host.lean` already states the interface. | the host-aware execution theorem | 4-6 d |
+| 5 | ~~`lane/pq-host-rowfacts`~~ **DONE 2026-10-21** | `exec_of_rows_seg`, `wasm_base_exec_host`, `host_rel_restart`, `host_hst`, `occ_bits_host` all proved (see the section above). Only `hch` remains, ~30 lines. | — | done |
 | 6 | `lane/pq-host-memio` | `HOSTB` -> memory: the `(ptr,len)` range, `pos < len`, and the register space (space 6), plus the link from a `HOSTB` group to its `HOSTQ` call. The bus and table exist; this gives them meaning. | any real byte-moving host call | 5-7 d |
-| 7 | `lane/pq-cd-props` | The four stated `Prop`s of the CD storage path: `WalkKeyIsContractData` (HOSTB -> CDKEYNIB routing), `RealStoreMatchesTables` (render + overlay replay), `UpsV3AppliesLog`, `UpsertPreservesWf`. | the state half being a theorem, not a check | 6-10 d |
+| 7 | `lane/pq-cd-props` (**not a pure proof lane** — see the note) | `WalkKeyIsContractData` has been **proved for the HOSTB route** (`PQ/Join/CdWalkView.lean`, residual `CdKeynibFromHostB`); `UpsertPreservesWf` was **false as stated** and its corrected form `UpsertPreservesWfWithBounds` is **proved**. Remaining: `RealStoreMatchesTables` (render + overlay replay, engineering E1/E3) and `UpsV3AppliesLog`, which needs a **table parameterisation** because `upsert` is hard-coded at `[0,15]` as a constraint polynomial. | the state half being a theorem, not a check | 6-10 d, and the `upsert` rework is the long pole |
 | 8 | `lane/pq-runCall-fold` | The coverage theorem: `join_additive` + `d3Hooks`/`runCall` correspondence, so a joined proof implies the D3 chunk relation. Shape stated in `JoinFold.JoinStmt`. | the end-to-end claim | 10-15 d |
 | 9 | `lane/pq-sig-layer` | The separate Ed25519 proof layer: ZK-friendly curve arithmetic + a SHA-512 witness over the preimage, proving `Ed25519.verify` at 128 bits. Census done (`results/pq-ed25519-air/CENSUS.md`). | signed transactions | 16-26 d |
 | 10 | `lane/pq-1pgas-scale` | Research only: measure one 2^28.25-cell segment at real settings, then extrapolate the aggregation tree. No 1 Pgas claim. | goal B | research |
 
-**Suggested first batch:** 5, 6, 7 in parallel (they touch different files: `Main/` + `Exec` vs
-`HostChip`/`tracegen` vs `zk-formal/.../D3`). 8 can start once 5 and 7 land. 9 is independent and
-long; 10 is independent and cheap.
+**Suggested first batch:** finish `hch` (small, unblocks nothing else but completes the theorem), then
+6 and 7 in parallel. 8 (the runCall fold) can start now: `wasm_base_exec_host` exists. 9 is
+independent and long; 10 is independent and cheap.
+
+**7 is not a proof lane.** Read the `UpsV3AppliesLog` note above before dispatching it: `upsert` at a
+ContractData key needs a table parameterisation, which is a render/AIR change with a size/model cost.
 
 ### Merge discipline that worked (learned twice now)
 
